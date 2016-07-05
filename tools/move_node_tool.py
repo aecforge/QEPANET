@@ -35,7 +35,6 @@ class MoveNodeTool(QgsMapTool):
 
         self.adj_pipes_fts_d = {}
 
-
     def canvasPressEvent(self, event):
 
         if self.snapped_feat_id is None:

@@ -24,10 +24,14 @@
 import os
 from tools.add_node_tool import AddNodeTool
 from tools.move_node_tool import MoveNodeTool
-from PyQt4 import QtCore
 
-from PyQt4 import QtGui, uic
+from PyQt4 import QtCore, QtGui, uic
 from PyQt4.QtCore import pyqtSignal
+
+from qgis.core import QgsMapLayer, QgsMapLayerRegistry
+
+import parameters
+from geo_utils import utils
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qepanet_dockwidget_base.ui'))
@@ -48,17 +52,46 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.setupUi(self)
         self.iface = iface
 
-        QtCore.QObject.connect(self.btn_add_node, QtCore.SIGNAL("pressed()"), self.add_tool)
-        QtCore.QObject.connect(self.btn_move_node, QtCore.SIGNAL("pressed()"), self.move_tool)
+        QtCore.QObject.connect(self.btn_add_node, QtCore.SIGNAL('pressed()'), self.add_node)
+        QtCore.QObject.connect(self.btn_move_node, QtCore.SIGNAL('pressed()'), self.move_node)
+
+        QtCore.QObject.connect(self.cbo_dem, QtCore.SIGNAL('activated(int)'), self.cbo_dem_activated)
+
+        QgsMapLayerRegistry.instance().layersAdded.connect(self.update_dem_combo)
+        QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.update_dem_combo)
+        QgsMapLayerRegistry.instance().layerRemoved.connect(self.update_dem_combo)
+
+        self.update_dem_combo()
+        if self.cbo_dem.count() > 0:
+            layer_id = self.cbo_dem.itemData(0)
+            parameters.Parameters.selected_dem_lay = utils.LayerUtils.get_lay_from_id(layer_id)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
 
-    def add_tool(self):
+    def add_node(self):
         tool = AddNodeTool(self, self.iface)
         self.iface.mapCanvas().setMapTool(tool)
 
-    def move_tool(self):
+    def move_node(self):
         tool = MoveNodeTool(self, self.iface)
         self.iface.mapCanvas().setMapTool(tool)
+
+    def cbo_dem_activated(self, index):
+        layer_id = self.cbo_dem.itemData(index)
+        parameters.Parameters.selected_dem_lay = utils.LayerUtils.get_lay_from_id(layer_id)
+
+    def update_dem_combo(self):
+        self.cbo_dem.clear()
+        layers = self.iface.legendInterface().layers()
+        raster_count = 0
+        for layer in layers:
+            if layer is not None:
+                if QgsMapLayer is not None:
+                    if layer.type() == QgsMapLayer.RasterLayer:
+                        raster_count += 1
+                        self.cbo_dem.addItem(layer.name(), layer.id())
+
+        if self.cbo_dem.count() == 0:
+            parameters.Parameters.selected_dem_lay = None
