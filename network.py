@@ -9,6 +9,13 @@ class Tables:
 
 
 class Node:
+
+    eid_field_name = 'id'
+    demand_field_name = 'demand'
+    depth_field_name = 'depth'
+    elevation_field_name = 'elevation'
+    patter_field_name = 'pattern'
+
     def __init__(self, eid):
         self.eid = eid
         self.demand = 0
@@ -16,14 +23,18 @@ class Node:
         self.elevation = -1
         self.pattern = None
 
-        self.eid_field_name = 'id'
-        self.demand_field_name = 'demand'
-        self.depth_field_name = 'depth'
-        self.elevation_field_name = 'elevation'
-        self.patter_field_name = 'pattern'
-
 
 class Pipe:
+
+    demand_field_name = 'demand'
+    diameter_field_name = 'diameter'
+    end_node_field_name = 'end_node'
+    length_field_name = 'length'
+    loss_field_name = 'loss'
+    roughness_field_name = 'roughness'
+    start_node_field_name = 'start_node'
+    status_field_name = 'status'
+
     def __init__(self, eid):
         self.eid = eid
 
@@ -35,12 +46,3 @@ class Pipe:
         self.roughness = -1
         self.start_node = -1
         self.status = 'on'
-
-        self.demand_field_name = 'demand'
-        self.diameter_field_name = 'diameter'
-        self.end_node_field_name = 'end_node'
-        self.length_field_name = 'length'
-        self.loss_field_name = 'loss'
-        self.roughness_field_name = 'roughness'
-        self.start_node_field_name = 'start_node'
-        self.status_field_name = 'status'
