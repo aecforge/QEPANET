@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>232</width>
-    <height>321</height>
+    <height>496</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
          <x>0</x>
          <y>0</y>
          <width>230</width>
-         <height>297</height>
+         <height>472</height>
         </rect>
        </property>
        <widget class="QFrame" name="fra_main">
@@ -38,7 +38,7 @@
           <x>-1</x>
           <y>9</y>
           <width>221</width>
-          <height>164</height>
+          <height>461</height>
          </rect>
         </property>
         <property name="frameShape">
@@ -103,6 +103,75 @@
              </widget>
             </item>
            </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolBox" name="tbx_elements">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="wgt_ele_node">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>201</width>
+              <height>69</height>
+             </rect>
+            </property>
+            <attribute name="label">
+             <string>Node properties</string>
+            </attribute>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QLabel" name="lbl_node_depth">
+               <property name="text">
+                <string>Depth [m]:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="txt_node_depth_val">
+               <property name="text">
+                <string>0</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+           <widget class="QWidget" name="wgt_ele_pipe">
+            <attribute name="label">
+             <string>Pipe properties</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="wgt_ele_source">
+            <attribute name="label">
+             <string>Source properties</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="wgt_ele_reservoir">
+            <attribute name="label">
+             <string>Reservoir properties</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="wgt_ele_pump">
+            <attribute name="label">
+             <string>Pump properties</string>
+            </attribute>
+           </widget>
+           <widget class="QWidget" name="wgt_ele_valve">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>201</width>
+              <height>69</height>
+             </rect>
+            </property>
+            <attribute name="label">
+             <string>Valve properties</string>
+            </attribute>
+           </widget>
           </widget>
          </item>
          <item>
