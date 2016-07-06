@@ -32,6 +32,7 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry
 
 import parameters
 from geo_utils import utils
+from parameters import Parameters
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qepanet_dockwidget_base.ui'))
@@ -57,14 +58,34 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         QtCore.QObject.connect(self.cbo_dem, QtCore.SIGNAL('activated(int)'), self.cbo_dem_activated)
 
-        QgsMapLayerRegistry.instance().layersAdded.connect(self.update_dem_combo)
-        QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.update_dem_combo)
-        QgsMapLayerRegistry.instance().layerRemoved.connect(self.update_dem_combo)
+        # QgsMapLayerRegistry.instance().layersAdded.connect(self.update_layers_combos)
+        QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.update_layers_combos)
+        QgsMapLayerRegistry.instance().layerRemoved.connect(self.update_layers_combos)
 
-        self.update_dem_combo()
-        if self.cbo_dem.count() > 0:
+        self.update_layers_combos()
+
+        if self.cbo_nodes.count() >= 0:
+            layer_id = self.cbo_nodes.itemData(0)
+            Parameters.nodes_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        if self.cbo_pipes.count() >= 0:
+            layer_id = self.cbo_pipes.itemData(0)
+            Parameters.pipes_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        if self.cbo_pumps.count() >= 0:
+            layer_id = self.cbo_pumps.itemData(0)
+            Parameters.pumps_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        if self.cbo_reservoirs.count() >= 0:
+            layer_id = self.cbo_reservoirs.itemData(0)
+            Parameters.reservoirs_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        if self.cbo_sources.count() >= 0:
+            layer_id = self.cbo_sources.itemData(0)
+            Parameters.sources_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        if self.cbo_valves.count() >= 0:
+            layer_id = self.cbo_valves.itemData(0)
+            Parameters.valves_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+
+        if self.cbo_dem.count() >= 0:
             layer_id = self.cbo_dem.itemData(0)
-            parameters.Parameters.selected_dem_lay = utils.LayerUtils.get_lay_from_id(layer_id)
+            Parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -80,10 +101,28 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def cbo_dem_activated(self, index):
         layer_id = self.cbo_dem.itemData(index)
-        parameters.Parameters.selected_dem_lay = utils.LayerUtils.get_lay_from_id(layer_id)
+        Parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
-    def update_dem_combo(self):
+    def update_layers_combos(self):
+
+        nodes_lay_id = self.cbo_nodes.itemData(self.cbo_nodes.currentIndex())
+        pipes_lay_id = self.cbo_pipes.itemData(self.cbo_pipes.currentIndex())
+        pumps_lay_id = self.cbo_pumps.itemData(self.cbo_pumps.currentIndex())
+        reservoirs_lay_id = self.cbo_reservoirs.itemData(self.cbo_reservoirs.currentIndex())
+        sources_lay_id = self.cbo_sources.itemData(self.cbo_sources.currentIndex())
+        valves_lay_id = self.cbo_valves.itemData(self.cbo_valves.currentIndex())
+
+        dem_lay_id = self.cbo_dem.itemData(0)
+
+        self.cbo_nodes.clear()
+        self.cbo_pipes.clear()
+        self.cbo_pumps.clear()
+        self.cbo_reservoirs.clear()
+        self.cbo_sources.clear()
+        self.cbo_valves.clear()
+
         self.cbo_dem.clear()
+
         layers = self.iface.legendInterface().layers()
         raster_count = 0
         for layer in layers:
@@ -92,6 +131,41 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                     if layer.type() == QgsMapLayer.RasterLayer:
                         raster_count += 1
                         self.cbo_dem.addItem(layer.name(), layer.id())
+                    else:
+                        self.cbo_nodes.addItem(layer.name(), layer.id())
+                        self.cbo_pipes.addItem(layer.name(), layer.id())
+                        self.cbo_pumps.addItem(layer.name(), layer.id())
+                        self.cbo_reservoirs.addItem(layer.name(), layer.id())
+                        self.cbo_sources.addItem(layer.name(), layer.id())
+                        self.cbo_valves.addItem(layer.name(), layer.id())
+
+        if self.cbo_nodes.count() == 0:
+            parameters.Parameters.nodes_vlay = None
+        if self.cbo_pipes.count() == 0:
+            Parameters.pipes_vlay = None
+        if self.cbo_pumps.count() == 0:
+            Parameters.pumps_vlay = None
+        if self.cbo_reservoirs.count() == 0:
+            Parameters.reservoirs_vlay = None
+        if self.cbo_sources.count() == 0:
+            Parameters.sources_vlay = None
+        if self.cbo_valves.count() == 0:
+            Parameters.valves_vlay = None
 
         if self.cbo_dem.count() == 0:
-            parameters.Parameters.selected_dem_lay = None
+            parameters.Parameters.dem_rlay = None
+
+        # Reset combo selections
+        self.set_combo_index(self.cbo_nodes, nodes_lay_id)
+        self.set_combo_index(self.cbo_pipes, pipes_lay_id)
+        self.set_combo_index(self.cbo_pumps, pumps_lay_id)
+        self.set_combo_index(self.cbo_reservoirs, reservoirs_lay_id)
+        self.set_combo_index(self.cbo_sources, sources_lay_id)
+        self.set_combo_index(self.cbo_valves, valves_lay_id)
+
+        self.set_combo_index(self.cbo_dem, dem_lay_id)
+
+    def set_combo_index(self, combo, layer_id):
+        index = combo.findData(layer_id)
+        if index >= 0:
+            combo.setCurrentIndex(index)

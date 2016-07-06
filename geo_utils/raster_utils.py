@@ -12,7 +12,7 @@ from osgeo import gdal
 from osgeo.gdalconst import *
 from numpy import array
 from PyQt4.QtCore import QFileInfo
-from qgis.core import QgsMapLayerRegistry, QgsPoint, QgsRasterLayer
+from qgis.core import QgsMapLayerRegistry, QgsPoint, QgsRasterLayer, QgsRaster
 from utils import Utils
 import codecs, struct
 
@@ -259,7 +259,7 @@ def in_extent(raster, cell_cr):
     return 0 <= cell_cr.x < raster.cols_count and 0 <= cell_cr.y < raster.rows_count
 
 
-def read_val_from_coord(ras_path, coordinate, band=1):
+def read_file_val_from_coord(ras_path, coordinate, band=1):
 
     dataset = gdal.Open(ras_path)
     geotransform = dataset.GetGeoTransform()
@@ -271,6 +271,12 @@ def read_val_from_coord(ras_path, coordinate, band=1):
     val = band.ReadAsArray(px, py, 1, 1)
     return val[0][0]
 
+
+def read_layer_val_from_coord(ras_layer, coordinate, band):
+
+    identify_dem = ras_layer.dataProvider().identify(coordinate, QgsRaster.IdentifyFormatValue)
+    if identify_dem is not None and identify_dem.isValid() and identify_dem.results().get(1) is not None:
+        return identify_dem.results().get(band)
 
 class FormattedRasterStats:
 

@@ -8,6 +8,7 @@ from qgis.core import QgsPoint, QgsRaster, QgsVectorLayer, QgsProject, QgsSnappe
 from ..geo_utils import utils as geo_utils
 from .. import parameters
 from ..network import Node, Pipe
+from network_handling import LinkHandler
 
 
 class AddNodeTool(QgsMapTool):
@@ -30,6 +31,7 @@ class AddNodeTool(QgsMapTool):
         self.mouse_clicked = False
         self.snapped_feat_id = None
         self.snapped_vertex = None
+        self.snapped_vertex_nr = None
         self.vertex_marker = QgsVertexMarker(self.canvas())
         self.elev = -1
 
@@ -44,7 +46,7 @@ class AddNodeTool(QgsMapTool):
 
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
-        dem_lay = parameters.Parameters.selected_dem_lay
+        dem_lay = parameters.Parameters.dem_rlay
         identify_dem = dem_lay.dataProvider().identify(self.mouse_pt, QgsRaster.IdentifyFormatValue)
         if identify_dem is not None and identify_dem.isValid() and identify_dem.results().get(1) is not None:
             self.elev = identify_dem.results().get(1)
@@ -61,6 +63,7 @@ class AddNodeTool(QgsMapTool):
                 self.snapped_feat_id = result[0].snappedAtGeometry
 
                 snapped_vertex = result[0].snappedVertex
+                self.snapped_vertex_nr = result[0].snappedVertexNr
 
                 self.snapped_vertex = QgsPoint(snapped_vertex.x(), snapped_vertex.y())
                 self.vertex_marker.setCenter(self.snapped_vertex)
@@ -123,54 +126,59 @@ class AddNodeTool(QgsMapTool):
                     # Get vertex along line next to snapped point
                     a, b, next_vertex = snapped_pipe.geometry().closestSegmentWithContext(self.snapped_vertex)
 
-                    # Create two new linestrings
-                    nodes = snapped_pipe.geometry().asPolyline()
+                    # Split only if vertex is not at line ends
+                    if self.snapped_vertex_nr != 0:
 
-                    # First new polyline
-                    pl1_pts = []
-                    for n in range(next_vertex):
-                        pl1_pts.append(QgsPoint(nodes[n].x(), nodes[n].y()))
+                        # Create two new linestrings
+                        nodes = snapped_pipe.geometry().asPolyline()
 
-                    pl1_pts.append(QgsPoint(self.snapped_vertex.x(), self.snapped_vertex.y()))
+                        # First new polyline
+                        pl1_pts = []
+                        for n in range(next_vertex):
+                            pl1_pts.append(QgsPoint(nodes[n].x(), nodes[n].y()))
 
-                    eid = self.find_next_pipe_id()
-                    new_pipe_ft_1 = QgsFeature(self.pipes_vlay.pendingFields())
-                    new_pipe_ft_1.setAttribute(Pipe.field_name_eid, eid)
-                    new_pipe_ft_1.setAttribute(Pipe.field_name_demand, 0)
-                    new_pipe_ft_1.setAttribute(Pipe.field_name_diameter, 0)
-                    new_pipe_ft_1.setAttribute(Pipe.field_name_end_node, '')
-                    new_pipe_ft_1.setAttribute(Pipe.field_name_length, '')
-                    new_pipe_ft_1.setAttribute(Pipe.field_name_loss, 0)
-                    new_pipe_ft_1.setAttribute(Pipe.field_name_roughness, '')
-                    new_pipe_ft_1.setAttribute(Pipe.field_name_start_node, '')
-                    new_pipe_ft_1.setAttribute(Pipe.field_name_status, '')
-                    new_pipe_ft_1.setGeometry(QgsGeometry.fromPolyline(pl1_pts))
+                        pl1_pts.append(QgsPoint(self.snapped_vertex.x(), self.snapped_vertex.y()))
 
-                    # Second new polyline
-                    pl2_pts = []
-                    pl2_pts.append(QgsPoint(self.snapped_vertex.x(), self.snapped_vertex.y()))
-                    for n in range(len(nodes) - next_vertex):
-                        pl2_pts.append(QgsPoint(nodes[n + next_vertex].x(), nodes[n + next_vertex].y()))
+                        eid = self.find_next_pipe_id()
+                        LinkHandler.create_new_pipe(self.pipes_vlay, eid, 0, 0, 0, 0, 0, pl1_pts, parameters.Parameters.dem_rlay)
 
-                    eid += 1
-                    new_pipe_ft_2 = QgsFeature(self.pipes_vlay.pendingFields())
-                    new_pipe_ft_2.setAttribute(Pipe.field_name_eid, eid)
-                    new_pipe_ft_2.setAttribute(Pipe.field_name_demand, 0)
-                    new_pipe_ft_2.setAttribute(Pipe.field_name_diameter, 0)
-                    new_pipe_ft_2.setAttribute(Pipe.field_name_end_node, '')
-                    new_pipe_ft_2.setAttribute(Pipe.field_name_length, '')
-                    new_pipe_ft_2.setAttribute(Pipe.field_name_loss, 0)
-                    new_pipe_ft_2.setAttribute(Pipe.field_name_roughness, '')
-                    new_pipe_ft_2.setAttribute(Pipe.field_name_start_node, '')
-                    new_pipe_ft_2.setAttribute(Pipe.field_name_status, '')
-                    new_pipe_ft_2.setGeometry(QgsGeometry.fromPolyline(pl2_pts))
+                        # new_pipe_ft_1 = QgsFeature(self.pipes_vlay.pendingFields())
+                        # new_pipe_ft_1.setAttribute(Pipe.field_name_eid, eid)
+                        # new_pipe_ft_1.setAttribute(Pipe.field_name_demand, 0)
+                        # new_pipe_ft_1.setAttribute(Pipe.field_name_diameter, 0)
+                        # new_pipe_ft_1.setAttribute(Pipe.field_name_end_node, '')
+                        # new_pipe_ft_1.setAttribute(Pipe.field_name_length, '')
+                        # new_pipe_ft_1.setAttribute(Pipe.field_name_loss, 0)
+                        # new_pipe_ft_1.setAttribute(Pipe.field_name_roughness, '')
+                        # new_pipe_ft_1.setAttribute(Pipe.field_name_start_node, '')
+                        # new_pipe_ft_1.setAttribute(Pipe.field_name_status, '')
+                        # new_pipe_ft_1.setGeometry(QgsGeometry.fromPolyline(pl1_pts))
 
-                    self.pipes_vlay.addFeatures([new_pipe_ft_1, new_pipe_ft_2])
+                        # Second new polyline
+                        pl2_pts = []
+                        pl2_pts.append(QgsPoint(self.snapped_vertex.x(), self.snapped_vertex.y()))
+                        for n in range(len(nodes) - next_vertex):
+                            pl2_pts.append(QgsPoint(nodes[n + next_vertex].x(), nodes[n + next_vertex].y()))
 
-                    # Delete old pipe
-                    self.pipes_vlay.deleteFeature(snapped_pipe.id())
+                        eid += 1
+                        new_pipe_ft_2 = QgsFeature(self.pipes_vlay.pendingFields())
+                        new_pipe_ft_2.setAttribute(Pipe.field_name_eid, eid)
+                        new_pipe_ft_2.setAttribute(Pipe.field_name_demand, 0)
+                        new_pipe_ft_2.setAttribute(Pipe.field_name_diameter, 0)
+                        new_pipe_ft_2.setAttribute(Pipe.field_name_end_node, '')
+                        new_pipe_ft_2.setAttribute(Pipe.field_name_length, '')
+                        new_pipe_ft_2.setAttribute(Pipe.field_name_loss, 0)
+                        new_pipe_ft_2.setAttribute(Pipe.field_name_roughness, '')
+                        new_pipe_ft_2.setAttribute(Pipe.field_name_start_node, '')
+                        new_pipe_ft_2.setAttribute(Pipe.field_name_status, '')
+                        new_pipe_ft_2.setGeometry(QgsGeometry.fromPolyline(pl2_pts))
 
-                    self.pipes_vlay.endEditCommand()
+                        # self.pipes_vlay.addFeatures([new_pipe_ft_1, new_pipe_ft_2])
+
+                        # Delete old pipe
+                        self.pipes_vlay.deleteFeature(snapped_pipe.id())
+
+                        self.pipes_vlay.endEditCommand()
 
     def activate(self):
 
