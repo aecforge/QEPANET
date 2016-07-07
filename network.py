@@ -1,14 +1,14 @@
 class Tables:
     def __init__(self):
         self.pipes_table_name = 'pipes'
-        self.nodes_table_name = 'nodes'
+        self.junctions_table_name = 'junctions'
         self.reservoirs_table_name = 'reservoirs'
         self.sources_table_name = 'sources'
         self.pumps_table_name = 'pumps'
         self.valves_table_name = 'valves'
 
 
-class Node:
+class Junction:
 
     field_name_eid = 'id'
     field_name_demand = 'demand'

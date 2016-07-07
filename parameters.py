@@ -2,7 +2,7 @@ class Parameters:
 
     max_node_eid = -1
 
-    nodes_vlay = None
+    junctions_vlay = None
     pipes_vlay = None
     pumps_vlay = None
     reservoirs_vlay = None

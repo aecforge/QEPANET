@@ -22,7 +22,8 @@
 """
 
 import os
-from tools.add_node_tool import AddNodeTool
+from tools.add_junction_tool import AddJunctionTool
+from tools.add_pipe_tool import AddPipeTool
 from tools.move_node_tool import MoveNodeTool
 
 from PyQt4 import QtCore, QtGui, uic
@@ -53,8 +54,26 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.setupUi(self)
         self.iface = iface
 
-        QtCore.QObject.connect(self.btn_add_node, QtCore.SIGNAL('pressed()'), self.add_node)
+        # Buttons
+        QtCore.QObject.connect(self.btn_add_junction, QtCore.SIGNAL('pressed()'), self.add_junction)
+        QtCore.QObject.connect(self.btn_add_reservoir, QtCore.SIGNAL('pressed()'), self.add_reservoir)
+        QtCore.QObject.connect(self.btn_add_tank, QtCore.SIGNAL('pressed()'), self.add_tank)
+
+        QtCore.QObject.connect(self.btn_add_pipe, QtCore.SIGNAL('pressed()'), self.add_pipe)
+        QtCore.QObject.connect(self.btn_add_pump, QtCore.SIGNAL('pressed()'), self.add_pump)
+        QtCore.QObject.connect(self.btn_add_valve, QtCore.SIGNAL('pressed()'), self.add_valve)
+
         QtCore.QObject.connect(self.btn_move_node, QtCore.SIGNAL('pressed()'), self.move_node)
+        QtCore.QObject.connect(self.btn_move_link, QtCore.SIGNAL('pressed()'), self.move_link)
+
+        # Combo boxes
+        QtCore.QObject.connect(self.cbo_junctions, QtCore.SIGNAL('activated(int)'), self.cbo_junctions_activated)
+        QtCore.QObject.connect(self.cbo_reservoirs, QtCore.SIGNAL('activated(int)'), self.cbo_reservoirs_activated)
+        QtCore.QObject.connect(self.cbo_tanks, QtCore.SIGNAL('activated(int)'), self.cbo_tanks_activated)
+
+        QtCore.QObject.connect(self.cbo_pipes, QtCore.SIGNAL('activated(int)'), self.cbo_pipes_activated)
+        QtCore.QObject.connect(self.cbo_pumps, QtCore.SIGNAL('activated(int)'), self.cbo_pumps_activated)
+        QtCore.QObject.connect(self.cbo_valves, QtCore.SIGNAL('activated(int)'), self.cbo_valves_activated)
 
         QtCore.QObject.connect(self.cbo_dem, QtCore.SIGNAL('activated(int)'), self.cbo_dem_activated)
 
@@ -64,24 +83,24 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.update_layers_combos()
 
-        if self.cbo_nodes.count() >= 0:
-            layer_id = self.cbo_nodes.itemData(0)
-            Parameters.nodes_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        if self.cbo_junctions.count() >= 0:
+            layer_id = self.cbo_junctions.itemData(self.cbo_junctions.currentIndex())
+            Parameters.junctions_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
         if self.cbo_pipes.count() >= 0:
-            layer_id = self.cbo_pipes.itemData(0)
-            Parameters.pipes_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+            layer_id = self.cbo_pipes.itemData(self.cbo_pipes.currentIndex())
+            Parameters.pipes_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
         if self.cbo_pumps.count() >= 0:
-            layer_id = self.cbo_pumps.itemData(0)
-            Parameters.pumps_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+            layer_id = self.cbo_pumps.itemData(self.cbo_pumps.currentIndex())
+            Parameters.pumps_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
         if self.cbo_reservoirs.count() >= 0:
-            layer_id = self.cbo_reservoirs.itemData(0)
-            Parameters.reservoirs_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
-        if self.cbo_sources.count() >= 0:
-            layer_id = self.cbo_sources.itemData(0)
-            Parameters.sources_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+            layer_id = self.cbo_reservoirs.itemData(self.cbo_reservoirs.currentIndex())
+            Parameters.reservoirs_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        if self.cbo_tanks.count() >= 0:
+            layer_id = self.cbo_tanks.itemData(self.cbo_tanks.currentIndex())
+            Parameters.tanks_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
         if self.cbo_valves.count() >= 0:
-            layer_id = self.cbo_valves.itemData(0)
-            Parameters.valves_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+            layer_id = self.cbo_valves.itemData(self.cbo_valves.currentIndex())
+            Parameters.valves_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
         if self.cbo_dem.count() >= 0:
             layer_id = self.cbo_dem.itemData(0)
@@ -91,13 +110,71 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.closingPlugin.emit()
         event.accept()
 
-    def add_node(self):
-        tool = AddNodeTool(self, self.iface)
+    def add_junction(self):
+        tool = AddJunctionTool(self, self.iface)
         self.iface.mapCanvas().setMapTool(tool)
+
+        # Cursor
+        cursor = QtGui.QCursor()
+        cursor.setShape(QtCore.Qt.CrossCursor)
+        self.iface.mapCanvas().setCursor(cursor)
+
+    def add_pipe(self):
+        tool = AddPipeTool(self, self.iface)
+        self.iface.mapCanvas().setMapTool(tool)
+
+        # Cursor
+        cursor = QtGui.QCursor()
+        cursor.setShape(QtCore.Qt.CrossCursor)
+        self.iface.mapCanvas().setCursor(cursor)
+
+    def add_reservoir(self):
+        pass
+
+    def add_tank(self):
+        pass
+
+    def add_pump(self):
+        pass
+
+    def add_valve(self):
+        pass
 
     def move_node(self):
         tool = MoveNodeTool(self, self.iface)
         self.iface.mapCanvas().setMapTool(tool)
+
+        # Cursor
+        cursor = QtGui.QCursor()
+        cursor.setShape(QtCore.Qt.CrossCursor)
+        self.iface.mapCanvas().setCursor(cursor)
+
+    def move_link(self):
+        pass
+
+    def cbo_junctions_activated(self, index):
+        layer_id = self.cbo_junctions.itemData(index)
+        Parameters.junctions_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+
+    def cbo_reservoirs_activated(self, index):
+        layer_id = self.cbo_reservoirs.itemData(index)
+        Parameters.reservoirs_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+
+    def cbo_tanks_activated(self, index):
+        layer_id = self.cbo_tanks.itemData(index)
+        Parameters.tanks_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+
+    def cbo_pipes_activated(self, index):
+        layer_id = self.cbo_pipes.itemData(index)
+        Parameters.pipes_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+
+    def cbo_pumps_activated(self, index):
+        layer_id = self.cbo_pumps.itemData(index)
+        Parameters.pumps_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+
+    def cbo_valves_activated(self, index):
+        layer_id = self.cbo_valves.itemData(index)
+        Parameters.valves_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
     def cbo_dem_activated(self, index):
         layer_id = self.cbo_dem.itemData(index)
@@ -105,20 +182,20 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def update_layers_combos(self):
 
-        nodes_lay_id = self.cbo_nodes.itemData(self.cbo_nodes.currentIndex())
+        nodes_lay_id = self.cbo_junctions.itemData(self.cbo_junctions.currentIndex())
         pipes_lay_id = self.cbo_pipes.itemData(self.cbo_pipes.currentIndex())
         pumps_lay_id = self.cbo_pumps.itemData(self.cbo_pumps.currentIndex())
         reservoirs_lay_id = self.cbo_reservoirs.itemData(self.cbo_reservoirs.currentIndex())
-        sources_lay_id = self.cbo_sources.itemData(self.cbo_sources.currentIndex())
+        tanks_lay_id = self.cbo_tanks.itemData(self.cbo_tanks.currentIndex())
         valves_lay_id = self.cbo_valves.itemData(self.cbo_valves.currentIndex())
 
         dem_lay_id = self.cbo_dem.itemData(0)
 
-        self.cbo_nodes.clear()
+        self.cbo_junctions.clear()
         self.cbo_pipes.clear()
         self.cbo_pumps.clear()
         self.cbo_reservoirs.clear()
-        self.cbo_sources.clear()
+        self.cbo_tanks.clear()
         self.cbo_valves.clear()
 
         self.cbo_dem.clear()
@@ -132,35 +209,35 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                         raster_count += 1
                         self.cbo_dem.addItem(layer.name(), layer.id())
                     else:
-                        self.cbo_nodes.addItem(layer.name(), layer.id())
+                        self.cbo_junctions.addItem(layer.name(), layer.id())
                         self.cbo_pipes.addItem(layer.name(), layer.id())
                         self.cbo_pumps.addItem(layer.name(), layer.id())
                         self.cbo_reservoirs.addItem(layer.name(), layer.id())
-                        self.cbo_sources.addItem(layer.name(), layer.id())
+                        self.cbo_tanks.addItem(layer.name(), layer.id())
                         self.cbo_valves.addItem(layer.name(), layer.id())
 
-        if self.cbo_nodes.count() == 0:
-            parameters.Parameters.nodes_vlay = None
+        if self.cbo_junctions.count() == 0:
+            Parameters.junctions_vlay = None
         if self.cbo_pipes.count() == 0:
             Parameters.pipes_vlay = None
         if self.cbo_pumps.count() == 0:
             Parameters.pumps_vlay = None
         if self.cbo_reservoirs.count() == 0:
             Parameters.reservoirs_vlay = None
-        if self.cbo_sources.count() == 0:
-            Parameters.sources_vlay = None
+        if self.cbo_tanks.count() == 0:
+            Parameters.tanks_vlay = None
         if self.cbo_valves.count() == 0:
             Parameters.valves_vlay = None
 
         if self.cbo_dem.count() == 0:
-            parameters.Parameters.dem_rlay = None
+            Parameters.dem_rlay = None
 
         # Reset combo selections
-        self.set_combo_index(self.cbo_nodes, nodes_lay_id)
+        self.set_combo_index(self.cbo_junctions, nodes_lay_id)
         self.set_combo_index(self.cbo_pipes, pipes_lay_id)
         self.set_combo_index(self.cbo_pumps, pumps_lay_id)
         self.set_combo_index(self.cbo_reservoirs, reservoirs_lay_id)
-        self.set_combo_index(self.cbo_sources, sources_lay_id)
+        self.set_combo_index(self.cbo_tanks, tanks_lay_id)
         self.set_combo_index(self.cbo_valves, valves_lay_id)
 
         self.set_combo_index(self.cbo_dem, dem_lay_id)

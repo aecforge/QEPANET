@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import Qt, QTimer
 from PyQt4.QtGui import QCursor, QColor
-from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand, QgsMapCanvasSnapper
+from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 from qgis.core import QgsPoint, QgsRaster, QgsVectorLayer, QgsProject, QgsSnapper, QgsTolerance, QGis,\
     QgsFeatureRequest, QgsFeature, QgsGeometry, QgsVectorLayerEditUtils, QgsVectorDataProvider
-import qgis
 from ..geo_utils import utils as geo_utils
 from ..geo_utils import vector_utils as vutils
+from ..parameters import Parameters
+from network_handling import LinkHandler, NodeHandler, NetworkUtils
 
 
 class MoveNodeTool(QgsMapTool):
@@ -19,14 +20,9 @@ class MoveNodeTool(QgsMapTool):
         self.data_dock = data_dock
         """:type : DataDock"""
 
-        # This is for snapping:
-        self.nodes_vlay_id = geo_utils.LayerUtils.get_lay_id('nodes')  # TODO: softocode
-        self.nodes_vlay = geo_utils.LayerUtils.get_lay_from_id(self.nodes_vlay_id)
-        self.pipes_vlay_id = geo_utils.LayerUtils.get_lay_id('pipes')  # TODO: softcode
-        self.pipes_vlay = geo_utils.LayerUtils.get_lay_from_id(self.pipes_vlay_id)
-
         self.vertex_marker = QgsVertexMarker(self.canvas())
         self.mouse_clicked = False
+        self.snapper = None
         self.snapped_feat_id = None
         self.selected_node_ft = None
         self.mouse_pt = None
@@ -34,6 +30,8 @@ class MoveNodeTool(QgsMapTool):
         self.rubber_bands_d = {}
 
         self.adj_pipes_fts_d = {}
+
+        self.snapped_feat_id = None
 
     def canvasPressEvent(self, event):
 
@@ -46,15 +44,15 @@ class MoveNodeTool(QgsMapTool):
         if event.button() == Qt.LeftButton:
             self.mouse_clicked = True
             request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
-            list = [feat for feat in self.nodes_vlay.getFeatures(request)]
-            self.selected_node_ft = QgsFeature(list[0])
+            junctions_list = [feat for feat in Parameters.junctions_vlay.getFeatures(request)]
+            self.selected_node_ft = QgsFeature(junctions_list[0])
 
             selected_node_ft_eid = self.selected_node_ft.attribute('id')  # TODO: softcode
 
             # Find links that start or end in selected point
             expression = u'"start_node" = \'' + selected_node_ft_eid + '\' or "end_node" = \'' + selected_node_ft_eid + '\'' # TODO: softcode
             request = QgsFeatureRequest().setFilterExpression(expression)
-            adjacent_pipes_fts = self.pipes_vlay.getFeatures(request)
+            adjacent_pipes_fts = Parameters.pipes_vlay.getFeatures(request) # TODO: Add other node types
 
             rb_index = 0
             for adjacent_pipes_ft in adjacent_pipes_fts:
@@ -84,8 +82,7 @@ class MoveNodeTool(QgsMapTool):
 
         if not self.mouse_clicked:
             # Mouse not clicked: snapping to closest vertex
-            snapper = QgsMapCanvasSnapper(self.canvas())
-            (retval, result) = snapper.snapToCurrentLayer(event.pos(), QgsSnapper.SnapToVertex, -1)
+            (retval, result) = self.snapper.snapPoint(event.pos())
 
             if len(result) > 0:
 
@@ -126,32 +123,32 @@ class MoveNodeTool(QgsMapTool):
             if self.selected_node_ft.id() is not None:
 
                 # Update node geometry
-                self.nodes_vlay.beginEditCommand("Update node geometry")
-                caps = self.nodes_vlay.dataProvider().capabilities()
+                Parameters.junctions_vlay.beginEditCommand("Update node geometry")
+                caps = Parameters.junctions_vlay.dataProvider().capabilities()
                 if caps & QgsVectorDataProvider.ChangeGeometries:
-                    edit_utils = QgsVectorLayerEditUtils(self.nodes_vlay)
+                    edit_utils = QgsVectorLayerEditUtils(Parameters.junctions_vlay)
                     edit_utils.moveVertex(
                             self.mouse_pt.x(),
                             self.mouse_pt.y(),
                             self.selected_node_ft.id(),
                             0)
-                    self.refresh_layer(self.nodes_vlay)
-                self.nodes_vlay.endEditCommand()
+                    self.refresh_layer(Parameters.junctions_vlay)
+                    Parameters.junctions_vlay.endEditCommand()
 
                 # Update links geometries
-                self.pipes_vlay.beginEditCommand("Update pipes geometry")
-                caps = self.pipes_vlay.dataProvider().capabilities()
+                Parameters.pipes_vlay.beginEditCommand("Update pipes geometry")
+                caps = Parameters.pipes_vlay.dataProvider().capabilities()
                 if caps & QgsVectorDataProvider.ChangeGeometries:
                     for feat, vertex_index in self.adj_pipes_fts_d.iteritems():
-                        edit_utils = QgsVectorLayerEditUtils(self.pipes_vlay)
+                        edit_utils = QgsVectorLayerEditUtils(Parameters.pipes_vlay)
                         edit_utils.moveVertex(
                                 self.mouse_pt.x(),
                                 self.mouse_pt.y(),
                                 feat.id(),
                                 vertex_index)
 
-                    self.refresh_layer(self.pipes_vlay)
-                self.pipes_vlay.endEditCommand()
+                    self.refresh_layer(Parameters.pipes_vlay)
+                    Parameters.pipes_vlay.endEditCommand()
                 self.adj_pipes_fts_d.clear()
 
     def activate(self):
@@ -160,12 +157,10 @@ class MoveNodeTool(QgsMapTool):
         cursor.setShape(Qt.ArrowCursor)
         self.iface.mapCanvas().setCursor(cursor)
 
-        QgsProject.instance().setSnapSettingsForLayer(self.nodes_vlay_id,
-                                                      True,
-                                                      QgsSnapper.SnapToVertex,
-                                                      QgsTolerance.MapUnits,
-                                                      100,
-                                                      True)
+        snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
+        # TODO: remaining layers
+
+        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions], self.iface.mapCanvas)
 
     def deactivate(self):
         pass

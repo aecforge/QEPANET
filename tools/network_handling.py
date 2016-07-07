@@ -1,7 +1,8 @@
 from PyQt4.QtCore import QPyNullVariant
 
-from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider
-from ..network import Node, Pipe
+from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance
+from qgis.gui import QgsMessageBar
+from ..network import Junction, Pipe
 from ..geo_utils.points_along_line import PointsAlongLineGenerator
 from ..parameters import Parameters
 from collections import OrderedDict
@@ -15,19 +16,19 @@ class NodeHandler:
         pass
 
     @staticmethod
-    def create_new_node(nodes_vlay, node, eid, elev):
+    def create_new_junction(junctions_vlay, node, eid, elev):
 
-        nodes_caps = nodes_vlay.dataProvider().capabilities()
+        nodes_caps = junctions_vlay.dataProvider().capabilities()
         if nodes_caps and QgsVectorDataProvider.AddFeatures:
 
             # New stand-alone node
-            nodes_vlay.beginEditCommand("Add node")
-            new_node_ft = QgsFeature(nodes_vlay.pendingFields())
-            new_node_ft.setAttribute(Node.field_name_eid, eid)
-            new_node_ft.setAttribute(Node.field_name_elevation, elev)
-            new_node_ft.setGeometry(QgsGeometry.fromPoint(node))
-            nodes_vlay.addFeatures([new_node_ft])
-            nodes_vlay.endEditCommand()
+            junctions_vlay.beginEditCommand("Add node")
+            new_junct_feat = QgsFeature(junctions_vlay.pendingFields())
+            new_junct_feat.setAttribute(Junction.field_name_eid, eid)
+            new_junct_feat.setAttribute(Junction.field_name_elevation, elev)
+            new_junct_feat.setGeometry(QgsGeometry.fromPoint(node))
+            junctions_vlay.addFeatures([new_junct_feat])
+            junctions_vlay.endEditCommand()
 
 
 class LinkHandler:
@@ -43,21 +44,25 @@ class LinkHandler:
             # Calculate 3D length
             length_3d = LinkHandler.calc_3d_length(pipe_geom)
 
-            # Get end_node and start_node
+            # Get end_node and start_node # TODO
 
-            # pipes_vlay.beginEditCommand("Add new pipes")
-            # new_pipe_ft_1 = QgsFeature(pipes_vlay.pendingFields())
-            # new_pipe_ft_1.setAttribute(Pipe.field_name_eid, eid)
+            pipes_vlay.beginEditCommand("Add new pipes")
+            new_pipe_ft = QgsFeature(pipes_vlay.pendingFields())
+            new_pipe_ft.setAttribute(Pipe.field_name_eid, eid)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_demand, demand)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_diameter, diameter)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_end_node, end_node)
-            # new_pipe_ft_1.setAttribute(Pipe.field_name_length, length)
+            new_pipe_ft.setAttribute(Pipe.field_name_length, length_3d)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_loss, loss)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_roughness, roughness)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_start_node, start_node)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_status, status)
-            # new_pipe_ft_1.setGeometry(ls_geom)
-            # pipes_vlay.endEditCommand()
+            new_pipe_ft.setGeometry(pipe_geom)
+
+            print pipe_geom.exportToWkt()
+            pipes_vlay.addFeatures([new_pipe_ft])
+
+            pipes_vlay.endEditCommand()
 
     @staticmethod
     def calc_3d_length(pipe_geom):
@@ -67,23 +72,25 @@ class LinkHandler:
 
         distance_elev_od = OrderedDict()
 
+        # Start node
         start_add = 0
         if start_node_ft is not None:
-            start_node_elev = start_node_ft.attribute(Node.field_name_elevation)
-            if type(start_node_elev) is QPyNullVariant:
+            start_node_elev = start_node_ft.attribute(Junction.field_name_elevation)
+            if start_node_elev is None or type(start_node_elev) is QPyNullVariant:
                 start_node_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, start_node_ft.geometry().asPoint(), 0)
-            start_node_depth = start_node_ft.attribute(Node.field_name_depth)
-            if type(start_node_depth) is QPyNullVariant:
+            start_node_depth = start_node_ft.attribute(Junction.field_name_depth)
+            if start_node_depth is None or type(start_node_depth) is QPyNullVariant:
                 start_node_depth = 0
             start_add = 1
 
+        # End node
         end_remove = 0
         if end_node_ft is not None:
-            end_node_elev = end_node_ft.attribute(Node.field_name_elevation)
-            if type(end_node_elev) is QPyNullVariant:
+            end_node_elev = end_node_ft.attribute(Junction.field_name_elevation)
+            if end_node_elev is None or type(end_node_elev) is QPyNullVariant:
                 end_node_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, end_node_ft.geometry().asPoint(), 0)
-            end_node_depth = end_node_ft.attribute(Node.field_name_depth)
-            if type(end_node_depth) is QPyNullVariant:
+            end_node_depth = end_node_ft.attribute(Junction.field_name_depth)
+            if end_node_depth is None or type(end_node_depth) is QPyNullVariant:
                 end_node_depth = 0
             end_remove = 1
 
@@ -124,7 +131,7 @@ class NetworkUtils:
         end_node_ft = None
 
         # Search among nodes
-        nodes_vlay = Parameters.nodes_vlay # TODO: add other point layers
+        nodes_vlay = Parameters.junctions_vlay # TODO: add other point layers
         nodes_feats = nodes_vlay.getFeatures()
         if nodes_feats is None == 0:
             return [None, None]
@@ -144,3 +151,41 @@ class NetworkUtils:
 
         # Search among sources
         # TODO
+
+    @staticmethod
+    def find_next_id(vlay):
+        features = vlay.getFeatures()
+        prefix = None
+        max_eid = -1
+        for feat in features:
+            eid = feat.attribute(Junction.field_name_eid)
+            prefix = eid[0]
+            eid_val = int(eid[1:len(eid)])
+            max_eid = max(max_eid, eid_val)
+
+        max_eid += 1
+        max_eid = max(max_eid, 1)
+        return prefix + str(max_eid)
+
+    @staticmethod
+    def set_up_snap_layer(vlayer, tolerance=None, snapping_type=QgsSnapper.SnapToVertex):
+
+        snap_layer = QgsSnapper.SnapLayer()
+        snap_layer.mLayer = vlayer
+
+        if tolerance is None or tolerance < 0:
+            (a, b, c, d, tolerance, f) = QgsProject.instance().snapSettingsForLayer(vlayer.id())
+            snap_layer.mTolerance = tolerance
+        else:
+            snap_layer.mTolerance = tolerance
+
+        snap_layer.mUnitType = QgsTolerance.MapUnits
+        snap_layer.mSnapTo = snapping_type
+        return snap_layer
+
+    @staticmethod
+    def set_up_snapper(snap_layers, map_canvas):
+        snapper = QgsSnapper(map_canvas.mapSettings())
+        snapper.setSnapLayers(snap_layers)
+        snapper.setSnapMode(QgsSnapper.SnapWithOneResult)
+        return snapper
