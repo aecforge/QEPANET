@@ -93,6 +93,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QgsMapLayerRegistry.instance().layerRemoved.connect(self.update_layers_combos)
 
         self.update_layers_combos()
+        self.update_patterns_combo()
 
         if self.cbo_junctions.count() >= 0:
             layer_id = self.cbo_junctions.itemData(self.cbo_junctions.currentIndex())
@@ -116,6 +117,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         if self.cbo_dem.count() >= 0:
             layer_id = self.cbo_dem.itemData(0)
             Parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+
+
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -253,6 +256,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.set_combo_index(self.cbo_valves, valves_lay_id)
 
         self.set_combo_index(self.cbo_dem, dem_lay_id)
+
+    def update_patterns_combo(self):
+        self.cbo_node_pattern.clear()
+        for value in Parameters.patterns['names'].itervalues():
+            self.cbo_node_pattern.addItem(value)
 
     def set_combo_index(self, combo, layer_id):
         index = combo.findData(layer_id)

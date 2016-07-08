@@ -17,6 +17,8 @@ class Parameters:
 
     dem_rlay = None
 
+    patterns = {}
+
     config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config_file_name)
 
     def __init__(self):

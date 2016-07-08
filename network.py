@@ -1,11 +1,14 @@
 class Tables:
+
+    pipes_table_name = 'pipes'
+    junctions_table_name = 'junctions'
+    reservoirs_table_name = 'reservoirs'
+    sources_table_name = 'sources'
+    pumps_table_name = 'pumps'
+    valves_table_name = 'valves'
+
     def __init__(self):
-        self.pipes_table_name = 'pipes'
-        self.junctions_table_name = 'junctions'
-        self.reservoirs_table_name = 'reservoirs'
-        self.sources_table_name = 'sources'
-        self.pumps_table_name = 'pumps'
-        self.valves_table_name = 'valves'
+        pass
 
 
 class Junction:

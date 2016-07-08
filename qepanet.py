@@ -23,6 +23,7 @@
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
 from PyQt4.QtGui import QAction, QIcon, QMessageBox, QFileDialog
 from parameters import Parameters, ConfigFile
+from tools.inp_file import InpFile
 
 # Initialize Qt resources from file resources.py
 import resources
@@ -217,7 +218,8 @@ class QEpanet:
             QMessageBox.critical(
                 self.iface.mainWindow(),
                 Parameters.plug_in_name,
-                u'The config.ini file was not found. It should be located inside the plugin directory. Please refer to the plugin documentation to solve the problem.',
+                u'The config.ini file was not found. It should be located inside the plugin directory. Please refer to'
+                u'the plugin documentation to solve the problem.',
                 QMessageBox.Ok)
 
             return
@@ -238,11 +240,16 @@ class QEpanet:
                 None,
                 'Patterns files (*.txt)')
 
-        if patterns_file_path is None or patterns_file_path == '':
-            return
-        else:
-            # Save patterns file path in configuration file
-            config_file.set_patterns_file_path(patterns_file_path)
+            if patterns_file_path is None or patterns_file_path == '':
+                return
+            else:
+                # Save patterns file path in configuration file
+                config_file.set_patterns_file_path(patterns_file_path)
+
+        # Read patterns
+        (pattern_names, patterns) = InpFile.read_patterns(patterns_file_path)
+        Parameters.patterns['names'] = pattern_names
+        Parameters.patterns['patterns'] = patterns
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
