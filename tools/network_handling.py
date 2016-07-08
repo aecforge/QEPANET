@@ -16,7 +16,7 @@ class NodeHandler:
         pass
 
     @staticmethod
-    def create_new_junction(junctions_vlay, node, eid, elev):
+    def create_new_junction(junctions_vlay, node, eid, elev, demand, depth, pattern):
 
         nodes_caps = junctions_vlay.dataProvider().capabilities()
         if nodes_caps and QgsVectorDataProvider.AddFeatures:
@@ -26,6 +26,9 @@ class NodeHandler:
             new_junct_feat = QgsFeature(junctions_vlay.pendingFields())
             new_junct_feat.setAttribute(Junction.field_name_eid, eid)
             new_junct_feat.setAttribute(Junction.field_name_elevation, elev)
+            new_junct_feat.setAttribute(Junction.field_name_demand, demand)
+            new_junct_feat.setAttribute(Junction.field_name_depth, depth)
+            new_junct_feat.setAttribute(Junction.field_name_pattern, pattern)
             new_junct_feat.setGeometry(QgsGeometry.fromPoint(node))
             junctions_vlay.addFeatures([new_junct_feat])
             junctions_vlay.endEditCommand()
@@ -44,22 +47,17 @@ class LinkHandler:
             # Calculate 3D length
             length_3d = LinkHandler.calc_3d_length(pipe_geom)
 
-            # Get end_node and start_node # TODO
-
             pipes_vlay.beginEditCommand("Add new pipes")
             new_pipe_ft = QgsFeature(pipes_vlay.pendingFields())
             new_pipe_ft.setAttribute(Pipe.field_name_eid, eid)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_demand, demand)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_diameter, diameter)
-            # new_pipe_ft_1.setAttribute(Pipe.field_name_end_node, end_node)
             new_pipe_ft.setAttribute(Pipe.field_name_length, length_3d)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_loss, loss)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_roughness, roughness)
-            # new_pipe_ft_1.setAttribute(Pipe.field_name_start_node, start_node)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_status, status)
             new_pipe_ft.setGeometry(pipe_geom)
 
-            print pipe_geom.exportToWkt()
             pipes_vlay.addFeatures([new_pipe_ft])
 
             pipes_vlay.endEditCommand()

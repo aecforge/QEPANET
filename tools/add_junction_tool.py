@@ -87,12 +87,23 @@ class AddJunctionTool(QgsMapTool):
 
             nodes_caps = Parameters.junctions_vlay.dataProvider().capabilities()
             pipes_caps = Parameters.pipes_vlay.dataProvider().capabilities()
-            if nodes_caps and pipes_caps and QgsVectorDataProvider.AddFeatures and QgsVectorDataProvider.DeleteFeatures:
 
+            demand = float(self.data_dock.txt_node_demand.text())
+            depth = float(self.data_dock.txt_node_depth.text())
+            pattern = self.data_dock.cbo_node_pattern.currentText()
+
+            if nodes_caps and pipes_caps and QgsVectorDataProvider.AddFeatures and QgsVectorDataProvider.DeleteFeatures:
                 if self.snapped_feat_id is None:
 
                     # New stand-alone node
-                    NodeHandler.create_new_junction(Parameters.junctions_vlay, self.mouse_pt, node_eid, self.elev)
+                    NodeHandler.create_new_junction(
+                            Parameters.junctions_vlay,
+                            self.mouse_pt,
+                            node_eid,
+                            self.elev,
+                            demand,
+                            depth,
+                            pattern)
 
                 else:
 
@@ -146,13 +157,13 @@ class AddJunctionTool(QgsMapTool):
     def activate(self):
 
         snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay)
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
         # TODO: remaining layers
 
-        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas)
+        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
 
     def deactivate(self):
-        pass
+        self.data_dock.btn_add_junction.setChecked(False)
 
     def isZoomTool(self):
         return False

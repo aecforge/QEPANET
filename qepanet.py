@@ -21,7 +21,9 @@
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
-from PyQt4.QtGui import QAction, QIcon
+from PyQt4.QtGui import QAction, QIcon, QMessageBox, QFileDialog
+from parameters import Parameters, ConfigFile
+
 # Initialize Qt resources from file resources.py
 import resources
 
@@ -209,6 +211,38 @@ class QEpanet:
 
     def run(self):
         """Run method that loads and starts the plugin"""
+
+        # Check for parameters file existance
+        if not os.path.exists(Parameters.config_file_path):
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                Parameters.plug_in_name,
+                u'The config.ini file was not found. It should be located inside the plugin directory. Please refer to the plugin documentation to solve the problem.',
+                QMessageBox.Ok)
+
+            return
+
+        # Read patterns path
+        config_file = ConfigFile(Parameters.config_file_path)
+        patterns_file_path = config_file.get_patterns_file_path()
+        if patterns_file_path is None or patterns_file_path == '':
+            QMessageBox.warning(
+                self.iface.mainWindow(),
+                Parameters.plug_in_name,
+                u'The patterns file not set. Please select it in the next dialog.',
+                QMessageBox.Ok)
+
+            patterns_file_path = QFileDialog.getOpenFileName(
+                self.iface.mainWindow(),
+                'Select patterns file',
+                None,
+                'Patterns files (*.txt)')
+
+        if patterns_file_path is None or patterns_file_path == '':
+            return
+        else:
+            # Save patterns file path in configuration file
+            config_file.set_patterns_file_path(patterns_file_path)
 
         if not self.pluginIsActive:
             self.pluginIsActive = True

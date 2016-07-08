@@ -72,20 +72,6 @@
               <property name="margin">
                <number>0</number>
               </property>
-              <item row="1" column="1">
-               <widget class="QPushButton" name="btn_add_pipe">
-                <property name="text">
-                 <string>Add pipe</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QPushButton" name="btn_add_junction">
-                <property name="text">
-                 <string>Add junction</string>
-                </property>
-               </widget>
-              </item>
               <item row="2" column="0">
                <widget class="QPushButton" name="btn_add_reservoir">
                 <property name="text">
@@ -114,6 +100,13 @@
                 </property>
                </widget>
               </item>
+              <item row="4" column="1">
+               <widget class="QPushButton" name="btn_move_link">
+                <property name="text">
+                 <string>Move link</string>
+                </property>
+               </widget>
+              </item>
               <item row="4" column="0">
                <widget class="QPushButton" name="btn_move_node">
                 <property name="text">
@@ -121,10 +114,20 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="1">
-               <widget class="QPushButton" name="btn_move_link">
+              <item row="1" column="1">
+               <widget class="QPushButton" name="btn_add_pipe">
                 <property name="text">
-                 <string>Move link</string>
+                 <string>Add pipe</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QPushButton" name="btn_add_junction">
+                <property name="text">
+                 <string>Add junction</string>
+                </property>
+                <property name="checkable">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -160,7 +163,7 @@
            <item>
             <widget class="QToolBox" name="tbx_elements">
              <property name="currentIndex">
-              <number>0</number>
+              <number>1</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="sizePolicy">
@@ -266,27 +269,51 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>236</width>
-                <height>69</height>
+                <width>219</width>
+                <height>90</height>
                </rect>
               </property>
               <attribute name="label">
                <string>Junctions properties</string>
               </attribute>
-              <layout class="QHBoxLayout" name="horizontalLayout">
-               <item>
+              <layout class="QGridLayout" name="gridLayout_4">
+               <item row="1" column="0">
                 <widget class="QLabel" name="lbl_node_depth">
                  <property name="text">
                   <string>Depth [m]:</string>
                  </property>
                 </widget>
                </item>
-               <item>
-                <widget class="QLineEdit" name="txt_node_depth_val">
+               <item row="0" column="2">
+                <widget class="QLineEdit" name="txt_node_demand">
                  <property name="text">
                   <string>0</string>
                  </property>
                 </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLineEdit" name="txt_node_depth">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="lbl_node_demand">
+                 <property name="text">
+                  <string>Demand [?]:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="lbl_node_pattern">
+                 <property name="text">
+                  <string>Pattern:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="2">
+                <widget class="QComboBox" name="cbo_node_pattern"/>
                </item>
               </layout>
              </widget>

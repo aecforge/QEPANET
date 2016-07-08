@@ -54,7 +54,18 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.setupUi(self)
         self.iface = iface
 
-        # Buttons
+        # Buttons, set checkable
+        self.btn_add_junction.setCheckable(True)
+        self.btn_add_reservoir.setCheckable(True)
+        self.btn_add_tank.setCheckable(True)
+        self.btn_add_pipe.setCheckable(True)
+        self.btn_add_pump.setCheckable(True)
+        self.btn_add_valve.setCheckable(True)
+
+        self.btn_move_node.setCheckable(True)
+        self.btn_move_link.setCheckable(True)
+
+        # Buttons, set actions
         QtCore.QObject.connect(self.btn_add_junction, QtCore.SIGNAL('pressed()'), self.add_junction)
         QtCore.QObject.connect(self.btn_add_reservoir, QtCore.SIGNAL('pressed()'), self.add_reservoir)
         QtCore.QObject.connect(self.btn_add_tank, QtCore.SIGNAL('pressed()'), self.add_tank)
@@ -152,6 +163,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def move_link(self):
         pass
 
+    # TODO: update snappers in all the tools that use snapping
     def cbo_junctions_activated(self, index):
         layer_id = self.cbo_junctions.itemData(index)
         Parameters.junctions_vlay = utils.LayerUtils.get_lay_from_id(layer_id)

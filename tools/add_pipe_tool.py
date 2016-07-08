@@ -49,7 +49,8 @@ class AddPipeTool(QgsMapTool):
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
         last_ix = self.rubber_band.numberOfVertices()
-        self.rubber_band.movePoint(last_ix - 1, self.mouse_pt)
+
+        self.rubber_band.movePoint(last_ix - 1, (self.snapped_vertex if self.snapped_vertex is not None else self.mouse_pt))
 
         dem_lay = Parameters.dem_rlay
         identify_dem = dem_lay.dataProvider().identify(self.mouse_pt, QgsRaster.IdentifyFormatValue)
@@ -79,6 +80,7 @@ class AddPipeTool(QgsMapTool):
         else:
 
             # It's a new, isolated pipe
+            self.snapped_vertex = None
             self.snapped_feat_id = None
             self.vertex_marker.hide()
 
@@ -89,9 +91,9 @@ class AddPipeTool(QgsMapTool):
         if event.button() == Qt.LeftButton:
 
             # Update rubber bands
-            self.rubber_band.addPoint(self.mouse_pt, True)
+            self.rubber_band.addPoint((self.snapped_vertex if self.snapped_vertex is not None else self.mouse_pt), True)
             if self.first_click:
-                self.rubber_band.addPoint(self.mouse_pt, True)
+                self.rubber_band.addPoint((self.snapped_vertex if self.snapped_vertex is not None else self.mouse_pt), True)
 
             # Create new node
             self.first_click = not self.first_click
@@ -123,10 +125,10 @@ class AddPipeTool(QgsMapTool):
     def activate(self):
 
         snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay)
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
         # TODO: remaining layers
 
-        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas)
+        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
 
         # QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
         #                                               True,
@@ -137,6 +139,7 @@ class AddPipeTool(QgsMapTool):
 
     def deactivate(self):
         self.rubber_band.reset()
+        self.data_dock.btn_add_pipe.setChecked(False)
 
     def isZoomTool(self):
         return False

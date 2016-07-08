@@ -160,10 +160,11 @@ class MoveNodeTool(QgsMapTool):
         snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
         # TODO: remaining layers
 
-        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions], self.iface.mapCanvas)
+        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions], self.iface.mapCanvas())
 
     def deactivate(self):
-        pass
+        self.rubber_bands_d.clear()
+        self.data_dock.btn_move_node.setChecked(False)
 
     def isZoomTool(self):
         return False
