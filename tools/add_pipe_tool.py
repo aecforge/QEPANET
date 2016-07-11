@@ -108,11 +108,22 @@ class AddPipeTool(QgsMapTool):
                 pipe_band_geom = self.rubber_band.asGeometry()
 
                 pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')
+
+                demand = float(self.data_dock.txt_pipe_demand.text())
+                diameter = float(self.data_dock.txt_pipe_diameter.text())
                 loss = float(self.data_dock.txt_pipe_loss.text())
-                roughness = self.data_dock.lbl_pipe_roughness_val_val
+                roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
                 status = self.data_dock.cbo_pipe_status.currentText()
 
-                LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, 0, 0, loss, roughness, status, pipe_band_geom.asPolyline(), Parameters.dem_rlay)
+                LinkHandler.create_new_pipe(
+                    Parameters.pipes_vlay,
+                    pipe_eid,
+                    demand,
+                    diameter,
+                    loss,
+                    roughness,
+                    status,
+                    pipe_band_geom.asPolyline())
                 self.rubber_band.reset()
 
                 # Create start and end junctions

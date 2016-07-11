@@ -39,7 +39,7 @@ class LinkHandler:
         pass
 
     @staticmethod
-    def create_new_pipe(pipes_vlay, eid, demand, diameter, loss, roughness, status, nodes, dem_rlayer):
+    def create_new_pipe(pipes_vlay, eid, demand, diameter, loss, roughness, status, nodes):
 
         pipes_caps = pipes_vlay.dataProvider().capabilities()
         if pipes_caps and QgsVectorDataProvider.AddFeatures:
@@ -52,10 +52,10 @@ class LinkHandler:
             pipes_vlay.beginEditCommand("Add new pipes")
             new_pipe_ft = QgsFeature(pipes_vlay.pendingFields())
             new_pipe_ft.setAttribute(Pipe.field_name_eid, eid)
-            # new_pipe_ft_1.setAttribute(Pipe.field_name_demand, demand)
-            # new_pipe_ft_1.setAttribute(Pipe.field_name_diameter, diameter)
+            new_pipe_ft.setAttribute(Pipe.field_name_demand, demand)
+            new_pipe_ft.setAttribute(Pipe.field_name_diameter, diameter)
             new_pipe_ft.setAttribute(Pipe.field_name_length, length_3d)
-            # new_pipe_ft_1.setAttribute(Pipe.field_name_loss, loss)
+            new_pipe_ft.setAttribute(Pipe.field_name_loss, loss)
             new_pipe_ft.setAttribute(Pipe.field_name_roughness, roughness)
             new_pipe_ft.setAttribute(Pipe.field_name_status, status)
             new_pipe_ft.setGeometry(pipe_geom)
