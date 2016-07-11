@@ -277,6 +277,8 @@ def read_layer_val_from_coord(ras_layer, coordinate, band):
     identify_dem = ras_layer.dataProvider().identify(coordinate, QgsRaster.IdentifyFormatValue)
     if identify_dem is not None and identify_dem.isValid() and identify_dem.results().get(1) is not None:
         return identify_dem.results().get(band)
+    else:
+        return None
 
 class FormattedRasterStats:
 

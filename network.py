@@ -3,7 +3,7 @@ class Tables:
     pipes_table_name = 'pipes'
     junctions_table_name = 'junctions'
     reservoirs_table_name = 'reservoirs'
-    sources_table_name = 'sources'
+    tanks_table_name = 'tanks'
     pumps_table_name = 'pumps'
     valves_table_name = 'valves'
 

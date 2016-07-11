@@ -8,6 +8,7 @@ from qgis.core import QgsPoint, QgsRaster, QgsVectorLayer, QgsProject, QgsSnappe
 from ..geo_utils import utils as geo_utils
 from ..parameters import Parameters
 from ..network import Junction, Pipe
+from ..geo_utils import raster_utils
 from network_handling import LinkHandler, NodeHandler, NetworkUtils
 
 
@@ -41,10 +42,10 @@ class AddJunctionTool(QgsMapTool):
 
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
-        dem_lay = Parameters.dem_rlay
-        identify_dem = dem_lay.dataProvider().identify(self.mouse_pt, QgsRaster.IdentifyFormatValue)
-        if identify_dem is not None and identify_dem.isValid() and identify_dem.results().get(1) is not None:
-            self.elev = identify_dem.results().get(1)
+        elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, self.mouse_pt, 1)
+
+        if elev is not None:
+            self.elev = elev
             self.data_dock.lbl_elev_val.setText("{0:.2f}".format(self.elev))
 
         if not self.mouse_clicked:
@@ -83,7 +84,7 @@ class AddJunctionTool(QgsMapTool):
             self.mouse_clicked = False
 
             # Find first available ID for Nodes
-            node_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'N')
+            node_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: softcode
 
             nodes_caps = Parameters.junctions_vlay.dataProvider().capabilities()
             pipes_caps = Parameters.pipes_vlay.dataProvider().capabilities()
@@ -93,9 +94,10 @@ class AddJunctionTool(QgsMapTool):
             pattern = self.data_dock.cbo_node_pattern.currentText()
 
             if nodes_caps and pipes_caps and QgsVectorDataProvider.AddFeatures and QgsVectorDataProvider.DeleteFeatures:
+
+                # No links snapped: create a new stand-alone node
                 if self.snapped_feat_id is None:
 
-                    # New stand-alone node
                     NodeHandler.create_new_junction(
                         Parameters.junctions_vlay,
                         self.mouse_pt,
@@ -105,13 +107,10 @@ class AddJunctionTool(QgsMapTool):
                         depth,
                         pattern)
 
+                # A link has been snapped
                 else:
 
-                    # Snapped on endline: just add node
-                    # TODO
-
-                    # Snapped along line: split line
-                    Parameters.pipes_vlay.beginEditCommand("Add new pipes")
+                    Parameters.junctions_vlay.beginEditCommand("Add new node")
 
                     # New node on existing line
                     NodeHandler.create_new_junction(
@@ -123,49 +122,55 @@ class AddJunctionTool(QgsMapTool):
                         depth,
                         pattern)
 
+                    Parameters.junctions_vlay.endEditCommand()
+
                     # Get the snapped feature
                     request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
-                    feats = [feat for feat in Parameters.pipes_vlay.getFeatures(request)]
-                    snapped_pipe = QgsFeature(feats[0])
+                    feats = list(Parameters.pipes_vlay.getFeatures(request))
+                    if len(feats) > 0:
+                        snapped_pipe = QgsFeature(feats[0])
 
-                    # Get vertex along line next to snapped point
-                    a, b, next_vertex = snapped_pipe.geometry().closestSegmentWithContext(self.snapped_vertex)
+                        LinkHandler.split_pipe(snapped_pipe, self.snapped_vertex)
 
-                    # Split only if vertex is not at line ends
-                    demand = snapped_pipe.attribute(Pipe.field_name_demand)
-                    p_diameter = snapped_pipe.attribute(Pipe.field_name_diameter)
-                    loss = snapped_pipe.attribute(Pipe.field_name_loss)
-                    roughness = snapped_pipe.attribute(Pipe.field_name_roughness)
-                    status = snapped_pipe.attribute(Pipe.field_name_status)
-
-                    if self.snapped_vertex_nr != 0:
-
-                        # Create two new linestrings
-                        nodes = snapped_pipe.geometry().asPolyline()
-
-                        # First new polyline
-                        pl1_pts = []
-                        for n in range(next_vertex):
-                            pl1_pts.append(QgsPoint(nodes[n].x(), nodes[n].y()))
-
-                        pl1_pts.append(QgsPoint(self.snapped_vertex.x(), self.snapped_vertex.y()))
-
-                        pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'J')
-                        LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, demand, p_diameter, loss, roughness, status, pl1_pts)
-
-                        # Second new polyline
-                        pl2_pts = []
-                        pl2_pts.append(QgsPoint(self.snapped_vertex.x(), self.snapped_vertex.y()))
-                        for n in range(len(nodes) - next_vertex):
-                            pl2_pts.append(QgsPoint(nodes[n + next_vertex].x(), nodes[n + next_vertex].y()))
-
-                        pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'J')
-                        LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, demand, p_diameter, loss, roughness, status, pl2_pts)
-
-                        # Delete old pipe
-                        Parameters.pipes_vlay.deleteFeature(snapped_pipe.id())
-
-                        Parameters.pipes_vlay.endEditCommand()
+                        # # Get vertex along line next to snapped point
+                        # a, b, next_vertex = snapped_pipe.geometry().closestSegmentWithContext(self.snapped_vertex)
+                        #
+                        # # Split only if vertex is not at line ends
+                        # demand = snapped_pipe.attribute(Pipe.field_name_demand)
+                        # p_diameter = snapped_pipe.attribute(Pipe.field_name_diameter)
+                        # loss = snapped_pipe.attribute(Pipe.field_name_loss)
+                        # roughness = snapped_pipe.attribute(Pipe.field_name_roughness)
+                        # status = snapped_pipe.attribute(Pipe.field_name_status)
+                        #
+                        # if self.snapped_vertex_nr != 0:
+                        #
+                        #     # Create two new linestrings
+                        #     Parameters.junctions_vlay.beginEditCommand("Add new node")
+                        #     nodes = snapped_pipe.geometry().asPolyline()
+                        #
+                        #     # First new polyline
+                        #     pl1_pts = []
+                        #     for n in range(next_vertex):
+                        #         pl1_pts.append(QgsPoint(nodes[n].x(), nodes[n].y()))
+                        #
+                        #     pl1_pts.append(QgsPoint(self.snapped_vertex.x(), self.snapped_vertex.y()))
+                        #
+                        #     pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'J') # TODO: softcode
+                        #     LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, demand, p_diameter, loss, roughness, status, pl1_pts)
+                        #
+                        #     # Second new polyline
+                        #     pl2_pts = []
+                        #     pl2_pts.append(QgsPoint(self.snapped_vertex.x(), self.snapped_vertex.y()))
+                        #     for n in range(len(nodes) - next_vertex):
+                        #         pl2_pts.append(QgsPoint(nodes[n + next_vertex].x(), nodes[n + next_vertex].y()))
+                        #
+                        #     pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'J') # TODO: softcode
+                        #     LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, demand, p_diameter, loss, roughness, status, pl2_pts)
+                        #
+                        #     # Delete old pipe
+                        #     Parameters.pipes_vlay.deleteFeature(snapped_pipe.id())
+                        #
+                        #     Parameters.pipes_vlay.endEditCommand()
 
     def activate(self):
 

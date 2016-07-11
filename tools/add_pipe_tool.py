@@ -7,7 +7,7 @@ from PyQt4.QtGui import QCursor, QColor
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand, QgsMessageBar
 from qgis.core import QgsPoint, QgsRaster, QgsVectorLayer, QgsProject, QgsSnapper, QgsTolerance, QGis,\
     QgsVectorDataProvider, QgsFeature, QgsGeometry, QgsFeatureRequest, QgsLineStringV2, QgsPointV2
-from ..geo_utils import utils as geo_utils
+from ..geo_utils import utils as geo_utils, raster_utils
 from ..parameters import Parameters
 from ..network import Junction, Pipe
 from network_handling import LinkHandler, NodeHandler, NetworkUtils
@@ -107,9 +107,9 @@ class AddPipeTool(QgsMapTool):
                 # Finalize line
                 pipe_band_geom = self.rubber_band.asGeometry()
 
-                pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')
+                pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P') # TODO: softcode
 
-                demand = float(self.data_dock.txt_pipe_demand.text())
+                j_demand = float(self.data_dock.txt_pipe_demand.text())
                 diameter = float(self.data_dock.txt_pipe_diameter.text())
                 loss = float(self.data_dock.txt_pipe_loss.text())
                 roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
@@ -118,7 +118,7 @@ class AddPipeTool(QgsMapTool):
                 LinkHandler.create_new_pipe(
                     Parameters.pipes_vlay,
                     pipe_eid,
-                    demand,
+                    j_demand,
                     diameter,
                     loss,
                     roughness,
@@ -126,9 +126,31 @@ class AddPipeTool(QgsMapTool):
                     pipe_band_geom.asPolyline())
                 self.rubber_band.reset()
 
-                # Create start and end junctions
+                # Create start and end node
+                nodes = pipe_band_geom.asPolyline()
 
+                start_node = nodes[0]
+                junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: sofcode
+                elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, start_node, 1)
+                depth = float(self.data_dock.txt_node_depth.text())
+                pattern = self.data_dock.cbo_node_pattern.currentText()
+                NodeHandler.create_new_junction(Parameters.junctions_vlay, start_node, junction_eid, elev, j_demand, depth,
+                                                pattern)
 
+                end_node = nodes[len(nodes) - 1]
+                junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: sofcode
+                elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, end_node, 1)
+                depth = float(self.data_dock.txt_node_depth.text())
+                pattern = self.data_dock.cbo_node_pattern.currentText()
+                NodeHandler.create_new_junction(Parameters.junctions_vlay, end_node, junction_eid, elev, j_demand, depth,
+                                                pattern)
+
+                # If end or start node intersects a pipe, split it
+                for line_ft in Parameters.pipes_vlay.getFeatures():
+                    if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(start_node)) < Parameters.tolerance:
+                        LinkHandler.split_pipe(line_ft, self.snapped_vertex)
+                    if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(end_node)) < Parameters.tolerance:
+                        LinkHandler.split_pipe(line_ft, self.snapped_vertex)
 
             except Exception as e:
                 self.rubber_band.reset()

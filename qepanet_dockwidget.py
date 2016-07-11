@@ -34,6 +34,7 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry
 import parameters
 from geo_utils import utils
 from parameters import Parameters
+from network import Tables
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qepanet_dockwidget_base.ui'))
@@ -124,6 +125,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QgsMapLayerRegistry.instance().layerRemoved.connect(self.update_layers_combos)
 
         self.update_layers_combos()
+        self.preselect_layers_combos()
         self.update_patterns_combo()
 
         if self.cbo_junctions.count() >= 0:
@@ -291,6 +293,22 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.set_combo_index(self.cbo_valves, valves_lay_id)
 
         self.set_combo_index(self.cbo_dem, dem_lay_id)
+
+    def preselect_layers_combos(self):
+
+        for layer_id in QgsMapLayerRegistry.instance().mapLayers():
+            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.junctions_table_name:
+                self.set_combo_index(self.cbo_junctions, layer_id)
+            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.pipes_table_name:
+                self.set_combo_index(self.cbo_pipes, layer_id)
+            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.pumps_table_name:
+                self.set_combo_index(self.cbo_pumps, layer_id)
+            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.reservoirs_table_name:
+                self.set_combo_index(self.cbo_reservoirs, layer_id)
+            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.tanks_table_name:
+                self.set_combo_index(self.cbo_tanks, Tables.tanks_table_name)
+            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.valves_table_name:
+                self.set_combo_index(self.cbo_valves, layer_id)
 
     def update_patterns_combo(self):
         self.cbo_node_pattern.clear()

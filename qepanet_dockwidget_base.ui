@@ -163,7 +163,7 @@
            <item>
             <widget class="QToolBox" name="tbx_elements">
              <property name="currentIndex">
-              <number>4</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">

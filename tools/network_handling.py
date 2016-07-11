@@ -1,6 +1,6 @@
 from PyQt4.QtCore import QPyNullVariant
 
-from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance
+from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance, QgsPoint
 from qgis.gui import QgsMessageBar
 from ..network import Junction, Pipe
 from ..geo_utils.points_along_line import PointsAlongLineGenerator
@@ -16,7 +16,7 @@ class NodeHandler:
         pass
 
     @staticmethod
-    def create_new_junction(junctions_vlay, node, eid, elev, demand, depth, pattern):
+    def create_new_junction(junctions_vlay, point, eid, elev, demand, depth, pattern):
 
         nodes_caps = junctions_vlay.dataProvider().capabilities()
         if nodes_caps and QgsVectorDataProvider.AddFeatures:
@@ -29,7 +29,7 @@ class NodeHandler:
             new_junct_feat.setAttribute(Junction.field_name_demand, demand)
             new_junct_feat.setAttribute(Junction.field_name_depth, depth)
             new_junct_feat.setAttribute(Junction.field_name_pattern, pattern)
-            new_junct_feat.setGeometry(QgsGeometry.fromPoint(node))
+            new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
             junctions_vlay.addFeatures([new_junct_feat])
             junctions_vlay.endEditCommand()
 
@@ -65,6 +65,49 @@ class LinkHandler:
             pipes_vlay.endEditCommand()
 
     @staticmethod
+    def split_pipe(pipe_feat, vertex):
+
+        # Get vertex along line next to snapped point
+        a, b, next_vertex = pipe_feat.geometry().closestSegmentWithContext(vertex)
+
+        # Split only if vertex is not at line ends
+        demand = pipe_feat.attribute(Pipe.field_name_demand)
+        p_diameter = pipe_feat.attribute(Pipe.field_name_diameter)
+        loss = pipe_feat.attribute(Pipe.field_name_loss)
+        roughness = pipe_feat.attribute(Pipe.field_name_roughness)
+        status = pipe_feat.attribute(Pipe.field_name_status)
+
+        # Create two new linestrings
+        Parameters.junctions_vlay.beginEditCommand("Add new node")
+        nodes = pipe_feat.geometry().asPolyline()
+
+        # First new polyline
+        pl1_pts = []
+        for n in range(next_vertex):
+            pl1_pts.append(QgsPoint(nodes[n].x(), nodes[n].y()))
+
+        pl1_pts.append(QgsPoint(vertex.x(), vertex.y()))
+
+        pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')  # TODO: softcode
+        LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, demand, p_diameter, loss, roughness, status,
+                                    pl1_pts)
+
+        # Second new polyline
+        pl2_pts = []
+        pl2_pts.append(QgsPoint(vertex.x(), vertex.y()))
+        for n in range(len(nodes) - next_vertex):
+            pl2_pts.append(QgsPoint(nodes[n + next_vertex].x(), nodes[n + next_vertex].y()))
+
+        pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')  # TODO: softcode
+        LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, demand, p_diameter, loss, roughness, status,
+                                    pl2_pts)
+
+        # Delete old pipe
+        Parameters.pipes_vlay.deleteFeature(pipe_feat.id())
+
+        Parameters.pipes_vlay.endEditCommand()
+
+    @staticmethod
     def calc_3d_length(pipe_geom):
 
         # Check whether start and end node exist
@@ -78,6 +121,9 @@ class LinkHandler:
             start_node_elev = start_node_ft.attribute(Junction.field_name_elevation)
             if start_node_elev is None or type(start_node_elev) is QPyNullVariant:
                 start_node_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, start_node_ft.geometry().asPoint(), 0)
+                if start_node_elev is None:
+                    start_node_elev = 0
+
             start_node_depth = start_node_ft.attribute(Junction.field_name_depth)
             if start_node_depth is None or type(start_node_depth) is QPyNullVariant:
                 start_node_depth = 0
@@ -89,21 +135,24 @@ class LinkHandler:
             end_node_elev = end_node_ft.attribute(Junction.field_name_elevation)
             if end_node_elev is None or type(end_node_elev) is QPyNullVariant:
                 end_node_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, end_node_ft.geometry().asPoint(), 0)
+                if end_node_elev is None:
+                    end_node_elev = 0
             end_node_depth = end_node_ft.attribute(Junction.field_name_depth)
             if end_node_depth is None or type(end_node_depth) is QPyNullVariant:
                 end_node_depth = 0
             end_remove = 1
 
         point_gen = PointsAlongLineGenerator(pipe_geom)
-        dists_and_points = point_gen.get_points_coords(100, False)  # TODO: Softcode
-
-        # TODO: calc depth for intermediate points
+        dists_and_points = point_gen.get_points_coords(100, False)  # TODO: Softcode the interval between points
 
         if start_node_ft is not None:
             distance_elev_od[0] = start_node_elev - start_node_depth
 
         for p in range(start_add, len(dists_and_points) - end_remove):
-            distance_elev_od[dists_and_points.keys()[p]] = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, dists_and_points.values()[p].asPoint(), 1)
+            elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, dists_and_points.values()[p].asPoint(), 1)
+            if elev is None:
+                elev = 0
+            distance_elev_od[dists_and_points.keys()[p]] = elev
 
         if end_node_ft is not None:
             distance_elev_od[pipe_geom.length()] = end_node_elev - end_node_depth

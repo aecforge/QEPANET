@@ -12,12 +12,14 @@ class Parameters:
     pipes_vlay = None
     pumps_vlay = None
     reservoirs_vlay = None
-    sources_vlay = None
+    tanks_vlay = None
     valves_vlay = None
 
     dem_rlay = None
 
     patterns = {}
+
+    tolerance = 1e-8
 
     config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config_file_name)
 
