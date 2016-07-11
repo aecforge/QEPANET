@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import sys, traceback
+
 from PyQt4.QtCore import Qt, QTimer
 from PyQt4.QtGui import QCursor, QColor
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand, QgsMessageBar
@@ -103,24 +105,24 @@ class AddPipeTool(QgsMapTool):
             try:
 
                 # Finalize line
-                rubber_band_geom = self.rubber_band.asGeometry()
+                pipe_band_geom = self.rubber_band.asGeometry()
 
-                pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay)
-                LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, 0, 0, 0, 0, 0, rubber_band_geom.asPolyline(), Parameters.dem_rlay)
+                pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')
+                loss = float(self.data_dock.txt_pipe_loss.text())
+                roughness = self.data_dock.lbl_pipe_roughness_val_val
+                status = self.data_dock.cbo_pipe_status.currentText()
+
+                LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, 0, 0, loss, roughness, status, pipe_band_geom.asPolyline(), Parameters.dem_rlay)
                 self.rubber_band.reset()
 
-                # Add start and end nodes
-                # Cases:
-                # 1a. Start point on existing node: do nothing
-                # 1b: Start point alone: add node
-                # 1c. Start point on line: split line and add node
-                # 2. Repeat for end node
+                # Create start and end junctions
 
 
 
             except Exception as e:
                 self.rubber_band.reset()
-                self.iface.messageBar().pushCritical('Cannot add new pipe to ' + Parameters.pipes_vlay.name() + ' layer', repr(e))
+                self.iface.messageBar().pushWarning('Cannot add new pipe to ' + Parameters.pipes_vlay.name() + ' layer', repr(e))
+                traceback.print_exc(file=sys.stdout)
 
     def activate(self):
 
@@ -129,13 +131,6 @@ class AddPipeTool(QgsMapTool):
         # TODO: remaining layers
 
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
-
-        # QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToSegment,
-        #                                               QgsTolerance.MapUnits,
-        #                                               100,
-        #                                               True)
 
     def deactivate(self):
         self.rubber_band.reset()

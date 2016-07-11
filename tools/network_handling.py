@@ -35,6 +35,8 @@ class NodeHandler:
 
 
 class LinkHandler:
+    def __init__(self):
+        pass
 
     @staticmethod
     def create_new_pipe(pipes_vlay, eid, demand, diameter, loss, roughness, status, nodes, dem_rlayer):
@@ -54,8 +56,8 @@ class LinkHandler:
             # new_pipe_ft_1.setAttribute(Pipe.field_name_diameter, diameter)
             new_pipe_ft.setAttribute(Pipe.field_name_length, length_3d)
             # new_pipe_ft_1.setAttribute(Pipe.field_name_loss, loss)
-            # new_pipe_ft_1.setAttribute(Pipe.field_name_roughness, roughness)
-            # new_pipe_ft_1.setAttribute(Pipe.field_name_status, status)
+            new_pipe_ft.setAttribute(Pipe.field_name_roughness, roughness)
+            new_pipe_ft.setAttribute(Pipe.field_name_status, status)
             new_pipe_ft.setGeometry(pipe_geom)
 
             pipes_vlay.addFeatures([new_pipe_ft])
@@ -151,14 +153,12 @@ class NetworkUtils:
         # TODO
 
     @staticmethod
-    def find_next_id(vlay):
+    def find_next_id(vlay, prefix):
         features = vlay.getFeatures()
-        prefix = None
         max_eid = -1
         for feat in features:
             eid = feat.attribute(Junction.field_name_eid)
-            prefix = eid[0]
-            eid_val = int(eid[1:len(eid)])
+            eid_val = int(eid[len(prefix):len(eid)])
             max_eid = max(max_eid, eid_val)
 
         max_eid += 1

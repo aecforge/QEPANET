@@ -83,7 +83,7 @@ class AddJunctionTool(QgsMapTool):
             self.mouse_clicked = False
 
             # Find first available ID for Nodes
-            node_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay)
+            node_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'N')
 
             nodes_caps = Parameters.junctions_vlay.dataProvider().capabilities()
             pipes_caps = Parameters.pipes_vlay.dataProvider().capabilities()
@@ -114,7 +114,14 @@ class AddJunctionTool(QgsMapTool):
                     Parameters.pipes_vlay.beginEditCommand("Add new pipes")
 
                     # New node on existing line
-                    NodeHandler.create_new_junction(Parameters.junctions_vlay, self.snapped_vertex, node_eid, self.elev)
+                    NodeHandler.create_new_junction(
+                            Parameters.junctions_vlay,
+                            self.snapped_vertex,
+                            node_eid,
+                            self.elev,
+                            demand,
+                            depth,
+                            pattern)
 
                     # Get the snapped feature
                     request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
@@ -125,6 +132,10 @@ class AddJunctionTool(QgsMapTool):
                     a, b, next_vertex = snapped_pipe.geometry().closestSegmentWithContext(self.snapped_vertex)
 
                     # Split only if vertex is not at line ends
+                    loss = snapped_pipe.attribute(Pipe.field_name_loss)
+                    roughness = snapped_pipe.attribute(Pipe.field_name_roughness)
+                    status = snapped_pipe.attribute(Pipe.field_name_status)
+
                     if self.snapped_vertex_nr != 0:
 
                         # Create two new linestrings
@@ -137,8 +148,8 @@ class AddJunctionTool(QgsMapTool):
 
                         pl1_pts.append(QgsPoint(self.snapped_vertex.x(), self.snapped_vertex.y()))
 
-                        pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay)
-                        LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, 0, 0, 0, 0, 0, pl1_pts, Parameters.dem_rlay)
+                        pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'J')
+                        LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, 0, 0, loss, roughness, status, pl1_pts, Parameters.dem_rlay)
 
                         # Second new polyline
                         pl2_pts = []
@@ -146,8 +157,8 @@ class AddJunctionTool(QgsMapTool):
                         for n in range(len(nodes) - next_vertex):
                             pl2_pts.append(QgsPoint(nodes[n + next_vertex].x(), nodes[n + next_vertex].y()))
 
-                        pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay)
-                        LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, 0, 0, 0, 0, 0, pl2_pts, Parameters.dem_rlay)
+                        pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'J')
+                        LinkHandler.create_new_pipe(Parameters.pipes_vlay, pipe_eid, 0, 0, loss, roughness, status, pl2_pts, Parameters.dem_rlay)
 
                         # Delete old pipe
                         Parameters.pipes_vlay.deleteFeature(snapped_pipe.id())

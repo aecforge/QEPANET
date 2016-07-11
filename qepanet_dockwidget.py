@@ -54,6 +54,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.setupUi(self)
         self.iface = iface
 
+        self.decimals = 1
+
         # Buttons, set checkable
         self.btn_add_junction.setCheckable(True)
         self.btn_add_reservoir.setCheckable(True)
@@ -77,7 +79,34 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QtCore.QObject.connect(self.btn_move_node, QtCore.SIGNAL('pressed()'), self.move_node)
         QtCore.QObject.connect(self.btn_move_link, QtCore.SIGNAL('pressed()'), self.move_link)
 
-        # Combo boxes
+        # Sliders
+        self.sli_pipe_roughness.valueChanged.connect(self.roughness_slider_changed)
+
+        # Combo box, fill them
+
+        # Pipe roughness
+        self.cbo_pipe_roughness.addItem('')
+
+        # Pipe status
+        self.cbo_pipe_status.addItem('Open') # TODO: softcode
+        self.cbo_pipe_status.addItem('Closed') # TODO: softcode
+        self.cbo_pipe_status.addItem('CV') # TODO: sofcode
+
+        # Pipe roughness #TODO: put values in external file
+        self.cbo_pipe_roughness.clear()
+        self.cbo_pipe_roughness.addItem('Asphalted cast iron', ['0.015', '0.04'])
+        self.cbo_pipe_roughness.addItem('Cast iron', ['0.03', '0.06'])
+        self.cbo_pipe_roughness.addItem('Commercial steel', ['0.05', '0.15'])
+        self.cbo_pipe_roughness.addItem('Concrete', ['0.3', '3'])
+        self.cbo_pipe_roughness.addItem('Galvanized iron', ['0.015', '0.03'])
+        self.cbo_pipe_roughness.addItem('PVC, glass, drawn', ['0', '0.02'])
+
+        # self.cbo_pipe_roughness_units.addItem('inch')
+        # self.cbo_pipe_roughness_units.addItem('mm')
+
+        self.update_roughness_params(self.cbo_pipe_roughness.itemData(self.cbo_pipe_roughness.currentIndex()))
+
+        # Combo boxes, set actions
         QtCore.QObject.connect(self.cbo_junctions, QtCore.SIGNAL('activated(int)'), self.cbo_junctions_activated)
         QtCore.QObject.connect(self.cbo_reservoirs, QtCore.SIGNAL('activated(int)'), self.cbo_reservoirs_activated)
         QtCore.QObject.connect(self.cbo_tanks, QtCore.SIGNAL('activated(int)'), self.cbo_tanks_activated)
@@ -87,6 +116,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QtCore.QObject.connect(self.cbo_valves, QtCore.SIGNAL('activated(int)'), self.cbo_valves_activated)
 
         QtCore.QObject.connect(self.cbo_dem, QtCore.SIGNAL('activated(int)'), self.cbo_dem_activated)
+
+        QtCore.QObject.connect(self.cbo_pipe_roughness, QtCore.SIGNAL('activated(int)'), self.cbo_pipe_roughness_activated)
 
         # QgsMapLayerRegistry.instance().layersAdded.connect(self.update_layers_combos)
         QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.update_layers_combos)
@@ -117,8 +148,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         if self.cbo_dem.count() >= 0:
             layer_id = self.cbo_dem.itemData(0)
             Parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
-
-
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -166,6 +195,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def move_link(self):
         pass
 
+    def roughness_slider_changed(self):
+        self.lbl_pipe_roughness_val_val.setText(str(self.sli_pipe_roughness.value() / float(10**self.decimals)))
+
     # TODO: update snappers in all the tools that use snapping
     def cbo_junctions_activated(self, index):
         layer_id = self.cbo_junctions.itemData(index)
@@ -194,6 +226,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def cbo_dem_activated(self, index):
         layer_id = self.cbo_dem.itemData(index)
         Parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+
+    def cbo_pipe_roughness_activated(self):
+        self.update_roughness_params(self.get_combo_current_data(self.cbo_pipe_roughness))
 
     def update_layers_combos(self):
 
@@ -262,7 +297,34 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         for value in Parameters.patterns['names'].itervalues():
             self.cbo_node_pattern.addItem(value)
 
+    def get_combo_current_data(self, combo):
+        index = self.cbo_pipe_roughness.currentIndex()
+        return combo.itemData(index)
+
     def set_combo_index(self, combo, layer_id):
         index = combo.findData(layer_id)
         if index >= 0:
             combo.setCurrentIndex(index)
+
+    def find_decimals(self, float_string):
+        float_string.replace(',', '.')
+        if '.' in float_string:
+            decimals = len(float_string[float_string.index('.'):])
+        else:
+            decimals = 1
+        return decimals
+
+    def update_roughness_params(self, roughness_range):
+        self.decimals = max(self.find_decimals(roughness_range[0]), self.find_decimals(roughness_range[1]))
+
+        min_roughness = roughness_range[0]
+        max_roughness = roughness_range[1]
+        self.lbl_pipe_roughness_min.setText(min_roughness)
+        self.lbl_pipe_roughness_max.setText(max_roughness)
+        self.lbl_pipe_roughness_val_val.setText(roughness_range[0])
+
+        min_roughness_mult = float(roughness_range[0]) * 10 ** self.decimals
+        max_roughness_mult = float(roughness_range[1]) * 10 ** self.decimals
+        self.sli_pipe_roughness.setMinimum(min_roughness_mult)
+        self.sli_pipe_roughness.setMaximum(max_roughness_mult)
+        self.sli_pipe_roughness.setValue(min_roughness_mult)
