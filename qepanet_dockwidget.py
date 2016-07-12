@@ -24,6 +24,7 @@
 import os
 from tools.add_junction_tool import AddJunctionTool
 from tools.add_pipe_tool import AddPipeTool
+from tools.add_pump_tool import AddPumpTool
 from tools.move_node_tool import MoveNodeTool
 
 from PyQt4 import QtCore, QtGui, uic
@@ -53,6 +54,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        self.setWindowTitle(Parameters.plug_in_name)
+
         self.iface = iface
 
         self.decimals = 1
@@ -180,7 +183,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         pass
 
     def add_pump(self):
-        pass
+        tool = AddPumpTool(self, self.iface)
+        self.iface.mapCanvas().setMapTool(tool)
+
+        # Cursor
+        cursor = QtGui.QCursor()
+        cursor.setShape(QtCore.Qt.CrossCursor)
+        self.iface.mapCanvas().setCursor(cursor)
 
     def add_valve(self):
         pass

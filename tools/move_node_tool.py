@@ -123,6 +123,7 @@ class MoveNodeTool(QgsMapTool):
             if self.selected_node_ft.id() is not None:
 
                 # Update node geometry
+                # TODO: move to network_handling?
                 Parameters.junctions_vlay.beginEditCommand("Update node geometry")
                 caps = Parameters.junctions_vlay.dataProvider().capabilities()
                 if caps & QgsVectorDataProvider.ChangeGeometries:

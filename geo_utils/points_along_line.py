@@ -1,5 +1,6 @@
 import math
 from collections import OrderedDict
+from qgis.core import QgsGeometry
 
 
 class PointsAlongLineGenerator:
@@ -32,3 +33,24 @@ class PointsAlongLineGenerator:
             points[position] = self.line_geom.interpolate(position)
 
         return points
+
+
+class PointsAlongLineUtils:
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def pair(line_points):
+        for i in range(1, len(line_points)):
+            yield line_points[i - 1], line_points[i]
+
+    @staticmethod
+    def distance(line_geom, point_geom):
+        dist_sum = 0
+        for seg_start, seg_end in PointsAlongLineUtils.pair(line_geom.asPolyline()):
+            if QgsGeometry.fromPolyline([seg_start, seg_end]).distance(point_geom) > 1e-8:  # TODO: softcode
+                dist_sum = dist_sum + QgsGeometry.fromPolyline([seg_start, seg_end]).length()
+            if QgsGeometry.fromPolyline([seg_start, seg_end]).distance(point_geom) < 1e-8:   # TODO: softcode
+                return dist_sum + QgsGeometry.fromPolyline([seg_start, point_geom.asPoint()]).length()
+

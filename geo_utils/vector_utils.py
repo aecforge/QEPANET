@@ -27,62 +27,6 @@ def save_layer2shapefile(vlayer, shp_path):
     error = QgsVectorFileWriter.writeAsVectorFormat(vlayer, shp_path, "CP1250", vlayer.crs(), "ESRI Shapefile")
 
 
-def get_ws_renderer():
-    """
-    :rtype: QgsSingleSymbolRendererV2
-    """
-
-    # Colors
-    fill_color = QColor()
-    fill_color.setRgb(0, 0, 255)
-    fill_color.setAlpha(64)
-    border_color = QColor()
-    border_color.setRgb(0, 0, 255)
-    border_color.setAlpha(255)
-
-    # Symbol layer
-    symbol_layer = QgsSimpleFillSymbolLayerV2()
-    symbol_layer.setBorderColor(border_color)
-    symbol_layer.setFillColor(fill_color)
-
-    symbol = QgsSymbolV2.defaultSymbol(QGis.Polygon)
-    """:type : QgsSymbolV2"""
-    symbol.changeSymbolLayer(0, symbol_layer)
-
-    # Renderer
-    renderer = QgsSingleSymbolRendererV2(symbol)
-    """:type : QgsSingleSymbolRendererV2"""
-    return renderer
-
-
-def get_channel_renderer():
-    """
-    :rtype: QgsSingleSymbolRendererV2
-    """
-
-    symbol = QgsLineSymbolV2 ()
-    symbol.setColor(QColor(0, 0, 255))
-    symbol.setWidth(1)
-
-    categories = [QgsRendererCategoryV2("Collettore", symbol, "Collettore principale")]
-
-    renderer = QgsCategorizedSymbolRendererV2("", categories)
-    renderer.setClassAttribute("Coll")
-    return renderer
-
-    # # Symbol layer
-    # symbol_layer = QgsSimpleLineSymbolLayerV2()
-    # symbol_layer.setColor(QColor(0, 0, 255))
-    # symbol_layer.setWidth(1)
-    #
-    # symbol = QgsSymbolV2.defaultSymbol(QGis.Line)
-    # symbol.changeSymbolLayer(0, symbol_layer)
-    #
-    # # Renderer
-    # renderer = QgsSingleSymbolRendererV2(symbol)
-    # return renderer
-
-
 def find_closest_feature(vlayer, map_coord, tolerance_units):
 
     search_rect = QgsRectangle(map_coord.x() - tolerance_units,
@@ -96,7 +40,7 @@ def find_closest_feature(vlayer, map_coord, tolerance_units):
         return feature
 
 
-def find_closest_point_on_geometry(coord, geom):
+def find_closest_vertex_on_geometry(coord, geom):
     """
     :param coord:
     :type coord: QgsPoint
