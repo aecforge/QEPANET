@@ -51,10 +51,31 @@ class Pipe:
         self.start_node = -1
         self.status = 'on'
 
+class Pump:
+
+    field_name_eid = 'id'
+    field_name_curve = 'curve'
+
+    def __init__(self, eid):
+        self.eid = eid
+
+        self.curve = -1
+
+
+class Pattern:
+
+    def __init__(self, name, id):
+        self.id = id
+        self.name = name
+        self.values = []
+
+    def add_value(self, val):
+        self.values.append(val)
 
 class Curve:
 
-    def __init__(self, name):
+    def __init__(self, name, id):
+        self.id = id
         self.name = name
         self.xs = []
         self.ys = []

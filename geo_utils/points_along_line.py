@@ -1,6 +1,7 @@
 import math
 from collections import OrderedDict
 from qgis.core import QgsGeometry
+from ..parameters import Parameters
 
 
 class PointsAlongLineGenerator:
@@ -49,8 +50,8 @@ class PointsAlongLineUtils:
     def distance(line_geom, point_geom):
         dist_sum = 0
         for seg_start, seg_end in PointsAlongLineUtils.pair(line_geom.asPolyline()):
-            if QgsGeometry.fromPolyline([seg_start, seg_end]).distance(point_geom) > 1e-8:  # TODO: softcode
+            if QgsGeometry.fromPolyline([seg_start, seg_end]).distance(point_geom) > Parameters.tolerance:
                 dist_sum = dist_sum + QgsGeometry.fromPolyline([seg_start, seg_end]).length()
-            if QgsGeometry.fromPolyline([seg_start, seg_end]).distance(point_geom) < 1e-8:   # TODO: softcode
+            if QgsGeometry.fromPolyline([seg_start, seg_end]).distance(point_geom) < Parameters.tolerance:
                 return dist_sum + QgsGeometry.fromPolyline([seg_start, point_geom.asPoint()]).length()
 

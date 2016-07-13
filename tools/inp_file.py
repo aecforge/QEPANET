@@ -1,7 +1,7 @@
 import codecs
 from collections import OrderedDict
 
-from tools.network import Curve
+from network import Curve, Pattern
 
 
 class InpFile:
@@ -11,9 +11,6 @@ class InpFile:
 
     @staticmethod
     def read_patterns(inp_file_path):
-
-        pattern_names_d = OrderedDict()
-        patterns_d = OrderedDict()
 
         start_line = None
         end_line = None
@@ -33,25 +30,33 @@ class InpFile:
         if end_line is None:
             end_line = len(lines)
 
+        patterns_d = {}
+
         for l in range(start_line, end_line):
             if not lines[l].startswith(';'):
                 words = lines[l].strip().replace('\t', ' ').split()
                 if words[0] not in patterns_d:
-                    pattern_names_d[words[0]] = lines[l-1][1:]
-                if words[0] not in patterns_d:
-                    patterns_d[words[0]] = []
-                for w in range(1, len(words)):
-                    patterns_d[words[0]].append(float(words[w]))
+                    patterns_d[words[0]] = Pattern(lines[l-1][1:], words[0])
+                    for w in range(1, len(words)):
+                        patterns_d[words[0]].add_value(words[w])
+                    continue
+                else:
+                    for w in range(1, len(words)):
+                        patterns_d[words[0]].add_value(words[w])
 
-        return pattern_names_d, patterns_d
+        return patterns_d
 
     @staticmethod
-    def read_curvers(inp_file_path):
+    def read_curves(inp_file_path):
+
         start_line = None
         end_line = None
         with codecs.open(inp_file_path, 'r', encoding='UTF-8') as inp_f:
 
             lines = inp_f.read().splitlines()
+            for l in range(len(lines)):
+                lines[l] = lines[l].strip()
+
             curves_started = False
             for l in range(len(lines)):
                 if lines[l].upper().startswith('[CURVES]'):
@@ -68,11 +73,10 @@ class InpFile:
         curves_d = {}
 
         for l in range(start_line, end_line):
-            if not lines[l].strip().startswith(';'):
-                words = lines[l].strip().replace('\t', ' ').split()
+            if not lines[l].startswith(';'):
+                words = lines[l].replace('\t', ' ').split()
                 if words[0] not in curves_d:
-                    new_curve = Curve(lines[l-1][1:])
-                    curves_d[words[0]] = new_curve
+                    curves_d[words[0]] = Curve(lines[l-1][1:], words[0])
                     x = words[1]
                     y = words[2]
                     curves_d[words[0]].add_xy(x, y)

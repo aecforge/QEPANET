@@ -103,9 +103,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.cbo_pipe_roughness.addItem('Galvanized iron', ['0.015', '0.03'])
         self.cbo_pipe_roughness.addItem('PVC, glass, drawn', ['0', '0.02'])
 
-        # self.cbo_pipe_roughness_units.addItem('inch')
-        # self.cbo_pipe_roughness_units.addItem('mm')
-
         self.update_roughness_params(self.cbo_pipe_roughness.itemData(self.cbo_pipe_roughness.currentIndex()))
 
         # Combo boxes, set actions
@@ -127,7 +124,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.update_layers_combos()
         self.preselect_layers_combos()
+
         self.update_patterns_combo()
+        self.update_curves_combo()
 
         if self.cbo_junctions.count() >= 0:
             layer_id = self.cbo_junctions.itemData(self.cbo_junctions.currentIndex())
@@ -319,8 +318,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def update_patterns_combo(self):
         self.cbo_node_pattern.clear()
-        for value in Parameters.patterns['names'].itervalues():
-            self.cbo_node_pattern.addItem(value)
+        for value in Parameters.patterns.itervalues():
+            self.cbo_node_pattern.addItem(value.name, value)
+
+    def update_curves_combo(self):
+        self.cbo_pump_curve.clear()
+        for value in Parameters.curves.values():
+            self.cbo_pump_curve.addItem(value.name, value)
 
     def get_combo_current_data(self, combo):
         index = self.cbo_pipe_roughness.currentIndex()

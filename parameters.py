@@ -18,8 +18,10 @@ class Parameters:
     dem_rlay = None
 
     patterns = {}
+    curves = []
 
     tolerance = 1e-8
+    min_dist = 1 # TODO: check: 1 m? Why?
 
     config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config_file_name)
 
@@ -65,6 +67,18 @@ class ConfigFile:
     def set_patterns_file_path(self, patterns_file_path):
         config = self.get_config()
         config.set('EPANET', 'patterns_file', patterns_file_path) # TODO: softcode
+
+        with codecs.open(self.config_file_path, 'wb') as configfile:
+            config.write(configfile)
+
+    def get_curves_file_path(self):
+        self.config.read(self.config_file_path)
+        curves_file_path = self.config.get('EPANET', 'curves_file')  # TODO: softcode
+        return curves_file_path
+
+    def set_curves_file_path(self, curves_file_path):
+        config = self.get_config()
+        config.set('EPANET', 'curves_file', curves_file_path)  # TODO: softcode
 
         with codecs.open(self.config_file_path, 'wb') as configfile:
             config.write(configfile)

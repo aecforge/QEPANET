@@ -3,7 +3,7 @@
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
 from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest
-from qgis.gui import QgsMapTool, QgsVertexMarker, QgsMessageBar
+from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from network_handling import LinkHandler, NetworkUtils
 from ..geo_utils import raster_utils
@@ -87,7 +87,7 @@ class AddPumpTool(QgsMapTool):
             # No pipe snapped: notify user
             if self.snapped_pipe_id is None:
 
-                QgsMessageBar.pushInfo(Parameters.plug_in_name, 'You need to snap the cursor to a pipe to add a pump.')
+                self.iface.messageBar().pushInfo(Parameters.plug_in_name, 'You need to snap the cursor to a pipe to add a pump.')
 
             # A pipe has been snapped
             else:
@@ -101,7 +101,7 @@ class AddPumpTool(QgsMapTool):
                     pipe_endnodes = NetworkUtils.find_start_end_nodes(features[0].geometry())
 
                     if len(pipe_endnodes) < 2:
-                        QgsMessageBar.pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.')
+                        self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.')
                         return
 
                     # Find endnode closest to pump position
@@ -115,12 +115,15 @@ class AddPumpTool(QgsMapTool):
                         closest_junction_ft = pipe_endnodes[1]
 
                     # Create the pump
+                    pump_curve = self.data_dock.cbo_pump_curve.itemData(self.data_dock.cbo_pump_curve.currentIndex()).id
+                    print 'pump_curve', pump_curve
                     LinkHandler.create_new_pump(
                         features[0],
                         Parameters.pumps_vlay,
                         Parameters.junctions_vlay,
                         closest_junction_ft,
-                        self.snapped_vertex)
+                        self.snapped_vertex,
+                        pump_curve)
 
     def activate(self):
 
@@ -130,7 +133,7 @@ class AddPumpTool(QgsMapTool):
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_pipes], self.iface.mapCanvas())
 
     def deactivate(self):
-        self.data_dock.btn_add_junction.setChecked(False)
+        self.data_dock.btn_add_pump.setChecked(False)
 
     def isZoomTool(self):
         return False

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>QEpanetDockWidgetBase</class>
- <widget class="QDockWidget" name="QEpanetDockWidgetBase">
+ <class>QEpanetDockWidget</class>
+ <widget class="QDockWidget" name="QEpanetDockWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -163,7 +163,7 @@
            <item>
             <widget class="QToolBox" name="tbx_elements">
              <property name="currentIndex">
-              <number>0</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -356,7 +356,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>219</width>
+                <width>236</width>
                 <height>220</height>
                </rect>
               </property>
@@ -601,6 +601,18 @@
               <attribute name="label">
                <string>Pump properties</string>
               </attribute>
+              <layout class="QFormLayout" name="formLayout">
+               <item row="0" column="0">
+                <widget class="QLabel" name="lbl_pump_curve">
+                 <property name="text">
+                  <string>Curve:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="cbo_pump_curve"/>
+               </item>
+              </layout>
              </widget>
              <widget class="QWidget" name="wgt_ele_valve">
               <property name="geometry">

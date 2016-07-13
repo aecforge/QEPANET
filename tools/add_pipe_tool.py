@@ -9,7 +9,7 @@ from qgis.core import QgsPoint, QgsRaster, QgsSnapper, QgsGeometry
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
 from network_handling import LinkHandler, NodeHandler, NetworkUtils
-from tools.network import Junction
+from network import Junction
 from ..geo_utils import raster_utils
 from ..parameters import Parameters
 
@@ -134,7 +134,7 @@ class AddPipeTool(QgsMapTool):
                 junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: sofcode
                 elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, start_node, 1)
                 depth = float(self.data_dock.txt_node_depth.text())
-                pattern = self.data_dock.cbo_node_pattern.currentText()
+                pattern = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex())
                 NodeHandler.create_new_junction(Parameters.junctions_vlay, start_node, junction_eid, elev, j_demand, depth,
                                                 pattern)
 
@@ -142,7 +142,7 @@ class AddPipeTool(QgsMapTool):
                 junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: sofcode
                 elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, end_node, 1)
                 depth = float(self.data_dock.txt_node_depth.text())
-                pattern = self.data_dock.cbo_node_pattern.currentText()
+                pattern = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex())
                 NodeHandler.create_new_junction(Parameters.junctions_vlay, end_node, junction_eid, elev, j_demand, depth,
                                                 pattern)
 

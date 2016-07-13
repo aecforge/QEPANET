@@ -3,9 +3,8 @@ from collections import OrderedDict
 
 from PyQt4.QtCore import QPyNullVariant
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance, QgsPoint
-from qgis.gui import QgsMessageBar
 
-from tools.network import Junction, Pipe
+from network import Junction, Pipe, Pump
 from ..geo_utils import raster_utils
 from ..geo_utils.points_along_line import PointsAlongLineGenerator, PointsAlongLineUtils
 from ..parameters import Parameters
@@ -23,16 +22,22 @@ class NodeHandler:
         if nodes_caps and QgsVectorDataProvider.AddFeatures:
 
             # New stand-alone node
-            junctions_vlay.beginEditCommand("Add node")
+            junctions_vlay.beginEditCommand("Add junction")
+
             new_junct_feat = QgsFeature(junctions_vlay.pendingFields())
             new_junct_feat.setAttribute(Junction.field_name_eid, eid)
             new_junct_feat.setAttribute(Junction.field_name_elevation, elev)
             new_junct_feat.setAttribute(Junction.field_name_demand, demand)
             new_junct_feat.setAttribute(Junction.field_name_depth, depth)
             new_junct_feat.setAttribute(Junction.field_name_pattern, pattern)
+
             new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
+
             junctions_vlay.addFeatures([new_junct_feat])
+
             junctions_vlay.endEditCommand()
+
+            return new_junct_feat
 
 
 class LinkHandler:
@@ -51,6 +56,7 @@ class LinkHandler:
             length_3d = LinkHandler.calc_3d_length(pipe_geom)
 
             pipes_vlay.beginEditCommand("Add new pipes")
+
             new_pipe_ft = QgsFeature(pipes_vlay.pendingFields())
             new_pipe_ft.setAttribute(Pipe.field_name_eid, eid)
             new_pipe_ft.setAttribute(Pipe.field_name_demand, demand)
@@ -59,6 +65,7 @@ class LinkHandler:
             new_pipe_ft.setAttribute(Pipe.field_name_loss, loss)
             new_pipe_ft.setAttribute(Pipe.field_name_roughness, roughness)
             new_pipe_ft.setAttribute(Pipe.field_name_status, status)
+
             new_pipe_ft.setGeometry(pipe_geom)
 
             pipes_vlay.addFeatures([new_pipe_ft])
@@ -68,7 +75,7 @@ class LinkHandler:
             return new_pipe_ft
 
     @staticmethod
-    def create_new_pump(pipe_ft, pumps_vlay, nodes_vlay, closest_junction_ft, position):
+    def create_new_pump(pipe_ft, pumps_vlay, nodes_vlay, closest_junction_ft, position, pump_curve):
 
         # Find start and end nodes positions
         # Get vertex along line next to snapped point
@@ -83,8 +90,7 @@ class LinkHandler:
             dist_after = pipe_ft.geometry().length() - 1
 
         if dist_before >= dist_after:
-            QgsMessageBar.pushCritical(Parameters.plug_in_name, 'The pipe is too short for a pump to be placed on it.') #TODO: softcode msg
-            return
+            raise Exception('The pipe is too short for a pump to be placed on it.')
 
         node_before = pipe_ft.geometry().interpolate(dist_before).asPoint()
         node_after = pipe_ft.geometry().interpolate(dist_after).asPoint()
@@ -97,15 +103,15 @@ class LinkHandler:
         pumps_caps = Parameters.pumps_vlay.dataProvider().capabilities()
 
         if junctions_caps:
-            demand = closest_junction_ft.attribute(Junction.field_name_demand)
+            j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
             depth = closest_junction_ft.attribute(Junction.field_name_depth)
             pattern = closest_junction_ft.attribute(Junction.field_name_pattern)
 
             elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_before, 1)
-            NodeHandler.create_new_junction(Parameters.junctions_vlay, node_before.asPoint(), junction_eid, elev, demand, depth, pattern)
+            NodeHandler.create_new_junction(Parameters.junctions_vlay, node_before, junction_eid, elev, j_demand, depth, pattern)
 
             elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_after, 1)
-            NodeHandler.create_new_junction(Parameters.junctions_vlay, node_after.asPoint(), junction_eid, elev, demand, depth, pattern)
+            NodeHandler.create_new_junction(Parameters.junctions_vlay, node_after, junction_eid, elev, j_demand, depth, pattern)
 
         # Split the pipe and create gap
         if pipes_caps:
@@ -115,20 +121,15 @@ class LinkHandler:
         # Create the new link (the pipe)
         if pumps_caps:
 
+            pump_eid = NetworkUtils.find_next_id(Parameters.pumps_vlay, 'P')  # TODO: softcode
             pump_geom = QgsGeometry.fromPolyline([node_before, node_after])
 
-            # Calculate 3D length
-            length_3d = LinkHandler.calc_3d_length(pump_geom)
-
             pumps_vlay.beginEditCommand("Add new pump")
+
             new_pump_ft = QgsFeature(pumps_vlay.pendingFields())
-            new_pump_ft.setAttribute(Pipe.field_name_eid, eid)
-            new_pump_ft.setAttribute(Pipe.field_name_demand, demand)
-            new_pump_ft.setAttribute(Pipe.field_name_diameter, diameter)
-            new_pump_ft.setAttribute(Pipe.field_name_length, length_3d)
-            new_pump_ft.setAttribute(Pipe.field_name_loss, loss)
-            new_pump_ft.setAttribute(Pipe.field_name_roughness, roughness)
-            new_pump_ft.setAttribute(Pipe.field_name_status, status)
+            new_pump_ft.setAttribute(Pump.field_name_eid, pump_eid)
+            new_pump_ft.setAttribute(Pump.field_name_curve, pump_curve)
+
             new_pump_ft.setGeometry(pump_geom)
 
             pumps_vlay.addFeatures([new_pump_ft])
@@ -136,8 +137,6 @@ class LinkHandler:
             pumps_vlay.endEditCommand()
 
             return new_pump_ft
-
-
 
     @staticmethod
     def split_pipe(pipe_ft, split_point, gap=0):
@@ -343,9 +342,9 @@ class NetworkUtils:
         intersecting = []
         if cands:
             for junction_ft in cands:
-                if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < 1e-8:
+                if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < Parameters.tolerance:
                     intersecting.append(junction_ft)
-                if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[len(link_geom.asPolyline()) - 1])) < 1e-8:
+                if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[len(link_geom.asPolyline()) - 1])) < Parameters.tolerance:
                     intersecting.append(junction_ft)
 
         return intersecting
