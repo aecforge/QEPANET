@@ -1,13 +1,14 @@
-from PyQt4.QtCore import QPyNullVariant
+import math
+from collections import OrderedDict
 
+from PyQt4.QtCore import QPyNullVariant
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance, QgsPoint
 from qgis.gui import QgsMessageBar
-from ..network import Junction, Pipe
+
+from tools.network import Junction, Pipe
+from ..geo_utils import raster_utils
 from ..geo_utils.points_along_line import PointsAlongLineGenerator, PointsAlongLineUtils
 from ..parameters import Parameters
-from collections import OrderedDict
-from ..geo_utils import raster_utils
-import math
 
 
 class NodeHandler:
@@ -85,8 +86,8 @@ class LinkHandler:
             QgsMessageBar.pushCritical(Parameters.plug_in_name, 'The pipe is too short for a pump to be placed on it.') #TODO: softcode msg
             return
 
-        node_before = pipe_ft.geometry().interpolate(dist_before)
-        node_after = pipe_ft.geometry().interpolate(dist_after)
+        node_before = pipe_ft.geometry().interpolate(dist_before).asPoint()
+        node_after = pipe_ft.geometry().interpolate(dist_after).asPoint()
 
         # Create two new nodes
         junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: softcode
@@ -100,19 +101,42 @@ class LinkHandler:
             depth = closest_junction_ft.attribute(Junction.field_name_depth)
             pattern = closest_junction_ft.attribute(Junction.field_name_pattern)
 
-            elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_before.asPoint(), 1)
+            elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_before, 1)
             NodeHandler.create_new_junction(Parameters.junctions_vlay, node_before.asPoint(), junction_eid, elev, demand, depth, pattern)
 
-            elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_after.asPoint(), 1)
+            elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_after, 1)
             NodeHandler.create_new_junction(Parameters.junctions_vlay, node_after.asPoint(), junction_eid, elev, demand, depth, pattern)
 
         # Split the pipe and create gap
         if pipes_caps:
-            gap = 1 # TODO: softcode
+            gap = 1 # TODO: softcode pump length
             LinkHandler.split_pipe(pipe_ft, position, gap)
 
         # Create the new link (the pipe)
-        # TODO: create the pump
+        if pumps_caps:
+
+            pump_geom = QgsGeometry.fromPolyline([node_before, node_after])
+
+            # Calculate 3D length
+            length_3d = LinkHandler.calc_3d_length(pump_geom)
+
+            pumps_vlay.beginEditCommand("Add new pump")
+            new_pump_ft = QgsFeature(pumps_vlay.pendingFields())
+            new_pump_ft.setAttribute(Pipe.field_name_eid, eid)
+            new_pump_ft.setAttribute(Pipe.field_name_demand, demand)
+            new_pump_ft.setAttribute(Pipe.field_name_diameter, diameter)
+            new_pump_ft.setAttribute(Pipe.field_name_length, length_3d)
+            new_pump_ft.setAttribute(Pipe.field_name_loss, loss)
+            new_pump_ft.setAttribute(Pipe.field_name_roughness, roughness)
+            new_pump_ft.setAttribute(Pipe.field_name_status, status)
+            new_pump_ft.setGeometry(pump_geom)
+
+            pumps_vlay.addFeatures([new_pump_ft])
+
+            pumps_vlay.endEditCommand()
+
+            return new_pump_ft
+
 
 
     @staticmethod

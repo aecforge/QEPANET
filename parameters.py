@@ -40,7 +40,7 @@ class ConfigFile:
         Create a config file
         """
         self.config.add_section('EPANET')
-        self.config.set("Patterns file", '')
+        self.config.set("patterns_file", '')
 
         with codecs.open(self.config_file_path, "wb",  'utf-8') as config_file:
             self.config.write(self.config_file_path)
@@ -59,12 +59,12 @@ class ConfigFile:
     def get_patterns_file_path(self):
 
         self.config.read(self.config_file_path)
-        patterns_file_path = self.config.get('EPANET', 'Patterns file') # TODO: softcode
+        patterns_file_path = self.config.get('EPANET', 'patterns_file') # TODO: softcode
         return patterns_file_path
 
     def set_patterns_file_path(self, patterns_file_path):
         config = self.get_config()
-        config.set('EPANET', 'Patterns file', patterns_file_path) # TODO: softcode
+        config.set('EPANET', 'patterns_file', patterns_file_path) # TODO: softcode
 
         with codecs.open(self.config_file_path, 'wb') as configfile:
             config.write(configfile)

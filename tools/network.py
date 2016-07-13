@@ -50,3 +50,15 @@ class Pipe:
         self.roughness = -1
         self.start_node = -1
         self.status = 'on'
+
+
+class Curve:
+
+    def __init__(self, name):
+        self.name = name
+        self.xs = []
+        self.ys = []
+
+    def add_xy(self, x, y):
+        self.xs.append(x)
+        self.ys.append(y)

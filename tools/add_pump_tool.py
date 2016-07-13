@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from PyQt4.QtCore import Qt, QTimer
-from PyQt4.QtGui import QCursor, QColor
-from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand, QgsMessageBar
-from qgis.core import QgsPoint, QgsRaster, QgsVectorLayer, QgsProject, QgsSnapper, QgsTolerance, QGis,\
-    QgsVectorDataProvider, QgsFeature, QgsGeometry, QgsFeatureRequest, QgsLineStringV2, QgsPointV2
-from ..geo_utils import utils as geo_utils
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QColor
+from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest
+from qgis.gui import QgsMapTool, QgsVertexMarker, QgsMessageBar
+
+from network_handling import LinkHandler, NetworkUtils
+from ..geo_utils import raster_utils
 from ..parameters import Parameters
-from ..network import Junction, Pipe
-from ..geo_utils import raster_utils, points_along_line
-from network_handling import LinkHandler, NodeHandler, NetworkUtils
 
 
 class AddPumpTool(QgsMapTool):

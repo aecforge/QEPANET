@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import sys, traceback
+import sys
+import traceback
 
-from PyQt4.QtCore import Qt, QTimer
-from PyQt4.QtGui import QCursor, QColor
-from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand, QgsMessageBar
-from qgis.core import QgsPoint, QgsRaster, QgsVectorLayer, QgsProject, QgsSnapper, QgsTolerance, QGis,\
-    QgsVectorDataProvider, QgsFeature, QgsGeometry, QgsFeatureRequest, QgsLineStringV2, QgsPointV2
-from ..geo_utils import utils as geo_utils, raster_utils
-from ..parameters import Parameters
-from ..network import Junction, Pipe
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QColor
+from qgis.core import QgsPoint, QgsRaster, QgsSnapper, QgsGeometry
+from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
+
 from network_handling import LinkHandler, NodeHandler, NetworkUtils
+from tools.network import Junction
+from ..geo_utils import raster_utils
+from ..parameters import Parameters
 
 
 class AddPipeTool(QgsMapTool):

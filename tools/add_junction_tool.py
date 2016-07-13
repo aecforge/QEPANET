@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from PyQt4.QtCore import Qt, QTimer
-from PyQt4.QtGui import QCursor, QColor
-from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
-from qgis.core import QgsPoint, QgsRaster, QgsVectorLayer, QgsProject, QgsSnapper, QgsTolerance, QGis,\
-    QgsVectorDataProvider, QgsFeature, QgsGeometry, QgsFeatureRequest, QgsLineStringV2, QgsPointV2
-from ..geo_utils import utils as geo_utils
-from ..parameters import Parameters
-from ..network import Junction, Pipe
-from ..geo_utils import raster_utils
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QColor
+from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest
+from qgis.gui import QgsMapTool, QgsVertexMarker
+
 from network_handling import LinkHandler, NodeHandler, NetworkUtils
+from ..geo_utils import raster_utils
+from ..parameters import Parameters
 
 
 class AddJunctionTool(QgsMapTool):

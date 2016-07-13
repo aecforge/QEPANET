@@ -22,20 +22,18 @@
 """
 
 import os
+
+from PyQt4 import QtCore, QtGui, uic
+from PyQt4.QtCore import pyqtSignal
+from qgis.core import QgsMapLayer, QgsMapLayerRegistry
+
+from geo_utils import utils
+from parameters import Parameters
 from tools.add_junction_tool import AddJunctionTool
 from tools.add_pipe_tool import AddPipeTool
 from tools.add_pump_tool import AddPumpTool
 from tools.move_node_tool import MoveNodeTool
-
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import pyqtSignal
-
-from qgis.core import QgsMapLayer, QgsMapLayerRegistry
-
-import parameters
-from geo_utils import utils
-from parameters import Parameters
-from network import Tables
+from tools.network import Tables
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qepanet_dockwidget_base.ui'))
