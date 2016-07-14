@@ -16,7 +16,7 @@ class Junction:
     field_name_eid = 'id'
     field_name_demand = 'demand'
     field_name_depth = 'depth'
-    field_name_elevation = 'elevation'
+    field_name_elevation = 'elev'
     field_name_pattern = 'pattern'
 
     def __init__(self, eid):
@@ -30,17 +30,38 @@ class Junction:
 class Reservoir:
 
     field_name_eid = 'id'
+    field_name_elevation = 'elev'
+    field_name_elevation_corr = 'elev_corr'
+    field_name_pressure = 'pressure'
 
     def __init__(self, eid):
         self.eid = eid
+        self.elevation = -1
+        self.elevation_corr = 0
+        self.pressure = 0
 
 
 class Tank:
     field_name_eid = 'id'
+    field_name_curve = 'curve'
+    field_name_diameter = 'diameter'
+    field_name_elevation = 'elev'
+    field_name_elevation_corr = 'elev_corr'
+    field_name_level_init = 'init_level'
+    field_name_level_max = 'max_level'
+    field_name_level_min = 'min_level'
+    field_name_vol_min = 'min_vol'
 
     def __init__(self, eid):
         self.eid = eid
-
+        self.curve = -1
+        self.diameter = 0
+        self.elevation = -1
+        self.elevation_corr = 0
+        self.level_init = 0
+        self.level_max = 0
+        self.level_min = 0
+        self.vol_min = 0
 
 class Pipe:
 
@@ -94,6 +115,7 @@ class Pattern:
 
     def add_value(self, val):
         self.values.append(val)
+
 
 class Curve:
 

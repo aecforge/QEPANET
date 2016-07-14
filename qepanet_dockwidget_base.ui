@@ -163,7 +163,7 @@
            <item>
             <widget class="QToolBox" name="tbx_elements">
              <property name="currentIndex">
-              <number>7</number>
+              <number>3</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -337,6 +337,36 @@
               <attribute name="label">
                <string>Reservoir properties</string>
               </attribute>
+              <layout class="QFormLayout" name="formLayout_3">
+               <item row="0" column="0">
+                <widget class="QLabel" name="lbl_reservoir_pressure">
+                 <property name="text">
+                  <string>Pressure [m]:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="txt_reservoir_pressure">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="lbl_reservoir_elev_corr">
+                 <property name="text">
+                  <string>Elev. corr. [m]:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="txt_reservoir_elev_corr">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
              <widget class="QWidget" name="wgt_ele_tank">
               <property name="geometry">
@@ -344,12 +374,87 @@
                 <x>0</x>
                 <y>0</y>
                 <width>236</width>
-                <height>69</height>
+                <height>220</height>
                </rect>
               </property>
               <attribute name="label">
                <string>Tank properties</string>
               </attribute>
+              <layout class="QFormLayout" name="formLayout_4">
+               <property name="fieldGrowthPolicy">
+                <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="lbl_tank_elev_corr">
+                 <property name="text">
+                  <string>Elev. corr [m]:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="txt_tank_elev_corr"/>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="txt_tank_level_init"/>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="lbl_tank_level_min">
+                 <property name="text">
+                  <string>Level min [m]:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="txt_tank_level_min"/>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="lbl_tank_level_max">
+                 <property name="text">
+                  <string>Level max [m]:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="txt_tank_level_max"/>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="lbl_tank_diameter">
+                 <property name="text">
+                  <string>Diameter [m]:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QLineEdit" name="txt_tank_diameter"/>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="lbl_tank_vol_min">
+                 <property name="text">
+                  <string>Volume min [m3]:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QLineEdit" name="txt_tank_vol_min"/>
+               </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="lbl_tank_curve">
+                 <property name="text">
+                  <string>Curve:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="QComboBox" name="cbo_tank_curve"/>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="lbl_tank_level_init">
+                 <property name="text">
+                  <string>Level init. [m]</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
              <widget class="QWidget" name="wgt_ele_pipe">
               <property name="geometry">
@@ -628,6 +733,14 @@
               </attribute>
              </widget>
              <widget class="QWidget" name="wgt_tools">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>236</width>
+                <height>69</height>
+               </rect>
+              </property>
               <attribute name="label">
                <string>Tools</string>
               </attribute>

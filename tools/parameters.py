@@ -1,4 +1,6 @@
 import os, codecs, ConfigParser
+from PyQt4.QtCore import QRegExp
+from PyQt4.QtGui import QRegExpValidator
 
 
 class Parameters:
@@ -28,6 +30,9 @@ class Parameters:
     path = os.path.dirname(path)
 
     config_file_path = os.path.join(path, config_file_name)
+
+    regex_number_pos_decimals = '^[1-9]\d*(\.\d+)?$'
+    regex_number_pos_neg_decimals = '^-?[0-9]\d*(\.\d+)?$'
 
     def __init__(self):
         pass
@@ -86,3 +91,22 @@ class ConfigFile:
 
         with codecs.open(self.config_file_path, 'wb') as configfile:
             config.write(configfile)
+
+
+class RegExValidators:
+
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def get_pos_decimals():
+        reg_ex = QRegExp(Parameters.regex_number_pos_decimals)
+        validator = QRegExpValidator(reg_ex)
+        return validator
+
+    @staticmethod
+    def get_pos_neg_decimals():
+
+        reg_ex = QRegExp(Parameters.regex_number_pos_neg_decimals)
+        validator = QRegExpValidator(reg_ex)
+        return validator

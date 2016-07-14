@@ -2,20 +2,20 @@
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest
+from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
-from network_handling import LinkHandler, NetworkUtils
+from network_handling import LinkHandler, NodeHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils
 
 
-class AddPumpTool(QgsMapTool):
+class AddReservoirTool(QgsMapTool):
 
     def __init__(self, data_dock):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
-        self.iface = self.iface
+        self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
@@ -23,7 +23,7 @@ class AddPumpTool(QgsMapTool):
         self.mouse_pt = None
         self.mouse_clicked = False
         self.snapper = None
-        self.snapped_pipe_id = None
+        self.snapped_feat_id = None
         self.snapped_vertex = None
         self.snapped_vertex_nr = None
         self.vertex_marker = QgsVertexMarker(self.canvas())
@@ -52,8 +52,7 @@ class AddPumpTool(QgsMapTool):
             (retval, result) = self.snapper.snapPoint(event.pos())
             if len(result) > 0:
                 # It's a vertex on an existing pipe
-
-                self.snapped_pipe_id = result[0].snappedAtGeometry
+                self.snapped_feat_id = result[0].snappedAtGeometry
 
                 snapped_vertex = result[0].snappedVertex
                 self.snapped_vertex_nr = result[0].snappedVertexNr
@@ -69,7 +68,7 @@ class AddPumpTool(QgsMapTool):
             else:
 
                 # It's a new, isolated vertex
-                self.snapped_pipe_id = None
+                self.snapped_feat_id = None
                 self.vertex_marker.hide()
 
     def canvasReleaseEvent(self, event):
@@ -81,59 +80,57 @@ class AddPumpTool(QgsMapTool):
 
             self.mouse_clicked = False
 
-            # Find first available ID for Pumps
-            pump_eid = NetworkUtils.find_next_id(Parameters.pumps_vlay, 'P') # TODO: softcode
+            # Find first available ID for reservoirs
+            eid = NetworkUtils.find_next_id(Parameters.reservoirs_vlay, 'R') # TODO: softcode
 
-            # No pipe snapped: notify user
-            if self.snapped_pipe_id is None:
+            pressure = float(self.data_dock.txt_reservoir_pressure.text())
+            elev_corr = float(self.data_dock.txt_reservoir_elev_corr.text())
 
-                self.iface.messageBar().pushInfo(Parameters.plug_in_name, 'You need to snap the cursor to a pipe to add a pump.')
+            # No links snapped: create a new stand-alone node
+            if self.snapped_feat_id is None:
 
-            # A pipe has been snapped
+                NodeHandler.create_new_reservoir(
+                    Parameters.reservoirs_vlay,
+                    self.mouse_pt,
+                    eid,
+                    self.elev,
+                    elev_corr,
+                    pressure)
+
+            # A link has been snapped
             else:
 
-                request = QgsFeatureRequest().setFilterFid(self.snapped_pipe_id)
-                feats = Parameters.pipes_vlay.getFeatures(request)
-                features = [feat for feat in feats]
-                if len(features) == 1:
+                # New node on existing line
+                NodeHandler.create_new_junction(
+                    Parameters.junctions_vlay,
+                    self.snapped_vertex,
+                    eid,
+                    self.elev,
+                    elev_corr,
+                    pressure)
 
-                    # Check whether the pipe has a start and an end node
-                    pipe_endnodes = NetworkUtils.find_start_end_nodes(features[0].geometry())
+                # Get the snapped feature and split it
+                request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
+                feats = list(Parameters.pipes_vlay.getFeatures(request))
+                if len(feats) > 0:
 
-                    if len(pipe_endnodes) < 2:
-                        self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.')
-                        return
+                    snapped_pipe = QgsFeature(feats[0])
+                    (start_node_ft, end_node_ft) = NetworkUtils.get_start_end_nodes(snapped_pipe.geometry())
 
-                    # Find endnode closest to pump position
-                    dist_1 = pipe_endnodes[0].geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
-                    dist_2 = pipe_endnodes[1].geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
-
-                    # Get the attributes of the closest node
-                    if dist_1 < dist_2:
-                        closest_junction_ft = pipe_endnodes[0]
-                    else:
-                        closest_junction_ft = pipe_endnodes[1]
-
-                    # Create the pump
-                    pump_curve = self.data_dock.cbo_pump_curve.itemData(self.data_dock.cbo_pump_curve.currentIndex()).id
-                    print 'pump_curve', pump_curve
-                    LinkHandler.create_new_pump(
-                        features[0],
-                        Parameters.pumps_vlay,
-                        Parameters.junctions_vlay,
-                        closest_junction_ft,
-                        self.snapped_vertex,
-                        pump_curve)
+                    # Check that the snapped point on line is distant enough from start/end nodes
+                    if start_node_ft.geometry().distance(self.snapped_vertex) > Parameters.min_dist and\
+                        end_node_ft.geometry().distance(self.snapped_vertex) > Parameters.min_dist:
+                        LinkHandler.split_pipe(snapped_pipe, self.snapped_vertex)
 
     def activate(self):
 
+        snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
         snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
-        # TODO: remaining layers
 
-        self.snapper = NetworkUtils.set_up_snapper([snap_layer_pipes], self.iface.mapCanvas())
+        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
 
     def deactivate(self):
-        self.data_dock.btn_add_pump.setChecked(False)
+        self.data_dock.btn_add_reservoir.setChecked(False)
 
     def isZoomTool(self):
         return False

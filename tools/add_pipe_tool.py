@@ -16,10 +16,10 @@ from ..geo_utils import raster_utils
 
 class AddPipeTool(QgsMapTool):
 
-    def __init__(self, data_dock, iface):
-        QgsMapTool.__init__(self, iface.mapCanvas())
+    def __init__(self, data_dock):
+        QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
-        self.iface = iface
+        self.iface = self.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""

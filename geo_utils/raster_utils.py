@@ -274,6 +274,9 @@ def read_file_val_from_coord(ras_path, coordinate, band=1):
 
 def read_layer_val_from_coord(ras_layer, coordinate, band):
 
+    if ras_layer is None:
+        return None
+
     identify_dem = ras_layer.dataProvider().identify(coordinate, QgsRaster.IdentifyFormatValue)
     if identify_dem is not None and identify_dem.isValid() and identify_dem.results().get(1) is not None:
         return identify_dem.results().get(band)

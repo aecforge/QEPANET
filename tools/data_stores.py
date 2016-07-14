@@ -17,36 +17,42 @@ class ShapefileDS:
         junctions_shp_path = os.path.join(shp_folder, Tables.junctions_table_name + '.shp')
         if not os.path.isfile(junctions_shp_path):
             ShapefileDS.create_junctions_shp(junctions_shp_path, crs)
+            junctions_exist = False
         else:
             junctions_exist = True
 
         reservoirs_shp_path = os.path.join(shp_folder, Tables.reservoirs_table_name + '.shp')
         if not os.path.isfile(reservoirs_shp_path):
             ShapefileDS.create_reservoirs_shp(reservoirs_shp_path, crs)
+            reservoiors_exist = False
         else:
             reservoiors_exist = True
 
         tanks_shp_path = os.path.join(shp_folder, Tables.tanks_table_name + '.shp')
         if not os.path.isfile(tanks_shp_path):
             ShapefileDS.create_tanks_shp(tanks_shp_path, crs)
+            tanks_exist = False
         else:
             tanks_exist = True
 
         pipes_shp_path = os.path.join(shp_folder, Tables.pipes_table_name + '.shp')
         if not os.path.isfile(pipes_shp_path):
             ShapefileDS.create_pipes_shp(pipes_shp_path, crs)
+            pipes_exist = False
         else:
             pipes_exist = True
 
         pumps_shp_path = os.path.join(shp_folder, Tables.pumps_table_name + '.shp')
         if not os.path.isfile(pumps_shp_path):
             ShapefileDS.create_pumps_shp(pumps_shp_path, crs)
+            pumps_exist = False
         else:
             pumps_exist = True
 
         valves_shp_path = os.path.join(shp_folder, Tables.valves_table_name + '.shp')
         if not os.path.isfile(valves_shp_path):
             ShapefileDS.create_valves_shp(valves_shp_path, crs)
+            valves_exist = False
         else:
             valves_exist = True
 
@@ -66,7 +72,6 @@ class ShapefileDS:
                 message += ' valves;'
             raise ShpExistsExcpetion(message)
 
-
     @staticmethod
     def create_junctions_shp(shp_file_path, crs=None):
 
@@ -85,8 +90,10 @@ class ShapefileDS:
     def create_reservoirs_shp(shp_file_path, crs=None):
 
         fields = QgsFields()
-        fields.append(QgsField(QgsField(Reservoir.field_name_eid, QVariant.String)))
-        # TODO: complete fields
+        fields.append(QgsField(Reservoir.field_name_eid, QVariant.String))
+        fields.append(QgsField(Reservoir.field_name_elevation, QVariant.Double))
+        fields.append(QgsField(Reservoir.field_name_elevation_corr, QVariant.Double))
+        fields.append(QgsField(Reservoir.field_name_pressure, QVariant.Double))
 
         writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBPoint, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:
@@ -96,8 +103,15 @@ class ShapefileDS:
     def create_tanks_shp(shp_file_path, crs=None):
 
         fields = QgsFields()
-        fields.append(QgsField(QgsField(Tank.field_name_eid, QVariant.String)))
-        # TODO: Complete fields
+        fields.append(QgsField(Tank.field_name_eid, QVariant.String))
+        fields.append(QgsField(Tank.field_name_curve, QVariant.Int))
+        fields.append(QgsField(Tank.field_name_elevation, QVariant.Double))
+        fields.append(QgsField(Tank.field_name_elevation_corr, QVariant.Double))
+        fields.append(QgsField(Tank.field_name_diameter, QVariant.Double))
+        fields.append(QgsField(Tank.field_name_level_init, QVariant.Double))
+        fields.append(QgsField(Tank.field_name_level_max, QVariant.Double))
+        fields.append(QgsField(Tank.field_name_level_min, QVariant.Double))
+        fields.append(QgsField(Tank.field_name_vol_min, QVariant.Double))
 
         writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBPoint, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:

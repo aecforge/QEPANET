@@ -12,10 +12,10 @@ from ..geo_utils import raster_utils
 
 class AddJunctionTool(QgsMapTool):
 
-    def __init__(self, data_dock, iface):
-        QgsMapTool.__init__(self, iface.mapCanvas())
+    def __init__(self, data_dock):
+        QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
-        self.iface = iface
+        self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
@@ -81,7 +81,7 @@ class AddJunctionTool(QgsMapTool):
 
             self.mouse_clicked = False
 
-            # Find first available ID for Nodes
+            # Find first available ID for Junctions
             node_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: softcode
 
             j_demand = float(self.data_dock.txt_node_demand.text())
@@ -114,7 +114,7 @@ class AddJunctionTool(QgsMapTool):
                     depth,
                     pattern)
 
-                # Get the snapped feature
+                # Get the snapped feature and split it
                 request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
                 feats = list(Parameters.pipes_vlay.getFeatures(request))
                 if len(feats) > 0:

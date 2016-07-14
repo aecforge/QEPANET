@@ -4,7 +4,7 @@ from collections import OrderedDict
 from PyQt4.QtCore import QPyNullVariant
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance, QgsPoint
 
-from network import Junction, Pipe, Pump
+from network import Junction, Reservoir, Tank, Pipe, Pump, Valve
 from parameters import Parameters
 from ..geo_utils import raster_utils
 from ..geo_utils.points_along_line import PointsAlongLineGenerator, PointsAlongLineUtils
@@ -18,8 +18,8 @@ class NodeHandler:
     @staticmethod
     def create_new_junction(junctions_vlay, point, eid, elev, demand, depth, pattern):
 
-        nodes_caps = junctions_vlay.dataProvider().capabilities()
-        if nodes_caps and QgsVectorDataProvider.AddFeatures:
+        junctions_caps = junctions_vlay.dataProvider().capabilities()
+        if junctions_caps and QgsVectorDataProvider.AddFeatures:
 
             # New stand-alone node
             junctions_vlay.beginEditCommand("Add junction")
@@ -39,6 +39,28 @@ class NodeHandler:
 
             return new_junct_feat
 
+    @staticmethod
+    def create_new_reservoir(reservoirs_vlay, point, eid, elev, elev_corr, pressure):
+
+        reservoirs_caps = reservoirs_vlay.dataProvider().capabilities()
+        if reservoirs_caps and QgsVectorDataProvider.AddFeatures:
+
+            # New stand-alone node
+            reservoirs_vlay.beginEditCommand("Add reservoir")
+
+            new_reservoir_feat = QgsFeature(reservoirs_vlay.pendingFields())
+            new_reservoir_feat.setAttribute(Reservoir.field_name_eid, eid)
+            new_reservoir_feat.setAttribute(Reservoir.field_name_elevation, elev)
+            new_reservoir_feat.setAttribute(Reservoir.field_name_elevation_corr, elev_corr)
+            new_reservoir_feat.setAttribute(Reservoir.field_name_pressure, pressure)
+
+            new_reservoir_feat.setGeometry(QgsGeometry.fromPoint(point))
+
+            reservoirs_vlay.addFeatures([new_reservoir_feat])
+
+            reservoirs_vlay.endEditCommand()
+
+            return new_reservoir_feat
 
 class LinkHandler:
     def __init__(self):

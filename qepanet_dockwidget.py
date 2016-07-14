@@ -31,10 +31,11 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsVectorFileWriter, QGi
 from geo_utils import utils, vector_utils
 from tools.add_junction_tool import AddJunctionTool
 from tools.add_pipe_tool import AddPipeTool
+from tools.add_reservoir_tool import AddReservoirTool
 from tools.add_pump_tool import AddPumpTool
 from tools.move_node_tool import MoveNodeTool
 from tools.network import Tables
-from tools.parameters import Parameters
+from tools.parameters import Parameters, RegExValidators
 from tools.data_stores import ShapefileDS
 from tools.exceptions import ShpExistsExcpetion
 
@@ -61,7 +62,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.decimals = 1
 
-        # Buttons, set checkable
+        # Tools buttons
         self.btn_add_junction.setCheckable(True)
         self.btn_add_reservoir.setCheckable(True)
         self.btn_add_tank.setCheckable(True)
@@ -72,7 +73,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_move_node.setCheckable(True)
         self.btn_move_link.setCheckable(True)
 
-        # Buttons, set actions
         QtCore.QObject.connect(self.btn_add_junction, QtCore.SIGNAL('pressed()'), self.add_junction)
         QtCore.QObject.connect(self.btn_add_reservoir, QtCore.SIGNAL('pressed()'), self.add_reservoir)
         QtCore.QObject.connect(self.btn_add_tank, QtCore.SIGNAL('pressed()'), self.add_tank)
@@ -84,54 +84,19 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QtCore.QObject.connect(self.btn_move_node, QtCore.SIGNAL('pressed()'), self.move_node)
         QtCore.QObject.connect(self.btn_move_link, QtCore.SIGNAL('pressed()'), self.move_link)
 
-        QtCore.QObject.connect(self.btn_create_layers, QtCore.SIGNAL('pressed()'), self.create_layers)
-
-        # Sliders
-        self.sli_pipe_roughness.valueChanged.connect(self.roughness_slider_changed)
-
-        # Combo box, fill them
-
-        # Pipe roughness
-        self.cbo_pipe_roughness.addItem('')
-
-        # Pipe status
-        self.cbo_pipe_status.addItem('Open') # TODO: softcode
-        self.cbo_pipe_status.addItem('Closed') # TODO: softcode
-        self.cbo_pipe_status.addItem('CV') # TODO: sofcode
-
-        # Pipe roughness #TODO: put values in external file
-        self.cbo_pipe_roughness.clear()
-        self.cbo_pipe_roughness.addItem('Asphalted cast iron', ['0.015', '0.04'])
-        self.cbo_pipe_roughness.addItem('Cast iron', ['0.03', '0.06'])
-        self.cbo_pipe_roughness.addItem('Commercial steel', ['0.05', '0.15'])
-        self.cbo_pipe_roughness.addItem('Concrete', ['0.3', '3'])
-        self.cbo_pipe_roughness.addItem('Galvanized iron', ['0.015', '0.03'])
-        self.cbo_pipe_roughness.addItem('PVC, glass, drawn', ['0', '0.02'])
-
-        self.update_roughness_params(self.cbo_pipe_roughness.itemData(self.cbo_pipe_roughness.currentIndex()))
-
-        # Combo boxes, set actions
+        # Layers
         QtCore.QObject.connect(self.cbo_junctions, QtCore.SIGNAL('activated(int)'), self.cbo_junctions_activated)
         QtCore.QObject.connect(self.cbo_reservoirs, QtCore.SIGNAL('activated(int)'), self.cbo_reservoirs_activated)
         QtCore.QObject.connect(self.cbo_tanks, QtCore.SIGNAL('activated(int)'), self.cbo_tanks_activated)
-
         QtCore.QObject.connect(self.cbo_pipes, QtCore.SIGNAL('activated(int)'), self.cbo_pipes_activated)
         QtCore.QObject.connect(self.cbo_pumps, QtCore.SIGNAL('activated(int)'), self.cbo_pumps_activated)
         QtCore.QObject.connect(self.cbo_valves, QtCore.SIGNAL('activated(int)'), self.cbo_valves_activated)
-
         QtCore.QObject.connect(self.cbo_dem, QtCore.SIGNAL('activated(int)'), self.cbo_dem_activated)
 
-        QtCore.QObject.connect(self.cbo_pipe_roughness, QtCore.SIGNAL('activated(int)'), self.cbo_pipe_roughness_activated)
-
-        # QgsMapLayerRegistry.instance().layersAdded.connect(self.update_layers_combos)
         QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.update_layers_combos)
         QgsMapLayerRegistry.instance().layerRemoved.connect(self.update_layers_combos)
-
         self.update_layers_combos()
         self.preselect_layers_combos()
-
-        self.update_patterns_combo()
-        self.update_curves_combo()
 
         if self.cbo_junctions.count() >= 0:
             layer_id = self.cbo_junctions.itemData(self.cbo_junctions.currentIndex())
@@ -156,42 +121,83 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             layer_id = self.cbo_dem.itemData(0)
             Parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
+        # Junctions
+        self.txt_node_demand.setValidator(RegExValidators.get_pos_decimals())
+        self.txt_node_depth.setValidator(RegExValidators.get_pos_decimals())
+
+        self.update_patterns_combo()
+
+        # Reservoirs
+        self.txt_reservoir_pressure.setValidator(RegExValidators.get_pos_decimals())
+        self.txt_reservoir_elev_corr.setValidator(RegExValidators.get_pos_neg_decimals())
+
+
+        # Tanks
+
+
+        # Pipes
+        self.txt_pipe_demand.setValidator(RegExValidators.get_pos_decimals())
+        self.txt_pipe_diameter.setValidator(RegExValidators.get_pos_decimals())
+        self.txt_pipe_loss.setValidator(RegExValidators.get_pos_decimals())
+
+        self.cbo_pipe_roughness.clear()
+        self.cbo_pipe_roughness.addItem('Asphalted cast iron', ['0.015', '0.04']) # TODO: put everything in txt file
+        self.cbo_pipe_roughness.addItem('Cast iron', ['0.03', '0.06'])
+        self.cbo_pipe_roughness.addItem('Commercial steel', ['0.05', '0.15'])
+        self.cbo_pipe_roughness.addItem('Concrete', ['0.3', '3'])
+        self.cbo_pipe_roughness.addItem('Galvanized iron', ['0.015', '0.03'])
+        self.cbo_pipe_roughness.addItem('PVC, glass, drawn', ['0', '0.02'])
+        self.update_roughness_params(self.cbo_pipe_roughness.itemData(self.cbo_pipe_roughness.currentIndex()))
+        QtCore.QObject.connect(self.cbo_pipe_roughness, QtCore.SIGNAL('activated(int)'), self.cbo_pipe_roughness_activated)
+
+        self.sli_pipe_roughness.valueChanged.connect(self.roughness_slider_changed)
+
+        self.cbo_pipe_status.addItem('Open')  # TODO: softcode
+        self.cbo_pipe_status.addItem('Closed')  # TODO: softcode
+        self.cbo_pipe_status.addItem('CV')  # TODO: sofcode
+
+
+        # Pumps
+        self.update_curves_combo()
+
+        # Valves
+
+        # Other tools
+        QtCore.QObject.connect(self.btn_create_layers, QtCore.SIGNAL('pressed()'), self.create_layers)
+
+
+
+
+
+
+
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
 
     def add_junction(self):
-        tool = AddJunctionTool(self, self.iface)
+        tool = AddJunctionTool(self)
         self.iface.mapCanvas().setMapTool(tool)
-
-        # Cursor
-        cursor = QtGui.QCursor()
-        cursor.setShape(QtCore.Qt.CrossCursor)
-        self.iface.mapCanvas().setCursor(cursor)
-
-    def add_pipe(self):
-        tool = AddPipeTool(self, self.iface)
-        self.iface.mapCanvas().setMapTool(tool)
-
-        # Cursor
-        cursor = QtGui.QCursor()
-        cursor.setShape(QtCore.Qt.CrossCursor)
-        self.iface.mapCanvas().setCursor(cursor)
+        self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_reservoir(self):
-        pass
+        tool = AddReservoirTool(self)
+        self.iface.mapCanvas().setMapTool(tool)
+        self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_tank(self):
         pass
 
-    def add_pump(self):
-        tool = AddPumpTool(self, self.iface)
+    def add_pipe(self):
+        tool = AddPipeTool(self)
         self.iface.mapCanvas().setMapTool(tool)
+        self.set_cursor(QtCore.Qt.CrossCursor)
 
-        # Cursor
-        cursor = QtGui.QCursor()
-        cursor.setShape(QtCore.Qt.CrossCursor)
-        self.iface.mapCanvas().setCursor(cursor)
+    def add_pump(self):
+        tool = AddPumpTool(self)
+        self.iface.mapCanvas().setMapTool(tool)
+        self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_valve(self):
         pass
@@ -199,11 +205,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def move_node(self):
         tool = MoveNodeTool(self, self.iface)
         self.iface.mapCanvas().setMapTool(tool)
-
-        # Cursor
-        cursor = QtGui.QCursor()
-        cursor.setShape(QtCore.Qt.CrossCursor)
-        self.iface.mapCanvas().setCursor(cursor)
+        self.set_cursor(QtCore.Qt.CrossCursor)
 
     def move_link(self):
         pass
@@ -222,20 +224,26 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             srid = int(srid[srid.find(':')+1:])
             ShapefileDS.create_shapefiles(shp_folder, QgsCoordinateReferenceSystem(srid))
         except ShpExistsExcpetion as e:
-             self.iface.messageBar().pushInfo(Parameters.plug_in_name, e.message)
+            self.iface.messageBar().pushInfo(Parameters.plug_in_name, e.message)
 
-        Parameters.junctions_vlay = self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.junctions_table_name + '.shp'), Tables.junctions_table_name, 'ogr')
-        Parameters.reservoirs_vlay = self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.reservoirs_table_name + '.shp'), Tables.reservoirs_table_name, 'ogr')
-        Parameters.tanks_vlay = self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.tanks_table_name + '.shp'), Tables.tanks_table_name, 'ogr')
-        Parameters.pipes_vlay = self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.pipes_table_name + '.shp'), Tables.pipes_table_name, 'ogr')
-        Parameters.pumps_vlay = self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.pumps_table_name + '.shp'), Tables.pumps_table_name, 'ogr')
+        # Load layers in QGIS
         Parameters.valves_vlay = self.iface.addVectorLayer(
             os.path.join(shp_folder, Tables.valves_table_name + '.shp'), Tables.valves_table_name, 'ogr')
+        Parameters.pumps_vlay = self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.pumps_table_name + '.shp'), Tables.pumps_table_name, 'ogr')
+        Parameters.pipes_vlay = self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.pipes_table_name + '.shp'), Tables.pipes_table_name, 'ogr')
+        Parameters.tanks_vlay = self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.tanks_table_name + '.shp'), Tables.tanks_table_name, 'ogr')
+        Parameters.reservoirs_vlay = self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.reservoirs_table_name + '.shp'), Tables.reservoirs_table_name, 'ogr')
+        Parameters.junctions_vlay = self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.junctions_table_name + '.shp'), Tables.junctions_table_name, 'ogr')
+
+
+
+
+
 
     def roughness_slider_changed(self):
         self.lbl_pipe_roughness_val_val.setText(str(self.sli_pipe_roughness.value() / float(10**self.decimals)))
@@ -391,3 +399,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.sli_pipe_roughness.setMinimum(min_roughness_mult)
         self.sli_pipe_roughness.setMaximum(max_roughness_mult)
         self.sli_pipe_roughness.setValue(min_roughness_mult)
+
+    def set_cursor(self, cursor_shape):
+        cursor = QtGui.QCursor()
+        cursor.setShape(cursor_shape)
+        self.iface.mapCanvas().setCursor(cursor)
