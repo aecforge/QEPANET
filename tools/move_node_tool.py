@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtCore import Qt, QTimer
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QCursor, QColor
+from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsVectorLayerEditUtils, QgsVectorDataProvider
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
-from qgis.core import QgsPoint, QgsRaster, QgsVectorLayer, QgsProject, QgsSnapper, QgsTolerance, QGis,\
-    QgsFeatureRequest, QgsFeature, QgsGeometry, QgsVectorLayerEditUtils, QgsVectorDataProvider
-from ..geo_utils import utils as geo_utils
-from ..geo_utils import vector_utils as vutils
-from ..parameters import Parameters
-from network_handling import LinkHandler, NodeHandler, NetworkUtils
+
+from network_handling import NetworkUtils
+from parameters import Parameters
 
 
 class MoveNodeTool(QgsMapTool):

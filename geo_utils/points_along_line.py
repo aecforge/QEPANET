@@ -1,7 +1,9 @@
 import math
 from collections import OrderedDict
+
 from qgis.core import QgsGeometry
-from ..parameters import Parameters
+
+from ..tools.parameters import Parameters
 
 
 class PointsAlongLineGenerator:

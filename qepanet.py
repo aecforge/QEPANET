@@ -22,16 +22,16 @@
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
 from PyQt4.QtGui import QAction, QIcon, QMessageBox, QFileDialog
-from parameters import Parameters, ConfigFile
+
 from tools.inp_file import InpFile
+from tools.parameters import Parameters, ConfigFile
 
 # Initialize Qt resources from file resources.py
-import resources
 
 # Import the code for the DockWidget
 from qepanet_dockwidget import QEpanetDockWidget
 import os.path
-
+import resources
 
 class QEpanet:
     """QGIS Plugin Implementation."""

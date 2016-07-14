@@ -6,8 +6,8 @@ from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from network_handling import LinkHandler, NodeHandler, NetworkUtils
+from parameters import Parameters
 from ..geo_utils import raster_utils
-from ..parameters import Parameters
 
 
 class AddJunctionTool(QgsMapTool):

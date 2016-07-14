@@ -1,0 +1,2 @@
+class ShpExistsExcpetion(Exception):
+    pass

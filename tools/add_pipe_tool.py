@@ -8,10 +8,10 @@ from PyQt4.QtGui import QColor
 from qgis.core import QgsPoint, QgsRaster, QgsSnapper, QgsGeometry
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
-from network_handling import LinkHandler, NodeHandler, NetworkUtils
 from network import Junction
+from network_handling import LinkHandler, NodeHandler, NetworkUtils
+from parameters import Parameters
 from ..geo_utils import raster_utils
-from ..parameters import Parameters
 
 
 class AddPipeTool(QgsMapTool):

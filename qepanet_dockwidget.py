@@ -23,17 +23,20 @@
 
 import os
 
-from PyQt4 import QtCore, QtGui, uic
+from PyQt4 import QtCore, uic, QtGui
 from PyQt4.QtCore import pyqtSignal
-from qgis.core import QgsMapLayer, QgsMapLayerRegistry
+from PyQt4.QtGui import QFileDialog
+from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsVectorFileWriter, QGis, QgsCoordinateReferenceSystem
 
-from geo_utils import utils
-from parameters import Parameters
+from geo_utils import utils, vector_utils
 from tools.add_junction_tool import AddJunctionTool
 from tools.add_pipe_tool import AddPipeTool
 from tools.add_pump_tool import AddPumpTool
 from tools.move_node_tool import MoveNodeTool
 from tools.network import Tables
+from tools.parameters import Parameters
+from tools.data_stores import ShapefileDS
+from tools.exceptions import ShpExistsExcpetion
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qepanet_dockwidget_base.ui'))
@@ -80,6 +83,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         QtCore.QObject.connect(self.btn_move_node, QtCore.SIGNAL('pressed()'), self.move_node)
         QtCore.QObject.connect(self.btn_move_link, QtCore.SIGNAL('pressed()'), self.move_link)
+
+        QtCore.QObject.connect(self.btn_create_layers, QtCore.SIGNAL('pressed()'), self.create_layers)
 
         # Sliders
         self.sli_pipe_roughness.valueChanged.connect(self.roughness_slider_changed)
@@ -202,6 +207,35 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def move_link(self):
         pass
+
+    def create_layers(self):
+
+        shp_folder = QFileDialog.getExistingDirectory(
+            self.iface.mainWindow(),
+            'Select the directory where the Shapefiles will be created')
+
+        if shp_folder is None or shp_folder == '':
+            return
+
+        try:
+            srid = self.iface.mapCanvas().mapRenderer().destinationCrs().authid()
+            srid = int(srid[srid.find(':')+1:])
+            ShapefileDS.create_shapefiles(shp_folder, QgsCoordinateReferenceSystem(srid))
+        except ShpExistsExcpetion as e:
+             self.iface.messageBar().pushInfo(Parameters.plug_in_name, e.message)
+
+        Parameters.junctions_vlay = self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.junctions_table_name + '.shp'), Tables.junctions_table_name, 'ogr')
+        Parameters.reservoirs_vlay = self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.reservoirs_table_name + '.shp'), Tables.reservoirs_table_name, 'ogr')
+        Parameters.tanks_vlay = self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.tanks_table_name + '.shp'), Tables.tanks_table_name, 'ogr')
+        Parameters.pipes_vlay = self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.pipes_table_name + '.shp'), Tables.pipes_table_name, 'ogr')
+        Parameters.pumps_vlay = self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.pumps_table_name + '.shp'), Tables.pumps_table_name, 'ogr')
+        Parameters.valves_vlay = self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.valves_table_name + '.shp'), Tables.valves_table_name, 'ogr')
 
     def roughness_slider_changed(self):
         self.lbl_pipe_roughness_val_val.setText(str(self.sli_pipe_roughness.value() / float(10**self.decimals)))

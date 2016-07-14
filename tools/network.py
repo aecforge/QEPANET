@@ -27,6 +27,21 @@ class Junction:
         self.pattern = None
 
 
+class Reservoir:
+
+    field_name_eid = 'id'
+
+    def __init__(self, eid):
+        self.eid = eid
+
+
+class Tank:
+    field_name_eid = 'id'
+
+    def __init__(self, eid):
+        self.eid = eid
+
+
 class Pipe:
 
     field_name_eid = 'id'
@@ -34,7 +49,7 @@ class Pipe:
     field_name_diameter = 'diameter'
     field_name_end_node = 'end_node'
     field_name_length = 'length'
-    field_name_loss = 'minor_loss'
+    field_name_minor_loss = 'minor_loss'
     field_name_roughness = 'roughness'
     field_name_start_node = 'start_node'
     field_name_status = 'status'
@@ -46,10 +61,11 @@ class Pipe:
         self.diameter = -1
         self.end_node = -1
         self.length = 0
-        self.loss = 0
+        self.minor_loss = 0
         self.roughness = -1
         self.start_node = -1
         self.status = 'on'
+
 
 class Pump:
 
@@ -60,6 +76,13 @@ class Pump:
         self.eid = eid
 
         self.curve = -1
+
+
+class Valve:
+    field_name_eid = 'id'
+
+    def __init__(self, eid):
+        self.eid = eid
 
 
 class Pattern:

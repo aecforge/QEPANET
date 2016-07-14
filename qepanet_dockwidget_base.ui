@@ -163,7 +163,7 @@
            <item>
             <widget class="QToolBox" name="tbx_elements">
              <property name="currentIndex">
-              <number>5</number>
+              <number>7</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -626,6 +626,20 @@
               <attribute name="label">
                <string>Valve properties</string>
               </attribute>
+             </widget>
+             <widget class="QWidget" name="wgt_tools">
+              <attribute name="label">
+               <string>Tools</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_6">
+               <item>
+                <widget class="QPushButton" name="btn_create_layers">
+                 <property name="text">
+                  <string>Create layers</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </widget>
            </item>

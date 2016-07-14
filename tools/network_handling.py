@@ -5,9 +5,9 @@ from PyQt4.QtCore import QPyNullVariant
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance, QgsPoint
 
 from network import Junction, Pipe, Pump
+from parameters import Parameters
 from ..geo_utils import raster_utils
 from ..geo_utils.points_along_line import PointsAlongLineGenerator, PointsAlongLineUtils
-from ..parameters import Parameters
 
 
 class NodeHandler:
@@ -62,7 +62,7 @@ class LinkHandler:
             new_pipe_ft.setAttribute(Pipe.field_name_demand, demand)
             new_pipe_ft.setAttribute(Pipe.field_name_diameter, diameter)
             new_pipe_ft.setAttribute(Pipe.field_name_length, length_3d)
-            new_pipe_ft.setAttribute(Pipe.field_name_loss, loss)
+            new_pipe_ft.setAttribute(Pipe.field_name_minor_loss, loss)
             new_pipe_ft.setAttribute(Pipe.field_name_roughness, roughness)
             new_pipe_ft.setAttribute(Pipe.field_name_status, status)
 
@@ -147,7 +147,7 @@ class LinkHandler:
         # Split only if vertex is not at line ends
         demand = pipe_ft.attribute(Pipe.field_name_demand)
         p_diameter = pipe_ft.attribute(Pipe.field_name_diameter)
-        loss = pipe_ft.attribute(Pipe.field_name_loss)
+        loss = pipe_ft.attribute(Pipe.field_name_minor_loss)
         roughness = pipe_ft.attribute(Pipe.field_name_roughness)
         status = pipe_ft.attribute(Pipe.field_name_status)
 

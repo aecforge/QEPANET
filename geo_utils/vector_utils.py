@@ -25,6 +25,7 @@ def save_layer2shapefile(vlayer, shp_path):
     """
 
     error = QgsVectorFileWriter.writeAsVectorFormat(vlayer, shp_path, "CP1250", vlayer.crs(), "ESRI Shapefile")
+    return error
 
 
 def find_closest_feature(vlayer, map_coord, tolerance_units):

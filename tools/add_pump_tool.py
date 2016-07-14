@@ -6,8 +6,8 @@ from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from network_handling import LinkHandler, NetworkUtils
+from parameters import Parameters
 from ..geo_utils import raster_utils
-from ..parameters import Parameters
 
 
 class AddPumpTool(QgsMapTool):

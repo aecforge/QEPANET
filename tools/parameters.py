@@ -1,5 +1,6 @@
 import os, codecs, ConfigParser
 
+
 class Parameters:
 
     plug_in_name = 'QEPANET 0.01'
@@ -23,7 +24,10 @@ class Parameters:
     tolerance = 1e-8
     min_dist = 1 # TODO: check: 1 m? Why?
 
-    config_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), config_file_name)
+    path = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.dirname(path)
+
+    config_file_path = os.path.join(path, config_file_name)
 
     def __init__(self):
         pass
