@@ -16,20 +16,19 @@ class NodeHandler:
         pass
 
     @staticmethod
-    def create_new_junction(junctions_vlay, point, eid, elev, demand, depth, pattern):
+    def create_new_junction(junctions_vlay, point, eid, elev, demand, depth, pattern_id):
 
         junctions_caps = junctions_vlay.dataProvider().capabilities()
         if junctions_caps and QgsVectorDataProvider.AddFeatures:
 
             # New stand-alone node
             junctions_vlay.beginEditCommand("Add junction")
-
             new_junct_feat = QgsFeature(junctions_vlay.pendingFields())
             new_junct_feat.setAttribute(Junction.field_name_eid, eid)
             new_junct_feat.setAttribute(Junction.field_name_elevation, elev)
             new_junct_feat.setAttribute(Junction.field_name_demand, demand)
             new_junct_feat.setAttribute(Junction.field_name_depth, depth)
-            new_junct_feat.setAttribute(Junction.field_name_pattern, pattern)
+            new_junct_feat.setAttribute(Junction.field_name_pattern, pattern_id)
 
             new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
 
@@ -61,6 +60,33 @@ class NodeHandler:
             reservoirs_vlay.endEditCommand()
 
             return new_reservoir_feat
+
+    @staticmethod
+    def create_new_tank(tanks_vlay, point, eid, curve, diameter, elev, elev_corr, level_init, level_min, level_max, vol_min):
+        tanks_caps = tanks_vlay.dataProvider().capabilities()
+        if tanks_caps and QgsVectorDataProvider.AddFeatures:
+
+            tanks_vlay.beginEditCommand("Add junction")
+
+            new_tank_feat = QgsFeature(tanks_vlay.pendingFields())
+
+            new_tank_feat.setAttribute(Tank.field_name_eid, eid)
+            new_tank_feat.setAttribute(Tank.field_name_curve, curve.id)
+            new_tank_feat.setAttribute(Tank.field_name_diameter, diameter)
+            new_tank_feat.setAttribute(Tank.field_name_elevation, elev)
+            new_tank_feat.setAttribute(Tank.field_name_elevation_corr, elev_corr)
+            new_tank_feat.setAttribute(Tank.field_name_level_init, level_init)
+            new_tank_feat.setAttribute(Tank.field_name_level_min, level_min)
+            new_tank_feat.setAttribute(Tank.field_name_level_max, level_max)
+            new_tank_feat.setAttribute(Tank.field_name_vol_min, vol_min)
+
+            new_tank_feat.setGeometry(QgsGeometry.fromPoint(point))
+
+            tanks_vlay.addFeatures([new_tank_feat])
+
+            tanks_vlay.endEditCommand()
+
+            return new_tank_feat
 
 class LinkHandler:
     def __init__(self):
@@ -127,13 +153,13 @@ class LinkHandler:
         if junctions_caps:
             j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
             depth = closest_junction_ft.attribute(Junction.field_name_depth)
-            pattern = closest_junction_ft.attribute(Junction.field_name_pattern)
+            pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
 
             elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_before, 1)
-            NodeHandler.create_new_junction(Parameters.junctions_vlay, node_before, junction_eid, elev, j_demand, depth, pattern)
+            NodeHandler.create_new_junction(Parameters.junctions_vlay, node_before, junction_eid, elev, j_demand, depth, pattern_id)
 
             elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_after, 1)
-            NodeHandler.create_new_junction(Parameters.junctions_vlay, node_after, junction_eid, elev, j_demand, depth, pattern)
+            NodeHandler.create_new_junction(Parameters.junctions_vlay, node_after, junction_eid, elev, j_demand, depth, pattern_id)
 
         # Split the pipe and create gap
         if pipes_caps:
@@ -150,7 +176,7 @@ class LinkHandler:
 
             new_pump_ft = QgsFeature(pumps_vlay.pendingFields())
             new_pump_ft.setAttribute(Pump.field_name_eid, pump_eid)
-            new_pump_ft.setAttribute(Pump.field_name_curve, pump_curve)
+            new_pump_ft.setAttribute(Pump.field_name_curve, pump_curve.id)
 
             new_pump_ft.setGeometry(pump_geom)
 

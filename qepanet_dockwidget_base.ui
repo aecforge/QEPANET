@@ -392,10 +392,18 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="txt_tank_elev_corr"/>
+                <widget class="QLineEdit" name="txt_tank_elev_corr">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="txt_tank_level_init"/>
+                <widget class="QLineEdit" name="txt_tank_level_init">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
                </item>
                <item row="2" column="0">
                 <widget class="QLabel" name="lbl_tank_level_min">
@@ -405,7 +413,11 @@
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QLineEdit" name="txt_tank_level_min"/>
+                <widget class="QLineEdit" name="txt_tank_level_min">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
                </item>
                <item row="3" column="0">
                 <widget class="QLabel" name="lbl_tank_level_max">
@@ -415,7 +427,11 @@
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="QLineEdit" name="txt_tank_level_max"/>
+                <widget class="QLineEdit" name="txt_tank_level_max">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
                </item>
                <item row="4" column="0">
                 <widget class="QLabel" name="lbl_tank_diameter">
@@ -425,7 +441,11 @@
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="QLineEdit" name="txt_tank_diameter"/>
+                <widget class="QLineEdit" name="txt_tank_diameter">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
                </item>
                <item row="5" column="0">
                 <widget class="QLabel" name="lbl_tank_vol_min">
@@ -435,7 +455,11 @@
                 </widget>
                </item>
                <item row="5" column="1">
-                <widget class="QLineEdit" name="txt_tank_vol_min"/>
+                <widget class="QLineEdit" name="txt_tank_vol_min">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
                </item>
                <item row="6" column="0">
                 <widget class="QLabel" name="lbl_tank_curve">

@@ -15,7 +15,7 @@ class AddPumpTool(QgsMapTool):
     def __init__(self, data_dock):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
-        self.iface = self.iface
+        self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
@@ -115,8 +115,7 @@ class AddPumpTool(QgsMapTool):
                         closest_junction_ft = pipe_endnodes[1]
 
                     # Create the pump
-                    pump_curve = self.data_dock.cbo_pump_curve.itemData(self.data_dock.cbo_pump_curve.currentIndex()).id
-                    print 'pump_curve', pump_curve
+                    pump_curve = self.data_dock.cbo_pump_curve.itemData(self.data_dock.cbo_pump_curve.currentIndex())
                     LinkHandler.create_new_pump(
                         features[0],
                         Parameters.pumps_vlay,
@@ -127,7 +126,7 @@ class AddPumpTool(QgsMapTool):
 
     def activate(self):
 
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
         # TODO: remaining layers
 
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_pipes], self.iface.mapCanvas())

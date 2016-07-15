@@ -10,10 +10,10 @@ from parameters import Parameters
 
 class MoveNodeTool(QgsMapTool):
 
-    def __init__(self, data_dock, iface):
-        QgsMapTool.__init__(self, iface.mapCanvas())
+    def __init__(self, data_dock):
+        QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
-        self.iface = iface
+        self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""

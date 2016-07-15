@@ -19,7 +19,7 @@ class AddPipeTool(QgsMapTool):
     def __init__(self, data_dock):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
-        self.iface = self.iface
+        self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
@@ -56,9 +56,11 @@ class AddPipeTool(QgsMapTool):
         self.rubber_band.movePoint(last_ix - 1, (self.snapped_vertex if self.snapped_vertex is not None else self.mouse_pt))
 
         dem_lay = Parameters.dem_rlay
-        identify_dem = dem_lay.dataProvider().identify(self.mouse_pt, QgsRaster.IdentifyFormatValue)
-        if identify_dem is not None and identify_dem.isValid() and identify_dem.results().get(1) is not None:
-            self.elev = identify_dem.results().get(1)
+
+        elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, self.mouse_pt, 1)
+
+        if elev is not None:
+            self.elev = elev
             self.data_dock.lbl_elev_val.setText("{0:.2f}".format(self.elev))
 
         # Mouse not clicked: snapping to closest vertex
@@ -134,17 +136,17 @@ class AddPipeTool(QgsMapTool):
                 junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: sofcode
                 elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, start_node, 1)
                 depth = float(self.data_dock.txt_node_depth.text())
-                pattern = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex())
+                pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
                 NodeHandler.create_new_junction(Parameters.junctions_vlay, start_node, junction_eid, elev, j_demand, depth,
-                                                pattern)
+                                                pattern_id)
 
                 end_node = nodes[len(nodes) - 1]
                 junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: sofcode
                 elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, end_node, 1)
                 depth = float(self.data_dock.txt_node_depth.text())
-                pattern = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex())
+                pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
                 NodeHandler.create_new_junction(Parameters.junctions_vlay, end_node, junction_eid, elev, j_demand, depth,
-                                                pattern)
+                                                pattern_id)
 
                 # If end or start node intersects a pipe, split it
                 for line_ft in Parameters.pipes_vlay.getFeatures():

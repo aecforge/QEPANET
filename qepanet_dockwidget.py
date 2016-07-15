@@ -32,6 +32,7 @@ from geo_utils import utils, vector_utils
 from tools.add_junction_tool import AddJunctionTool
 from tools.add_pipe_tool import AddPipeTool
 from tools.add_reservoir_tool import AddReservoirTool
+from tools.add_tank_tool import AddTankTool
 from tools.add_pump_tool import AddPumpTool
 from tools.move_node_tool import MoveNodeTool
 from tools.network import Tables
@@ -131,6 +132,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.txt_reservoir_pressure.setValidator(RegExValidators.get_pos_decimals())
         self.txt_reservoir_elev_corr.setValidator(RegExValidators.get_pos_neg_decimals())
 
+        self.update_curves_combo()
 
         # Tanks
 
@@ -187,7 +189,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_tank(self):
-        pass
+        tool = AddTankTool(self)
+        self.iface.mapCanvas().setMapTool(tool)
+        self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_pipe(self):
         tool = AddPipeTool(self)
@@ -354,7 +358,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.reservoirs_table_name:
                 self.set_combo_index(self.cbo_reservoirs, layer_id)
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.tanks_table_name:
-                self.set_combo_index(self.cbo_tanks, Tables.tanks_table_name)
+                self.set_combo_index(self.cbo_tanks, layer_id)
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.valves_table_name:
                 self.set_combo_index(self.cbo_valves, layer_id)
 
@@ -364,8 +368,10 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.cbo_node_pattern.addItem(value.name, value)
 
     def update_curves_combo(self):
+        self.cbo_tank_curve.clear()
         self.cbo_pump_curve.clear()
         for value in Parameters.curves.values():
+            self.cbo_tank_curve.addItem(value.name, value)
             self.cbo_pump_curve.addItem(value.name, value)
 
     def get_combo_current_data(self, combo):

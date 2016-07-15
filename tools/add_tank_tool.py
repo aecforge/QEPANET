@@ -10,7 +10,7 @@ from parameters import Parameters
 from ..geo_utils import raster_utils
 
 
-class AddJunctionTool(QgsMapTool):
+class AddTankTool(QgsMapTool):
 
     def __init__(self, data_dock):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
@@ -81,38 +81,49 @@ class AddJunctionTool(QgsMapTool):
 
             self.mouse_clicked = False
 
-            # Find first available ID for Junctions
-            node_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: softcode
+            # Find first available ID for Tanks
+            tank_eid = NetworkUtils.find_next_id(Parameters.tanks_vlay, 'T') # TODO: softcode
 
-            j_demand = float(self.data_dock.txt_node_demand.text())
-            depth = float(self.data_dock.txt_node_depth.text())
+            curve = self.data_dock.cbo_tank_curve.itemData(self.data_dock.cbo_tank_curve.currentIndex())
+            diameter = float(self.data_dock.txt_tank_diameter.text())
+            elev_corr = float(self.data_dock.txt_tank_elev_corr.text())
+            level_init = float(self.data_dock.txt_tank_level_init.text())
+            level_min = float(self.data_dock.txt_tank_level_min.text())
+            level_max = float(self.data_dock.txt_tank_level_max.text())
+            vol_min = float(self.data_dock.txt_tank_vol_min.text())
 
-            pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
-
-            # No links snapped: create a new stand-alone node
+            # No links snapped: create a new stand-alone tank
             if self.snapped_feat_id is None:
 
-                NodeHandler.create_new_junction(
-                    Parameters.junctions_vlay,
+                NodeHandler.create_new_tank(
+                    Parameters.tanks_vlay,
                     self.mouse_pt,
-                    node_eid,
+                    tank_eid,
+                    curve,
+                    diameter,
                     self.elev,
-                    j_demand,
-                    depth,
-                    pattern_id)
+                    elev_corr,
+                    level_init,
+                    level_min,
+                    level_max,
+                    vol_min)
 
             # A link has been snapped
             else:
 
                 # New node on existing line
-                NodeHandler.create_new_junction(
-                    Parameters.junctions_vlay,
+                NodeHandler.create_new_tank(
+                    Parameters.tanks_vlay,
                     self.snapped_vertex,
-                    node_eid,
+                    tank_eid,
+                    curve,
+                    diameter,
                     self.elev,
-                    j_demand,
-                    depth,
-                    pattern_id)
+                    elev_corr,
+                    level_init,
+                    level_min,
+                    level_max,
+                    vol_min)
 
                 # Get the snapped pipe and split it
                 request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
@@ -131,12 +142,11 @@ class AddJunctionTool(QgsMapTool):
 
         snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
         snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
-        # TODO: remaining layers
 
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
 
     def deactivate(self):
-        self.data_dock.btn_add_junction.setChecked(False)
+        self.data_dock.btn_add_tank.setChecked(False)
 
     def isZoomTool(self):
         return False

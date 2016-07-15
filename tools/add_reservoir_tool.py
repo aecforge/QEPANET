@@ -101,15 +101,15 @@ class AddReservoirTool(QgsMapTool):
             else:
 
                 # New node on existing line
-                NodeHandler.create_new_junction(
-                    Parameters.junctions_vlay,
+                NodeHandler.create_new_reservoir(
+                    Parameters.reservoirs_vlay,
                     self.snapped_vertex,
                     eid,
                     self.elev,
                     elev_corr,
                     pressure)
 
-                # Get the snapped feature and split it
+                # Get the snapped pipe and split it
                 request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
                 feats = list(Parameters.pipes_vlay.getFeatures(request))
                 if len(feats) > 0:
@@ -117,7 +117,7 @@ class AddReservoirTool(QgsMapTool):
                     snapped_pipe = QgsFeature(feats[0])
                     (start_node_ft, end_node_ft) = NetworkUtils.get_start_end_nodes(snapped_pipe.geometry())
 
-                    # Check that the snapped point on line is distant enough from start/end nodes
+                    # Check that the snapped point on pipe is distant enough from start/end nodes
                     if start_node_ft.geometry().distance(self.snapped_vertex) > Parameters.min_dist and\
                         end_node_ft.geometry().distance(self.snapped_vertex) > Parameters.min_dist:
                         LinkHandler.split_pipe(snapped_pipe, self.snapped_vertex)
