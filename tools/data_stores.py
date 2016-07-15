@@ -149,6 +149,10 @@ class ShapefileDS:
 
         fields = QgsFields()
         fields.append(QgsField(QgsField(Valve.field_name_eid, QVariant.String)))
+        fields.append(QgsField(QgsField(Valve.field_name_diameter, QVariant.String)))
+        fields.append(QgsField(QgsField(Valve.field_name_minor_loss, QVariant.Double)))
+        fields.append(QgsField(QgsField(Valve.field_name_setting, QVariant.Double)))
+        fields.append(QgsField(QgsField(Valve.field_name_type, QVariant.String)))
 
         writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBLineString, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:

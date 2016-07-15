@@ -34,8 +34,9 @@ from tools.add_pipe_tool import AddPipeTool
 from tools.add_reservoir_tool import AddReservoirTool
 from tools.add_tank_tool import AddTankTool
 from tools.add_pump_tool import AddPumpTool
+from tools.add_valve_tool import AddValveTool
 from tools.move_node_tool import MoveNodeTool
-from tools.network import Tables
+from tools.network import Tables, Valve
 from tools.parameters import Parameters, RegExValidators
 from tools.data_stores import ShapefileDS
 from tools.exceptions import ShpExistsExcpetion
@@ -135,7 +136,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.update_curves_combo()
 
         # Tanks
-
+        # -
 
         # Pipes
         self.txt_pipe_demand.setValidator(RegExValidators.get_pos_decimals())
@@ -154,25 +155,30 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.sli_pipe_roughness.valueChanged.connect(self.roughness_slider_changed)
 
+        self.cbo_pipe_status.clear()
         self.cbo_pipe_status.addItem('Open')  # TODO: softcode
         self.cbo_pipe_status.addItem('Closed')  # TODO: softcode
         self.cbo_pipe_status.addItem('CV')  # TODO: sofcode
-
 
         # Pumps
         self.update_curves_combo()
 
         # Valves
+        self.cbo_valve_type.clear()
+        for key, value in Valve.types.iteritems():
+            self.cbo_valve_type.addItem(value, key)
+
+        QtCore.QObject.connect(self.cbo_valve_type, QtCore.SIGNAL('activated(int)'), self.cbo_valve_type_activated)
 
         # Other tools
         QtCore.QObject.connect(self.btn_create_layers, QtCore.SIGNAL('pressed()'), self.create_layers)
 
+        self.txt_snap_tolerance.setValidator(RegExValidators.get_pos_decimals())
+        QtCore.QObject.connect(self.txt_snap_tolerance, QtCore.SIGNAL('editingFinished()'), self.snap_tolerance_changed)
 
 
 
-
-
-
+        # TODO: read parameters from parameters file and set previous GUI settings
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -204,15 +210,37 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_valve(self):
-        pass
+        tool = AddValveTool(self, )
 
     def move_node(self):
-        tool = MoveNodeTool(self, self.iface)
+        tool = MoveNodeTool(self)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
     def move_link(self):
         pass
+
+    def cbo_valve_type_activated(self):
+        selected_type = self.cbo_valve_type.itemData(self.cbo_valve_type.currentIndex())
+
+        setting_on = True
+        setting_label = '-'
+        if selected_type == Valve.type_pbv or selected_type == Valve.type_prv or selected_type == Valve.type_psv:
+            setting_label = 'Pressure[m]' # TODO: softcode
+        elif selected_type == Valve.type_fcv:
+            setting_label = 'Flow [???]:' # TODO: softcode
+        elif selected_type == Valve.type_tcv:
+            setting_label = 'Loss coeff. [-]:' # TODO: softcode
+        elif selected_type == Valve.type_gpv:
+            setting_on = False
+
+        self.lbl_valve_setting.setEnabled(setting_on)
+        self.txt_valve_setting.setEnabled(setting_on)
+        self.lbl_valve_curve.setEnabled(not setting_on)
+        self.cbo_valve_curve.setEnabled(not setting_on)
+
+        if setting_on:
+            self.lbl_valve_setting.setText(setting_label)
 
     def create_layers(self):
 
@@ -283,6 +311,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def cbo_pipe_roughness_activated(self):
         self.update_roughness_params(self.get_combo_current_data(self.cbo_pipe_roughness))
+
+    def snap_tolerance_changed(self):
+        Parameters.snap_tolerance = float(self.txt_snap_tolerance.text())
 
     def update_layers_combos(self):
 

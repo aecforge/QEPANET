@@ -119,7 +119,6 @@ class AddPipeTool(QgsMapTool):
                 status = self.data_dock.cbo_pipe_status.currentText()
 
                 LinkHandler.create_new_pipe(
-                    Parameters.pipes_vlay,
                     pipe_eid,
                     j_demand,
                     diameter,
@@ -137,23 +136,21 @@ class AddPipeTool(QgsMapTool):
                 elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, start_node, 1)
                 depth = float(self.data_dock.txt_node_depth.text())
                 pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
-                NodeHandler.create_new_junction(Parameters.junctions_vlay, start_node, junction_eid, elev, j_demand, depth,
-                                                pattern_id)
+                NodeHandler.create_new_junction(start_node, junction_eid, elev, j_demand, depth, pattern_id)
 
                 end_node = nodes[len(nodes) - 1]
                 junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: sofcode
                 elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, end_node, 1)
                 depth = float(self.data_dock.txt_node_depth.text())
                 pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
-                NodeHandler.create_new_junction(Parameters.junctions_vlay, end_node, junction_eid, elev, j_demand, depth,
-                                                pattern_id)
+                NodeHandler.create_new_junction(end_node, junction_eid, elev, j_demand, depth, pattern_id)
 
                 # If end or start node intersects a pipe, split it
                 for line_ft in Parameters.pipes_vlay.getFeatures():
                     if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(start_node)) < Parameters.tolerance:
-                        LinkHandler.split_pipe(line_ft, self.snapped_vertex)
+                        LinkHandler.split_pipe(line_ft, start_node)
                     if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(end_node)) < Parameters.tolerance:
-                        LinkHandler.split_pipe(line_ft, self.snapped_vertex)
+                        LinkHandler.split_pipe(line_ft, end_node)
 
             except Exception as e:
                 self.rubber_band.reset()
@@ -166,25 +163,25 @@ class AddPipeTool(QgsMapTool):
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snapping_distance,
+                                                      Parameters.snap_tolerance,
                                                       True)
         QgsProject.instance().setSnapSettingsForLayer(Parameters.reservoirs_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snapping_distance,
+                                                      Parameters.snap_tolerance,
                                                       True)
         QgsProject.instance().setSnapSettingsForLayer(Parameters.tanks_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snapping_distance,
+                                                      Parameters.snap_tolerance,
                                                       True)
         QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snapping_distance,
+                                                      Parameters.snap_tolerance,
                                                       True)
 
         snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)

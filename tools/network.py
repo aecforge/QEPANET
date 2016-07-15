@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 class Tables:
 
     pipes_table_name = 'pipes'
@@ -101,6 +103,25 @@ class Pump:
 
 class Valve:
     field_name_eid = 'id'
+    field_name_diameter = 'diameter'
+    field_name_minor_loss = 'minor_loss'
+    field_name_setting = 'setting'
+    field_name_type = 'type'
+
+    type_prv = 'PRV'
+    type_psv = 'PSV'
+    type_pbv = 'PBV'
+    type_fcv = 'FCV'
+    type_tcv = 'TCV'
+    type_gpv = 'GPV'
+
+    types = OrderedDict()
+    types['PRV'] = 'PRV (pressure reducing)'
+    types['PSV'] = 'PSV (pressure sustaining)'
+    types['PBV'] = 'PBV (pressure breaker)'
+    types['FCV'] = 'FCV (flow control)'
+    types['TCV'] = 'TCV (throttle control)'
+    types['GPV'] = 'GPV (general purpose)'
 
     def __init__(self, eid):
         self.eid = eid

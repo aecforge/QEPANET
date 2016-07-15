@@ -90,7 +90,6 @@ class AddReservoirTool(QgsMapTool):
             if self.snapped_feat_id is None:
 
                 NodeHandler.create_new_reservoir(
-                    Parameters.reservoirs_vlay,
                     self.mouse_pt,
                     eid,
                     self.elev,
@@ -102,7 +101,6 @@ class AddReservoirTool(QgsMapTool):
 
                 # New node on existing line
                 NodeHandler.create_new_reservoir(
-                    Parameters.reservoirs_vlay,
                     self.snapped_vertex,
                     eid,
                     self.elev,
@@ -115,7 +113,7 @@ class AddReservoirTool(QgsMapTool):
                 if len(feats) > 0:
 
                     snapped_pipe = QgsFeature(feats[0])
-                    (start_node_ft, end_node_ft) = NetworkUtils.get_start_end_nodes(snapped_pipe.geometry())
+                    (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(snapped_pipe.geometry())
 
                     # Check that the snapped point on pipe is distant enough from start/end nodes
                     if start_node_ft.geometry().distance(self.snapped_vertex) > Parameters.min_dist and\
@@ -128,7 +126,7 @@ class AddReservoirTool(QgsMapTool):
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snapping_distance,
+                                                      Parameters.snap_tolerance,
                                                       True)
 
         snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)

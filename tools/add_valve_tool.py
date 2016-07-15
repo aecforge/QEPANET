@@ -5,12 +5,13 @@ from PyQt4.QtGui import QColor
 from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
+from network import Valve
 from network_handling import LinkHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils
 
 
-class AddPumpTool(QgsMapTool):
+class AddValveTool(QgsMapTool):
 
     def __init__(self, data_dock):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
@@ -81,13 +82,10 @@ class AddPumpTool(QgsMapTool):
 
             self.mouse_clicked = False
 
-            # Find first available ID for Pumps
-            pump_eid = NetworkUtils.find_next_id(Parameters.pumps_vlay, 'P') # TODO: softcode
-
             # No pipe snapped: notify user
             if self.snapped_pipe_id is None:
 
-                self.iface.messageBar().pushInfo(Parameters.plug_in_name, 'You need to snap the cursor to a pipe to add a pump.')
+                self.iface.messageBar().pushInfo(Parameters.plug_in_name, 'You need to snap the cursor to a pipe to add a valve.')
 
             # A pipe has been snapped
             else:
@@ -104,7 +102,7 @@ class AddPumpTool(QgsMapTool):
                         self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.')
                         return
 
-                    # Find endnode closest to pump position
+                    # Find endnode closest to valve position
                     dist_1 = pipe_endnodes[0].geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
                     dist_2 = pipe_endnodes[1].geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
 
@@ -114,13 +112,23 @@ class AddPumpTool(QgsMapTool):
                     else:
                         closest_junction_ft = pipe_endnodes[1]
 
-                    # Create the pump
-                    pump_curve = self.data_dock.cbo_pump_curve.itemData(self.data_dock.cbo_pump_curve.currentIndex())
-                    LinkHandler.create_new_pump(
+                    # Create the valve
+                    diameter = self.txt_valve_diameter.text()
+                    minor_loss = self.txt_valve_minor_loss.text()
+                    selected_type = self.cbo_valve_type.itemData(self.cbo_valve_type.currentIndex())
+                    if selected_type != Valve.type_gpv:
+                        setting = self.txt_valve_setting.text()
+                    else:
+                        setting = self.cbo_valve_curve.itemData(self.cbo_valve_curve.currentIndex())
+
+                    LinkHandler.create_new_valve(
                         features[0],
                         closest_junction_ft,
                         self.snapped_vertex,
-                        pump_curve)
+                        diameter,
+                        minor_loss,
+                        setting,
+                        type)
 
     def activate(self):
 
@@ -143,7 +151,7 @@ class AddPumpTool(QgsMapTool):
                                                       0,
                                                       True)
 
-        self.data_dock.btn_add_pump.setChecked(False)
+        self.data_dock.btn_add_valve.setChecked(False)
 
     def isZoomTool(self):
         return False
