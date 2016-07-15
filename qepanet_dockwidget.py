@@ -26,7 +26,7 @@ import os
 from PyQt4 import QtCore, uic, QtGui
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui import QFileDialog
-from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsVectorFileWriter, QGis, QgsCoordinateReferenceSystem
+from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsVectorFileWriter, QGis, QgsCoordinateReferenceSystem, QgsProject, QgsSnapper, QgsTolerance
 
 from geo_utils import utils, vector_utils
 from tools.add_junction_tool import AddJunctionTool

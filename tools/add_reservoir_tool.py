@@ -2,7 +2,7 @@
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest
+from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from network_handling import LinkHandler, NodeHandler, NetworkUtils
@@ -124,12 +124,27 @@ class AddReservoirTool(QgsMapTool):
 
     def activate(self):
 
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToSegment,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snapping_distance,
+                                                      True)
+
         snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
         snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
 
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
 
     def deactivate(self):
+
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToSegment,
+                                                      QgsTolerance.MapUnits,
+                                                      0,
+                                                      True)
+
         self.data_dock.btn_add_reservoir.setChecked(False)
 
     def isZoomTool(self):

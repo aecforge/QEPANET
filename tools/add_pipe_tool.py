@@ -5,7 +5,7 @@ import traceback
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsRaster, QgsSnapper, QgsGeometry
+from qgis.core import QgsPoint, QgsRaster, QgsSnapper, QgsGeometry, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
 from network import Junction
@@ -162,6 +162,31 @@ class AddPipeTool(QgsMapTool):
 
     def activate(self):
 
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.junctions_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToVertex,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snapping_distance,
+                                                      True)
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.reservoirs_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToVertex,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snapping_distance,
+                                                      True)
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.tanks_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToVertex,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snapping_distance,
+                                                      True)
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToSegment,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snapping_distance,
+                                                      True)
+
         snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
         snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
         # TODO: remaining layers
@@ -169,6 +194,33 @@ class AddPipeTool(QgsMapTool):
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
 
     def deactivate(self):
+
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.junctions_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToVertex,
+                                                      QgsTolerance.MapUnits,
+                                                      0,
+                                                      True)
+
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.reservoirs_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToVertex,
+                                                      QgsTolerance.MapUnits,
+                                                      0,
+                                                      True)
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.tanks_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToVertex,
+                                                      QgsTolerance.MapUnits,
+                                                      0,
+                                                      True)
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToSegment,
+                                                      QgsTolerance.MapUnits,
+                                                      0,
+                                                      True)
+
         self.rubber_band.reset()
         self.data_dock.btn_add_pipe.setChecked(False)
 

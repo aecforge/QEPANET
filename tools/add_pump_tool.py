@@ -2,7 +2,7 @@
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest
+from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from network_handling import LinkHandler, NetworkUtils
@@ -126,12 +126,25 @@ class AddPumpTool(QgsMapTool):
 
     def activate(self):
 
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
-        # TODO: remaining layers
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToSegment,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snapping_distance,
+                                                      True)
 
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_pipes], self.iface.mapCanvas())
 
     def deactivate(self):
+
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToSegment,
+                                                      QgsTolerance.MapUnits,
+                                                      0,
+                                                      True)
+
         self.data_dock.btn_add_pump.setChecked(False)
 
     def isZoomTool(self):

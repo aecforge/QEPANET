@@ -76,7 +76,6 @@ class QEpanet:
         self.pluginIsActive = False
         self.dockwidget = None
 
-
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -91,7 +90,6 @@ class QEpanet:
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('QEpanet', message)
-
 
     def add_action(
         self,
