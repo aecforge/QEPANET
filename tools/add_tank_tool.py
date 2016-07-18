@@ -150,6 +150,10 @@ class AddTankTool(QgsMapTool):
 
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
 
+        # Editing
+        if not Parameters.tanks_vlay.isEditable():
+            Parameters.tanks_vlay.startEditing()
+
     def deactivate(self):
 
         QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),

@@ -237,7 +237,7 @@ class QEpanet:
                 self.iface.mainWindow(),
                 'Select patterns file',
                 None,
-                'Patterns files (*.txt, *.inp)')
+                'Patterns files (*.txt *.inp)')
 
             if patterns_file_path is None or patterns_file_path == '':
                 return
@@ -258,7 +258,7 @@ class QEpanet:
                 self.iface.mainWindow(),
                 'Select curves file',
                 None,
-                'Curves files (*.txt, *.inp)')
+                'Curves files (*.txt *.inp)')
 
             if curves_file_path is None or curves_file_path == '':
                 return

@@ -2,7 +2,7 @@
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance
+from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance, QgsGeometry
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from network_handling import LinkHandler, NodeHandler, NetworkUtils
@@ -121,8 +121,8 @@ class AddJunctionTool(QgsMapTool):
                     (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(snapped_pipe.geometry())
 
                     # Check that the snapped point on line is distant enough from start/end nodes
-                    if start_node_ft.geometry().distance(self.snapped_vertex) > Parameters.min_dist and\
-                        end_node_ft.geometry().distance(self.snapped_vertex) > Parameters.min_dist:
+                    if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist and\
+                        end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist:
                         LinkHandler.split_pipe(
                             snapped_pipe,
                             self.snapped_vertex)
@@ -141,6 +141,10 @@ class AddJunctionTool(QgsMapTool):
         snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
 
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
+
+        # Editing
+        if not Parameters.junctions_vlay.isEditable():
+            Parameters.junctions_vlay.startEditing()
 
     def deactivate(self):
 

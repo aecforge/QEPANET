@@ -142,6 +142,10 @@ class AddValveTool(QgsMapTool):
         snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_pipes], self.iface.mapCanvas())
 
+        # Editing
+        if not Parameters.valves_vlay.isEditable():
+            Parameters.valves_vlay.startEditing()
+
     def deactivate(self):
 
         QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),

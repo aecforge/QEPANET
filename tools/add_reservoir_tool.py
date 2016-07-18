@@ -134,6 +134,10 @@ class AddReservoirTool(QgsMapTool):
 
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
 
+        # Editing
+        if not Parameters.reservoirs_vlay.isEditable():
+            Parameters.reservoirs_vlay.startEditing()
+
     def deactivate(self):
 
         QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),

@@ -1,6 +1,7 @@
 import os, codecs, ConfigParser
 from PyQt4.QtCore import QRegExp
 from PyQt4.QtGui import QRegExpValidator
+import configparser
 
 
 class Parameters:
@@ -72,19 +73,25 @@ class ConfigFile:
     def get_patterns_file_path(self):
 
         self.config.read(self.config_file_path)
-        patterns_file_path = self.config.get('EPANET', 'patterns_file') # TODO: softcode
+        try:
+            patterns_file_path = self.config.get('EPANET', 'patterns_file') # TODO: softcode
+        except configparser.NoOptionError as e:
+            return None
+
         return patterns_file_path
 
     def set_patterns_file_path(self, patterns_file_path):
         config = self.get_config()
         config.set('EPANET', 'patterns_file', patterns_file_path) # TODO: softcode
-
         with codecs.open(self.config_file_path, 'wb') as configfile:
             config.write(configfile)
 
     def get_curves_file_path(self):
         self.config.read(self.config_file_path)
-        curves_file_path = self.config.get('EPANET', 'curves_file')  # TODO: softcode
+        try:
+            curves_file_path = self.config.get('EPANET', 'curves_file')  # TODO: softcode
+        except configparser.NoOptionError as e:
+            return None
         return curves_file_path
 
     def set_curves_file_path(self, curves_file_path):

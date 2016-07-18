@@ -272,10 +272,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         Parameters.junctions_vlay = self.iface.addVectorLayer(
             os.path.join(shp_folder, Tables.junctions_table_name + '.shp'), Tables.junctions_table_name, 'ogr')
 
-
-
-
-
+        self.preselect_layers_combos()
 
     def roughness_slider_changed(self):
         self.lbl_pipe_roughness_val_val.setText(str(self.sli_pipe_roughness.value() / float(10**self.decimals)))
@@ -392,6 +389,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.set_combo_index(self.cbo_tanks, layer_id)
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.valves_table_name:
                 self.set_combo_index(self.cbo_valves, layer_id)
+
+            if utils.LayerUtils.get_lay_from_id(layer_id).name() == 'dem':
+                self.set_combo_index(self.cbo_dem, layer_id)
 
     def update_patterns_combo(self):
         self.cbo_node_pattern.clear()
