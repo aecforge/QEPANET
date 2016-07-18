@@ -439,6 +439,21 @@ class NetworkUtils:
         return intersecting
 
     @staticmethod
+    def find_adjacent_pipes(node_geom):
+
+        # Search among pumps
+        adjacent_pumps_fts = []
+        for pipe_ft in Parameters.pipes_vlay.getFeatures():
+            pipe_geom = pipe_ft.geometry()
+            nodes = pipe_geom.asPolyline()
+            # print 'nodes', node_geom.exportToWkt(), nodes[0].wellKnownText(), nodes[len(nodes) - 1].wellKnownText()
+            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0])) or\
+                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1])):
+                adjacent_pumps_fts.append(pipe_ft)
+
+        return adjacent_pumps_fts
+
+    @staticmethod
     def find_next_id(vlay, prefix):
         features = vlay.getFeatures()
         max_eid = -1
@@ -474,3 +489,9 @@ class NetworkUtils:
         snapper.setSnapMode(QgsSnapper.SnapWithOneResult)
         return snapper
 
+    @staticmethod
+    def points_overlap(point_geom1, point_geom2):
+        if point_geom1.distance(point_geom2) < Parameters.tolerance:
+            return TabError
+        else:
+            return False

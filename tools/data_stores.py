@@ -125,9 +125,9 @@ class ShapefileDS:
         fields.append(QgsField(QgsField(Pipe.field_name_demand, QVariant.Double)))
         fields.append(QgsField(QgsField(Pipe.field_name_diameter, QVariant.Double)))
         fields.append(QgsField(QgsField(Pipe.field_name_length, QVariant.Double)))
-        fields.append(QgsField(QgsField(Pipe.field_name_roughness, QVariant.Int)))
+        fields.append(QgsField(QgsField(Pipe.field_name_roughness, QVariant.Double)))
         fields.append(QgsField(QgsField(Pipe.field_name_status, QVariant.String)))
-        fields.append(QgsField(QgsField(Pipe.field_name_minor_loss, QVariant.Int)))
+        fields.append(QgsField(QgsField(Pipe.field_name_minor_loss, QVariant.Double)))
 
         writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBLineString, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:

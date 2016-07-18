@@ -190,6 +190,8 @@ class AddPipeTool(QgsMapTool):
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
 
         # Editing
+        if not Parameters.junctions_vlay.isEditable():
+            Parameters.junctions_vlay.startEditing()
         if not Parameters.pipes_vlay.isEditable():
             Parameters.pipes_vlay.startEditing()
 

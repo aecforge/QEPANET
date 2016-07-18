@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QCursor, QColor
-from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsVectorLayerEditUtils, QgsVectorDataProvider
+from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsVectorLayerEditUtils, QgsVectorDataProvider, QgsProject, QgsTolerance, QgsSnapper
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
 from network_handling import NetworkUtils
@@ -21,6 +21,7 @@ class MoveNodeTool(QgsMapTool):
         self.vertex_marker = QgsVertexMarker(self.canvas())
         self.mouse_clicked = False
         self.snapper = None
+        self.snapped_lay = None
         self.snapped_feat_id = None
         self.selected_node_ft = None
         self.mouse_pt = None
@@ -45,16 +46,21 @@ class MoveNodeTool(QgsMapTool):
             junctions_list = [feat for feat in Parameters.junctions_vlay.getFeatures(request)]
             self.selected_node_ft = QgsFeature(junctions_list[0])
 
-            selected_node_ft_eid = self.selected_node_ft.attribute('id')  # TODO: softcode
-
             # Find links that start or end in selected point
-            expression = u'"start_node" = \'' + selected_node_ft_eid + '\' or "end_node" = \'' + selected_node_ft_eid + '\'' # TODO: softcode
-            request = QgsFeatureRequest().setFilterExpression(expression)
-            adjacent_pipes_fts = Parameters.pipes_vlay.getFeatures(request) # TODO: Add other node types
+            # selected_node_ft_eid = self.selected_node_ft.attribute('id')  # TODO: softcode
+            # expression = u'"start_node" = \'' + selected_node_ft_eid + '\' or "end_node" = \'' + selected_node_ft_eid + '\'' # TODO: softcode
+            # request = QgsFeatureRequest().setFilterExpression(expression)
+            # adjacent_pipes_fts = Parameters.pipes_vlay.getFeatures(request) # TODO: Add other node types
+
+            adjacent_pipes_fts = NetworkUtils.find_adjacent_pipes(self.selected_node_ft.geometry())
+
+            print 'len', len(adjacent_pipes_fts)
 
             rb_index = 0
             for adjacent_pipes_ft in adjacent_pipes_fts:
                 closest = adjacent_pipes_ft.geometry().closestVertex(self.selected_node_ft.geometry().asPoint())
+
+                print adjacent_pipes_ft.attribute('id')
 
                 if closest[1] == 0:
                     next_vertext_id = closest[1] + 1
@@ -79,12 +85,13 @@ class MoveNodeTool(QgsMapTool):
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
         if not self.mouse_clicked:
-            # Mouse not clicked: snapping to closest vertex
+
             (retval, result) = self.snapper.snapPoint(event.pos())
 
             if len(result) > 0:
 
                 self.snapped_feat_id = result[0].snappedAtGeometry
+                self.snapped_lay = result[0].layer
 
                 snapped_vertex = result[0].snappedVertex
 
@@ -122,9 +129,9 @@ class MoveNodeTool(QgsMapTool):
 
                 # Update node geometry
                 # TODO: move to network_handling?
-                Parameters.junctions_vlay.beginEditCommand("Update node geometry")
                 caps = Parameters.junctions_vlay.dataProvider().capabilities()
                 if caps & QgsVectorDataProvider.ChangeGeometries:
+                    Parameters.junctions_vlay.beginEditCommand("Update node geometry")
                     edit_utils = QgsVectorLayerEditUtils(Parameters.junctions_vlay)
                     edit_utils.moveVertex(
                             self.mouse_pt.x(),
@@ -135,9 +142,9 @@ class MoveNodeTool(QgsMapTool):
                     Parameters.junctions_vlay.endEditCommand()
 
                 # Update links geometries
-                Parameters.pipes_vlay.beginEditCommand("Update pipes geometry")
                 caps = Parameters.pipes_vlay.dataProvider().capabilities()
                 if caps & QgsVectorDataProvider.ChangeGeometries:
+                    Parameters.pipes_vlay.beginEditCommand("Update pipes geometry")
                     for feat, vertex_index in self.adj_pipes_fts_d.iteritems():
                         edit_utils = QgsVectorLayerEditUtils(Parameters.pipes_vlay)
                         edit_utils.moveVertex(
@@ -156,10 +163,47 @@ class MoveNodeTool(QgsMapTool):
         cursor.setShape(Qt.ArrowCursor)
         self.iface.mapCanvas().setCursor(cursor)
 
-        snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
-        # TODO: remaining layers
+        # Snapping
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.junctions_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToSegment,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snap_tolerance,
+                                                      True)
 
-        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions], self.iface.mapCanvas())
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.reservoirs_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToSegment,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snap_tolerance,
+                                                      True)
+
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.tanks_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToSegment,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snap_tolerance,
+                                                      True)
+
+        snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
+        snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(Parameters.reservoirs_vlay)
+        snap_layer_tanks = NetworkUtils.set_up_snap_layer(Parameters.tanks_vlay)
+
+        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_reservoirs, snap_layer_tanks], self.iface.mapCanvas())
+
+        # Editing
+        if not Parameters.junctions_vlay.isEditable():
+            Parameters.junctions_vlay.startEditing()
+        if not Parameters.reservoirs_vlay.isEditable():
+            Parameters.reservoirs_vlay.startEditing()
+        if not Parameters.tanks_vlay.isEditable():
+            Parameters.tanks_vlay.startEditing()
+        if not Parameters.pipes_vlay.isEditable():
+            Parameters.pipes_vlay.startEditing()
+        if not Parameters.pumps_vlay.isEditable():
+            Parameters.pumps_vlay.startEditing()
+        if not Parameters.valves_vlay.isEditable():
+            Parameters.valves_vlay.startEditing()
 
     def deactivate(self):
         self.rubber_bands_d.clear()

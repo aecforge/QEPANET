@@ -34,7 +34,7 @@ class Parameters:
 
     config_file_path = os.path.join(path, config_file_name)
 
-    regex_number_pos_decimals = '^[1-9]\d*(\.\d+)?$'
+    regex_number_pos_decimals = '^[0-9]\d*(\.\d+)?$'
     regex_number_pos_neg_decimals = '^-?[0-9]\d*(\.\d+)?$'
 
     def __init__(self):

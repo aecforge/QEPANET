@@ -145,6 +145,8 @@ class AddJunctionTool(QgsMapTool):
         # Editing
         if not Parameters.junctions_vlay.isEditable():
             Parameters.junctions_vlay.startEditing()
+        if not Parameters.pipes_vlay.isEditable():
+            Parameters.pipes_vlay.startEditing()
 
     def deactivate(self):
 
