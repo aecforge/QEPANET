@@ -54,13 +54,9 @@ class MoveNodeTool(QgsMapTool):
 
             adjacent_pipes_fts = NetworkUtils.find_adjacent_pipes(self.selected_node_ft.geometry())
 
-            print 'len', len(adjacent_pipes_fts)
-
             rb_index = 0
             for adjacent_pipes_ft in adjacent_pipes_fts:
                 closest = adjacent_pipes_ft.geometry().closestVertex(self.selected_node_ft.geometry().asPoint())
-
-                print adjacent_pipes_ft.attribute('id')
 
                 if closest[1] == 0:
                     next_vertext_id = closest[1] + 1

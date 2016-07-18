@@ -283,6 +283,7 @@ def read_layer_val_from_coord(ras_layer, coordinate, band):
     else:
         return None
 
+
 class FormattedRasterStats:
 
     min_val = 0

@@ -120,7 +120,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             Parameters.valves_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
         if self.cbo_dem.count() >= 0:
-            layer_id = self.cbo_dem.itemData(0)
+            layer_id = self.cbo_dem.itemData(self.cbo_dem.currentIndex())
             Parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
         # Junctions
@@ -321,7 +321,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         tanks_lay_id = self.cbo_tanks.itemData(self.cbo_tanks.currentIndex())
         valves_lay_id = self.cbo_valves.itemData(self.cbo_valves.currentIndex())
 
-        dem_lay_id = self.cbo_dem.itemData(self.cbo_valves.currentIndex())
+        dem_lay_id = self.cbo_dem.itemData(self.cbo_dem.currentIndex())
 
         self.cbo_junctions.clear()
         self.cbo_pipes.clear()

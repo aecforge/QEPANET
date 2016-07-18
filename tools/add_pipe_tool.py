@@ -149,6 +149,7 @@ class AddPipeTool(QgsMapTool):
                 for line_ft in Parameters.pipes_vlay.getFeatures():
                     if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(start_node)) < Parameters.tolerance:
                         LinkHandler.split_pipe(line_ft, start_node)
+                for line_ft in Parameters.pipes_vlay.getFeatures():
                     if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(end_node)) < Parameters.tolerance:
                         LinkHandler.split_pipe(line_ft, end_node)
 
