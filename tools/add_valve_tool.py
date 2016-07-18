@@ -99,7 +99,7 @@ class AddValveTool(QgsMapTool):
                     pipe_endnodes = NetworkUtils.find_start_end_junctions(features[0].geometry())
 
                     if len(pipe_endnodes) < 2:
-                        self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.')
+                        self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.')      # TODO: softcode
                         return
 
                     # Find endnode closest to valve position

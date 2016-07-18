@@ -103,29 +103,57 @@ class AddJunctionTool(QgsMapTool):
             # A link has been snapped
             else:
 
-                # New node on existing line
-                NodeHandler.create_new_junction(
-                    self.snapped_vertex,
-                    node_eid,
-                    self.elev,
-                    j_demand,
-                    depth,
-                    pattern_id)
-
-                # Get the snapped pipe and split it
+                # Get the snapped pipe
                 request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
                 feats = list(Parameters.pipes_vlay.getFeatures(request))
                 if len(feats) > 0:
-
                     snapped_pipe = QgsFeature(feats[0])
-                    (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(snapped_pipe.geometry())
 
-                    # Check that the snapped point on line is distant enough from start/end nodes
-                    if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist and\
-                        end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist:
-                        LinkHandler.split_pipe(
-                            snapped_pipe,
-                            self.snapped_vertex)
+                    snapped_ft_pts = QgsGeometry.asPolyline(snapped_pipe.geometry())
+
+                    # The new junction is on the start or end node of the pipe
+                    if NetworkUtils.points_overlap(QgsGeometry.fromPoint(self.snapped_vertex), QgsGeometry.fromPoint(snapped_ft_pts[0])) or\
+                        NetworkUtils.points_overlap(QgsGeometry.fromPoint(self.snapped_vertex), QgsGeometry.fromPoint(snapped_ft_pts[len(snapped_ft_pts) - 1])):
+
+                        NodeHandler.create_new_junction(
+                            self.snapped_vertex,
+                            node_eid,
+                            self.elev,
+                            j_demand,
+                            depth,
+                            pattern_id)
+
+                    else:
+
+                        # Split the pipe
+                        (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(snapped_pipe.geometry())
+
+                        if start_node_ft is None or end_node_ft is None:
+                            self.iface.messageBar().pushWarning(
+                                Parameters.plug_in_name,
+                                'The pipe is missing the start or end nodes. Cannot add a new junction along the pipe.') # TODO: softcode
+                            return
+
+                        # Check that the snapped point on line is distant enough from start/end nodes
+                        if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist and\
+                            end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist:
+
+                            NodeHandler.create_new_junction(
+                                self.snapped_vertex,
+                                node_eid,
+                                self.elev,
+                                j_demand,
+                                depth,
+                                pattern_id)
+
+                            LinkHandler.split_pipe(
+                                snapped_pipe,
+                                self.snapped_vertex)
+                        else:
+                            self.iface.messageBar().pushWarning(
+                                Parameters.plug_in_name,
+                                'The new junction is too close to either the pipe end or start nodes. Cannot add a new junction along the pipe.')  # TODO: softcode
+
 
     def activate(self):
 

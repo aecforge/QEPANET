@@ -6,7 +6,7 @@ import configparser
 
 class Parameters:
 
-    plug_in_name = 'QEPANET 0.01'
+    plug_in_name = 'QEPANET 0.02'
 
     config_file_name = 'config.ini'
 

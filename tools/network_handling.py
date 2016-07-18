@@ -2,7 +2,8 @@ import math
 from collections import OrderedDict
 
 from PyQt4.QtCore import QPyNullVariant
-from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance, QgsPoint
+from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance, QgsPoint,\
+    QgsVectorLayerEditUtils
 
 from network import Junction, Reservoir, Tank, Pipe, Pump, Valve
 from parameters import Parameters
@@ -23,16 +24,22 @@ class NodeHandler:
 
             # New stand-alone node
             Parameters.junctions_vlay.beginEditCommand("Add junction")
-            new_junct_feat = QgsFeature(Parameters.junctions_vlay.pendingFields())
-            new_junct_feat.setAttribute(Junction.field_name_eid, eid)
-            new_junct_feat.setAttribute(Junction.field_name_elevation, elev)
-            new_junct_feat.setAttribute(Junction.field_name_demand, demand)
-            new_junct_feat.setAttribute(Junction.field_name_depth, depth)
-            new_junct_feat.setAttribute(Junction.field_name_pattern, pattern_id)
+            new_junct_feat = None
 
-            new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
+            try:
+                new_junct_feat = QgsFeature(Parameters.junctions_vlay.pendingFields())
+                new_junct_feat.setAttribute(Junction.field_name_eid, eid)
+                new_junct_feat.setAttribute(Junction.field_name_elevation, elev)
+                new_junct_feat.setAttribute(Junction.field_name_demand, demand)
+                new_junct_feat.setAttribute(Junction.field_name_depth, depth)
+                new_junct_feat.setAttribute(Junction.field_name_pattern, pattern_id)
 
-            Parameters.junctions_vlay.addFeatures([new_junct_feat])
+                new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
+
+                Parameters.junctions_vlay.addFeatures([new_junct_feat])
+
+            except Exception:
+                Parameters.junctions_vlay.destroyEditCommand()
 
             Parameters.junctions_vlay.endEditCommand()
 
@@ -46,16 +53,21 @@ class NodeHandler:
 
             # New stand-alone node
             Parameters.reservoirs_vlay.beginEditCommand("Add reservoir")
+            new_reservoir_feat = None
 
-            new_reservoir_feat = QgsFeature(Parameters.reservoirs_vlay.pendingFields())
-            new_reservoir_feat.setAttribute(Reservoir.field_name_eid, eid)
-            new_reservoir_feat.setAttribute(Reservoir.field_name_elevation, elev)
-            new_reservoir_feat.setAttribute(Reservoir.field_name_elevation_corr, elev_corr)
-            new_reservoir_feat.setAttribute(Reservoir.field_name_pressure, pressure)
+            try:
+                new_reservoir_feat = QgsFeature(Parameters.reservoirs_vlay.pendingFields())
+                new_reservoir_feat.setAttribute(Reservoir.field_name_eid, eid)
+                new_reservoir_feat.setAttribute(Reservoir.field_name_elevation, elev)
+                new_reservoir_feat.setAttribute(Reservoir.field_name_elevation_corr, elev_corr)
+                new_reservoir_feat.setAttribute(Reservoir.field_name_pressure, pressure)
 
-            new_reservoir_feat.setGeometry(QgsGeometry.fromPoint(point))
+                new_reservoir_feat.setGeometry(QgsGeometry.fromPoint(point))
 
-            Parameters.reservoirs_vlay.addFeatures([new_reservoir_feat])
+                Parameters.reservoirs_vlay.addFeatures([new_reservoir_feat])
+
+            except Exception:
+                Parameters.reservoirs_vlay.destroyEditCommand()
 
             Parameters.reservoirs_vlay.endEditCommand()
 
@@ -67,27 +79,51 @@ class NodeHandler:
         if tanks_caps and QgsVectorDataProvider.AddFeatures:
 
             Parameters.tanks_vlay.beginEditCommand("Add junction")
+            new_tank_feat = None
 
-            new_tank_feat = QgsFeature(Parameters.tanks_vlay.pendingFields())
+            try:
+                new_tank_feat = QgsFeature(Parameters.tanks_vlay.pendingFields())
 
-            new_tank_feat.setAttribute(Tank.field_name_eid, eid)
-            new_tank_feat.setAttribute(Tank.field_name_curve, curve.id)
-            new_tank_feat.setAttribute(Tank.field_name_diameter, diameter)
-            new_tank_feat.setAttribute(Tank.field_name_elevation, elev)
-            new_tank_feat.setAttribute(Tank.field_name_elevation_corr, elev_corr)
-            new_tank_feat.setAttribute(Tank.field_name_level_init, level_init)
-            new_tank_feat.setAttribute(Tank.field_name_level_min, level_min)
-            new_tank_feat.setAttribute(Tank.field_name_level_max, level_max)
-            new_tank_feat.setAttribute(Tank.field_name_vol_min, vol_min)
+                new_tank_feat.setAttribute(Tank.field_name_eid, eid)
+                new_tank_feat.setAttribute(Tank.field_name_curve, curve.id)
+                new_tank_feat.setAttribute(Tank.field_name_diameter, diameter)
+                new_tank_feat.setAttribute(Tank.field_name_elevation, elev)
+                new_tank_feat.setAttribute(Tank.field_name_elevation_corr, elev_corr)
+                new_tank_feat.setAttribute(Tank.field_name_level_init, level_init)
+                new_tank_feat.setAttribute(Tank.field_name_level_min, level_min)
+                new_tank_feat.setAttribute(Tank.field_name_level_max, level_max)
+                new_tank_feat.setAttribute(Tank.field_name_vol_min, vol_min)
 
-            new_tank_feat.setGeometry(QgsGeometry.fromPoint(point))
+                new_tank_feat.setGeometry(QgsGeometry.fromPoint(point))
 
-            Parameters.tanks_vlay.addFeatures([new_tank_feat])
+                Parameters.tanks_vlay.addFeatures([new_tank_feat])
+
+            except Exception:
+                Parameters.tanks_vlay.destroyEditCommand()
 
             Parameters.tanks_vlay.endEditCommand()
 
             return new_tank_feat
 
+    @staticmethod
+    def move_junction(node_ft, new_pos_pt):
+        caps = Parameters.junctions_vlay.dataProvider().capabilities()
+        if caps & QgsVectorDataProvider.ChangeGeometries:
+
+            Parameters.reservoirs_vlay.beginEditCommand('Move junction')
+
+            try:
+                edit_utils = QgsVectorLayerEditUtils(Parameters.junctions_vlay)
+                edit_utils.moveVertex(
+                    new_pos_pt.x(),
+                    new_pos_pt.y(),
+                    node_ft.id(),
+                    0)
+
+            except Exception:
+                Parameters.junctions_vlay.destroyEditCommand()
+
+            Parameters.junctions_vlay.endEditCommand()
 
 class LinkHandler:
     def __init__(self):
@@ -108,19 +144,24 @@ class LinkHandler:
                 length_3d = pipe_geom.length()
 
             Parameters.pipes_vlay.beginEditCommand("Add new pipes")
+            new_pipe_ft = None
 
-            new_pipe_ft = QgsFeature(Parameters.pipes_vlay.pendingFields())
-            new_pipe_ft.setAttribute(Pipe.field_name_eid, eid)
-            new_pipe_ft.setAttribute(Pipe.field_name_demand, demand)
-            new_pipe_ft.setAttribute(Pipe.field_name_diameter, diameter)
-            new_pipe_ft.setAttribute(Pipe.field_name_length, length_3d)
-            new_pipe_ft.setAttribute(Pipe.field_name_minor_loss, loss)
-            new_pipe_ft.setAttribute(Pipe.field_name_roughness, roughness)
-            new_pipe_ft.setAttribute(Pipe.field_name_status, status)
+            try:
+                new_pipe_ft = QgsFeature(Parameters.pipes_vlay.pendingFields())
+                new_pipe_ft.setAttribute(Pipe.field_name_eid, eid)
+                new_pipe_ft.setAttribute(Pipe.field_name_demand, demand)
+                new_pipe_ft.setAttribute(Pipe.field_name_diameter, diameter)
+                new_pipe_ft.setAttribute(Pipe.field_name_length, length_3d)
+                new_pipe_ft.setAttribute(Pipe.field_name_minor_loss, loss)
+                new_pipe_ft.setAttribute(Pipe.field_name_roughness, roughness)
+                new_pipe_ft.setAttribute(Pipe.field_name_status, status)
 
-            new_pipe_ft.setGeometry(pipe_geom)
+                new_pipe_ft.setGeometry(pipe_geom)
 
-            Parameters.pipes_vlay.addFeatures([new_pipe_ft])
+                Parameters.pipes_vlay.addFeatures([new_pipe_ft])
+
+            except Exception:
+                Parameters.pipes_vlay.destroyEditCommand()
 
             Parameters.pipes_vlay.endEditCommand()
 
@@ -177,13 +218,18 @@ class LinkHandler:
 
             Parameters.pumps_vlay.beginEditCommand("Add new pump")
 
-            new_pump_ft = QgsFeature(Parameters.pumps_vlay.pendingFields())
-            new_pump_ft.setAttribute(Pump.field_name_eid, pump_eid)
-            new_pump_ft.setAttribute(Pump.field_name_curve, pump_curve.id)
+            new_pump_ft = None
+            try:
+                new_pump_ft = QgsFeature(Parameters.pumps_vlay.pendingFields())
+                new_pump_ft.setAttribute(Pump.field_name_eid, pump_eid)
+                new_pump_ft.setAttribute(Pump.field_name_curve, pump_curve.id)
 
-            new_pump_ft.setGeometry(pump_geom)
+                new_pump_ft.setGeometry(pump_geom)
 
-            Parameters.pumps_vlay.addFeatures([new_pump_ft])
+                Parameters.pumps_vlay.addFeatures([new_pump_ft])
+
+            except Exception:
+                Parameters.pumps_vlay.destroyEditCommand()
 
             Parameters.pumps_vlay.endEditCommand()
 
@@ -240,16 +286,21 @@ class LinkHandler:
 
             Parameters.valves_vlay.beginEditCommand("Add new valve")
 
-            new_valve_ft = QgsFeature(Parameters.valves_vlay.pendingFields())
-            new_valve_ft.setAttribute(Valve.field_name_eid, valve_eid)
-            new_valve_ft.setAttribute(Valve.field_name_diameter, diameter)
-            new_valve_ft.setAttribute(Valve.field_name_minor_loss, minor_loss)
-            new_valve_ft.setAttribute(Valve.field_name_setting, setting)
-            new_valve_ft.setAttribute(Valve.field_name_type, type)
+            new_valve_ft = None
+            try:
+                new_valve_ft = QgsFeature(Parameters.valves_vlay.pendingFields())
+                new_valve_ft.setAttribute(Valve.field_name_eid, valve_eid)
+                new_valve_ft.setAttribute(Valve.field_name_diameter, diameter)
+                new_valve_ft.setAttribute(Valve.field_name_minor_loss, minor_loss)
+                new_valve_ft.setAttribute(Valve.field_name_setting, setting)
+                new_valve_ft.setAttribute(Valve.field_name_type, type)
 
-            new_valve_ft.setGeometry(valve_geom)
+                new_valve_ft.setGeometry(valve_geom)
 
-            Parameters.valves_vlay.addFeatures([new_valve_ft])
+                Parameters.valves_vlay.addFeatures([new_valve_ft])
+
+            except Exception:
+                Parameters.valves_vlay.destroyEditCommand()
 
             Parameters.valves_vlay.endEditCommand()
 
@@ -289,47 +340,72 @@ class LinkHandler:
         if pipes_caps:
 
             Parameters.junctions_vlay.beginEditCommand("Add new node")
-            nodes = pipe_ft.geometry().asPolyline()
 
-            # First new polyline
-            pl1_pts = []
-            for n in range(next_vertex):
-                pl1_pts.append(QgsPoint(nodes[n].x(), nodes[n].y()))
+            pipe_ft_1 = None
+            pipe_ft_2 = None
+            try:
+                nodes = pipe_ft.geometry().asPolyline()
 
-            pl1_pts.append(node_before.asPoint())
+                # First new polyline
+                pl1_pts = []
+                for n in range(next_vertex):
+                    pl1_pts.append(QgsPoint(nodes[n].x(), nodes[n].y()))
 
-            pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')  # TODO: softcode
-            pipe_ft_1 = LinkHandler.create_new_pipe(
-                pipe_eid,
-                demand,
-                p_diameter,
-                loss,
-                roughness,
-                status,
-                pl1_pts)
+                pl1_pts.append(node_before.asPoint())
 
-            # Second new polyline
-            pl2_pts = []
-            pl2_pts.append(node_after.asPoint())
-            for n in range(len(nodes) - next_vertex):
-                pl2_pts.append(QgsPoint(nodes[n + next_vertex].x(), nodes[n + next_vertex].y()))
+                pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')  # TODO: softcode
+                pipe_ft_1 = LinkHandler.create_new_pipe(
+                    pipe_eid,
+                    demand,
+                    p_diameter,
+                    loss,
+                    roughness,
+                    status,
+                    pl1_pts)
 
-            pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')  # TODO: softcode
-            pipe_ft_2 = LinkHandler.create_new_pipe(
-                pipe_eid,
-                demand,
-                p_diameter,
-                loss,
-                roughness,
-                status,
-                pl2_pts)
+                # Second new polyline
+                pl2_pts = []
+                pl2_pts.append(node_after.asPoint())
+                for n in range(len(nodes) - next_vertex):
+                    pl2_pts.append(QgsPoint(nodes[n + next_vertex].x(), nodes[n + next_vertex].y()))
 
-            # Delete old pipe
-            Parameters.pipes_vlay.deleteFeature(pipe_ft.id())
+                pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')  # TODO: softcode
+                pipe_ft_2 = LinkHandler.create_new_pipe(
+                    pipe_eid,
+                    demand,
+                    p_diameter,
+                    loss,
+                    roughness,
+                    status,
+                    pl2_pts)
+
+                # Delete old pipe
+                Parameters.pipes_vlay.deleteFeature(pipe_ft.id())
+
+            except Exception:
+                Parameters.pipes_vlay.destroyEditCommand()
 
             Parameters.pipes_vlay.endEditCommand()
 
             return [pipe_ft_1, pipe_ft_2]
+
+    @staticmethod
+    def move_pipe_vertex(pipe_ft, new_pos_pt, vertex_index):
+        caps = Parameters.pipes_vlay.dataProvider().capabilities()
+        if caps & QgsVectorDataProvider.ChangeGeometries:
+            Parameters.pipes_vlay.beginEditCommand("Update pipes geometry")
+
+            try:
+                edit_utils = QgsVectorLayerEditUtils(Parameters.pipes_vlay)
+                edit_utils.moveVertex(
+                    new_pos_pt.x(),
+                    new_pos_pt.y(),
+                    pipe_ft.id(),
+                    vertex_index)
+            except Exception:
+                Parameters.pipes_vlay.destroyEditCommand()
+
+            Parameters.pipes_vlay.endEditCommand()
 
     @staticmethod
     def calc_3d_length(pipe_geom):

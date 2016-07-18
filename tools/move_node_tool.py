@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QCursor, QColor
-from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsVectorLayerEditUtils, QgsVectorDataProvider, QgsProject, QgsTolerance, QgsSnapper
+from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsVectorLayerEditUtils, QgsVectorDataProvider, QgsProject, QgsTolerance, QgsSnapper, edit
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
-from network_handling import NetworkUtils
+from network_handling import NetworkUtils, NodeHandler, LinkHandler
 from parameters import Parameters
 
 
@@ -124,33 +124,14 @@ class MoveNodeTool(QgsMapTool):
             if self.selected_node_ft.id() is not None:
 
                 # Update node geometry
-                # TODO: move to network_handling?
-                caps = Parameters.junctions_vlay.dataProvider().capabilities()
-                if caps & QgsVectorDataProvider.ChangeGeometries:
-                    Parameters.junctions_vlay.beginEditCommand("Update node geometry")
-                    edit_utils = QgsVectorLayerEditUtils(Parameters.junctions_vlay)
-                    edit_utils.moveVertex(
-                            self.mouse_pt.x(),
-                            self.mouse_pt.y(),
-                            self.selected_node_ft.id(),
-                            0)
-                    self.refresh_layer(Parameters.junctions_vlay)
-                    Parameters.junctions_vlay.endEditCommand()
+                NodeHandler.move_junction(self.selected_node_ft, self.mouse_pt)
+                self.refresh_layer(Parameters.junctions_vlay)
 
                 # Update links geometries
-                caps = Parameters.pipes_vlay.dataProvider().capabilities()
-                if caps & QgsVectorDataProvider.ChangeGeometries:
-                    Parameters.pipes_vlay.beginEditCommand("Update pipes geometry")
-                    for feat, vertex_index in self.adj_pipes_fts_d.iteritems():
-                        edit_utils = QgsVectorLayerEditUtils(Parameters.pipes_vlay)
-                        edit_utils.moveVertex(
-                                self.mouse_pt.x(),
-                                self.mouse_pt.y(),
-                                feat.id(),
-                                vertex_index)
+                for feat, vertex_index in self.adj_pipes_fts_d.iteritems():
+                    LinkHandler.move_pipe_vertex(feat, self.mouse_pt, vertex_index)
 
-                    self.refresh_layer(Parameters.pipes_vlay)
-                    Parameters.pipes_vlay.endEditCommand()
+                self.refresh_layer(Parameters.pipes_vlay)
                 self.adj_pipes_fts_d.clear()
 
     def activate(self):
