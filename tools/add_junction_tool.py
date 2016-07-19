@@ -187,6 +187,8 @@ class AddJunctionTool(QgsMapTool):
 
         self.data_dock.btn_add_junction.setChecked(False)
 
+        self.canvas().scene().removeItem(self.vertex_marker)
+
     def isZoomTool(self):
         return False
 

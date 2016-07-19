@@ -17,15 +17,15 @@ class Junction:
 
     field_name_eid = 'id'
     field_name_demand = 'demand'
-    field_name_depth = 'depth'
     field_name_elevation = 'elev'
+    field_name_elev_corr = 'elev_corr'
     field_name_pattern = 'pattern'
 
     def __init__(self, eid):
         self.eid = eid
         self.demand = 0
-        self.depth = 0
         self.elevation = -1
+        self.elev_corr = 0
         self.pattern = None
 
 

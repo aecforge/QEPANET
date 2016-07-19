@@ -78,8 +78,8 @@ class ShapefileDS:
         fields = QgsFields()
         fields.append(QgsField(QgsField(Junction.field_name_eid, QVariant.String)))
         fields.append(QgsField(QgsField(Junction.field_name_demand, QVariant.Double)))
-        fields.append(QgsField(Junction.field_name_depth, QVariant.Double))
         fields.append(QgsField(Junction.field_name_elevation, QVariant.Double))
+        fields.append(QgsField(Junction.field_name_elev_corr, QVariant.Double))
         fields.append(QgsField(Junction.field_name_pattern, QVariant.Int))
 
         writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBPoint, crs, "ESRI Shapefile")

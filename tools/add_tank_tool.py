@@ -2,7 +2,7 @@
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance
+from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance, QgsGeometry
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from network_handling import LinkHandler, NodeHandler, NetworkUtils
@@ -131,9 +131,15 @@ class AddTankTool(QgsMapTool):
                     snapped_pipe = QgsFeature(feats[0])
                     (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(snapped_pipe.geometry())
 
+                    if start_node_ft is None or end_node_ft is None:
+                        self.iface.messageBar().pushWarning(
+                            Parameters.plug_in_name,
+                            'The pipe is missing the start or end nodes. Cannot add a new tank along the pipe.')  # TODO: softcode
+                        return
+
                     # Check that the snapped point on line is distant enough from start/end nodes
-                    if start_node_ft.geometry().distance(self.snapped_vertex) > Parameters.min_dist and\
-                        end_node_ft.geometry().distance(self.snapped_vertex) > Parameters.min_dist:
+                    if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist and\
+                        end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist:
                         LinkHandler.split_pipe(snapped_pipe, self.snapped_vertex)
 
     def activate(self):

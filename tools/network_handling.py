@@ -31,7 +31,7 @@ class NodeHandler:
                 new_junct_feat.setAttribute(Junction.field_name_eid, eid)
                 new_junct_feat.setAttribute(Junction.field_name_elevation, elev)
                 new_junct_feat.setAttribute(Junction.field_name_demand, demand)
-                new_junct_feat.setAttribute(Junction.field_name_depth, depth)
+                new_junct_feat.setAttribute(Junction.field_name_elev_corr, depth)
                 new_junct_feat.setAttribute(Junction.field_name_pattern, pattern_id)
 
                 new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
@@ -125,6 +125,7 @@ class NodeHandler:
 
             Parameters.junctions_vlay.endEditCommand()
 
+
 class LinkHandler:
     def __init__(self):
         pass
@@ -138,10 +139,12 @@ class LinkHandler:
             pipe_geom = QgsGeometry.fromPolyline(nodes)
 
             # Calculate 3D length
+            print '1'
             if Parameters.dem_rlay is not None:
                 length_3d = LinkHandler.calc_3d_length(pipe_geom)
             else:
                 length_3d = pipe_geom.length()
+            print '2'
 
             Parameters.pipes_vlay.beginEditCommand("Add new pipes")
             new_pipe_ft = None
@@ -160,11 +163,10 @@ class LinkHandler:
 
                 Parameters.pipes_vlay.addFeatures([new_pipe_ft])
 
-            except Exception:
+            except Exception as e:
                 Parameters.pipes_vlay.destroyEditCommand()
 
             Parameters.pipes_vlay.endEditCommand()
-
             return new_pipe_ft
 
     @staticmethod
@@ -194,7 +196,7 @@ class LinkHandler:
 
         if junctions_caps:
             j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
-            depth = closest_junction_ft.attribute(Junction.field_name_depth)
+            depth = closest_junction_ft.attribute(Junction.field_name_elev_corr)
             pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
 
             junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: softcode
@@ -262,7 +264,7 @@ class LinkHandler:
 
         if junctions_caps:
             j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
-            depth = closest_junction_ft.attribute(Junction.field_name_depth)
+            depth = closest_junction_ft.attribute(Junction.field_name_elev_corr)
             pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
 
             junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: softcode
@@ -410,63 +412,66 @@ class LinkHandler:
     @staticmethod
     def calc_3d_length(pipe_geom):
 
-        # Check whether start and end node exist
-        (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(pipe_geom)
+        try:
+            # Check whether start and end node exist
+            (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(pipe_geom)
 
-        distance_elev_od = OrderedDict()
+            distance_elev_od = OrderedDict()
 
-        # Start node
-        start_add = 0
-        if start_node_ft is not None:
-            start_node_elev = start_node_ft.attribute(Junction.field_name_elevation)
-            if start_node_elev is None or type(start_node_elev) is QPyNullVariant:
-                start_node_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, start_node_ft.geometry().asPoint(), 0)
-                if start_node_elev is None:
-                    start_node_elev = 0
+            # Start node
+            start_add = 0
+            if start_node_ft is not None:
+                start_node_elev = start_node_ft.attribute(Junction.field_name_elevation)
+                if start_node_elev is None or type(start_node_elev) is QPyNullVariant:
+                    start_node_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, start_node_ft.geometry().asPoint(), 0)
+                    if start_node_elev is None:
+                        start_node_elev = 0
 
-            start_node_depth = start_node_ft.attribute(Junction.field_name_depth)
-            if start_node_depth is None or type(start_node_depth) is QPyNullVariant:
-                start_node_depth = 0
-            start_add = 1
+                start_node_depth = start_node_ft.attribute(Junction.field_name_elev_corr)
+                if start_node_depth is None or type(start_node_depth) is QPyNullVariant:
+                    start_node_depth = 0
+                start_add = 1
 
-        # End node
-        end_remove = 0
-        if end_node_ft is not None:
-            end_node_elev = end_node_ft.attribute(Junction.field_name_elevation)
-            if end_node_elev is None or type(end_node_elev) is QPyNullVariant:
-                end_node_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, end_node_ft.geometry().asPoint(), 0)
-                if end_node_elev is None:
-                    end_node_elev = 0
-            end_node_depth = end_node_ft.attribute(Junction.field_name_depth)
-            if end_node_depth is None or type(end_node_depth) is QPyNullVariant:
-                end_node_depth = 0
-            end_remove = 1
+            # End node
+            end_remove = 0
+            if end_node_ft is not None:
+                end_node_elev = end_node_ft.attribute(Junction.field_name_elevation)
+                if end_node_elev is None or type(end_node_elev) is QPyNullVariant:
+                    end_node_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, end_node_ft.geometry().asPoint(), 0)
+                    if end_node_elev is None:
+                        end_node_elev = 0
+                end_node_depth = end_node_ft.attribute(Junction.field_name_elev_corr)
+                if end_node_depth is None or type(end_node_depth) is QPyNullVariant:
+                    end_node_depth = 0
+                end_remove = 1
 
-        point_gen = PointsAlongLineGenerator(pipe_geom)
-        dists_and_points = point_gen.get_points_coords(100, False)  # TODO: Softcode the interval between points
+            point_gen = PointsAlongLineGenerator(pipe_geom)
+            dists_and_points = point_gen.get_points_coords(100, False)  # TODO: Softcode the interval between points
 
-        if start_node_ft is not None:
-            distance_elev_od[0] = start_node_elev - start_node_depth
+            if start_node_ft is not None:
+                distance_elev_od[0] = start_node_elev - start_node_depth
 
-        for p in range(start_add, len(dists_and_points) - end_remove):
-            elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, dists_and_points.values()[p].asPoint(), 1)
-            if elev is None:
-                elev = 0
-            distance_elev_od[dists_and_points.keys()[p]] = elev
+            for p in range(start_add, len(dists_and_points) - end_remove):
+                elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, dists_and_points.values()[p].asPoint(), 1)
+                if elev is None:
+                    elev = 0
+                distance_elev_od[dists_and_points.keys()[p]] = elev
 
-        if end_node_ft is not None:
-            distance_elev_od[pipe_geom.length()] = end_node_elev - end_node_depth
+            if end_node_ft is not None:
+                distance_elev_od[pipe_geom.length()] = end_node_elev - end_node_depth
 
-        # Calculate 3D length
-        length_3d = 0
-        for p in range(1, len(distance_elev_od)):
-            run = distance_elev_od.keys()[p] - distance_elev_od.keys()[p-1]
-            rise = distance_elev_od.values()[p] - distance_elev_od.values()[p-1]
+            # Calculate 3D length
+            length_3d = 0
+            for p in range(1, len(distance_elev_od)):
+                run = distance_elev_od.keys()[p] - distance_elev_od.keys()[p-1]
+                rise = distance_elev_od.values()[p] - distance_elev_od.values()[p-1]
 
-            length_3d += math.sqrt(run**2 + rise**2)
+                length_3d += math.sqrt(run**2 + rise**2)
 
-        return length_3d
+            return length_3d
 
+        except Exception as e:
+            print 'eccezione', e.message
 
 class NetworkUtils:
     def __init__(self):
@@ -504,13 +509,13 @@ class NetworkUtils:
             if link_geom.boundingBox().contains(junction_ft.geometry().asPoint()):
                 cands.append(junction_ft)
 
-        intersecting = []
+        intersecting = [None, None]
         if cands:
             for junction_ft in cands:
                 if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < Parameters.tolerance:
-                    intersecting.append(junction_ft)
+                    intersecting[0] = junction_ft
                 if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[len(link_geom.asPolyline()) - 1])) < Parameters.tolerance:
-                    intersecting.append(junction_ft)
+                    intersecting[1] = junction_ft
 
         return intersecting
 

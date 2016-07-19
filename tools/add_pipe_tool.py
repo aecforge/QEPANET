@@ -100,7 +100,6 @@ class AddPipeTool(QgsMapTool):
             if self.first_click:
                 self.rubber_band.addPoint((self.snapped_vertex if self.snapped_vertex is not None else self.mouse_pt), True)
 
-            # Create new node
             self.first_click = not self.first_click
 
         elif event.button() == Qt.RightButton:
@@ -118,7 +117,7 @@ class AddPipeTool(QgsMapTool):
                 roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
                 status = self.data_dock.cbo_pipe_status.currentText()
 
-                LinkHandler.create_new_pipe(
+                pipe_ft = LinkHandler.create_new_pipe(
                     pipe_eid,
                     j_demand,
                     diameter,
@@ -128,30 +127,39 @@ class AddPipeTool(QgsMapTool):
                     pipe_band_geom.asPolyline())
                 self.rubber_band.reset()
 
-                # Create start and end node
-                nodes = pipe_band_geom.asPolyline()
+                # Create start and end node, if they don't exist
+                (start_junction, end_junction) = NetworkUtils.find_start_end_junctions(pipe_ft.geometry())
 
-                start_node = nodes[0]
-                junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: sofcode
-                elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, start_node, 1)
-                depth = float(self.data_dock.txt_node_depth.text())
-                pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
-                NodeHandler.create_new_junction(start_node, junction_eid, elev, j_demand, depth, pattern_id)
+                vertices = pipe_band_geom.asPolyline()
 
-                end_node = nodes[len(nodes) - 1]
-                junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: sofcode
-                elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, end_node, 1)
-                depth = float(self.data_dock.txt_node_depth.text())
-                pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
-                NodeHandler.create_new_junction(end_node, junction_eid, elev, j_demand, depth, pattern_id)
+                new_start_junction = None
+                if not start_junction:
+                    new_start_junction = vertices[0]
+                    junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: sofcode
+                    elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, new_start_junction, 1)
+                    depth = float(self.data_dock.txt_node_depth.text())
+                    pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
+                    NodeHandler.create_new_junction(new_start_junction, junction_eid, elev, j_demand, depth, pattern_id)
+
+                new_end_junction = None
+                if not end_junction:
+                    new_end_junction = vertices[len(vertices) - 1]
+                    junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: sofcode
+                    elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, new_end_junction, 1)
+                    depth = float(self.data_dock.txt_node_depth.text())
+                    pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
+                    NodeHandler.create_new_junction(new_end_junction, junction_eid, elev, j_demand, depth, pattern_id)
 
                 # If end or start node intersects a pipe, split it
-                for line_ft in Parameters.pipes_vlay.getFeatures():
-                    if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(start_node)) < Parameters.tolerance:
-                        LinkHandler.split_pipe(line_ft, start_node)
-                for line_ft in Parameters.pipes_vlay.getFeatures():
-                    if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(end_node)) < Parameters.tolerance:
-                        LinkHandler.split_pipe(line_ft, end_node)
+                if new_start_junction:
+                    for line_ft in Parameters.pipes_vlay.getFeatures():
+                        if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(new_start_junction)) < Parameters.tolerance:
+                            LinkHandler.split_pipe(line_ft, new_start_junction)
+
+                if new_end_junction:
+                    for line_ft in Parameters.pipes_vlay.getFeatures():
+                        if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(new_end_junction)) < Parameters.tolerance:
+                            LinkHandler.split_pipe(line_ft, new_end_junction)
 
             except Exception as e:
                 self.rubber_band.reset()
