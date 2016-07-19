@@ -96,7 +96,7 @@ class AddValveTool(QgsMapTool):
                 if len(features) == 1:
 
                     # Check whether the pipe has a start and an end node
-                    pipe_endnodes = NetworkUtils.find_start_end_junctions(features[0].geometry())
+                    pipe_endnodes = NetworkUtils.find_start_end_nodes(features[0].geometry())
 
                     if len(pipe_endnodes) < 2:
                         self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.')      # TODO: softcode

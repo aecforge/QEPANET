@@ -98,21 +98,21 @@ class AddPumpTool(QgsMapTool):
                 if len(features) == 1:
 
                     # Check whether the pipe has a start and an end node
-                    pipe_endnodes = NetworkUtils.find_start_end_junctions(features[0].geometry())
+                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(features[0].geometry())
 
-                    if len(pipe_endnodes) < 2:
+                    if not start_node or not end_node:
                         self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.')
                         return
 
                     # Find endnode closest to pump position
-                    dist_1 = pipe_endnodes[0].geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
-                    dist_2 = pipe_endnodes[1].geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
+                    dist_1 = start_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
+                    dist_2 = end_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
 
                     # Get the attributes of the closest node
                     if dist_1 < dist_2:
-                        closest_junction_ft = pipe_endnodes[0]
+                        closest_junction_ft = start_node
                     else:
-                        closest_junction_ft = pipe_endnodes[1]
+                        closest_junction_ft = end_node
 
                     # Create the pump
                     pump_curve = self.data_dock.cbo_pump_curve.itemData(self.data_dock.cbo_pump_curve.currentIndex())

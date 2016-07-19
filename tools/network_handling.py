@@ -477,35 +477,40 @@ class NetworkUtils:
     def __init__(self):
         pass
 
+    # @staticmethod
+    # def find_start_end_nodes(link_geom):
+    #     link_vertices = link_geom.asPolyline()
+    #
+    #     start_node_ft = None
+    #     end_node_ft = None
+    #
+    #     # Search among nodes
+    #     junction_feats = Parameters.junctions_vlay.getFeatures()
+    #     reservoir_feats = Parameters.reservoirs_vlay.getFeatures()
+    #     tanks_feats = Parameters.tanks_vlay.getFeatures()
+    #
+    #     all_feats = list(junction_feats) + list(reservoir_feats) + list(tanks_feats)
+    #
+    #     for node_feat in all_feats:
+    #         node_geom = node_feat.geometry()
+    #         if node_geom.distance(QgsGeometry.fromPoint(link_vertices[0])) < Parameters.tolerance:
+    #             start_node_ft = node_feat
+    #         if node_geom.distance(QgsGeometry.fromPoint(link_vertices[len(link_vertices) - 1])) < Parameters.tolerance:
+    #             end_node_ft = node_feat
+    #
+    #     return start_node_ft, end_node_ft
+
     @staticmethod
     def find_start_end_nodes(link_geom):
-        link_vertices = link_geom.asPolyline()
 
-        start_node_ft = None
-        end_node_ft = None
-
-        # Search among nodes
         junction_feats = Parameters.junctions_vlay.getFeatures()
         reservoir_feats = Parameters.reservoirs_vlay.getFeatures()
         tanks_feats = Parameters.tanks_vlay.getFeatures()
 
         all_feats = list(junction_feats) + list(reservoir_feats) + list(tanks_feats)
 
-        for node_feat in all_feats:
-            node_geom = node_feat.geometry()
-            if node_geom.distance(QgsGeometry.fromPoint(link_vertices[0])) < Parameters.tolerance:
-                start_node_ft = node_feat
-            if node_geom.distance(QgsGeometry.fromPoint(link_vertices[len(link_vertices) - 1])) < Parameters.tolerance:
-                end_node_ft = node_feat
-
-        return start_node_ft, end_node_ft
-
-    @staticmethod
-    def find_start_end_junctions(link_geom):
-        junctions_fts = Parameters.junctions_vlay.getFeatures()
-
         cands = []
-        for junction_ft in junctions_fts:
+        for junction_ft in all_feats:
             if link_geom.boundingBox().contains(junction_ft.geometry().asPoint()):
                 cands.append(junction_ft)
 

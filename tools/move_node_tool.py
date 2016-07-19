@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QCursor, QColor
-from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsVectorLayerEditUtils, QgsVectorDataProvider, QgsProject, QgsTolerance, QgsSnapper, edit
+from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
 from network_handling import NetworkUtils, NodeHandler, LinkHandler
@@ -45,12 +45,6 @@ class MoveNodeTool(QgsMapTool):
             request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
             junctions_list = [feat for feat in Parameters.junctions_vlay.getFeatures(request)]
             self.selected_node_ft = QgsFeature(junctions_list[0])
-
-            # Find links that start or end in selected point
-            # selected_node_ft_eid = self.selected_node_ft.attribute('id')  # TODO: softcode
-            # expression = u'"start_node" = \'' + selected_node_ft_eid + '\' or "end_node" = \'' + selected_node_ft_eid + '\'' # TODO: softcode
-            # request = QgsFeatureRequest().setFilterExpression(expression)
-            # adjacent_pipes_fts = Parameters.pipes_vlay.getFeatures(request) # TODO: Add other node types
 
             adjacent_pipes_fts = NetworkUtils.find_adjacent_pipes(self.selected_node_ft.geometry())
 

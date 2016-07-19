@@ -128,7 +128,7 @@ class AddPipeTool(QgsMapTool):
                 self.rubber_band.reset()
 
                 # Create start and end node, if they don't exist
-                (start_junction, end_junction) = NetworkUtils.find_start_end_junctions(pipe_ft.geometry())
+                (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(pipe_ft.geometry())
 
                 vertices = pipe_band_geom.asPolyline()
 
