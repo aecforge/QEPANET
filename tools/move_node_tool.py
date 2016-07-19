@@ -82,7 +82,7 @@ class MoveNodeTool(QgsMapTool):
 
         if not self.mouse_clicked:
 
-            (retval, result) = self.snapper.snapPoint(event.pos())
+            (retval, result) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
 
             if len(result) > 0:
 

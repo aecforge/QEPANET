@@ -49,7 +49,7 @@ class AddPumpTool(QgsMapTool):
         if not self.mouse_clicked:
 
             # Mouse not clicked: snapping to closest vertex
-            (retval, result) = self.snapper.snapPoint(event.pos())
+            (retval, result) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
             if len(result) > 0:
                 # It's a vertex on an existing pipe
 

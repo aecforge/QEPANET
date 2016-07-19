@@ -49,10 +49,11 @@ class AddJunctionTool(QgsMapTool):
         if not self.mouse_clicked:
 
             # Mouse not clicked: snapping to closest vertex
-            (retval, result) = self.snapper.snapPoint(event.pos())
-            if len(result) > 0:
-                # It's a vertex on an existing pipe
+            (retval, result) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
 
+            if len(result) > 0:
+
+                # It's a vertex on an existing pipe
                 self.snapped_feat_id = result[0].snappedAtGeometry
 
                 snapped_vertex = result[0].snappedVertex
@@ -153,7 +154,6 @@ class AddJunctionTool(QgsMapTool):
                             self.iface.messageBar().pushWarning(
                                 Parameters.plug_in_name,
                                 'The new junction is too close to either the pipe end or start nodes. Cannot add a new junction along the pipe.')  # TODO: softcode
-
 
     def activate(self):
 

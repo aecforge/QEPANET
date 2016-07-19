@@ -64,15 +64,15 @@ class AddPipeTool(QgsMapTool):
             self.data_dock.lbl_elev_val.setText("{0:.2f}".format(self.elev))
 
         # Mouse not clicked: snapping to closest vertex
-        (retval, results) = self.snapper.snapPoint(event.pos())
+        (retval, result) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
 
-        if len(results) > 0:
+        if len(result) > 0:
 
             # Pipe starts from an existing vertex
-            self.snapped_feat_id = results[0].snappedAtGeometry
+            self.snapped_feat_id = result[0].snappedAtGeometry
 
-            snapped_vertex = results[0].snappedVertex
-            self.snapped_vertex_nr = results[0].snappedVertexNr
+            snapped_vertex = result[0].snappedVertex
+            self.snapped_vertex_nr = result[0].snappedVertexNr
 
             self.snapped_vertex = QgsPoint(snapped_vertex.x(), snapped_vertex.y())
             self.vertex_marker.setCenter(self.snapped_vertex)
