@@ -106,14 +106,14 @@ class NodeHandler:
             return new_tank_feat
 
     @staticmethod
-    def move_junction(node_ft, new_pos_pt):
-        caps = Parameters.junctions_vlay.dataProvider().capabilities()
+    def move_node(layer, node_ft, new_pos_pt):
+        caps = layer.dataProvider().capabilities()
         if caps & QgsVectorDataProvider.ChangeGeometries:
 
-            Parameters.reservoirs_vlay.beginEditCommand('Move junction')
+            layer.beginEditCommand('Move node')
 
             try:
-                edit_utils = QgsVectorLayerEditUtils(Parameters.junctions_vlay)
+                edit_utils = QgsVectorLayerEditUtils(layer)
                 edit_utils.moveVertex(
                     new_pos_pt.x(),
                     new_pos_pt.y(),
@@ -123,7 +123,7 @@ class NodeHandler:
             except Exception:
                 Parameters.junctions_vlay.destroyEditCommand()
 
-            Parameters.junctions_vlay.endEditCommand()
+            layer.endEditCommand()
 
 
 class LinkHandler:

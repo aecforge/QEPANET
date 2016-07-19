@@ -108,6 +108,7 @@ class AddPipeTool(QgsMapTool):
 
                 # Finalize line
                 pipe_band_geom = self.rubber_band.asGeometry()
+                print 'pipe', pipe_band_geom.exportToWkt()
 
                 pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P') # TODO: softcode
 
@@ -117,6 +118,9 @@ class AddPipeTool(QgsMapTool):
                 roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
                 status = self.data_dock.cbo_pipe_status.currentText()
 
+                pipe_pts = pipe_band_geom.asPolyline()
+                pipe_pts = pipe_pts[:len(pipe_pts) - 1]
+
                 pipe_ft = LinkHandler.create_new_pipe(
                     pipe_eid,
                     j_demand,
@@ -124,7 +128,7 @@ class AddPipeTool(QgsMapTool):
                     loss,
                     roughness,
                     status,
-                    pipe_band_geom.asPolyline())
+                    pipe_pts)
                 self.rubber_band.reset()
 
                 # Create start and end node, if they don't exist

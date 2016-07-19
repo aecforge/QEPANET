@@ -43,8 +43,9 @@ class MoveNodeTool(QgsMapTool):
         if event.button() == Qt.LeftButton:
             self.mouse_clicked = True
             request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
-            junctions_list = [feat for feat in Parameters.junctions_vlay.getFeatures(request)]
-            self.selected_node_ft = QgsFeature(junctions_list[0])
+
+            node = list(self.snapped_lay.getFeatures(request))
+            self.selected_node_ft = QgsFeature(node[0])
 
             adjacent_pipes_fts = NetworkUtils.find_adjacent_pipes(self.selected_node_ft.geometry())
 
@@ -118,7 +119,7 @@ class MoveNodeTool(QgsMapTool):
             if self.selected_node_ft.id() is not None:
 
                 # Update node geometry
-                NodeHandler.move_junction(self.selected_node_ft, self.mouse_pt)
+                NodeHandler.move_node(self.snapped_lay, self.selected_node_ft, self.mouse_pt)
                 self.refresh_layer(Parameters.junctions_vlay)
 
                 # Update links geometries
