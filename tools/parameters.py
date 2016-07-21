@@ -37,6 +37,11 @@ class Parameters:
     regex_number_pos_decimals = '^[0-9]\d*(\.\d+)?$'
     regex_number_pos_neg_decimals = '^-?[0-9]\d*(\.\d+)?$'
 
+    reservoir_icon_svg_name = 'reservoir.svg'
+    tank_icon_svg_name = 'tank.svg'
+    pump_icon_svg_name = 'pump.svg'
+    valve_icon_svg_name = 'valve.svg'
+
     def __init__(self):
         pass
 

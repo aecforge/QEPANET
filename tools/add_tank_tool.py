@@ -110,19 +110,6 @@ class AddTankTool(QgsMapTool):
             # A link has been snapped
             else:
 
-                # New node on existing line
-                NodeHandler.create_new_tank(
-                    self.snapped_vertex,
-                    tank_eid,
-                    curve,
-                    diameter,
-                    self.elev,
-                    elev_corr,
-                    level_init,
-                    level_min,
-                    level_max,
-                    vol_min)
-
                 # Get the snapped pipe and split it
                 request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
                 feats = list(Parameters.pipes_vlay.getFeatures(request))
@@ -140,7 +127,26 @@ class AddTankTool(QgsMapTool):
                     # Check that the snapped point on line is distant enough from start/end nodes
                     if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist and\
                         end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist:
+
                         LinkHandler.split_pipe(snapped_pipe, self.snapped_vertex)
+
+                        # New node on existing line
+                        NodeHandler.create_new_tank(
+                            self.snapped_vertex,
+                            tank_eid,
+                            curve,
+                            diameter,
+                            self.elev,
+                            elev_corr,
+                            level_init,
+                            level_min,
+                            level_max,
+                            vol_min)
+
+                    else:
+                        self.iface.messageBar().pushWarning(
+                            Parameters.plug_in_name,
+                            'The selected position is too close to a junction: cannon create the tank.')  # TODO: softcode
 
     def activate(self):
 

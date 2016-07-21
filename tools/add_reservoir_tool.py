@@ -99,14 +99,6 @@ class AddReservoirTool(QgsMapTool):
             # A link has been snapped
             else:
 
-                # New node on existing line
-                NodeHandler.create_new_reservoir(
-                    self.snapped_vertex,
-                    eid,
-                    self.elev,
-                    elev_corr,
-                    pressure)
-
                 # Get the snapped pipe and split it
                 request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
                 feats = list(Parameters.pipes_vlay.getFeatures(request))
@@ -124,7 +116,21 @@ class AddReservoirTool(QgsMapTool):
                     # Check that the snapped point on pipe is distant enough from start/end nodes
                     if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist and\
                         end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist:
+
                         LinkHandler.split_pipe(snapped_pipe, self.snapped_vertex)
+
+                        # New node on existing line
+                        NodeHandler.create_new_reservoir(
+                            self.snapped_vertex,
+                            eid,
+                            self.elev,
+                            elev_corr,
+                            pressure)
+
+                    else:
+                        self.iface.messageBar().pushWarning(
+                            Parameters.plug_in_name,
+                            'The selected position is too close to a junction: cannot create the reservoir.')  # TODO: softcode
 
     def activate(self):
 

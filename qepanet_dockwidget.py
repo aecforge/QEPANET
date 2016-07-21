@@ -26,9 +26,11 @@ import os
 from PyQt4 import QtCore, uic, QtGui
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui import QFileDialog
-from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsVectorFileWriter, QGis, QgsCoordinateReferenceSystem, QgsProject, QgsSnapper, QgsTolerance
+from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsVectorFileWriter, QGis, QgsCoordinateReferenceSystem,\
+    QgsProject, QgsSnapper, QgsTolerance, QgsSvgMarkerSymbolLayerV2
 
 from geo_utils import utils, vector_utils
+from rendering import symbology
 from tools.add_junction_tool import AddJunctionTool
 from tools.add_pipe_tool import AddPipeTool
 from tools.add_reservoir_tool import AddReservoirTool
@@ -42,7 +44,7 @@ from tools.data_stores import ShapefileDS
 from tools.exceptions import ShpExistsExcpetion
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'qepanet_dockwidget_base.ui'))
+    os.path.dirname(__file__), 'qepanet_dockwidget.ui'))
 
 
 class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
@@ -122,6 +124,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         if self.cbo_dem.count() >= 0:
             layer_id = self.cbo_dem.itemData(self.cbo_dem.currentIndex())
             Parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+
+        QtCore.QObject.connect(self.btn_symbology, QtCore.SIGNAL('pressed()'), self.apply_symbologies)
 
         # Junctions
         self.txt_node_demand.setValidator(RegExValidators.get_pos_decimals())
@@ -392,6 +396,28 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == 'dem':
                 self.set_combo_index(self.cbo_dem, layer_id)
+
+    def apply_symbologies(self):
+
+        from qgis.core import QgsSingleSymbolRendererV2, QgsMarkerSymbolV2, QgsSymbolV2
+
+        if Parameters.reservoirs_vlay is not None:
+            renderer = symbology.make_node_sym_renderer(Parameters.reservoir_icon_svg_name, 6)
+            Parameters.reservoirs_vlay.setRendererV2(renderer)
+
+        if Parameters.tanks_vlay is not None:
+            renderer = symbology.make_node_sym_renderer(Parameters.tank_icon_svg_name, 6)
+            Parameters.tanks_vlay.setRendererV2(renderer)
+
+        if Parameters.pumps_vlay is not None:
+            ls = symbology.LinkSymbology()
+            renderer = ls.make_link_sym_renderer(Parameters.pump_icon_svg_name, 6)
+            Parameters.pumps_vlay.setRendererV2(renderer)
+
+        if Parameters.valves_vlay is not None:
+            ls = symbology.LinkSymbology()
+            renderer = ls.make_link_sym_renderer(Parameters.valve_icon_svg_name, 6)
+            Parameters.valves_vlay.setRendererV2(renderer)
 
     def update_patterns_combo(self):
         self.cbo_node_pattern.clear()

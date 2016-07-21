@@ -108,7 +108,6 @@ class AddPipeTool(QgsMapTool):
 
                 # Finalize line
                 pipe_band_geom = self.rubber_band.asGeometry()
-                print 'pipe', pipe_band_geom.exportToWkt()
 
                 pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P') # TODO: softcode
 
@@ -134,11 +133,9 @@ class AddPipeTool(QgsMapTool):
                 # Create start and end node, if they don't exist
                 (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(pipe_ft.geometry())
 
-                vertices = pipe_band_geom.asPolyline()
-
                 new_start_junction = None
                 if not start_junction:
-                    new_start_junction = vertices[0]
+                    new_start_junction = pipe_pts[0]
                     junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: sofcode
                     elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, new_start_junction, 1)
                     depth = float(self.data_dock.txt_node_depth.text())
@@ -147,7 +144,7 @@ class AddPipeTool(QgsMapTool):
 
                 new_end_junction = None
                 if not end_junction:
-                    new_end_junction = vertices[len(vertices) - 1]
+                    new_end_junction = pipe_pts[len(pipe_pts) - 1]
                     junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: sofcode
                     elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, new_end_junction, 1)
                     depth = float(self.data_dock.txt_node_depth.text())
