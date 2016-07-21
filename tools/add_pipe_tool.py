@@ -259,5 +259,5 @@ class AddPipeTool(QgsMapTool):
                 continue
             else:
                 purged_pts.append(pts[p[0]])
-                
+
         return purged_pts

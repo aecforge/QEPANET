@@ -215,6 +215,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def add_valve(self):
         tool = AddValveTool(self, )
+        self.iface.mapCanvas().setMapTool(tool)
+        self.set_cursor(QtCore.Qt.CrossCursor)
 
     def move_node(self):
         tool = MoveNodeTool(self)

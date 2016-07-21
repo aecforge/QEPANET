@@ -181,7 +181,6 @@ class MoveNodeTool(QgsMapTool):
 
         # Find points to be exluded from snapping (i.e.: junctions adjacent to pumps and valves
         self.excluded_points = NetworkUtils.find_pumps_valves_junctions()
-        print 'excluded', len(self.excluded_points)
 
     def deactivate(self):
         self.rubber_bands_d.clear()

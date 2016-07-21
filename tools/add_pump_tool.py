@@ -81,9 +81,6 @@ class AddPumpTool(QgsMapTool):
 
             self.mouse_clicked = False
 
-            # Find first available ID for Pumps
-            pump_eid = NetworkUtils.find_next_id(Parameters.pumps_vlay, 'P') # TODO: softcode
-
             # No pipe snapped: notify user
             if self.snapped_pipe_id is None:
 
@@ -101,7 +98,7 @@ class AddPumpTool(QgsMapTool):
                     (start_node, end_node) = NetworkUtils.find_start_end_nodes(features[0].geometry())
 
                     if not start_node or not end_node:
-                        self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.')
+                        self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.') # TODO: softcode
                         return
 
                     # Find endnode closest to pump position

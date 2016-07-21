@@ -96,30 +96,30 @@ class AddValveTool(QgsMapTool):
                 if len(features) == 1:
 
                     # Check whether the pipe has a start and an end node
-                    pipe_endnodes = NetworkUtils.find_start_end_nodes(features[0].geometry())
+                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(features[0].geometry())
 
-                    if len(pipe_endnodes) < 2:
+                    if not start_node or not end_node:
                         self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.')      # TODO: softcode
                         return
 
                     # Find endnode closest to valve position
-                    dist_1 = pipe_endnodes[0].geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
-                    dist_2 = pipe_endnodes[1].geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
+                    dist_1 = start_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
+                    dist_2 = end_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
 
                     # Get the attributes of the closest node
                     if dist_1 < dist_2:
-                        closest_junction_ft = pipe_endnodes[0]
+                        closest_junction_ft = start_node
                     else:
-                        closest_junction_ft = pipe_endnodes[1]
+                        closest_junction_ft = end_node
 
                     # Create the valve
-                    diameter = self.txt_valve_diameter.text()
-                    minor_loss = self.txt_valve_minor_loss.text()
-                    selected_type = self.cbo_valve_type.itemData(self.cbo_valve_type.currentIndex())
+                    diameter = self.data_dock.txt_valve_diameter.text()
+                    minor_loss = self.data_dock.txt_valve_minor_loss.text()
+                    selected_type = self.data_dock.cbo_valve_type.itemData(self.data_dock.cbo_valve_type.currentIndex())
                     if selected_type != Valve.type_gpv:
-                        setting = self.txt_valve_setting.text()
+                        setting = self.data_dock.txt_valve_setting.text()
                     else:
-                        setting = self.cbo_valve_curve.itemData(self.cbo_valve_curve.currentIndex())
+                        setting = self.data_dock.cbo_valve_curve.itemData(self.cbo_valve_curve.currentIndex())
 
                     LinkHandler.create_new_valve(
                         features[0],
@@ -128,7 +128,7 @@ class AddValveTool(QgsMapTool):
                         diameter,
                         minor_loss,
                         setting,
-                        type)
+                        selected_type)
 
     def activate(self):
 

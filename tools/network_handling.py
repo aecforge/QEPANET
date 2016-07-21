@@ -236,7 +236,7 @@ class LinkHandler:
             return new_pump_ft
 
     @staticmethod
-    def create_new_valve(valve_ft, closest_junction_ft, position, diameter, minor_loss, setting, type):
+    def create_new_valve(valve_ft, closest_junction_ft, position, diameter, minor_loss, setting, pump_type):
 
         # Find start and end nodes positions
         # Get vertex along line next to snapped point
@@ -293,7 +293,7 @@ class LinkHandler:
                 new_valve_ft.setAttribute(Valve.field_name_diameter, diameter)
                 new_valve_ft.setAttribute(Valve.field_name_minor_loss, minor_loss)
                 new_valve_ft.setAttribute(Valve.field_name_setting, setting)
-                new_valve_ft.setAttribute(Valve.field_name_type, type)
+                new_valve_ft.setAttribute(Valve.field_name_type, pump_type)
 
                 new_valve_ft.setGeometry(valve_geom)
 
