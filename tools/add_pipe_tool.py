@@ -55,10 +55,7 @@ class AddPipeTool(QgsMapTool):
 
         self.rubber_band.movePoint(last_ix - 1, (self.snapped_vertex if self.snapped_vertex is not None else self.mouse_pt))
 
-        dem_lay = Parameters.dem_rlay
-
         elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, self.mouse_pt, 1)
-
         if elev is not None:
             self.elev = elev
             self.data_dock.lbl_elev_val.setText("{0:.2f}".format(self.elev))
@@ -195,9 +192,11 @@ class AddPipeTool(QgsMapTool):
                                                       True)
 
         snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
+        snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(Parameters.reservoirs_vlay)
+        snap_layer_tanks = NetworkUtils.set_up_snap_layer(Parameters.tanks_vlay)
         snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
 
-        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
+        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_reservoirs, snap_layer_tanks, snap_layer_pipes], self.iface.mapCanvas())
 
         # Editing
         if not Parameters.junctions_vlay.isEditable():

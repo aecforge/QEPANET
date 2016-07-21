@@ -4,6 +4,7 @@ from PyQt4.QtGui import QCursor, QColor
 from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
+from ..geo_utils import raster_utils
 from network_handling import NetworkUtils, NodeHandler, LinkHandler
 from parameters import Parameters
 
@@ -77,6 +78,11 @@ class MoveNodeTool(QgsMapTool):
 
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
+        elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, self.mouse_pt, 1)
+        if elev is not None:
+            self.elev = elev
+            self.data_dock.lbl_elev_val.setText("{0:.2f}".format(self.elev))
+
         if not self.mouse_clicked:
 
             (retval, results) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()), self.excluded_points)
@@ -123,6 +129,8 @@ class MoveNodeTool(QgsMapTool):
                 # Update node geometry
                 NodeHandler.move_node(self.snapped_lay, self.selected_node_ft, self.mouse_pt)
                 self.refresh_layer(Parameters.junctions_vlay)
+                self.refresh_layer(Parameters.reservoirs_vlay)
+                self.refresh_layer(Parameters.tanks_vlay)
 
                 # Update links geometries
                 for feat, vertex_index in self.adj_pipes_fts_d.iteritems():

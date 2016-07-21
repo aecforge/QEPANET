@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from PyQt4.QtCore import QPyNullVariant
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance, QgsPoint,\
-    QgsVectorLayerEditUtils
+    QgsVectorLayerEditUtils, QgsFeatureRequest
 
 from network import Junction, Reservoir, Tank, Pipe, Pump, Valve
 from parameters import Parameters
@@ -120,10 +120,19 @@ class NodeHandler:
                     node_ft.id(),
                     0)
 
+                # Elevation
+                new_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, new_pos_pt, 1)
+                if new_elev is None:
+                    new_elev = 0
+
+                field_index = layer.dataProvider().fieldNameIndex(Junction.field_name_elevation)
+                layer.changeAttributeValue(node_ft.id(), field_index, new_elev)
+
             except Exception:
                 Parameters.junctions_vlay.destroyEditCommand()
 
             layer.endEditCommand()
+
 
 
 class LinkHandler:
@@ -396,12 +405,25 @@ class LinkHandler:
             Parameters.pipes_vlay.beginEditCommand("Update pipes geometry")
 
             try:
+
+                print 'lbef', pipe_ft.geometry().length()
+
                 edit_utils = QgsVectorLayerEditUtils(Parameters.pipes_vlay)
                 edit_utils.moveVertex(
                     new_pos_pt.x(),
                     new_pos_pt.y(),
                     pipe_ft.id(),
                     vertex_index)
+
+                print 'laft', pipe_ft.geometry().length()
+
+                request = QgsFeatureRequest().setFilterFid(pipe_ft.id())
+                feats = list(Parameters.pipes_vlay.getFeatures(request))
+
+                field_index = Parameters.pipes_vlay.dataProvider().fieldNameIndex(Pipe.field_name_length)
+                new_3d_length = LinkHandler.calc_3d_length(feats[0].geometry())
+                Parameters.pipes_vlay.changeAttributeValue(pipe_ft.id(), field_index, new_3d_length)
+
             except Exception:
                 Parameters.pipes_vlay.destroyEditCommand()
 
