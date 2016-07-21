@@ -5,19 +5,38 @@ from qgis.core import QgsSvgMarkerSymbolLayerV2, QgsSymbolV2, QgsSingleSymbolRen
 import os
 
 
-def make_node_sym_renderer(icon_name, size):
+class NodeSymbology:
+    def __init__(self):
+        pass
 
-    current_dir = os.path.dirname(__file__)
+    def make_simple_node_sym_renderer(self, size=2):
 
-    svg_style = dict()
-    svg_style['name'] = os.path.join(current_dir, icon_name)
-    svg_style['size'] = str(size)
-    symbol_layer = QgsSvgMarkerSymbolLayerV2.create(svg_style)
-    symbol = QgsSymbolV2.defaultSymbol(Parameters.reservoirs_vlay.geometryType())
-    symbol.changeSymbolLayer(0, symbol_layer)
-    renderer = QgsSingleSymbolRendererV2(symbol)
+        symbol = QgsMarkerSymbolV2().createSimple({})
+        symbol.deleteSymbolLayer(0)
 
-    return renderer
+        # Point
+        sim_marker_sym_lay = QgsSimpleMarkerSymbolLayerV2()
+        sim_marker_sym_lay.setColor(QColor(0, 0, 0))
+        sim_marker_sym_lay.setFillColor(QColor(0, 0, 0))
+        sim_marker_sym_lay.setSize(size)
+        symbol.appendSymbolLayer(sim_marker_sym_lay)
+
+        renderer = QgsSingleSymbolRendererV2(symbol)
+        return renderer
+
+    def make_svg_node_sym_renderer(self, icon_name, size):
+
+        current_dir = os.path.dirname(__file__)
+
+        svg_style = dict()
+        svg_style['name'] = os.path.join(current_dir, icon_name)
+        svg_style['size'] = str(size)
+        symbol_layer = QgsSvgMarkerSymbolLayerV2.create(svg_style)
+        symbol = QgsSymbolV2.defaultSymbol(Parameters.reservoirs_vlay.geometryType())
+        symbol.changeSymbolLayer(0, symbol_layer)
+        renderer = QgsSingleSymbolRendererV2(symbol)
+
+        return renderer
 
 
 class LinkSymbology:
@@ -25,13 +44,27 @@ class LinkSymbology:
     def __init__(self):
         self.marker_sym = None
 
-    def make_link_sym_renderer(self, icon_name, size):
+    def make_simple_link_sym_renderer(self, width=0.02):
 
         symbol = QgsLineSymbolV2().createSimple({})
         symbol.deleteSymbolLayer(0)
 
         # Line
         line_sym_lay = QgsSimpleLineSymbolLayerV2()
+        line_sym_lay.setWidth(width)
+        symbol.appendSymbolLayer(line_sym_lay)
+
+        renderer = QgsSingleSymbolRendererV2(symbol)
+        return renderer
+
+    def make_svg_link_sym_renderer(self, icon_name, size):
+
+        symbol = QgsLineSymbolV2().createSimple({})
+        symbol.deleteSymbolLayer(0)
+
+        # Line
+        line_sym_lay = QgsSimpleLineSymbolLayerV2()
+        line_sym_lay.setWidth(0.02)
         symbol.appendSymbolLayer(line_sym_lay)
 
         # Symbol
@@ -52,31 +85,6 @@ class LinkSymbology:
 
         symbol.appendSymbolLayer(marker_line_sym_lay)
 
-        # # SVG
-        # current_dir = os.path.dirname(__file__)
-        # svg_style = dict()
-        # svg_style['name'] = os.path.join(current_dir, icon_name)
-        # svg_style['size'] = str(size)
-        # svg_marker_sym_lay = QgsSvgMarkerSymbolLayerV2.create(svg_style)
-        #
-        # marker_sym_lay = QgsMarkerLineSymbolLayerV2.create()
-        #
-        # qmsv2 = QgsMarkerSymbolV2([marker_sym_lay])
-        #
-        # marker_sym_lay.setSubSymbol(qmsv2) # PURE FUNCTION CALL
-        #
-        # marker_sym_lay.setPlacement(QgsMarkerLineSymbolLayerV2.CentralPoint)
-        # marker_sym_lay.setColor(QColor(0, 255, 0))
-        #
-        # symbol.appendSymbolLayer(marker_sym_lay)
-        #
-        # # Line
-        # line_sym_lay = QgsSimpleLineSymbolLayerV2()
-        # line_sym_lay.setWidth(0.2)
-        # line_sym_lay.setColor(QColor(0, 255, 255))
-        # symbol.appendSymbolLayer(line_sym_lay)
-
         renderer = QgsSingleSymbolRendererV2(symbol)
-
         return renderer
 

@@ -399,24 +399,34 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def apply_symbologies(self):
 
-        from qgis.core import QgsSingleSymbolRendererV2, QgsMarkerSymbolV2, QgsSymbolV2
+        if Parameters.junctions_vlay is not None:
+            ns = symbology.NodeSymbology()
+            renderer = ns.make_simple_node_sym_renderer(3)
+            Parameters.junctions_vlay.setRendererV2(renderer)
 
         if Parameters.reservoirs_vlay is not None:
-            renderer = symbology.make_node_sym_renderer(Parameters.reservoir_icon_svg_name, 6)
+            ns = symbology.NodeSymbology()
+            renderer = ns.make_svg_node_sym_renderer(Parameters.reservoir_icon_svg_name, 7)
             Parameters.reservoirs_vlay.setRendererV2(renderer)
 
         if Parameters.tanks_vlay is not None:
-            renderer = symbology.make_node_sym_renderer(Parameters.tank_icon_svg_name, 6)
+            ns = symbology.NodeSymbology()
+            renderer = ns.make_svg_node_sym_renderer(Parameters.tank_icon_svg_name, 7)
             Parameters.tanks_vlay.setRendererV2(renderer)
+
+        if Parameters.pipes_vlay is not None:
+            ls = symbology.LinkSymbology()
+            renderer = ls.make_simple_link_sym_renderer()
+            Parameters.pipes_vlay.setRendererV2(renderer)
 
         if Parameters.pumps_vlay is not None:
             ls = symbology.LinkSymbology()
-            renderer = ls.make_link_sym_renderer(Parameters.pump_icon_svg_name, 6)
+            renderer = ls.make_svg_link_sym_renderer(Parameters.pump_icon_svg_name, 7)
             Parameters.pumps_vlay.setRendererV2(renderer)
 
         if Parameters.valves_vlay is not None:
             ls = symbology.LinkSymbology()
-            renderer = ls.make_link_sym_renderer(Parameters.valve_icon_svg_name, 6)
+            renderer = ls.make_svg_link_sym_renderer(Parameters.valve_icon_svg_name, 7)
             Parameters.valves_vlay.setRendererV2(renderer)
 
     def update_patterns_combo(self):
