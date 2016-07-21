@@ -118,7 +118,7 @@ class AddPipeTool(QgsMapTool):
                 status = self.data_dock.cbo_pipe_status.currentText()
 
                 pipe_pts = pipe_band_geom.asPolyline()
-                pipe_pts = pipe_pts[:len(pipe_pts) - 1]
+                pipe_pts = self.remove_duplicated_point(pipe_pts)
 
                 pipe_ft = LinkHandler.create_new_pipe(
                     pipe_eid,
@@ -248,3 +248,16 @@ class AddPipeTool(QgsMapTool):
     def reset_marker(self):
         self.outlet_marker.hide()
         self.canvas().scene().removeItem(self.outlet_marker)
+
+    def remove_duplicated_point(self, pts):
+
+        # This is needed because the rubber band sometimes returns duplicated points
+
+        purged_pts = [pts[0]]
+        for p in enumerate(range(len(pts) - 1), 1):
+            if pts[p[0]] == pts[p[0]-1]:
+                continue
+            else:
+                purged_pts.append(pts[p[0]])
+                
+        return purged_pts
