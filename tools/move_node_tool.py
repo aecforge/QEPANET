@@ -32,6 +32,8 @@ class MoveNodeTool(QgsMapTool):
 
         self.snapped_feat_id = None
 
+        self.excluded_points = []
+
     def canvasPressEvent(self, event):
 
         if self.snapped_feat_id is None:
@@ -77,14 +79,14 @@ class MoveNodeTool(QgsMapTool):
 
         if not self.mouse_clicked:
 
-            (retval, result) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
+            (retval, results) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()), self.excluded_points)
 
-            if len(result) > 0:
+            if len(results) > 0:
 
-                self.snapped_feat_id = result[0].snappedAtGeometry
-                self.snapped_lay = result[0].layer
+                self.snapped_feat_id = results[0].snappedAtGeometry
+                self.snapped_lay = results[0].layer
 
-                snapped_vertex = result[0].snappedVertex
+                snapped_vertex = results[0].snappedVertex
 
                 self.vertex_marker.setCenter(QgsPoint(snapped_vertex.x(), snapped_vertex.y()))
                 self.vertex_marker.setColor(QColor(255, 0, 0))
@@ -176,6 +178,10 @@ class MoveNodeTool(QgsMapTool):
             Parameters.pumps_vlay.startEditing()
         if not Parameters.valves_vlay.isEditable():
             Parameters.valves_vlay.startEditing()
+
+        # Find points to be exluded from snapping (i.e.: junctions adjacent to pumps and valves
+        self.excluded_points = NetworkUtils.find_pumps_valves_junctions()
+        print 'excluded', len(self.excluded_points)
 
     def deactivate(self):
         self.rubber_bands_d.clear()

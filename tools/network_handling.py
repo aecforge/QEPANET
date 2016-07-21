@@ -467,56 +467,39 @@ class LinkHandler:
 
         return length_3d
 
+
 class NetworkUtils:
     def __init__(self):
         pass
 
-    # @staticmethod
-    # def find_start_end_nodes(link_geom):
-    #     link_vertices = link_geom.asPolyline()
-    #
-    #     start_node_ft = None
-    #     end_node_ft = None
-    #
-    #     # Search among nodes
-    #     junction_feats = Parameters.junctions_vlay.getFeatures()
-    #     reservoir_feats = Parameters.reservoirs_vlay.getFeatures()
-    #     tanks_feats = Parameters.tanks_vlay.getFeatures()
-    #
-    #     all_feats = list(junction_feats) + list(reservoir_feats) + list(tanks_feats)
-    #
-    #     for node_feat in all_feats:
-    #         node_geom = node_feat.geometry()
-    #         if node_geom.distance(QgsGeometry.fromPoint(link_vertices[0])) < Parameters.tolerance:
-    #             start_node_ft = node_feat
-    #         if node_geom.distance(QgsGeometry.fromPoint(link_vertices[len(link_vertices) - 1])) < Parameters.tolerance:
-    #             end_node_ft = node_feat
-    #
-    #     return start_node_ft, end_node_ft
-
     @staticmethod
-    def find_start_end_nodes(link_geom):
+    def find_start_end_nodes(link_geom, no_junctions=False, no_reservoirs=False, no_tanks=False):
 
-        junction_feats = Parameters.junctions_vlay.getFeatures()
-        reservoir_feats = Parameters.reservoirs_vlay.getFeatures()
-        tanks_feats = Parameters.tanks_vlay.getFeatures()
+        all_feats = []
+        if not no_junctions:
+            all_feats.extend(list(Parameters.junctions_vlay.getFeatures()))
+        if not no_reservoirs:
+            all_feats.extend(list(Parameters.reservoirs_vlay.getFeatures()))
+        if not no_tanks:
+            all_feats.extend(list(Parameters.tanks_vlay.getFeatures()))
 
-        all_feats = list(junction_feats) + list(reservoir_feats) + list(tanks_feats)
+        intersecting_fts = [None, None]
+        if len(all_feats) == 0:
+            return intersecting_fts
 
         cands = []
         for junction_ft in all_feats:
             if link_geom.boundingBox().contains(junction_ft.geometry().asPoint()):
                 cands.append(junction_ft)
 
-        intersecting = [None, None]
         if cands:
             for junction_ft in cands:
                 if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < Parameters.tolerance:
-                    intersecting[0] = junction_ft
+                    intersecting_fts[0] = junction_ft
                 if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[len(link_geom.asPolyline()) - 1])) < Parameters.tolerance:
-                    intersecting[1] = junction_ft
+                    intersecting_fts[1] = junction_ft
 
-        return intersecting
+        return intersecting_fts
 
     @staticmethod
     def find_adjacent_pipes(node_geom):
@@ -575,3 +558,26 @@ class NetworkUtils:
             return TabError
         else:
             return False
+
+    @staticmethod
+    def find_pumps_valves_junctions():
+
+        adj_points = []
+
+        pump_fts = Parameters.pumps_vlay.getFeatures()
+        for pump_ft in pump_fts:
+            (start, end) = NetworkUtils.find_start_end_nodes(pump_ft.geometry(), False, True, True)
+            if start is not None:
+                adj_points.append(start.geometry().asPoint())
+            if end is not None:
+                adj_points.append(end.geometry().asPoint())
+
+        valve_fts = Parameters.valves_vlay.getFeatures()
+        for valve_ft in valve_fts:
+            (start, end) = NetworkUtils.find_start_end_nodes(valve_ft.geometry(), False, True, True)
+            if start is not None:
+                adj_points.append(start.geometry().asPoint())
+            if end is not None:
+                adj_points.append(end.geometry().asPoint())
+
+        return adj_points

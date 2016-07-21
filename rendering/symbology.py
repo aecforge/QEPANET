@@ -44,7 +44,7 @@ class LinkSymbology:
     def __init__(self):
         self.marker_sym = None
 
-    def make_simple_link_sym_renderer(self, width=0.02):
+    def make_simple_link_sym_renderer(self, width=0.2):
 
         symbol = QgsLineSymbolV2().createSimple({})
         symbol.deleteSymbolLayer(0)
@@ -57,14 +57,14 @@ class LinkSymbology:
         renderer = QgsSingleSymbolRendererV2(symbol)
         return renderer
 
-    def make_svg_link_sym_renderer(self, icon_name, size):
+    def make_svg_link_sym_renderer(self, icon_name, svg_size=7, line_width=0.2):
 
         symbol = QgsLineSymbolV2().createSimple({})
         symbol.deleteSymbolLayer(0)
 
         # Line
         line_sym_lay = QgsSimpleLineSymbolLayerV2()
-        line_sym_lay.setWidth(0.02)
+        line_sym_lay.setWidth(line_width)
         symbol.appendSymbolLayer(line_sym_lay)
 
         # Symbol
@@ -75,7 +75,7 @@ class LinkSymbology:
         current_dir = os.path.dirname(__file__)
         svg_props = dict()
         svg_props['name'] = os.path.join(current_dir, icon_name)
-        svg_props['size'] = str(size)
+        svg_props['size'] = str(svg_size)
         marker_sym_lay = QgsSvgMarkerSymbolLayerV2().create(svg_props)
         self.marker_sym.appendSymbolLayer(marker_sym_lay)
 
