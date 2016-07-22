@@ -88,3 +88,9 @@ class LinkSymbology:
         renderer = QgsSingleSymbolRendererV2(symbol)
         return renderer
 
+
+def refresh_layer(map_canvas, layer):
+    if map_canvas.isCachingEnabled():
+        layer.setCacheImage(None)
+    else:
+        map_canvas.refresh()

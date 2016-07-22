@@ -100,17 +100,10 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="1">
-               <widget class="QPushButton" name="btn_move_link">
-                <property name="text">
-                 <string>Move link</string>
-                </property>
-               </widget>
-              </item>
               <item row="4" column="0">
-               <widget class="QPushButton" name="btn_move_node">
+               <widget class="QPushButton" name="btn_move_element">
                 <property name="text">
-                 <string>Move node</string>
+                 <string>Move element</string>
                 </property>
                </widget>
               </item>
@@ -169,7 +162,7 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-73</y>
+                <y>0</y>
                 <width>219</width>
                 <height>225</height>
                </rect>
@@ -892,7 +885,7 @@
                   <item row="0" column="1">
                    <widget class="QLineEdit" name="txt_snap_tolerance">
                     <property name="text">
-                     <string>100</string>
+                     <string>10</string>
                     </property>
                    </widget>
                   </item>

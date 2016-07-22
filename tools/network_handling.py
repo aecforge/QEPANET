@@ -38,8 +38,9 @@ class NodeHandler:
 
                 Parameters.junctions_vlay.addFeatures([new_junct_feat])
 
-            except Exception:
+            except Exception as e:
                 Parameters.junctions_vlay.destroyEditCommand()
+                raise e
 
             Parameters.junctions_vlay.endEditCommand()
 
@@ -66,8 +67,9 @@ class NodeHandler:
 
                 Parameters.reservoirs_vlay.addFeatures([new_reservoir_feat])
 
-            except Exception:
+            except Exception as e:
                 Parameters.reservoirs_vlay.destroyEditCommand()
+                raise e
 
             Parameters.reservoirs_vlay.endEditCommand()
 
@@ -98,8 +100,9 @@ class NodeHandler:
 
                 Parameters.tanks_vlay.addFeatures([new_tank_feat])
 
-            except Exception:
+            except Exception as e:
                 Parameters.tanks_vlay.destroyEditCommand()
+                raise e
 
             Parameters.tanks_vlay.endEditCommand()
 
@@ -128,8 +131,9 @@ class NodeHandler:
                 field_index = layer.dataProvider().fieldNameIndex(Junction.field_name_elevation)
                 layer.changeAttributeValue(node_ft.id(), field_index, new_elev)
 
-            except Exception:
+            except Exception as e:
                 Parameters.junctions_vlay.destroyEditCommand()
+                raise e
 
             layer.endEditCommand()
 
@@ -172,6 +176,7 @@ class LinkHandler:
 
             except Exception as e:
                 Parameters.pipes_vlay.destroyEditCommand()
+                raise e
 
             Parameters.pipes_vlay.endEditCommand()
             return new_pipe_ft
@@ -237,8 +242,9 @@ class LinkHandler:
 
                 Parameters.pumps_vlay.addFeatures([new_pump_ft])
 
-            except Exception:
+            except Exception as e:
                 Parameters.pumps_vlay.destroyEditCommand()
+                raise e
 
             Parameters.pumps_vlay.endEditCommand()
 
@@ -308,8 +314,9 @@ class LinkHandler:
 
                 Parameters.valves_vlay.addFeatures([new_valve_ft])
 
-            except Exception:
+            except Exception as e:
                 Parameters.valves_vlay.destroyEditCommand()
+                raise e
 
             Parameters.valves_vlay.endEditCommand()
 
@@ -391,8 +398,9 @@ class LinkHandler:
                 # Delete old pipe
                 Parameters.pipes_vlay.deleteFeature(pipe_ft.id())
 
-            except Exception:
+            except Exception as e:
                 Parameters.pipes_vlay.destroyEditCommand()
+                raise e
 
             Parameters.pipes_vlay.endEditCommand()
 
@@ -401,13 +409,11 @@ class LinkHandler:
     @staticmethod
     def move_pipe_vertex(pipe_ft, new_pos_pt, vertex_index):
         caps = Parameters.pipes_vlay.dataProvider().capabilities()
+
         if caps & QgsVectorDataProvider.ChangeGeometries:
             Parameters.pipes_vlay.beginEditCommand("Update pipes geometry")
 
             try:
-
-                print 'lbef', pipe_ft.geometry().length()
-
                 edit_utils = QgsVectorLayerEditUtils(Parameters.pipes_vlay)
                 edit_utils.moveVertex(
                     new_pos_pt.x(),
@@ -415,8 +421,7 @@ class LinkHandler:
                     pipe_ft.id(),
                     vertex_index)
 
-                print 'laft', pipe_ft.geometry().length()
-
+                # Retrieve the feature again, and update attributes
                 request = QgsFeatureRequest().setFilterFid(pipe_ft.id())
                 feats = list(Parameters.pipes_vlay.getFeatures(request))
 
@@ -424,10 +429,39 @@ class LinkHandler:
                 new_3d_length = LinkHandler.calc_3d_length(feats[0].geometry())
                 Parameters.pipes_vlay.changeAttributeValue(pipe_ft.id(), field_index, new_3d_length)
 
-            except Exception:
+            except Exception as e:
                 Parameters.pipes_vlay.destroyEditCommand()
+                raise e
 
             Parameters.pipes_vlay.endEditCommand()
+
+    @staticmethod
+    def move_pump_valve(vlay, ft, delta_vector):
+        caps = vlay.dataProvider().capabilities()
+        if caps and QgsVectorDataProvider.ChangeGeometries:
+            vlay.beginEditCommand('Update pump/valve')
+            try:
+
+                old_ft_pts = ft.geometry().asPolyline()
+
+                edit_utils = QgsVectorLayerEditUtils(vlay)
+                edit_utils.moveVertex(
+                    (old_ft_pts[0] + delta_vector).x(),
+                    (old_ft_pts[0] + delta_vector).y(),
+                    ft.id(),
+                    0)
+
+                edit_utils.moveVertex(
+                    (old_ft_pts[1] + delta_vector).x(),
+                    (old_ft_pts[1] + delta_vector).y(),
+                    ft.id(),
+                    1)
+
+            except Exception as e:
+                vlay.destroyEnditCommand()
+                raise e
+
+            vlay.endEditCommand()
 
     @staticmethod
     def calc_3d_length(pipe_geom):
@@ -495,18 +529,18 @@ class NetworkUtils:
         pass
 
     @staticmethod
-    def find_start_end_nodes(link_geom, no_junctions=False, no_reservoirs=False, no_tanks=False):
+    def find_start_end_nodes(link_geom, exclude_junctions=False, exclude_reservoirs=False, exclude_tanks=False):
 
         all_feats = []
-        if not no_junctions:
+        if not exclude_junctions:
             all_feats.extend(list(Parameters.junctions_vlay.getFeatures()))
-        if not no_reservoirs:
+        if not exclude_reservoirs:
             all_feats.extend(list(Parameters.reservoirs_vlay.getFeatures()))
-        if not no_tanks:
+        if not exclude_tanks:
             all_feats.extend(list(Parameters.tanks_vlay.getFeatures()))
 
         intersecting_fts = [None, None]
-        if len(all_feats) == 0:
+        if not all_feats:
             return intersecting_fts
 
         cands = []
@@ -524,22 +558,52 @@ class NetworkUtils:
         return intersecting_fts
 
     @staticmethod
-    def find_adjacent_pipes(node_geom):
+    def find_adjacent_links(node_geom):
 
-        # Search among pumps
-        adjacent_pumps_fts = []
+        adjacent_links_d = {'pumps': [], 'valves': []}
+
+        # Search among pipes
+        adjacent_pipes_fts = []
         for pipe_ft in Parameters.pipes_vlay.getFeatures():
             pipe_geom = pipe_ft.geometry()
             nodes = pipe_geom.asPolyline()
-            # print 'nodes', node_geom.exportToWkt(), nodes[0].wellKnownText(), nodes[len(nodes) - 1].wellKnownText()
             if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0])) or\
                     NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1])):
-                adjacent_pumps_fts.append(pipe_ft)
+                adjacent_pipes_fts.append(pipe_ft)
 
-        return adjacent_pumps_fts
+        adjacent_links_d['pipes'] = adjacent_pipes_fts
+
+        if len(adjacent_pipes_fts) >= 2:
+            # It's a pure junction, cannot be a pump or valve
+            return adjacent_links_d
+
+        # Search among pumps
+        adjacent_pumps_fts = []
+        for pump_ft in Parameters.pumps_vlay.getFeatures():
+            pump_geom = pump_ft.geometry()
+            nodes = pump_geom.asPolyline()
+            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0])) or \
+                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1])):
+                adjacent_pumps_fts.append(pump_ft)
+
+        adjacent_links_d['pumps'] = adjacent_pumps_fts
+
+        # Search among valves
+        adjacent_valves_fts = []
+        for valve_ft in Parameters.valves_vlay.getFeatures():
+            valve_geom = valve_ft.geometry()
+            nodes = valve_geom.asPolyline()
+            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0])) or \
+                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1])):
+                adjacent_valves_fts.append(valve_ft)
+
+        adjacent_links_d['valves'] = adjacent_valves_fts
+
+        return adjacent_links_d
 
     @staticmethod
     def find_next_id(vlay, prefix):
+
         features = vlay.getFeatures()
         max_eid = -1
         for feat in features:
@@ -571,18 +635,27 @@ class NetworkUtils:
     def set_up_snapper(snap_layers, map_canvas):
         snapper = QgsSnapper(map_canvas.mapSettings())
         snapper.setSnapLayers(snap_layers)
-        snapper.setSnapMode(QgsSnapper.SnapWithOneResult)
+        snapper.setSnapMode(QgsSnapper.SnapWithResultsForSamePosition)
         return snapper
 
     @staticmethod
-    def points_overlap(point_geom1, point_geom2):
-        if point_geom1.distance(point_geom2) < Parameters.tolerance:
+    def points_overlap(point1, point2, tolerance=Parameters.tolerance):
+        """Checks whether two points overlap. Uses tolerance."""
+
+        if isinstance(point1, QgsPoint):
+            point1 = QgsGeometry.fromPoint(point1)
+
+        if isinstance(point2, QgsPoint):
+            point2 = QgsGeometry.fromPoint(point2)
+
+        if point1.distance(point2) < tolerance:
             return TabError
         else:
             return False
 
     @staticmethod
     def find_pumps_valves_junctions():
+        """Find junctions adjacent to pumps and valves"""
 
         adj_points = []
 
@@ -603,3 +676,36 @@ class NetworkUtils:
                 adj_points.append(end.geometry().asPoint())
 
         return adj_points
+
+    @staticmethod
+    def find_links_adjacent_to_link(link_vlay, link_ft, exclude_pipes=False, exclude_pumps=False, exclude_valves=False):
+        """Finds the links adjacent to a given link"""
+
+        adj_links = dict()
+        if not exclude_pipes:
+            adj_links['pipes'] = NetworkUtils.look_for_adjacent_links(link_ft, link_vlay, Parameters.pipes_vlay)
+        if not exclude_pumps:
+            adj_links['pumps'] = NetworkUtils.look_for_adjacent_links(link_ft, link_vlay, Parameters.pumps_vlay)
+        if not exclude_valves:
+            adj_links['valves'] = NetworkUtils.look_for_adjacent_links(link_ft, link_vlay, Parameters.valves_vlay)
+
+        return adj_links
+
+    @staticmethod
+    def look_for_adjacent_links(link_ft, link_vlay, search_vlay):
+
+        link_pts = link_ft.geometry().asPolyline()
+
+        adj_links = []
+        for ft in search_vlay.getFeatures():
+            pts = ft.geometry().asPolyline()
+            if NetworkUtils.points_overlap(pts[0], link_pts[0]) or \
+                    NetworkUtils.points_overlap(pts[0], link_pts[-1]) or \
+                    NetworkUtils.points_overlap(pts[-1], link_pts[0]) or \
+                    NetworkUtils.points_overlap(pts[-1], link_pts[-1]):
+
+                # Check that the feature found is not the same as the input
+                if not (link_vlay.id() == search_vlay.id() and link_ft.id() != ft.id()):
+                    adj_links.append(ft)
+
+        return adj_links

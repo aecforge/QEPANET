@@ -74,8 +74,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_add_pump.setCheckable(True)
         self.btn_add_valve.setCheckable(True)
 
-        self.btn_move_node.setCheckable(True)
-        self.btn_move_link.setCheckable(True)
+        self.btn_move_element.setCheckable(True)
 
         QtCore.QObject.connect(self.btn_add_junction, QtCore.SIGNAL('pressed()'), self.add_junction)
         QtCore.QObject.connect(self.btn_add_reservoir, QtCore.SIGNAL('pressed()'), self.add_reservoir)
@@ -85,8 +84,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QtCore.QObject.connect(self.btn_add_pump, QtCore.SIGNAL('pressed()'), self.add_pump)
         QtCore.QObject.connect(self.btn_add_valve, QtCore.SIGNAL('pressed()'), self.add_valve)
 
-        QtCore.QObject.connect(self.btn_move_node, QtCore.SIGNAL('pressed()'), self.move_node)
-        QtCore.QObject.connect(self.btn_move_link, QtCore.SIGNAL('pressed()'), self.move_link)
+        QtCore.QObject.connect(self.btn_move_element, QtCore.SIGNAL('pressed()'), self.move_node)
 
         # Layers
         QtCore.QObject.connect(self.cbo_junctions, QtCore.SIGNAL('activated(int)'), self.cbo_junctions_activated)
@@ -177,6 +175,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Other tools
         QtCore.QObject.connect(self.btn_create_layers, QtCore.SIGNAL('pressed()'), self.create_layers)
 
+        self.txt_snap_tolerance.setText(str(Parameters.snap_tolerance))
         self.txt_snap_tolerance.setValidator(RegExValidators.get_pos_decimals())
         QtCore.QObject.connect(self.txt_snap_tolerance, QtCore.SIGNAL('editingFinished()'), self.snap_tolerance_changed)
 
@@ -222,9 +221,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         tool = MoveNodeTool(self)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
-
-    def move_link(self):
-        pass
 
     def cbo_valve_type_activated(self):
         selected_type = self.cbo_valve_type.itemData(self.cbo_valve_type.currentIndex())
@@ -317,6 +313,35 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def snap_tolerance_changed(self):
         Parameters.snap_tolerance = float(self.txt_snap_tolerance.text())
+
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.junctions_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToVertex,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snap_tolerance,
+                                                      True)
+
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.reservoirs_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToVertex,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snap_tolerance,
+                                                      True)
+
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.tanks_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToVertex,
+                                                      QgsTolerance.MapUnits,
+                                                      Parameters.snap_tolerance,
+                                                      True)
+
+        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToSegment,
+                                                      0,
+                                                      Parameters.snap_tolerance,
+                                                      True)
+
 
     def update_layers_combos(self):
 
@@ -430,6 +455,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             ls = symbology.LinkSymbology()
             renderer = ls.make_svg_link_sym_renderer(Parameters.valve_icon_svg_name, 7)
             Parameters.valves_vlay.setRendererV2(renderer)
+
+        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.junctions_vlay)
+        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.reservoirs_vlay)
+        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.tanks_vlay)
+        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.pipes_vlay)
+        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.pumps_vlay)
+        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.valves_vlay)
 
     def update_patterns_combo(self):
         self.cbo_node_pattern.clear()

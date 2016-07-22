@@ -8,7 +8,7 @@ from PyQt4.QtGui import QColor
 from qgis.core import QgsPoint, QgsRaster, QgsSnapper, QgsGeometry, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
-from network import Junction
+from network import Pipe
 from network_handling import LinkHandler, NodeHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils
@@ -150,14 +150,16 @@ class AddPipeTool(QgsMapTool):
 
                 # If end or start node intersects a pipe, split it
                 if new_start_junction:
-                    for line_ft in Parameters.pipes_vlay.getFeatures():
-                        if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(new_start_junction)) < Parameters.tolerance:
-                            LinkHandler.split_pipe(line_ft, new_start_junction)
+                    for pipe_ft in Parameters.pipes_vlay.getFeatures():
+                        if pipe_ft.attribute(Pipe.field_name_eid) != pipe_eid and\
+                                        pipe_ft.geometry().distance(QgsGeometry.fromPoint(new_start_junction)) < Parameters.tolerance:
+                            LinkHandler.split_pipe(pipe_ft, new_start_junction)
 
                 if new_end_junction:
-                    for line_ft in Parameters.pipes_vlay.getFeatures():
-                        if line_ft.attribute(Junction.field_name_eid) != pipe_eid and line_ft.geometry().distance(QgsGeometry.fromPoint(new_end_junction)) < Parameters.tolerance:
-                            LinkHandler.split_pipe(line_ft, new_end_junction)
+                    for pipe_ft in Parameters.pipes_vlay.getFeatures():
+                        if pipe_ft.attribute(Pipe.field_name_eid) != pipe_eid and\
+                                        pipe_ft.geometry().distance(QgsGeometry.fromPoint(new_end_junction)) < Parameters.tolerance:
+                            LinkHandler.split_pipe(pipe_ft, new_end_junction)
 
             except Exception as e:
                 self.rubber_band.reset()

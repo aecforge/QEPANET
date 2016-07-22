@@ -24,7 +24,7 @@ class Parameters:
     patterns = {}
     curves = []
 
-    snap_tolerance = 100
+    snap_tolerance = 10
 
     tolerance = 1e-8
     min_dist = 1 # TODO: check: 1 m? Why?
