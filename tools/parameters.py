@@ -26,7 +26,7 @@ class Parameters:
 
     snap_tolerance = 10
 
-    tolerance = 1e-8
+    tolerance = 0.01
     min_dist = 1 # TODO: check: 1 m? Why?
 
     path = os.path.dirname(os.path.realpath(__file__))

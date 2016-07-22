@@ -138,6 +138,10 @@ class MoveTool(QgsMapTool):
 
                         pump_valve = self.pump_valve_ft.geometry().asPolyline()
 
+                        print 'adj pipes'
+                        print adj_pipes[0].id(), adj_pipes[0].geometry().asPolyline()
+                        print adj_pipes[1].id(), adj_pipes[1].geometry().asPolyline()
+
                         adj_pipe_pts_1 = adj_pipes[0].geometry().asPolyline()
                         if NetworkUtils.points_overlap(pump_valve[0], adj_pipe_pts_1[0]) or \
                                 NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve[0]), adj_pipe_pts_1[-1]):
@@ -228,8 +232,9 @@ class MoveTool(QgsMapTool):
                     else:
                         snapped_pt = self.snap_results[0].snappedVertex
                         self.delta_vec = self.mouse_pt - snapped_pt
-                        self.rubber_bands_d[0].movePoint(1, snapped_pt + self.delta_vec)
-                        self.rubber_bands_d[0].movePoint(2, snapped_pt + self.delta_vec)
+                        for key, value in self.rubber_bands_d.iteritems():
+                            self.rubber_bands_d[key].movePoint(1, snapped_pt + self.delta_vec)
+                            self.rubber_bands_d[key].movePoint(2, snapped_pt + self.delta_vec)
 
     def canvasReleaseEvent(self, event):
 
