@@ -555,7 +555,7 @@ class NetworkUtils:
 
         cands = []
         for junction_ft in all_feats:
-            if link_geom.boundingBox().contains(junction_ft.geometry().asPoint()):
+            if link_geom.buffer(Parameters.tolerance, 5).boundingBox().contains(junction_ft.geometry().asPoint()):
                 cands.append(junction_ft)
 
         if cands:

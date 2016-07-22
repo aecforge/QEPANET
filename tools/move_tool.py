@@ -138,10 +138,6 @@ class MoveTool(QgsMapTool):
 
                         pump_valve = self.pump_valve_ft.geometry().asPolyline()
 
-                        print 'adj pipes'
-                        print adj_pipes[0].id(), adj_pipes[0].geometry().asPolyline()
-                        print adj_pipes[1].id(), adj_pipes[1].geometry().asPolyline()
-
                         adj_pipe_pts_1 = adj_pipes[0].geometry().asPolyline()
                         if NetworkUtils.points_overlap(pump_valve[0], adj_pipe_pts_1[0]) or \
                                 NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve[0]), adj_pipe_pts_1[-1]):
