@@ -103,7 +103,7 @@
               <item row="4" column="0">
                <widget class="QPushButton" name="btn_move_element">
                 <property name="text">
-                 <string>Move element</string>
+                 <string>Move</string>
                 </property>
                </widget>
               </item>

@@ -105,7 +105,8 @@ class AddPumpTool(QgsMapTool):
                     dist_1 = start_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
                     dist_2 = end_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
 
-                    # Get the attributes of the closest node
+                    # Get the attributes of the closest junction
+                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(features[0].geometry(), False, True, True)
                     if dist_1 < dist_2:
                         closest_junction_ft = start_node
                     else:
@@ -114,6 +115,7 @@ class AddPumpTool(QgsMapTool):
                     # Create the pump
                     pump_curve = self.data_dock.cbo_pump_curve.itemData(self.data_dock.cbo_pump_curve.currentIndex())
                     LinkHandler.create_new_pump(
+                        self.data_dock,
                         features[0],
                         closest_junction_ft,
                         self.snapped_vertex,

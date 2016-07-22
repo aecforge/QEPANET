@@ -106,7 +106,9 @@ class AddValveTool(QgsMapTool):
                     dist_1 = start_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
                     dist_2 = end_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
 
-                    # Get the attributes of the closest node
+                    # Get the attributes of the closest junction
+                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(features[0].geometry(), False, True,
+                                                                               True)
                     if dist_1 < dist_2:
                         closest_junction_ft = start_node
                     else:
@@ -122,6 +124,7 @@ class AddValveTool(QgsMapTool):
                         setting = self.data_dock.cbo_valve_curve.itemData(self.cbo_valve_curve.currentIndex())
 
                     LinkHandler.create_new_valve(
+                        self.data_dock,
                         features[0],
                         closest_junction_ft,
                         self.snapped_vertex,

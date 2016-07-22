@@ -182,7 +182,7 @@ class LinkHandler:
             return new_pipe_ft
 
     @staticmethod
-    def create_new_pump(pipe_ft, closest_junction_ft, position, pump_curve):
+    def create_new_pump(data_dock, pipe_ft, closest_junction_ft, position, pump_curve):
 
         # Find start and end nodes positions
         # Get vertex along line next to snapped point
@@ -207,9 +207,14 @@ class LinkHandler:
         pumps_caps = Parameters.pumps_vlay.dataProvider().capabilities()
 
         if junctions_caps:
-            j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
-            depth = closest_junction_ft.attribute(Junction.field_name_elev_corr)
-            pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
+            if closest_junction_ft is not None:
+                j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
+                depth = closest_junction_ft.attribute(Junction.field_name_elev_corr)
+                pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
+            else:
+                j_demand = float(data_dock.txt_node_demand.text())
+                depth = float(data_dock.txt_node_depth.text())
+                pattern_id = data_dock.cbo_node_pattern.itemData(data_dock.cbo_node_pattern.currentIndex()).id
 
             junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: softcode
             elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_before, 1)
@@ -251,7 +256,7 @@ class LinkHandler:
             return new_pump_ft
 
     @staticmethod
-    def create_new_valve(valve_ft, closest_junction_ft, position, diameter, minor_loss, setting, pump_type):
+    def create_new_valve(data_dock, valve_ft, closest_junction_ft, position, diameter, minor_loss, setting, pump_type):
 
         # Find start and end nodes positions
         # Get vertex along line next to snapped point
@@ -276,9 +281,14 @@ class LinkHandler:
         valves_caps = Parameters.valves_vlay.dataProvider().capabilities()
 
         if junctions_caps:
-            j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
-            depth = closest_junction_ft.attribute(Junction.field_name_elev_corr)
-            pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
+            if closest_junction_ft is not None:
+                j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
+                depth = closest_junction_ft.attribute(Junction.field_name_elev_corr)
+                pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
+            else:
+                j_demand = float(data_dock.txt_node_demand.text())
+                depth = float(data_dock.txt_node_depth.text())
+                pattern_id = data_dock.cbo_node_pattern.itemData(data_dock.cbo_node_pattern.currentIndex()).id
 
             junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: softcode
             elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_before, 1)

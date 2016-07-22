@@ -51,3 +51,9 @@ def find_closest_vertex_on_geometry(coord, geom):
     """
 
     return geom.closestSegmentWithContext(coord)[1]
+
+
+def get_feats_by_id(vlay, ft_id):
+    request = QgsFeatureRequest().setFilterFid(ft_id)
+    feats = list(vlay.getFeatures(request))
+    return feats

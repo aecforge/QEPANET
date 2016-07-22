@@ -37,7 +37,7 @@ from tools.add_reservoir_tool import AddReservoirTool
 from tools.add_tank_tool import AddTankTool
 from tools.add_pump_tool import AddPumpTool
 from tools.add_valve_tool import AddValveTool
-from tools.move_node_tool import MoveNodeTool
+from tools.move_tool import MoveTool
 from tools.network import Tables, Valve
 from tools.parameters import Parameters, RegExValidators
 from tools.data_stores import ShapefileDS
@@ -218,7 +218,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.set_cursor(QtCore.Qt.CrossCursor)
 
     def move_node(self):
-        tool = MoveNodeTool(self)
+        tool = MoveTool(self)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
