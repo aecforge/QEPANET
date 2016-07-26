@@ -5,11 +5,11 @@ import traceback
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsRaster, QgsSnapper, QgsGeometry, QgsProject, QgsTolerance
+from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
-from network import Pipe
-from network_handling import LinkHandler, NodeHandler, NetworkUtils
+from ..model.network import Pipe
+from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils
 
@@ -136,7 +136,10 @@ class AddPipeTool(QgsMapTool):
                     junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: sofcode
                     elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, new_start_junction, 1)
                     depth = float(self.data_dock.txt_node_depth.text())
-                    pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
+                    if self.data_dock.cbo_node_pattern.currentIndex() != -1:
+                        pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
+                    else:
+                        pattern_id = 0
                     NodeHandler.create_new_junction(new_start_junction, junction_eid, elev, j_demand, depth, pattern_id)
 
                 new_end_junction = None
@@ -145,7 +148,11 @@ class AddPipeTool(QgsMapTool):
                     junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: sofcode
                     elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, new_end_junction, 1)
                     depth = float(self.data_dock.txt_node_depth.text())
-                    pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
+                    if self.data_dock.cbo_node_pattern.currentIndex() != -1:
+                        pattern_id = self.data_dock.cbo_node_pattern.itemData(
+                            self.data_dock.cbo_node_pattern.currentIndex()).id
+                    else:
+                        pattern_id = 0
                     NodeHandler.create_new_junction(new_end_junction, junction_eid, elev, j_demand, depth, pattern_id)
 
                 # If end or start node intersects a pipe, split it

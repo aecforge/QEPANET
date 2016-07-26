@@ -6,7 +6,7 @@ from PyQt4.QtGui import QRegExpValidator
 
 class Parameters:
 
-    plug_in_name = 'QEPANET 0.04'
+    plug_in_name = 'QEPANET 0.05'
 
     config_file_name = 'config.ini'
 
@@ -22,7 +22,7 @@ class Parameters:
     dem_rlay = None
 
     patterns = {}
-    curves = []
+    curves = {}
 
     snap_tolerance = 10
 
@@ -80,7 +80,7 @@ class ConfigFile:
         self.config.read(self.config_file_path)
         try:
             patterns_file_path = self.config.get('EPANET', 'patterns_file') # TODO: softcode
-        except configparser.NoOptionError as e:
+        except ConfigParser.NoOptionError as e:
             return None
 
         return patterns_file_path
@@ -95,7 +95,7 @@ class ConfigFile:
         self.config.read(self.config_file_path)
         try:
             curves_file_path = self.config.get('EPANET', 'curves_file')  # TODO: softcode
-        except configparser.NoOptionError as e:
+        except ConfigParser.NoOptionError as e:
             return None
         return curves_file_path
 

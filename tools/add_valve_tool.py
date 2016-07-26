@@ -5,8 +5,8 @@ from PyQt4.QtGui import QColor
 from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
-from network import Valve
-from network_handling import LinkHandler, NetworkUtils
+from ..model.network import Valve
+from ..model.network_handling import LinkHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils
 

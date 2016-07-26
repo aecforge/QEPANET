@@ -21,9 +21,9 @@
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
-from PyQt4.QtGui import QAction, QIcon, QMessageBox, QFileDialog
+from PyQt4.QtGui import QAction, QIcon, QMessageBox
 
-from tools.inp_file import InpFile
+from model.inp_file import InpFile
 from tools.parameters import Parameters, ConfigFile
 
 # Initialize Qt resources from file resources.py
@@ -268,14 +268,13 @@ class QEpanet:
 
         # Read patterns
         patterns_file_path = config_file.get_patterns_file_path()
-        if patterns_file_path is not None:
+        if patterns_file_path is not None and os.path.isfile(patterns_file_path):
             Parameters.patterns = InpFile.read_patterns(patterns_file_path)
 
         # Read curves
         curves_file_path = config_file.get_curves_file_path()
-        if curves_file_path is not None:
+        if curves_file_path is not None and os.path.isfile(curves_file_path):
             Parameters.curves = InpFile.read_curves(curves_file_path)
-
 
         if not self.pluginIsActive:
             self.pluginIsActive = True

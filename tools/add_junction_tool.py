@@ -5,7 +5,7 @@ from PyQt4.QtGui import QColor
 from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance, QgsGeometry
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
-from network_handling import LinkHandler, NodeHandler, NetworkUtils
+from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils
 
@@ -88,7 +88,10 @@ class AddJunctionTool(QgsMapTool):
             j_demand = float(self.data_dock.txt_node_demand.text())
             depth = float(self.data_dock.txt_node_depth.text())
 
-            pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
+            if self.data_dock.cbo_node_pattern.currentIndex() != -1:
+                pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
+            else:
+                pattern_id = None
 
             # No links snapped: create a new stand-alone node
             if self.snapped_feat_id is None:

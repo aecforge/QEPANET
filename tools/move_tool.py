@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QCursor, QColor
-from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper
+from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper, QgsVector
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
-from ..geo_utils import raster_utils, vector_utils
-from network_handling import NetworkUtils, NodeHandler, LinkHandler
+from ..model.network_handling import NetworkUtils, NodeHandler, LinkHandler
 from parameters import Parameters
+from ..geo_utils import raster_utils, vector_utils
 from ..rendering import symbology
 
 
@@ -227,10 +227,15 @@ class MoveTool(QgsMapTool):
                     # It's a pump/valve
                     else:
                         snapped_pt = self.snap_results[0].snappedVertex
-                        self.delta_vec = self.mouse_pt - snapped_pt
+
+                        self.delta_vec = QgsVector(self.mouse_pt.x() - snapped_pt.x(), self.mouse_pt.y() - snapped_pt.y())
+                        # In 2.16+: self.delta_vec = QgsVector(self.mouse_pt - snapped_pt)
+
                         for key, value in self.rubber_bands_d.iteritems():
-                            self.rubber_bands_d[key].movePoint(1, snapped_pt + self.delta_vec)
-                            self.rubber_bands_d[key].movePoint(2, snapped_pt + self.delta_vec)
+                            self.rubber_bands_d[key].movePoint(1, QgsPoint(snapped_pt.x() + self.delta_vec.x(), snapped_pt.y() + self.delta_vec.y()))
+                            # in 2.16: self.rubber_bands_d[key].movePoint(1, snapped_pt + self.delta_vec)
+                            self.rubber_bands_d[key].movePoint(2, QgsPoint(snapped_pt.x() + self.delta_vec.x(), snapped_pt.y() + self.delta_vec.y()))
+                            # in 2.16: self.rubber_bands_d[key].movePoint(2, snapped_pt + self.delta_vec)
 
     def canvasReleaseEvent(self, event):
 
@@ -258,7 +263,7 @@ class MoveTool(QgsMapTool):
                     if not self.pump_valve_selected:
 
                         # Update junction geometry
-                        NodeHandler.move_node(self.selected_node_ft_lay, self.selected_node_ft, self.mouse_pt)
+                        NodeHandler.move_element(self.selected_node_ft_lay, self.selected_node_ft, self.mouse_pt)
 
                         # Update pipes
                         for feat, vertex_index in self.adj_pipes_fts_d.iteritems():
@@ -267,8 +272,17 @@ class MoveTool(QgsMapTool):
                     # Pump or valve
                     else:
                         # Update junctions geometry
-                        NodeHandler.move_node(Parameters.junctions_vlay, self.adj_junctions[0], self.adj_junctions[0].geometry().asPoint() + self.delta_vec)
-                        NodeHandler.move_node(Parameters.junctions_vlay, self.adj_junctions[1], self.adj_junctions[1].geometry().asPoint() + self.delta_vec)
+                        NodeHandler.move_element(Parameters.junctions_vlay, self.adj_junctions[0],
+                                                 QgsPoint(
+                                                    self.adj_junctions[0].geometry().asPoint().x() + self.delta_vec.x(),
+                                                    self.adj_junctions[0].geometry().asPoint().y() + self.delta_vec.y()))
+                        NodeHandler.move_element(Parameters.junctions_vlay, self.adj_junctions[1],
+                                                 QgsPoint(
+                                                     self.adj_junctions[1].geometry().asPoint().x() + self.delta_vec.x(),
+                                                     self.adj_junctions[1].geometry().asPoint().y() + self.delta_vec.y()))
+
+                        # in 2.16: NodeHandler.move_element(Parameters.junctions_vlay, self.adj_junctions[0], self.adj_junctions[0].geometry().asPoint() + self.delta_vec)
+                        # in 2.16: NodeHandler.move_element(Parameters.junctions_vlay, self.adj_junctions[1], self.adj_junctions[1].geometry().asPoint() + self.delta_vec)
 
                         # Pump or valve
                         if self.pump_or_valve == 'pump':
@@ -277,7 +291,12 @@ class MoveTool(QgsMapTool):
                             lay = Parameters.valves_vlay
                         LinkHandler.move_pump_valve(lay, self.pump_valve_ft, self.delta_vec)
                         for feat, vertex_index in self.adj_pipes_fts_d.iteritems():
-                            LinkHandler.move_pipe_vertex(feat, feat.geometry().vertexAt(vertex_index) + self.delta_vec, vertex_index)
+                            LinkHandler.move_pipe_vertex(feat,
+                                                         QgsPoint(
+                                                             feat.geometry().vertexAt(vertex_index).x() + self.delta_vec.x(),
+                                                             feat.geometry().vertexAt(vertex_index).y() + self.delta_vec.y()),
+                                                         vertex_index)
+                            # In 2.16: LinkHandler.move_pipe_vertex(feat, feat.geometry().vertexAt(vertex_index) + self.delta_vec, vertex_index)
 
                     self.adj_pipes_fts_d.clear()
 

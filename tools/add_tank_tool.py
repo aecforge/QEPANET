@@ -5,7 +5,7 @@ from PyQt4.QtGui import QColor
 from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance, QgsGeometry
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
-from network_handling import LinkHandler, NodeHandler, NetworkUtils
+from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils
 
@@ -84,7 +84,11 @@ class AddTankTool(QgsMapTool):
             # Find first available ID for Tanks
             tank_eid = NetworkUtils.find_next_id(Parameters.tanks_vlay, 'T') # TODO: softcode
 
-            curve = self.data_dock.cbo_tank_curve.itemData(self.data_dock.cbo_tank_curve.currentIndex())
+            if self.data_dock.cbo_tank_curve.currentIndex() != -1:
+                tank_curve_id = self.data_dock.cbo_tank_curve.itemData(self.data_dock.cbo_tank_curve.currentIndex()).id
+            else:
+                tank_curve_id = None
+
             diameter = float(self.data_dock.txt_tank_diameter.text())
             elev_corr = float(self.data_dock.txt_tank_elev_corr.text())
             level_init = float(self.data_dock.txt_tank_level_init.text())
@@ -98,7 +102,7 @@ class AddTankTool(QgsMapTool):
                 NodeHandler.create_new_tank(
                     self.mouse_pt,
                     tank_eid,
-                    curve,
+                    tank_curve_id,
                     diameter,
                     self.elev,
                     elev_corr,
@@ -134,7 +138,7 @@ class AddTankTool(QgsMapTool):
                         NodeHandler.create_new_tank(
                             self.snapped_vertex,
                             tank_eid,
-                            curve,
+                            tank_curve_id,
                             diameter,
                             self.elev,
                             elev_corr,

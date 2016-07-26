@@ -1,7 +1,8 @@
 import codecs
-from collections import OrderedDict
 
-from network import Curve, Pattern
+from network import Title, Junction, Reservoir, Tank, Pipe, Pump, Valve
+from system_ops import Curve, Pattern
+from ..tools.parameters import Parameters
 
 
 class InpFile:
@@ -87,4 +88,50 @@ class InpFile:
                     curves_d[words[0]].add_xy(x, y)
 
         return curves_d
+
+    @staticmethod
+    def write_inp_file(inp_file_path, title):
+
+        out = []
+
+        with codecs.open(inp_file_path, 'w', encoding='UTF-8') as inp_f:
+
+            # Title
+            if title is not None:
+                out.append(InpFile.build_section_keyword(Title.section_name))
+                out.extend(InpFile.split_line(title))
+
+            # Junctions
+            out.append(InpFile.build_section_keyword(Junction.section_name))
+            out.append(Junction.section_header)
+            out.append(InpFile.build_dashline(Junction.section_header))
+
+            f_fts = Parameters.junctions_vlay.getFeatures()
+
+
+    @staticmethod
+    def split_line(line, n=255):
+        lines = [line[i:i + n] for i in range(0, len(line), n)]
+        return lines
+
+    @staticmethod
+    def build_section_keyword(section_name):
+        return '[' + section_name + ']'
+
+    @staticmethod
+    def build_comment(comment):
+        comments = InpFile.split_line(comment)
+        for c in range(comments):
+            comments[c] = '; ' + comments[c]
+        return comments
+
+    @staticmethod
+    def build_dashline(text):
+        dashline = ''
+        for d in range(len(text)):
+            dashline += '-'
+        return dashline
+
+
+
 

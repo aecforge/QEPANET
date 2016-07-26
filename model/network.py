@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+
 class Tables:
 
     pipes_table_name = 'pipes'
@@ -13,8 +14,16 @@ class Tables:
         pass
 
 
-class Junction:
+class Title:
+    section_name = 'TITLE'
 
+    def __init__(self, title):
+        self.title = title
+
+
+class Junction:
+    section_name = 'JUNCTIONS'
+    section_header = 'ID Elev. Demand Pattern'
     field_name_eid = 'id'
     field_name_demand = 'demand'
     field_name_elevation = 'elev'
@@ -30,7 +39,7 @@ class Junction:
 
 
 class Reservoir:
-
+    section_name = 'RESERVOIRS'
     field_name_eid = 'id'
     field_name_elevation = 'elev'
     field_name_elevation_corr = 'elev_corr'
@@ -44,6 +53,7 @@ class Reservoir:
 
 
 class Tank:
+    section_name = 'TANKS'
     field_name_eid = 'id'
     field_name_curve = 'curve'
     field_name_diameter = 'diameter'
@@ -65,8 +75,9 @@ class Tank:
         self.level_min = 0
         self.vol_min = 0
 
-class Pipe:
 
+class Pipe:
+    section_name = 'PIPES'
     field_name_eid = 'id'
     field_name_demand = 'demand'
     field_name_diameter = 'diameter'
@@ -91,7 +102,7 @@ class Pipe:
 
 
 class Pump:
-
+    section_name = 'PUMPS'
     field_name_eid = 'id'
     field_name_curve = 'curve'
 
@@ -102,6 +113,7 @@ class Pump:
 
 
 class Valve:
+    section_name = 'VALVES'
     field_name_eid = 'id'
     field_name_diameter = 'diameter'
     field_name_minor_loss = 'minor_loss'
@@ -126,26 +138,8 @@ class Valve:
     def __init__(self, eid):
         self.eid = eid
 
+class Emitter:
+    section_name = 'EMITTERS'
 
-class Pattern:
-
-    def __init__(self, name, id):
-        self.id = id
-        self.name = name
-        self.values = []
-
-    def add_value(self, val):
-        self.values.append(val)
-
-
-class Curve:
-
-    def __init__(self, name, id):
-        self.id = id
-        self.name = name
-        self.xs = []
-        self.ys = []
-
-    def add_xy(self, x, y):
-        self.xs.append(x)
-        self.ys.append(y)
+    def __init__(self):
+        pass

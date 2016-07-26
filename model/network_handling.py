@@ -6,7 +6,7 @@ from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper
     QgsVectorLayerEditUtils, QgsFeatureRequest
 
 from network import Junction, Reservoir, Tank, Pipe, Pump, Valve
-from parameters import Parameters
+from ..tools.parameters import Parameters
 from ..geo_utils import raster_utils
 from ..geo_utils.points_along_line import PointsAlongLineGenerator, PointsAlongLineUtils
 
@@ -76,7 +76,7 @@ class NodeHandler:
             return new_reservoir_feat
 
     @staticmethod
-    def create_new_tank(point, eid, curve, diameter, elev, elev_corr, level_init, level_min, level_max, vol_min):
+    def create_new_tank(point, eid, tank_curve_id, diameter, elev, elev_corr, level_init, level_min, level_max, vol_min):
         tanks_caps = Parameters.tanks_vlay.dataProvider().capabilities()
         if tanks_caps and QgsVectorDataProvider.AddFeatures:
 
@@ -87,7 +87,7 @@ class NodeHandler:
                 new_tank_feat = QgsFeature(Parameters.tanks_vlay.pendingFields())
 
                 new_tank_feat.setAttribute(Tank.field_name_eid, eid)
-                new_tank_feat.setAttribute(Tank.field_name_curve, curve.id)
+                new_tank_feat.setAttribute(Tank.field_name_curve, tank_curve_id)
                 new_tank_feat.setAttribute(Tank.field_name_diameter, diameter)
                 new_tank_feat.setAttribute(Tank.field_name_elevation, elev)
                 new_tank_feat.setAttribute(Tank.field_name_elevation_corr, elev_corr)
@@ -109,7 +109,7 @@ class NodeHandler:
             return new_tank_feat
 
     @staticmethod
-    def move_node(layer, node_ft, new_pos_pt):
+    def move_element(layer, node_ft, new_pos_pt):
         caps = layer.dataProvider().capabilities()
         if caps & QgsVectorDataProvider.ChangeGeometries:
 
@@ -182,7 +182,7 @@ class LinkHandler:
             return new_pipe_ft
 
     @staticmethod
-    def create_new_pump(data_dock, pipe_ft, closest_junction_ft, position, pump_curve):
+    def create_new_pump(data_dock, pipe_ft, closest_junction_ft, position, pump_curve_id):
 
         # Find start and end nodes positions
         # Get vertex along line next to snapped point
@@ -241,7 +241,7 @@ class LinkHandler:
             try:
                 new_pump_ft = QgsFeature(Parameters.pumps_vlay.pendingFields())
                 new_pump_ft.setAttribute(Pump.field_name_eid, pump_eid)
-                new_pump_ft.setAttribute(Pump.field_name_curve, pump_curve.id)
+                new_pump_ft.setAttribute(Pump.field_name_curve, pump_curve_id)
 
                 new_pump_ft.setGeometry(pump_geom)
 
@@ -455,20 +455,33 @@ class LinkHandler:
                 old_ft_pts = ft.geometry().asPolyline()
 
                 edit_utils = QgsVectorLayerEditUtils(vlay)
+
                 edit_utils.moveVertex(
-                    (old_ft_pts[0] + delta_vector).x(),
-                    (old_ft_pts[0] + delta_vector).y(),
+                    (QgsPoint(old_ft_pts[0].x() + delta_vector.x(), old_ft_pts[0].y() + delta_vector.y())).x(),
+                    (QgsPoint(old_ft_pts[0].x() + delta_vector.x(), old_ft_pts[0].y() + delta_vector.y())).y(),
                     ft.id(),
                     0)
+                # In 2.16
+                # edit_utils.moveVertex(
+                #     (old_ft_pts[0] + delta_vector).x(),
+                #     (old_ft_pts[0] + delta_vector).y(),
+                #     ft.id(),
+                #     0)
 
                 edit_utils.moveVertex(
-                    (old_ft_pts[1] + delta_vector).x(),
-                    (old_ft_pts[1] + delta_vector).y(),
+                    (QgsPoint(old_ft_pts[1].x() + delta_vector.x(), old_ft_pts[1].y() + delta_vector.y())).x(),
+                    (QgsPoint(old_ft_pts[1].x() + delta_vector.x(), old_ft_pts[1].y() + delta_vector.y())).y(),
                     ft.id(),
                     1)
+                # In 2.16
+                # edit_utils.moveVertex(
+                #     (old_ft_pts[1] + delta_vector).x(),
+                #     (old_ft_pts[1] + delta_vector).y(),
+                #     ft.id(),
+                #     1)
 
             except Exception as e:
-                vlay.destroyEnditCommand()
+                vlay.destroyEditCommand()
                 raise e
 
             vlay.endEditCommand()

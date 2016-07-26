@@ -1,9 +1,11 @@
 import os
+
 from PyQt4.QtCore import QVariant
-from qgis.core import QgsVectorLayer, QgsField, QgsCoordinateReferenceSystem, QgsFields, QgsVectorFileWriter, QGis
-from network import Junction, Reservoir, Tank, Pipe, Pump, Valve
-from network import Tables
+from qgis.core import QgsField, QgsFields, QgsVectorFileWriter, QGis
+
 from exceptions import ShpExistsExcpetion
+from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve
+from ..model.network import Tables
 
 
 class ShapefileDS:

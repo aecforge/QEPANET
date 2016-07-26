@@ -5,7 +5,7 @@ from PyQt4.QtGui import QColor
 from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
-from network_handling import LinkHandler, NetworkUtils
+from ..model.network_handling import LinkHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils
 
@@ -113,13 +113,17 @@ class AddPumpTool(QgsMapTool):
                         closest_junction_ft = end_node
 
                     # Create the pump
-                    pump_curve = self.data_dock.cbo_pump_curve.itemData(self.data_dock.cbo_pump_curve.currentIndex())
+                    if self.data_dock.cbo_pump_curve.currentIndex() != -1:
+                        pump_curve_id = self.data_dock.cbo_pump_curve.itemData(self.data_dock.cbo_pump_curve.currentIndex()).id
+                    else:
+                        pump_curve_id = None
+
                     LinkHandler.create_new_pump(
                         self.data_dock,
                         features[0],
                         closest_junction_ft,
                         self.snapped_vertex,
-                        pump_curve)
+                        pump_curve_id)
 
     def activate(self):
 
