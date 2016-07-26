@@ -225,55 +225,58 @@ class QEpanet:
         config_file = ConfigFile(Parameters.config_file_path)
 
         # Read patterns path
-        patterns_file_path = config_file.get_patterns_file_path()
-        if patterns_file_path is None or patterns_file_path == '':
-            QMessageBox.warning(
-                self.iface.mainWindow(),
-                Parameters.plug_in_name,
-                u'The patterns file is not set. Please select it in the next dialog.',
-                QMessageBox.Ok)
-
-            patterns_file_path = QFileDialog.getOpenFileName(
-                self.iface.mainWindow(),
-                'Select patterns file',
-                None,
-                'Patterns files (*.txt *.inp)')
-
-            if patterns_file_path is None or patterns_file_path == '':
-                return
-            else:
-                # Save patterns file path in configuration file
-                config_file.set_patterns_file_path(patterns_file_path)
+        # patterns_file_path = config_file.get_patterns_file_path()
+        # if patterns_file_path is None or patterns_file_path == '':
+        #     QMessageBox.warning(
+        #         self.iface.mainWindow(),
+        #         Parameters.plug_in_name,
+        #         u'The patterns file is not set. Please select it in the next dialog.',
+        #         QMessageBox.Ok)
+        #
+        #     patterns_file_path = QFileDialog.getOpenFileName(
+        #         self.iface.mainWindow(),
+        #         'Select patterns file',
+        #         None,
+        #         'Patterns files (*.txt *.inp)')
+        #
+        #     if patterns_file_path is None or patterns_file_path == '':
+        #         return
+        #     else:
+        #         # Save patterns file path in configuration file
+        #         config_file.set_patterns_file_path(patterns_file_path)
 
         # Read curvres path
-        curves_file_path = config_file.get_curves_file_path()
-        if curves_file_path is None or curves_file_path == '':
-            QMessageBox.warning(
-                self.iface.mainWindow(),
-                Parameters.plug_in_name,
-                u'The curves file is not set. Please select it in the next dialog.',
-                QMessageBox.Ok)
-
-            curves_file_path = QFileDialog.getOpenFileName(
-                self.iface.mainWindow(),
-                'Select curves file',
-                None,
-                'Curves files (*.txt *.inp)')
-
-            if curves_file_path is None or curves_file_path == '':
-                return
-            else:
-                # Save patterns file path in configuration file
-                config_file.set_curves_file_path(curves_file_path)
+        # curves_file_path = config_file.get_curves_file_path()
+        # if curves_file_path is None or curves_file_path == '':
+        #     QMessageBox.warning(
+        #         self.iface.mainWindow(),
+        #         Parameters.plug_in_name,
+        #         u'The curves file is not set. Please select it in the next dialog.',
+        #         QMessageBox.Ok)
+        #
+        #     curves_file_path = QFileDialog.getOpenFileName(
+        #         self.iface.mainWindow(),
+        #         'Select curves file',
+        #         None,
+        #         'Curves files (*.txt *.inp)')
+        #
+        #     if curves_file_path is None or curves_file_path == '':
+        #         return
+        #     else:
+        #         # Save patterns file path in configuration file
+        #         config_file.set_curves_file_path(curves_file_path)
 
         # Read patterns
-        patterns = InpFile.read_patterns(patterns_file_path)
-        Parameters.patterns = patterns
+        patterns_file_path = config_file.get_patterns_file_path()
+        if patterns_file_path is not None:
+            Parameters.patterns = InpFile.read_patterns(patterns_file_path)
 
         # Read curves
-        Parameters.curves = InpFile.read_curves(curves_file_path)
+        curves_file_path = config_file.get_curves_file_path()
+        if curves_file_path is not None:
+            Parameters.curves = InpFile.read_curves(curves_file_path)
 
-        # Read curves
+
         if not self.pluginIsActive:
             self.pluginIsActive = True
 

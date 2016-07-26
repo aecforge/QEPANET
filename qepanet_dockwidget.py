@@ -188,36 +188,100 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         event.accept()
 
     def add_junction(self):
+
+        # Check for junctions and pipes layers selected
+        if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0:
+            self.iface.messageBar().pushWarning(
+                Parameters.plug_in_name,
+                'Please selecte the junctions and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+            self.btn_add_junction.setChecked(True)
+            return
+
         tool = AddJunctionTool(self)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_reservoir(self):
+
+        # Check for reservoirs and pipes layers selected
+        if self.cbo_reservoirs.count() == 0 or self.cbo_pipes.count() == 0:
+            self.iface.messageBar().pushWarning(
+                Parameters.plug_in_name,
+                'Please selecte the reservoirs and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+            self.btn_add_reservoir.setChecked(True)
+            return
+
         tool = AddReservoirTool(self)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_tank(self):
+
+        # Check for tanks and pipes layers selected
+        if self.cbo_tanks.count() == 0 or self.cbo_pipes.count() == 0:
+            self.iface.messageBar().pushWarning(
+                Parameters.plug_in_name,
+                'Please selecte the tanks and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+            self.btn_add_tank.setChecked(True)
+            return
+
         tool = AddTankTool(self)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_pipe(self):
+
+        # Check for junctions and pipes layers selected
+        if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0:
+            self.iface.messageBar().pushWarning(
+                Parameters.plug_in_name,
+                'Please selecte the junctions and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+            self.btn_add_pipe.setChecked(True)
+            return
+
         tool = AddPipeTool(self)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_pump(self):
+
+        # Check for junctions, pipes and pumps layers selected
+        if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0 or self.cbo_pumps.count() == 0:
+            self.iface.messageBar().pushWarning(
+                Parameters.plug_in_name,
+                'Please selecte the junctions, pipes and pumps layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+            self.btn_add_pump.setChecked(True)
+            return
+
         tool = AddPumpTool(self)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_valve(self):
+
+        # Check for junctions, pipes and valves layers selected
+        if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0 or self.cbo_valves.count() == 0:
+            self.iface.messageBar().pushWarning(
+                Parameters.plug_in_name,
+                'Please selecte the junctions, pipes and valves layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+            self.btn_add_valve.setChecked(True)
+            return
+
         tool = AddValveTool(self, )
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
     def move_node(self):
+
+        # Check for all layers selected
+        if self.cbo_junctions.count() == 0 or self.cbo_reservoirs.count() == 0 or self.cbo_tanks.count() or\
+            self.cbo_pipes.count() == 0 or self.cbo_pumps.count() == 0 or self.cbo_valves.count() == 0:
+            self.iface.messageBar().pushWarning(
+                Parameters.plug_in_name,
+                'Please selecte all the vector layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+            self.btn_move_node.setChecked(False)
+            return
+
         tool = MoveTool(self)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)

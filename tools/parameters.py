@@ -1,12 +1,12 @@
 import os, codecs, ConfigParser
 from PyQt4.QtCore import QRegExp
 from PyQt4.QtGui import QRegExpValidator
-import configparser
+# import configparser
 
 
 class Parameters:
 
-    plug_in_name = 'QEPANET 0.02'
+    plug_in_name = 'QEPANET 0.04'
 
     config_file_name = 'config.ini'
 
