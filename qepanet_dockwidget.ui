@@ -156,7 +156,7 @@
            <item>
             <widget class="QToolBox" name="tbx_elements">
              <property name="currentIndex">
-              <number>0</number>
+              <number>7</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -850,9 +850,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
-                <width>236</width>
-                <height>87</height>
+                <y>-25</y>
+                <width>219</width>
+                <height>116</height>
                </rect>
               </property>
               <attribute name="label">
@@ -890,6 +890,13 @@
                    </widget>
                   </item>
                  </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btn_pattern_editor">
+                 <property name="text">
+                  <string>Pattern editor</string>
+                 </property>
                 </widget>
                </item>
               </layout>

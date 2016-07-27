@@ -25,11 +25,12 @@ import os
 
 from PyQt4 import QtCore, uic, QtGui
 from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui import QFileDialog
+from PyQt4.QtGui import QFileDialog, QMessageBox
 from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsCoordinateReferenceSystem,\
     QgsProject, QgsSnapper, QgsTolerance
 
 from geo_utils import utils
+from ui.patterns_gui import PatternsDialog
 from model.network import Tables, Valve
 from rendering import symbology
 from tools.add_junction_tool import AddJunctionTool
@@ -41,7 +42,8 @@ from tools.add_valve_tool import AddValveTool
 from tools.data_stores import ShapefileDS
 from tools.exceptions import ShpExistsExcpetion
 from tools.move_tool import MoveTool
-from tools.parameters import Parameters, RegExValidators
+from tools.parameters import Parameters, RegExValidators, ConfigFile
+
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qepanet_dockwidget.ui'))
@@ -179,7 +181,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.txt_snap_tolerance.setValidator(RegExValidators.get_pos_decimals())
         QtCore.QObject.connect(self.txt_snap_tolerance, QtCore.SIGNAL('editingFinished()'), self.snap_tolerance_changed)
 
-
+        QtCore.QObject.connect(self.btn_pattern_editor, QtCore.SIGNAL('pressed()'), self.pattern_editor)
 
         # TODO: read parameters from parameters file and set previous GUI settings
 
@@ -405,6 +407,36 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                                                       0,
                                                       Parameters.snap_tolerance,
                                                       True)
+
+    def pattern_editor(self):
+
+        # Read patterns path
+        config_file = ConfigFile(Parameters.config_file_path)
+        patterns_file_path = config_file.get_patterns_file_path()
+        if patterns_file_path is None or patterns_file_path == '':
+            QMessageBox.information(
+                self.iface.mainWindow(),
+                Parameters.plug_in_name,
+                u'Please select the file where the patterns will be saved it in the next dialog.',
+                QMessageBox.Ok)
+
+            patterns_file_path = QFileDialog.getOpenFileName(
+                self.iface.mainWindow(),
+                'Select patterns file',
+                None,
+                'Patterns files (*.txt *.inp)')
+
+            if patterns_file_path is None or patterns_file_path == '':
+                return
+            else:
+                # Save patterns file path in configuration file
+                config_file.set_patterns_file_path(patterns_file_path)
+
+        Parameters.pattern_file = patterns_file_path
+
+        pattern_dialog = PatternsDialog(self.iface.mainWindow())
+        pattern_dialog.show()
+
 
     def update_layers_combos(self):
 

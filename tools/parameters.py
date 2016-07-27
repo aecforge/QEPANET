@@ -6,7 +6,7 @@ from PyQt4.QtGui import QRegExpValidator
 
 class Parameters:
 
-    plug_in_name = 'QEPANET 0.06'
+    plug_in_name = 'QEPANET 0.07'
 
     config_file_name = 'config.ini'
 
@@ -41,6 +41,8 @@ class Parameters:
     tank_icon_svg_name = 'tank.svg'
     pump_icon_svg_name = 'pump.svg'
     valve_icon_svg_name = 'valve.svg'
+
+    pattern_file = None
 
     def __init__(self):
         pass
