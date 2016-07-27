@@ -6,7 +6,7 @@ from PyQt4.QtGui import QRegExpValidator
 
 class Parameters:
 
-    plug_in_name = 'QEPANET 0.05'
+    plug_in_name = 'QEPANET 0.06'
 
     config_file_name = 'config.ini'
 

@@ -106,33 +106,46 @@ class AddPipeTool(QgsMapTool):
                 # Finalize line
                 pipe_band_geom = self.rubber_band.asGeometry()
 
-                pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P') # TODO: softcode
+                rubberband_pts = pipe_band_geom.asPolyline()
+                rubberband_pts = self.remove_duplicated_point(rubberband_pts)
 
-                j_demand = float(self.data_dock.txt_pipe_demand.text())
-                diameter = float(self.data_dock.txt_pipe_diameter.text())
-                loss = float(self.data_dock.txt_pipe_loss.text())
-                roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
-                status = self.data_dock.cbo_pipe_status.currentText()
+                # Check whether the pipe points are located on existing nodes
+                junct_nrs = [0]
+                for p in range(1, len(rubberband_pts) - 1):
+                    overlapping_nodes = NetworkUtils.find_overlapping_nodes(rubberband_pts[p])
+                    if overlapping_nodes['junctions'] or overlapping_nodes['reservoirs'] or overlapping_nodes['tanks']:
+                        junct_nrs.append(p)
 
-                pipe_pts = pipe_band_geom.asPolyline()
-                pipe_pts = self.remove_duplicated_point(pipe_pts)
+                junct_nrs.append(len(rubberband_pts) - 1)
 
-                pipe_ft = LinkHandler.create_new_pipe(
-                    pipe_eid,
-                    j_demand,
-                    diameter,
-                    loss,
-                    roughness,
-                    status,
-                    pipe_pts)
-                self.rubber_band.reset()
+                new_pipes_nr = len(junct_nrs) - 1
+
+                new_pipes_fts = []
+                for np in range(new_pipes_nr):
+
+                    demand = float(self.data_dock.txt_pipe_demand.text())
+                    diameter = float(self.data_dock.txt_pipe_diameter.text())
+                    loss = float(self.data_dock.txt_pipe_loss.text())
+                    roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
+                    status = self.data_dock.cbo_pipe_status.currentText()
+                    pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')  # TODO: softcode
+                    pipe_ft = LinkHandler.create_new_pipe(
+                        pipe_eid,
+                        demand,
+                        diameter,
+                        loss,
+                        roughness,
+                        status,
+                        rubberband_pts[junct_nrs[np]:junct_nrs[np+1]+1])
+                    self.rubber_band.reset()
+
+                    new_pipes_fts.append(pipe_ft)
 
                 # Create start and end node, if they don't exist
-                (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(pipe_ft.geometry())
-
+                (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(new_pipes_fts[0].geometry())
                 new_start_junction = None
                 if not start_junction:
-                    new_start_junction = pipe_pts[0]
+                    new_start_junction = rubberband_pts[0]
                     junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: sofcode
                     elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, new_start_junction, 1)
                     depth = float(self.data_dock.txt_node_depth.text())
@@ -140,11 +153,12 @@ class AddPipeTool(QgsMapTool):
                         pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
                     else:
                         pattern_id = 0
-                    NodeHandler.create_new_junction(new_start_junction, junction_eid, elev, j_demand, depth, pattern_id)
+                    NodeHandler.create_new_junction(new_start_junction, junction_eid, elev, demand, depth, pattern_id)
 
+                (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(new_pipes_fts[len(new_pipes_fts) - 1].geometry())
                 new_end_junction = None
                 if not end_junction:
-                    new_end_junction = pipe_pts[len(pipe_pts) - 1]
+                    new_end_junction = rubberband_pts[len(rubberband_pts) - 1]
                     junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: sofcode
                     elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, new_end_junction, 1)
                     depth = float(self.data_dock.txt_node_depth.text())
@@ -153,7 +167,7 @@ class AddPipeTool(QgsMapTool):
                             self.data_dock.cbo_node_pattern.currentIndex()).id
                     else:
                         pattern_id = 0
-                    NodeHandler.create_new_junction(new_end_junction, junction_eid, elev, j_demand, depth, pattern_id)
+                    NodeHandler.create_new_junction(new_end_junction, junction_eid, elev, demand, depth, pattern_id)
 
                 # If end or start node intersects a pipe, split it
                 if new_start_junction:

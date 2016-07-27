@@ -10,11 +10,11 @@
 name=QEPANET
 qgisMinimumVersion=2.0
 description=This plugin links QGIS and EPANET.
-version=0.05
+version=0.06
 author=DICAM - UNITN
 email=albertodeluca3@gmail.com
 
-about=This plugins links QGIS and EPANET: - helps creating EPANET network; - helps analysing results.
+about=This plugins links QGIS and EPANET: it helps creating the EPANET network and analysing the simulation results.
 
 tracker=https://github.com/albertodeluca/QEPANET/issues
 repository=https://github.com/albertodeluca/QEPANET

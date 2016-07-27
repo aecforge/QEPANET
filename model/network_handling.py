@@ -732,3 +732,27 @@ class NetworkUtils:
                     adj_links.append(ft)
 
         return adj_links
+
+    @staticmethod
+    def find_overlapping_nodes(point):
+
+        overlap_juncts = []
+        overlap_reservs = []
+        overlap_tanks = []
+
+        for junct_feat in Parameters.junctions_vlay.getFeatures():
+            if NetworkUtils.points_overlap(junct_feat.geometry(), point):
+                overlap_juncts.append(junct_feat)
+                break
+
+        for reserv_feat in Parameters.reservoirs_vlay.getFeatures():
+            if NetworkUtils.points_overlap(reserv_feat.geometry(), point):
+                overlap_reservs.append(reserv_feat)
+                break
+
+        for tank_feat in Parameters.tanks_vlay.getFeatures():
+            if NetworkUtils.points_overlap(tank_feat.geometry(), point):
+                overlap_tanks.append(tank_feat)
+                break
+
+        return {'junctions': overlap_juncts, 'reservoirs': overlap_reservs, 'tanks': overlap_tanks }
