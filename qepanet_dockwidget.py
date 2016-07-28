@@ -432,7 +432,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 # Save patterns file path in configuration file
                 config_file.set_patterns_file_path(patterns_file_path)
 
-        Parameters.pattern_file = patterns_file_path
+        Parameters.patterns_file = patterns_file_path
 
         pattern_dialog = PatternsDialog(self.iface.mainWindow())
         pattern_dialog.show()
@@ -545,14 +545,14 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def update_patterns_combo(self):
         self.cbo_node_pattern.clear()
         if Parameters.patterns is not None:
-            for value in Parameters.patterns.itervalues():
-                self.cbo_node_pattern.addItem(value.name, value)
+            for pattern in Parameters.patterns:
+                self.cbo_node_pattern.addItem(pattern.desc, pattern)
 
     def update_curves_combo(self):
         self.cbo_tank_curve.clear()
         self.cbo_pump_curve.clear()
         if Parameters.curves is not None:
-            for value in Parameters.curves.values():
+            for value in Parameters.curves:
                 self.cbo_tank_curve.addItem(value.name, value)
                 self.cbo_pump_curve.addItem(value.name, value)
 

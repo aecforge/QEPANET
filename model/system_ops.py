@@ -14,11 +14,12 @@ class Curve:
 
 class Pattern:
     section_name = 'PATTERNS'
+    section_header = 'ID              	Multipliers'
 
-    def __init__(self, name, id):
+    def __init__(self, id, desc=None, values=[]):
         self.id = id
-        self.name = name
-        self.values = []
+        self.desc = desc
+        self.values = values[:]
 
     def add_value(self, val):
         self.values.append(val)

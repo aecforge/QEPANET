@@ -21,8 +21,8 @@ class Parameters:
 
     dem_rlay = None
 
-    patterns = {}
-    curves = {}
+    patterns = []
+    curves = []
 
     snap_tolerance = 10
 
@@ -42,7 +42,7 @@ class Parameters:
     pump_icon_svg_name = 'pump.svg'
     valve_icon_svg_name = 'valve.svg'
 
-    pattern_file = None
+    patterns_file = None
 
     def __init__(self):
         pass

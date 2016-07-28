@@ -1,4 +1,6 @@
-from ..tools.parameters import Parameters
+from ..model.inp_file import InpFile
+from ..model.system_ops import Pattern
+from ..tools.parameters import Parameters, ConfigFile
 from graphs import StaticMplCanvas
 from PyQt4 import QtGui, QtCore
 
@@ -19,7 +21,7 @@ class PatternsDialog(QtGui.QDialog):
         self.fra_file = QtGui.QFrame()
         self.fra_file.setContentsMargins(0, 0, 0, 0)
         fra_file_lay = QtGui.QHBoxLayout(self.fra_file)
-        self.txt_file = QtGui.QLineEdit(Parameters.pattern_file)
+        self.txt_file = QtGui.QLineEdit(Parameters.patterns_file)
         self.txt_file.setReadOnly(True)
         self.txt_file.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.txt_file.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Minimum)
@@ -32,6 +34,7 @@ class PatternsDialog(QtGui.QDialog):
         # Patterns
         self.lbl_patterns = QtGui.QLabel('Patterns:')
         self.lst_patterns = QtGui.QListWidget()
+        self.lst_patterns.currentItemChanged.connect(self.list_item_changed)
 
         # Form
         self.fra_form = QtGui.QFrame()
@@ -108,38 +111,129 @@ class PatternsDialog(QtGui.QDialog):
 
         self.values = []
 
-        # self.static_canvas.draw_bars_graph(labels_values)
-
-        # Splitter
+        # Main
         main_lay.addWidget(self.fra_top)
         main_lay.addWidget(self.static_canvas)
 
-    def select_file(self):
-        pass
+        # Read existing patterns
+        self.update_graph = False
+        self.read_patterns()
+        self.update_graph = True
 
-    def new_pattern(self):
-        pass
+    def list_item_changed(self):
+        p_index = self.lst_patterns.currentRow()
+        current_pattern = Parameters.patterns[p_index]
+
+        # Update GUI
+        self.txt_id.setText(current_pattern.id)
+        self.txt_desc.setText(current_pattern.desc)
+
+        # Update table and chart
+        self.update_graph = False
+        for v in range(len(current_pattern.values)):
+            self.table.setItem(1, v, QtGui.QTableWidgetItem(str(current_pattern.values[v])))
+        self.update_graph = True
+
+        self.static_canvas.draw_bars_graph(current_pattern.values)
+
+    def select_file(self):
+        config_file = ConfigFile(Parameters.config_file_path)
+        patterns_file_path = QtGui.QFileDialog.getOpenFileName(
+            self,
+            'Select patterns file',
+            None,
+            'Patterns files (*.txt *.inp)')
+
+        if patterns_file_path is None or patterns_file_path == '':
+            return
+        else:
+            # Save patterns file path in configuration file
+            config_file.set_patterns_file_path(patterns_file_path)
+
+        Parameters.patterns_file = patterns_file_path
+
+    def read_patterns(self):
+        Parameters.patterns = InpFile.read_patterns(Parameters.patterns_file)
+
+        self.lst_patterns.clear()
+        for pattern in Parameters.patterns:
+            desc = ' (' + pattern.desc + ')' if pattern.desc is not None else ''
+            self.lst_patterns.addItem(pattern.id + desc)
+
+        if self.lst_patterns.count() > 0:
+            self.lst_patterns.setCurrentRow(0)
 
     def save_pattern(self):
-        pass
+
+        # Check for ID
+        if not self.txt_id.text():
+            QtGui.QMessageBox.warning(
+                    self,
+                    Parameters.plug_in_name,
+                    u'Please specify the pattern ID.', # TODO: softcode
+                    QtGui.QMessageBox.Ok)
+            return
+
+        # Check for ID unique
+        overwrite_p = None
+        for pattern in Parameters.patterns:
+            if pattern.id == self.txt_id.text():
+                ret = QtGui.QMessageBox.question(
+                    self,
+                    Parameters.plug_in_name,
+                    u'A pattern with ID ' + self.txt_id.text() + ' already exists. Overwrite?',  # TODO: softcode
+                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+                if ret == QtGui.QMessageBox.No:
+                    return
+                else:
+                    overwrite_p = pattern
+                break
+
+        values = []
+        for col in range(self.table.columnCount()):
+            item = self.table.item(1, col)
+            values.append(self.from_item_to_val(item))
+
+        # Update
+        if overwrite_p is not None:
+            overwrite_p.desc = self.txt_desc.text()
+            overwrite_p.values = values
+            InpFile.write_pattern(Parameters.patterns_file, overwrite_p)
+
+        # Save new
+        else:
+            new_pattern = Pattern(self.txt_id.text(), self.txt_desc.text(), values)
+            Parameters.patterns.append(new_pattern)
+            InpFile.write_pattern(Parameters.patterns_file, new_pattern)
+
+        self.read_patterns()
 
     def del_pattern(self):
-        pass
+        selected_row = self.lst_patterns.currentRow()
+        self.lst_patterns.takeItem(selected_row)
+        del Parameters.patterns[selected_row]
+        print 'pts', len(Parameters.patterns)
+        InpFile.write_pattern(Parameters.patterns_file)
 
     def data_changed(self):
         self.values[:] = []
         for col in range(self.table.columnCount()):
             item = self.table.item(1, col)
-            if item is None:
-                value = 0
-            else:
-                value = item.text()
-            try:
-                value = float(value)
-                value = max(value, 0)
-            except:
-                value = 0
+            value = self.from_item_to_val(item)
 
             self.values.append(float(value))
 
-        self.static_canvas.draw_bars_graph(self.values)
+        if self.update_graph:
+            self.static_canvas.draw_bars_graph(self.values)
+
+    def from_item_to_val(self, item):
+        if item is None:
+            value = 0
+        else:
+            value = item.text()
+        try:
+            value = float(value)
+            value = max(value, 0)
+        except:
+            value = 0
+        return value
