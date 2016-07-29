@@ -188,7 +188,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     # This method needed by observable
     def update(self, observable):
-        print 'updated', type(observable)
+        # Update components
+        self.update_patterns_combo()
+        self.update_curves_combo()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
