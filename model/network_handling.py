@@ -17,17 +17,17 @@ class NodeHandler:
         pass
 
     @staticmethod
-    def create_new_junction(point, eid, elev, demand, depth, pattern_id):
+    def create_new_junction(parameters, point, eid, elev, demand, depth, pattern_id):
 
-        junctions_caps = Parameters.junctions_vlay.dataProvider().capabilities()
+        junctions_caps = parameters.junctions_vlay.dataProvider().capabilities()
         if junctions_caps and QgsVectorDataProvider.AddFeatures:
 
             # New stand-alone node
-            Parameters.junctions_vlay.beginEditCommand("Add junction")
+            parameters.junctions_vlay.beginEditCommand("Add junction")
             new_junct_feat = None
 
             try:
-                new_junct_feat = QgsFeature(Parameters.junctions_vlay.pendingFields())
+                new_junct_feat = QgsFeature(parameters.junctions_vlay.pendingFields())
                 new_junct_feat.setAttribute(Junction.field_name_eid, eid)
                 new_junct_feat.setAttribute(Junction.field_name_elevation, elev)
                 new_junct_feat.setAttribute(Junction.field_name_demand, demand)
@@ -36,28 +36,28 @@ class NodeHandler:
 
                 new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
 
-                Parameters.junctions_vlay.addFeatures([new_junct_feat])
+                parameters.junctions_vlay.addFeatures([new_junct_feat])
 
             except Exception as e:
-                Parameters.junctions_vlay.destroyEditCommand()
+                parameters.junctions_vlay.destroyEditCommand()
                 raise e
 
-            Parameters.junctions_vlay.endEditCommand()
+                parameters.junctions_vlay.endEditCommand()
 
             return new_junct_feat
 
     @staticmethod
-    def create_new_reservoir(point, eid, elev, elev_corr, pressure):
+    def create_new_reservoir(parameters, point, eid, elev, elev_corr, pressure):
 
-        reservoirs_caps = Parameters.reservoirs_vlay.dataProvider().capabilities()
+        reservoirs_caps = parameters.reservoirs_vlay.dataProvider().capabilities()
         if reservoirs_caps and QgsVectorDataProvider.AddFeatures:
 
             # New stand-alone node
-            Parameters.reservoirs_vlay.beginEditCommand("Add reservoir")
+            parameters.reservoirs_vlay.beginEditCommand("Add reservoir")
             new_reservoir_feat = None
 
             try:
-                new_reservoir_feat = QgsFeature(Parameters.reservoirs_vlay.pendingFields())
+                new_reservoir_feat = QgsFeature(parameters.reservoirs_vlay.pendingFields())
                 new_reservoir_feat.setAttribute(Reservoir.field_name_eid, eid)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_elevation, elev)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_elevation_corr, elev_corr)
@@ -65,26 +65,25 @@ class NodeHandler:
 
                 new_reservoir_feat.setGeometry(QgsGeometry.fromPoint(point))
 
-                Parameters.reservoirs_vlay.addFeatures([new_reservoir_feat])
+                parameters.reservoirs_vlay.addFeatures([new_reservoir_feat])
 
             except Exception as e:
-                Parameters.reservoirs_vlay.destroyEditCommand()
+                parameters.reservoirs_vlay.destroyEditCommand()
                 raise e
 
-            Parameters.reservoirs_vlay.endEditCommand()
+                parameters.reservoirs_vlay.endEditCommand()
 
             return new_reservoir_feat
 
     @staticmethod
-    def create_new_tank(point, eid, tank_curve_id, diameter, elev, elev_corr, level_init, level_min, level_max, vol_min):
-        tanks_caps = Parameters.tanks_vlay.dataProvider().capabilities()
+    def create_new_tank(parameters, point, eid, tank_curve_id, diameter, elev, elev_corr, level_init, level_min, level_max, vol_min):
+        tanks_caps = parameters.tanks_vlay.dataProvider().capabilities()
         if tanks_caps and QgsVectorDataProvider.AddFeatures:
 
-            Parameters.tanks_vlay.beginEditCommand("Add junction")
-            new_tank_feat = None
+            parameters.tanks_vlay.beginEditCommand("Add junction")
 
             try:
-                new_tank_feat = QgsFeature(Parameters.tanks_vlay.pendingFields())
+                new_tank_feat = QgsFeature(parameters.tanks_vlay.pendingFields())
 
                 new_tank_feat.setAttribute(Tank.field_name_eid, eid)
                 new_tank_feat.setAttribute(Tank.field_name_curve, tank_curve_id)
@@ -98,18 +97,18 @@ class NodeHandler:
 
                 new_tank_feat.setGeometry(QgsGeometry.fromPoint(point))
 
-                Parameters.tanks_vlay.addFeatures([new_tank_feat])
+                parameters.tanks_vlay.addFeatures([new_tank_feat])
 
             except Exception as e:
-                Parameters.tanks_vlay.destroyEditCommand()
+                parameters.tanks_vlay.destroyEditCommand()
                 raise e
 
-            Parameters.tanks_vlay.endEditCommand()
+                parameters.tanks_vlay.endEditCommand()
 
             return new_tank_feat
 
     @staticmethod
-    def move_element(layer, node_ft, new_pos_pt):
+    def move_element(layer, dem_rlay, node_ft, new_pos_pt):
         caps = layer.dataProvider().capabilities()
         if caps & QgsVectorDataProvider.ChangeGeometries:
 
@@ -124,7 +123,7 @@ class NodeHandler:
                     0)
 
                 # Elevation
-                new_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, new_pos_pt, 1)
+                new_elev = raster_utils.read_layer_val_from_coord(dem_rlay, new_pos_pt, 1)
                 if new_elev is None:
                     new_elev = 0
 
@@ -132,11 +131,10 @@ class NodeHandler:
                 layer.changeAttributeValue(node_ft.id(), field_index, new_elev)
 
             except Exception as e:
-                Parameters.junctions_vlay.destroyEditCommand()
+                layer.destroyEditCommand()
                 raise e
 
             layer.endEditCommand()
-
 
 
 class LinkHandler:
@@ -144,24 +142,24 @@ class LinkHandler:
         pass
 
     @staticmethod
-    def create_new_pipe(eid, demand, diameter, loss, roughness, status, nodes):
+    def create_new_pipe(parameters, eid, demand, diameter, loss, roughness, status, nodes):
 
-        pipes_caps = Parameters.pipes_vlay.dataProvider().capabilities()
+        pipes_caps = parameters.pipes_vlay.dataProvider().capabilities()
         if pipes_caps and QgsVectorDataProvider.AddFeatures:
 
             pipe_geom = QgsGeometry.fromPolyline(nodes)
 
             # Calculate 3D length
-            if Parameters.dem_rlay is not None:
-                length_3d = LinkHandler.calc_3d_length(pipe_geom)
+            if parameters.dem_rlay is not None:
+                length_3d = LinkHandler.calc_3d_length(parameters, pipe_geom)
             else:
                 length_3d = pipe_geom.length()
 
-            Parameters.pipes_vlay.beginEditCommand("Add new pipes")
+                parameters.pipes_vlay.beginEditCommand("Add new pipes")
             new_pipe_ft = None
 
             try:
-                new_pipe_ft = QgsFeature(Parameters.pipes_vlay.pendingFields())
+                new_pipe_ft = QgsFeature(parameters.pipes_vlay.pendingFields())
                 new_pipe_ft.setAttribute(Pipe.field_name_eid, eid)
                 new_pipe_ft.setAttribute(Pipe.field_name_demand, demand)
                 new_pipe_ft.setAttribute(Pipe.field_name_diameter, diameter)
@@ -172,23 +170,23 @@ class LinkHandler:
 
                 new_pipe_ft.setGeometry(pipe_geom)
 
-                Parameters.pipes_vlay.addFeatures([new_pipe_ft])
+                parameters.pipes_vlay.addFeatures([new_pipe_ft])
 
             except Exception as e:
-                Parameters.pipes_vlay.destroyEditCommand()
+                parameters.pipes_vlay.destroyEditCommand()
                 raise e
 
-            Parameters.pipes_vlay.endEditCommand()
+            parameters.pipes_vlay.endEditCommand()
             return new_pipe_ft
 
     @staticmethod
-    def create_new_pump(data_dock, pipe_ft, closest_junction_ft, position, pump_curve_id):
+    def create_new_pump(parameters, data_dock, pipe_ft, closest_junction_ft, position, pump_curve_id):
 
         # Find start and end nodes positions
         # Get vertex along line next to snapped point
         a, b, next_vertex = pipe_ft.geometry().closestSegmentWithContext(position)
 
-        dist = PointsAlongLineUtils.distance(pipe_ft.geometry(), QgsGeometry.fromPoint(position))
+        dist = PointsAlongLineUtils.distance(pipe_ft.geometry(), QgsGeometry.fromPoint(position), parameters)
         dist_before = dist - 0.5 # TODO: softcode based on projection units
         if dist_before <= 0:
             dist_before = 1
@@ -202,9 +200,9 @@ class LinkHandler:
         node_before = pipe_ft.geometry().interpolate(dist_before).asPoint()
         node_after = pipe_ft.geometry().interpolate(dist_after).asPoint()
 
-        pipes_caps = Parameters.pipes_vlay.dataProvider().capabilities()
-        junctions_caps = Parameters.junctions_vlay.dataProvider().capabilities()
-        pumps_caps = Parameters.pumps_vlay.dataProvider().capabilities()
+        pipes_caps = parameters.pipes_vlay.dataProvider().capabilities()
+        junctions_caps = parameters.junctions_vlay.dataProvider().capabilities()
+        pumps_caps = parameters.pumps_vlay.dataProvider().capabilities()
 
         if junctions_caps:
             if closest_junction_ft is not None:
@@ -216,53 +214,53 @@ class LinkHandler:
                 depth = float(data_dock.txt_node_depth.text())
                 pattern_id = data_dock.cbo_node_pattern.itemData(data_dock.cbo_node_pattern.currentIndex()).id
 
-            junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: softcode
-            elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_before, 1)
-            NodeHandler.create_new_junction(node_before, junction_eid, elev, j_demand, depth, pattern_id)
+            junction_eid = NetworkUtils.find_next_id(parameters.junctions_vlay, 'J')  # TODO: softcode
+            elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, node_before, 1)
+            NodeHandler.create_new_junction(parameters, node_before, junction_eid, elev, j_demand, depth, pattern_id)
 
-            junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: softcode
-            elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_after, 1)
-            NodeHandler.create_new_junction(node_after, junction_eid, elev, j_demand, depth, pattern_id)
+            junction_eid = NetworkUtils.find_next_id(parameters.junctions_vlay, 'J')  # TODO: softcode
+            elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, node_after, 1)
+            NodeHandler.create_new_junction(parameters, node_after, junction_eid, elev, j_demand, depth, pattern_id)
 
         # Split the pipe and create gap
         if pipes_caps:
             gap = 1 # TODO: softcode pump length
-            LinkHandler.split_pipe(pipe_ft, position, gap)
+            LinkHandler.split_pipe(parameters, pipe_ft, position, gap)
 
         # Create the new link (the pipe)
         if pumps_caps:
 
-            pump_eid = NetworkUtils.find_next_id(Parameters.pumps_vlay, 'P')  # TODO: softcode
+            pump_eid = NetworkUtils.find_next_id(parameters.pumps_vlay, 'P')  # TODO: softcode
             pump_geom = QgsGeometry.fromPolyline([node_before, node_after])
 
-            Parameters.pumps_vlay.beginEditCommand("Add new pump")
+            parameters.pumps_vlay.beginEditCommand("Add new pump")
 
             new_pump_ft = None
             try:
-                new_pump_ft = QgsFeature(Parameters.pumps_vlay.pendingFields())
+                new_pump_ft = QgsFeature(parameters.pumps_vlay.pendingFields())
                 new_pump_ft.setAttribute(Pump.field_name_eid, pump_eid)
                 new_pump_ft.setAttribute(Pump.field_name_curve, pump_curve_id)
 
                 new_pump_ft.setGeometry(pump_geom)
 
-                Parameters.pumps_vlay.addFeatures([new_pump_ft])
+                parameters.pumps_vlay.addFeatures([new_pump_ft])
 
             except Exception as e:
-                Parameters.pumps_vlay.destroyEditCommand()
+                parameters.pumps_vlay.destroyEditCommand()
                 raise e
 
-            Parameters.pumps_vlay.endEditCommand()
+            parameters.pumps_vlay.endEditCommand()
 
             return new_pump_ft
 
     @staticmethod
-    def create_new_valve(data_dock, valve_ft, closest_junction_ft, position, diameter, minor_loss, setting, pump_type):
+    def create_new_valve(parameters, data_dock, valve_ft, closest_junction_ft, position, diameter, minor_loss, setting, pump_type):
 
         # Find start and end nodes positions
         # Get vertex along line next to snapped point
         a, b, next_vertex = valve_ft.geometry().closestSegmentWithContext(position)
 
-        dist = PointsAlongLineUtils.distance(valve_ft.geometry(), QgsGeometry.fromPoint(position))
+        dist = PointsAlongLineUtils.distance(valve_ft.geometry(), QgsGeometry.fromPoint(position), parameters.tolerance)
         dist_before = dist - 0.5 # TODO: softcode based on projection units
         if dist_before <= 0:
             dist_before = 1
@@ -276,9 +274,9 @@ class LinkHandler:
         node_before = valve_ft.geometry().interpolate(dist_before).asPoint()
         node_after = valve_ft.geometry().interpolate(dist_after).asPoint()
 
-        pipes_caps = Parameters.pipes_vlay.dataProvider().capabilities()
-        junctions_caps = Parameters.junctions_vlay.dataProvider().capabilities()
-        valves_caps = Parameters.valves_vlay.dataProvider().capabilities()
+        pipes_caps = parameters.pipes_vlay.dataProvider().capabilities()
+        junctions_caps = parameters.junctions_vlay.dataProvider().capabilities()
+        valves_caps = parameters.valves_vlay.dataProvider().capabilities()
 
         if junctions_caps:
             if closest_junction_ft is not None:
@@ -290,30 +288,30 @@ class LinkHandler:
                 depth = float(data_dock.txt_node_depth.text())
                 pattern_id = data_dock.cbo_node_pattern.itemData(data_dock.cbo_node_pattern.currentIndex()).id
 
-            junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: softcode
-            elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_before, 1)
-            NodeHandler.create_new_junction(node_before, junction_eid, elev, j_demand, depth, pattern_id)
+            junction_eid = NetworkUtils.find_next_id(parameters.junctions_vlay, 'J')  # TODO: softcode
+            elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, node_before, 1)
+            NodeHandler.create_new_junction(parameters, node_before, junction_eid, elev, j_demand, depth, pattern_id)
 
-            junction_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J')  # TODO: softcode
-            elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, node_after, 1)
-            NodeHandler.create_new_junction(node_after, junction_eid, elev, j_demand, depth, pattern_id)
+            junction_eid = NetworkUtils.find_next_id(parameters.junctions_vlay, 'J')  # TODO: softcode
+            elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, node_after, 1)
+            NodeHandler.create_new_junction(parameters, node_after, junction_eid, elev, j_demand, depth, pattern_id)
 
         # Split the pipe and create gap
         if pipes_caps:
             gap = 1 # TODO: softcode pump length
-            LinkHandler.split_pipe(valve_ft, position, gap)
+            LinkHandler.split_pipe(parameters, valve_ft, position, gap)
 
         # Create the new link (the pipe)
         if valves_caps:
 
-            valve_eid = NetworkUtils.find_next_id(Parameters.valves_vlay, 'V')  # TODO: softcode
+            valve_eid = NetworkUtils.find_next_id(parameters.valves_vlay, 'V')  # TODO: softcode
             valve_geom = QgsGeometry.fromPolyline([node_before, node_after])
 
-            Parameters.valves_vlay.beginEditCommand("Add new valve")
+            parameters.valves_vlay.beginEditCommand("Add new valve")
 
             new_valve_ft = None
             try:
-                new_valve_ft = QgsFeature(Parameters.valves_vlay.pendingFields())
+                new_valve_ft = QgsFeature(parameters.valves_vlay.pendingFields())
                 new_valve_ft.setAttribute(Valve.field_name_eid, valve_eid)
                 new_valve_ft.setAttribute(Valve.field_name_diameter, diameter)
                 new_valve_ft.setAttribute(Valve.field_name_minor_loss, minor_loss)
@@ -322,18 +320,18 @@ class LinkHandler:
 
                 new_valve_ft.setGeometry(valve_geom)
 
-                Parameters.valves_vlay.addFeatures([new_valve_ft])
+                parameters.valves_vlay.addFeatures([new_valve_ft])
 
             except Exception as e:
-                Parameters.valves_vlay.destroyEditCommand()
+                parameters.valves_vlay.destroyEditCommand()
                 raise e
 
-            Parameters.valves_vlay.endEditCommand()
+            parameters.valves_vlay.endEditCommand()
 
             return new_valve_ft
 
     @staticmethod
-    def split_pipe(pipe_ft, split_point, gap=0):
+    def split_pipe(parameters, pipe_ft, split_point, gap=0):
 
         # Get vertex along line next to snapped point
         a, b, next_vertex = pipe_ft.geometry().closestSegmentWithContext(split_point)
@@ -346,9 +344,9 @@ class LinkHandler:
         status = pipe_ft.attribute(Pipe.field_name_status)
 
         # Create two new linestrings
-        pipes_caps = Parameters.pipes_vlay.dataProvider().capabilities()
+        pipes_caps = parameters.pipes_vlay.dataProvider().capabilities()
 
-        dist = PointsAlongLineUtils.distance(pipe_ft.geometry(), QgsGeometry.fromPoint(split_point))
+        dist = PointsAlongLineUtils.distance(pipe_ft.geometry(), QgsGeometry.fromPoint(split_point), parameters.tolerance)
         dist_before = dist - 0.5 * gap
         if dist_before <= 0:
             dist_before = gap
@@ -365,7 +363,7 @@ class LinkHandler:
 
         if pipes_caps:
 
-            Parameters.junctions_vlay.beginEditCommand("Add new node")
+            parameters.junctions_vlay.beginEditCommand("Add new node")
 
             pipe_ft_1 = None
             pipe_ft_2 = None
@@ -379,8 +377,9 @@ class LinkHandler:
 
                 pl1_pts.append(node_before.asPoint())
 
-                pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')  # TODO: softcode
+                pipe_eid = NetworkUtils.find_next_id(parameters.pipes_vlay, 'P')  # TODO: softcode
                 pipe_ft_1 = LinkHandler.create_new_pipe(
+                    parameters,
                     pipe_eid,
                     demand,
                     p_diameter,
@@ -395,8 +394,9 @@ class LinkHandler:
                 for n in range(len(nodes) - next_vertex):
                     pl2_pts.append(QgsPoint(nodes[n + next_vertex].x(), nodes[n + next_vertex].y()))
 
-                pipe_eid = NetworkUtils.find_next_id(Parameters.pipes_vlay, 'P')  # TODO: softcode
+                pipe_eid = NetworkUtils.find_next_id(parameters.pipes_vlay, 'P')  # TODO: softcode
                 pipe_ft_2 = LinkHandler.create_new_pipe(
+                    parameters,
                     pipe_eid,
                     demand,
                     p_diameter,
@@ -406,25 +406,25 @@ class LinkHandler:
                     pl2_pts)
 
                 # Delete old pipe
-                Parameters.pipes_vlay.deleteFeature(pipe_ft.id())
+                parameters.pipes_vlay.deleteFeature(pipe_ft.id())
 
             except Exception as e:
-                Parameters.pipes_vlay.destroyEditCommand()
+                parameters.pipes_vlay.destroyEditCommand()
                 raise e
 
-            Parameters.pipes_vlay.endEditCommand()
+            parameters.pipes_vlay.endEditCommand()
 
             return [pipe_ft_1, pipe_ft_2]
 
     @staticmethod
-    def move_pipe_vertex(pipe_ft, new_pos_pt, vertex_index):
-        caps = Parameters.pipes_vlay.dataProvider().capabilities()
+    def move_pipe_vertex(parameters, pipe_ft, new_pos_pt, vertex_index):
+        caps = parameters.pipes_vlay.dataProvider().capabilities()
 
         if caps & QgsVectorDataProvider.ChangeGeometries:
-            Parameters.pipes_vlay.beginEditCommand("Update pipes geometry")
+            parameters.pipes_vlay.beginEditCommand("Update pipes geometry")
 
             try:
-                edit_utils = QgsVectorLayerEditUtils(Parameters.pipes_vlay)
+                edit_utils = QgsVectorLayerEditUtils(parameters.pipes_vlay)
                 edit_utils.moveVertex(
                     new_pos_pt.x(),
                     new_pos_pt.y(),
@@ -433,17 +433,17 @@ class LinkHandler:
 
                 # Retrieve the feature again, and update attributes
                 request = QgsFeatureRequest().setFilterFid(pipe_ft.id())
-                feats = list(Parameters.pipes_vlay.getFeatures(request))
+                feats = list(parameters.pipes_vlay.getFeatures(request))
 
-                field_index = Parameters.pipes_vlay.dataProvider().fieldNameIndex(Pipe.field_name_length)
-                new_3d_length = LinkHandler.calc_3d_length(feats[0].geometry())
-                Parameters.pipes_vlay.changeAttributeValue(pipe_ft.id(), field_index, new_3d_length)
+                field_index = parameters.pipes_vlay.dataProvider().fieldNameIndex(Pipe.field_name_length)
+                new_3d_length = LinkHandler.calc_3d_length(parameters, feats[0].geometry())
+                parameters.pipes_vlay.changeAttributeValue(pipe_ft.id(), field_index, new_3d_length)
 
             except Exception as e:
-                Parameters.pipes_vlay.destroyEditCommand()
+                parameters.pipes_vlay.destroyEditCommand()
                 raise e
 
-            Parameters.pipes_vlay.endEditCommand()
+            parameters.pipes_vlay.endEditCommand()
 
     @staticmethod
     def move_pump_valve(vlay, ft, delta_vector):
@@ -453,7 +453,6 @@ class LinkHandler:
             try:
 
                 old_ft_pts = ft.geometry().asPolyline()
-
                 edit_utils = QgsVectorLayerEditUtils(vlay)
 
                 edit_utils.moveVertex(
@@ -487,10 +486,10 @@ class LinkHandler:
             vlay.endEditCommand()
 
     @staticmethod
-    def calc_3d_length(pipe_geom):
+    def calc_3d_length(parameters, pipe_geom):
 
         # Check whether start and end node exist
-        (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(pipe_geom)
+        (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(parameters, pipe_geom)
 
         distance_elev_od = OrderedDict()
 
@@ -499,7 +498,7 @@ class LinkHandler:
         if start_node_ft is not None:
             start_node_elev = start_node_ft.attribute(Junction.field_name_elevation)
             if start_node_elev is None or type(start_node_elev) is QPyNullVariant:
-                start_node_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, start_node_ft.geometry().asPoint(), 0)
+                start_node_elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, start_node_ft.geometry().asPoint(), 0)
                 if start_node_elev is None:
                     start_node_elev = 0
 
@@ -513,7 +512,7 @@ class LinkHandler:
         if end_node_ft is not None:
             end_node_elev = end_node_ft.attribute(Junction.field_name_elevation)
             if end_node_elev is None or type(end_node_elev) is QPyNullVariant:
-                end_node_elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, end_node_ft.geometry().asPoint(), 0)
+                end_node_elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, end_node_ft.geometry().asPoint(), 0)
                 if end_node_elev is None:
                     end_node_elev = 0
             end_node_depth = end_node_ft.attribute(Junction.field_name_elev_corr)
@@ -528,7 +527,7 @@ class LinkHandler:
             distance_elev_od[0] = start_node_elev - start_node_depth
 
         for p in range(start_add, len(dists_and_points) - end_remove):
-            elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, dists_and_points.values()[p].asPoint(), 1)
+            elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, dists_and_points.values()[p].asPoint(), 1)
             if elev is None:
                 elev = 0
             distance_elev_od[dists_and_points.keys()[p]] = elev
@@ -552,15 +551,15 @@ class NetworkUtils:
         pass
 
     @staticmethod
-    def find_start_end_nodes(link_geom, exclude_junctions=False, exclude_reservoirs=False, exclude_tanks=False):
+    def find_start_end_nodes(parameters, link_geom, exclude_junctions=False, exclude_reservoirs=False, exclude_tanks=False):
 
         all_feats = []
         if not exclude_junctions:
-            all_feats.extend(list(Parameters.junctions_vlay.getFeatures()))
+            all_feats.extend(list(parameters.junctions_vlay.getFeatures()))
         if not exclude_reservoirs:
-            all_feats.extend(list(Parameters.reservoirs_vlay.getFeatures()))
+            all_feats.extend(list(parameters.reservoirs_vlay.getFeatures()))
         if not exclude_tanks:
-            all_feats.extend(list(Parameters.tanks_vlay.getFeatures()))
+            all_feats.extend(list(parameters.tanks_vlay.getFeatures()))
 
         intersecting_fts = [None, None]
         if not all_feats:
@@ -568,56 +567,56 @@ class NetworkUtils:
 
         cands = []
         for junction_ft in all_feats:
-            if link_geom.buffer(Parameters.tolerance, 5).boundingBox().contains(junction_ft.geometry().asPoint()):
+            if link_geom.buffer(parameters.tolerance, 5).boundingBox().contains(junction_ft.geometry().asPoint()):
                 cands.append(junction_ft)
 
         if cands:
             for junction_ft in cands:
-                if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < Parameters.tolerance:
+                if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < parameters.tolerance:
                     intersecting_fts[0] = junction_ft
-                if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[len(link_geom.asPolyline()) - 1])) < Parameters.tolerance:
+                if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[-1])) < parameters.tolerance:
                     intersecting_fts[1] = junction_ft
 
         return intersecting_fts
 
     @staticmethod
-    def find_adjacent_links(node_geom):
+    def find_adjacent_links(parameters, node_geom):
 
         adjacent_links_d = {'pumps': [], 'valves': []}
 
         # Search among pipes
         adjacent_pipes_fts = []
-        for pipe_ft in Parameters.pipes_vlay.getFeatures():
+        for pipe_ft in parameters.pipes_vlay.getFeatures():
             pipe_geom = pipe_ft.geometry()
             nodes = pipe_geom.asPolyline()
-            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0])) or\
-                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1])):
+            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0]), parameters.tolerance) or\
+                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1]), parameters.tolerance):
                 adjacent_pipes_fts.append(pipe_ft)
 
         adjacent_links_d['pipes'] = adjacent_pipes_fts
 
-        if len(adjacent_pipes_fts) >= 2:
+        if len(adjacent_pipes_fts) > 2:
             # It's a pure junction, cannot be a pump or valve
             return adjacent_links_d
 
         # Search among pumps
         adjacent_pumps_fts = []
-        for pump_ft in Parameters.pumps_vlay.getFeatures():
+        for pump_ft in parameters.pumps_vlay.getFeatures():
             pump_geom = pump_ft.geometry()
             nodes = pump_geom.asPolyline()
-            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0])) or \
-                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1])):
+            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0]), parameters.tolerance) or \
+                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1]), parameters.tolerance):
                 adjacent_pumps_fts.append(pump_ft)
 
         adjacent_links_d['pumps'] = adjacent_pumps_fts
 
         # Search among valves
         adjacent_valves_fts = []
-        for valve_ft in Parameters.valves_vlay.getFeatures():
+        for valve_ft in parameters.valves_vlay.getFeatures():
             valve_geom = valve_ft.geometry()
             nodes = valve_geom.asPolyline()
-            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0])) or \
-                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1])):
+            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0]), parameters.tolerance) or \
+                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1]), parameters.tolerance):
                 adjacent_valves_fts.append(valve_ft)
 
         adjacent_links_d['valves'] = adjacent_valves_fts
@@ -662,7 +661,7 @@ class NetworkUtils:
         return snapper
 
     @staticmethod
-    def points_overlap(point1, point2, tolerance=Parameters.tolerance):
+    def points_overlap(point1, point2, tolerance):
         """Checks whether two points overlap. Uses tolerance."""
 
         if isinstance(point1, QgsPoint):
@@ -677,12 +676,12 @@ class NetworkUtils:
             return False
 
     @staticmethod
-    def find_pumps_valves_junctions():
+    def find_pumps_valves_junctions(parameters):
         """Find junctions adjacent to pumps and valves"""
 
         adj_points = []
 
-        pump_fts = Parameters.pumps_vlay.getFeatures()
+        pump_fts = parameters.pumps_vlay.getFeatures()
         for pump_ft in pump_fts:
             (start, end) = NetworkUtils.find_start_end_nodes(pump_ft.geometry(), False, True, True)
             if start is not None:
@@ -690,7 +689,7 @@ class NetworkUtils:
             if end is not None:
                 adj_points.append(end.geometry().asPoint())
 
-        valve_fts = Parameters.valves_vlay.getFeatures()
+        valve_fts = parameters.valves_vlay.getFeatures()
         for valve_ft in valve_fts:
             (start, end) = NetworkUtils.find_start_end_nodes(valve_ft.geometry(), False, True, True)
             if start is not None:
@@ -701,31 +700,31 @@ class NetworkUtils:
         return adj_points
 
     @staticmethod
-    def find_links_adjacent_to_link(link_vlay, link_ft, exclude_pipes=False, exclude_pumps=False, exclude_valves=False):
+    def find_links_adjacent_to_link(parameters, link_vlay, link_ft, exclude_pipes=False, exclude_pumps=False, exclude_valves=False):
         """Finds the links adjacent to a given link"""
 
         adj_links = dict()
         if not exclude_pipes:
-            adj_links['pipes'] = NetworkUtils.look_for_adjacent_links(link_ft, link_vlay, Parameters.pipes_vlay)
+            adj_links['pipes'] = NetworkUtils.look_for_adjacent_links(parameters, link_ft, link_vlay, parameters.pipes_vlay)
         if not exclude_pumps:
-            adj_links['pumps'] = NetworkUtils.look_for_adjacent_links(link_ft, link_vlay, Parameters.pumps_vlay)
+            adj_links['pumps'] = NetworkUtils.look_for_adjacent_links(parameters, link_ft, link_vlay, parameters.pumps_vlay)
         if not exclude_valves:
-            adj_links['valves'] = NetworkUtils.look_for_adjacent_links(link_ft, link_vlay, Parameters.valves_vlay)
+            adj_links['valves'] = NetworkUtils.look_for_adjacent_links(parameters, link_ft, link_vlay, parameters.valves_vlay)
 
         return adj_links
 
     @staticmethod
-    def look_for_adjacent_links(link_ft, link_vlay, search_vlay):
+    def look_for_adjacent_links(parameters, link_ft, link_vlay, search_vlay):
 
         link_pts = link_ft.geometry().asPolyline()
 
         adj_links = []
         for ft in search_vlay.getFeatures():
             pts = ft.geometry().asPolyline()
-            if NetworkUtils.points_overlap(pts[0], link_pts[0]) or \
-                    NetworkUtils.points_overlap(pts[0], link_pts[-1]) or \
-                    NetworkUtils.points_overlap(pts[-1], link_pts[0]) or \
-                    NetworkUtils.points_overlap(pts[-1], link_pts[-1]):
+            if NetworkUtils.points_overlap(pts[0], link_pts[0], parameters.tolerance) or \
+                    NetworkUtils.points_overlap(pts[0], link_pts[-1], parameters.tolerance) or \
+                    NetworkUtils.points_overlap(pts[-1], link_pts[0], parameters.tolerance) or \
+                    NetworkUtils.points_overlap(pts[-1], link_pts[-1], parameters.tolerance):
 
                 # Check that the feature found is not the same as the input
                 if not (link_vlay.id() == search_vlay.id() and link_ft.id() != ft.id()):
@@ -734,24 +733,24 @@ class NetworkUtils:
         return adj_links
 
     @staticmethod
-    def find_overlapping_nodes(point):
+    def find_overlapping_nodes(parameters, point):
 
         overlap_juncts = []
         overlap_reservs = []
         overlap_tanks = []
 
-        for junct_feat in Parameters.junctions_vlay.getFeatures():
-            if NetworkUtils.points_overlap(junct_feat.geometry(), point):
+        for junct_feat in parameters.junctions_vlay.getFeatures():
+            if NetworkUtils.points_overlap(junct_feat.geometry(), point, parameters.tolerance):
                 overlap_juncts.append(junct_feat)
                 break
 
-        for reserv_feat in Parameters.reservoirs_vlay.getFeatures():
-            if NetworkUtils.points_overlap(reserv_feat.geometry(), point):
+        for reserv_feat in parameters.reservoirs_vlay.getFeatures():
+            if NetworkUtils.points_overlap(reserv_feat.geometry(), point, parameters.tolerance):
                 overlap_reservs.append(reserv_feat)
                 break
 
-        for tank_feat in Parameters.tanks_vlay.getFeatures():
-            if NetworkUtils.points_overlap(tank_feat.geometry(), point):
+        for tank_feat in parameters.tanks_vlay.getFeatures():
+            if NetworkUtils.points_overlap(tank_feat.geometry(), point, parameters.tolerance):
                 overlap_tanks.append(tank_feat)
                 break
 

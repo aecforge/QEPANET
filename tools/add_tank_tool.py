@@ -12,13 +12,14 @@ from ..geo_utils import raster_utils
 
 class AddTankTool(QgsMapTool):
 
-    def __init__(self, data_dock):
+    def __init__(self, data_dock, parameters):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
         self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
+        self.parameters = parameters
 
         self.mouse_pt = None
         self.mouse_clicked = False
@@ -40,7 +41,7 @@ class AddTankTool(QgsMapTool):
 
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
-        elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, self.mouse_pt, 1)
+        elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, self.mouse_pt, 1)
 
         if elev is not None:
             self.elev = elev
@@ -82,7 +83,7 @@ class AddTankTool(QgsMapTool):
             self.mouse_clicked = False
 
             # Find first available ID for Tanks
-            tank_eid = NetworkUtils.find_next_id(Parameters.tanks_vlay, 'T') # TODO: softcode
+            tank_eid = NetworkUtils.find_next_id(self.parameters.tanks_vlay, 'T') # TODO: softcode
 
             if self.data_dock.cbo_tank_curve.currentIndex() != -1:
                 tank_curve_id = self.data_dock.cbo_tank_curve.itemData(self.data_dock.cbo_tank_curve.currentIndex()).id
@@ -100,6 +101,7 @@ class AddTankTool(QgsMapTool):
             if self.snapped_feat_id is None:
 
                 NodeHandler.create_new_tank(
+                    self.parameters,
                     self.mouse_pt,
                     tank_eid,
                     tank_curve_id,
@@ -116,11 +118,11 @@ class AddTankTool(QgsMapTool):
 
                 # Get the snapped pipe and split it
                 request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
-                feats = list(Parameters.pipes_vlay.getFeatures(request))
+                feats = list(self.parameters.pipes_vlay.getFeatures(request))
                 if len(feats) > 0:
 
                     snapped_pipe = QgsFeature(feats[0])
-                    (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(snapped_pipe.geometry())
+                    (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(self.parameters, snapped_pipe.geometry())
 
                     if start_node_ft is None or end_node_ft is None:
                         self.iface.messageBar().pushWarning(
@@ -129,13 +131,14 @@ class AddTankTool(QgsMapTool):
                         return
 
                     # Check that the snapped point on line is distant enough from start/end nodes
-                    if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist and\
-                        end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist:
+                    if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > self.parameters.min_dist and\
+                        end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > self.parameters.min_dist:
 
-                        LinkHandler.split_pipe(snapped_pipe, self.snapped_vertex)
+                        LinkHandler.split_pipe(self.parameters, snapped_pipe, self.snapped_vertex)
 
                         # New node on existing line
                         NodeHandler.create_new_tank(
+                            self.parameters,
                             self.snapped_vertex,
                             tank_eid,
                             tank_curve_id,
@@ -154,27 +157,27 @@ class AddTankTool(QgsMapTool):
 
     def activate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
         # snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
 
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_pipes], self.iface.mapCanvas())
 
         # Editing
-        if not Parameters.tanks_vlay.isEditable():
-            Parameters.tanks_vlay.startEditing()
-        if not Parameters.pipes_vlay.isEditable():
-            Parameters.pipes_vlay.startEditing()
+        if not self.parameters.tanks_vlay.isEditable():
+            self.parameters.tanks_vlay.startEditing()
+        if not self.parameters.pipes_vlay.isEditable():
+            self.parameters.pipes_vlay.startEditing()
 
     def deactivate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,

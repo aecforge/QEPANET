@@ -33,6 +33,7 @@ from qepanet_dockwidget import QEpanetDockWidget
 import os.path
 import resources
 
+
 class QEpanet:
     """QGIS Plugin Implementation."""
 
@@ -46,6 +47,7 @@ class QEpanet:
         """
         # Save reference to the QGIS interface
         self.iface = iface
+        self.parameters = Parameters()
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -248,12 +250,12 @@ class QEpanet:
         # Read patterns
         patterns_file_path = config_file.get_patterns_file_path()
         if patterns_file_path is not None and os.path.isfile(patterns_file_path):
-            Parameters.patterns = InpFile.read_patterns(patterns_file_path)
+            InpFile.read_patterns(self.parameters, patterns_file_path)
 
         # Read curves
         curves_file_path = config_file.get_curves_file_path()
         if curves_file_path is not None and os.path.isfile(curves_file_path):
-            Parameters.curves = InpFile.read_curves(curves_file_path)
+            Parameters._curves = InpFile.read_curves(curves_file_path)
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
@@ -261,9 +263,11 @@ class QEpanet:
             # dockwidget may not exist if:
             #    first run of plugin
             #    removed on close (see self.onClosePlugin method)
-            if self.dockwidget == None:
+            if self.dockwidget is None:
                 # Create the dockwidget (after translation) and keep reference
-                self.dockwidget = QEpanetDockWidget(self.iface)
+                self.dockwidget = QEpanetDockWidget(self.iface, self.parameters)
+                self.parameters.attach(self.dockwidget)
+
 
             # connect to provide cleanup on closing of dockwidget
             self.dockwidget.closingPlugin.connect(self.onClosePlugin)

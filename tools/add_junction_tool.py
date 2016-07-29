@@ -12,13 +12,14 @@ from ..geo_utils import raster_utils
 
 class AddJunctionTool(QgsMapTool):
 
-    def __init__(self, data_dock):
+    def __init__(self, data_dock, parameters):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
         self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
+        self.parameters = parameters
 
         self.mouse_pt = None
         self.mouse_clicked = False
@@ -40,7 +41,7 @@ class AddJunctionTool(QgsMapTool):
 
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
-        elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, self.mouse_pt, 1)
+        elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, self.mouse_pt, 1)
 
         if elev is not None:
             self.elev = elev
@@ -83,7 +84,7 @@ class AddJunctionTool(QgsMapTool):
             self.mouse_clicked = False
 
             # Find first available ID for Junctions
-            node_eid = NetworkUtils.find_next_id(Parameters.junctions_vlay, 'J') # TODO: softcode
+            node_eid = NetworkUtils.find_next_id(self.parameters.junctions_vlay, 'J') # TODO: softcode
 
             j_demand = float(self.data_dock.txt_node_demand.text())
             depth = float(self.data_dock.txt_node_depth.text())
@@ -97,6 +98,7 @@ class AddJunctionTool(QgsMapTool):
             if self.snapped_feat_id is None:
 
                 NodeHandler.create_new_junction(
+                    self.parameters,
                     self.mouse_pt,
                     node_eid,
                     self.elev,
@@ -109,17 +111,18 @@ class AddJunctionTool(QgsMapTool):
 
                 # Get the snapped pipe
                 request = QgsFeatureRequest().setFilterFid(self.snapped_feat_id)
-                feats = list(Parameters.pipes_vlay.getFeatures(request))
+                feats = list(self.parameters.pipes_vlay.getFeatures(request))
                 if len(feats) > 0:
                     snapped_pipe = QgsFeature(feats[0])
 
                     snapped_ft_pts = QgsGeometry.asPolyline(snapped_pipe.geometry())
 
                     # The new junction is on the start or end node of the pipe
-                    if NetworkUtils.points_overlap(QgsGeometry.fromPoint(self.snapped_vertex), QgsGeometry.fromPoint(snapped_ft_pts[0])) or\
-                        NetworkUtils.points_overlap(QgsGeometry.fromPoint(self.snapped_vertex), QgsGeometry.fromPoint(snapped_ft_pts[len(snapped_ft_pts) - 1])):
+                    if NetworkUtils.points_overlap(QgsGeometry.fromPoint(self.snapped_vertex), QgsGeometry.fromPoint(snapped_ft_pts[0]), self.parameters.tolerance) or\
+                        NetworkUtils.points_overlap(QgsGeometry.fromPoint(self.snapped_vertex), QgsGeometry.fromPoint(snapped_ft_pts[len(snapped_ft_pts) - 1]), self.parameters.tolerance):
 
                         NodeHandler.create_new_junction(
+                            self.parameters,
                             self.snapped_vertex,
                             node_eid,
                             self.elev,
@@ -130,7 +133,7 @@ class AddJunctionTool(QgsMapTool):
                     else:
 
                         # Split the pipe
-                        (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(snapped_pipe.geometry())
+                        (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(self.parameters, snapped_pipe.geometry())
 
                         if start_node_ft is None or end_node_ft is None:
                             self.iface.messageBar().pushWarning(
@@ -139,10 +142,11 @@ class AddJunctionTool(QgsMapTool):
                             return
 
                         # Check that the snapped point on line is distant enough from start/end nodes
-                        if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist and\
-                            end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > Parameters.min_dist:
+                        if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > self.parameters.min_dist and\
+                            end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > self.parameters.min_dist:
 
                             NodeHandler.create_new_junction(
+                                self.parameters,
                                 self.snapped_vertex,
                                 node_eid,
                                 self.elev,
@@ -151,6 +155,7 @@ class AddJunctionTool(QgsMapTool):
                                 pattern_id)
 
                             LinkHandler.split_pipe(
+                                self.parameters,
                                 snapped_pipe,
                                 self.snapped_vertex)
                         else:
@@ -161,31 +166,31 @@ class AddJunctionTool(QgsMapTool):
     def activate(self):
 
         # Snapping
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
-        snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
+        snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.parameters.junctions_vlay)
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
 
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_pipes], self.iface.mapCanvas())
 
         # Editing
-        if not Parameters.junctions_vlay.isEditable():
-            Parameters.junctions_vlay.startEditing()
-        if not Parameters.pipes_vlay.isEditable():
-            Parameters.pipes_vlay.startEditing()
+        if not self.parameters.junctions_vlay.isEditable():
+            self.parameters.junctions_vlay.startEditing()
+        if not self.parameters.pipes_vlay.isEditable():
+            self.parameters.pipes_vlay.startEditing()
 
     def deactivate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       0,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
         self.data_dock.btn_add_junction.setChecked(False)

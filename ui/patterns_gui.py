@@ -7,13 +7,14 @@ from PyQt4 import QtGui, QtCore
 
 class PatternsDialog(QtGui.QDialog):
 
-    def __init__(self, parent):
+    def __init__(self, parent, parameters):
         QtGui.QDialog.__init__(self, parent)
         main_lay = QtGui.QVBoxLayout(self)
+        self.parameters = parameters
 
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
-        self.setWindowTitle('Patterns')  # TODO: softcode
+        self.setWindowTitle('Pattern editor')  # TODO: softcode
         self.setWindowModality(QtCore.Qt.ApplicationModal)
 
         # File
@@ -21,7 +22,7 @@ class PatternsDialog(QtGui.QDialog):
         self.fra_file = QtGui.QFrame()
         self.fra_file.setContentsMargins(0, 0, 0, 0)
         fra_file_lay = QtGui.QHBoxLayout(self.fra_file)
-        self.txt_file = QtGui.QLineEdit(Parameters.patterns_file)
+        self.txt_file = QtGui.QLineEdit(self.parameters.patterns_file)
         self.txt_file.setReadOnly(True)
         self.txt_file.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.txt_file.setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Minimum)
@@ -122,7 +123,7 @@ class PatternsDialog(QtGui.QDialog):
 
     def list_item_changed(self):
         p_index = self.lst_patterns.currentRow()
-        current_pattern = Parameters.patterns[p_index]
+        current_pattern = self.parameters.patterns[p_index]
 
         # Update GUI
         self.txt_id.setText(current_pattern.id)
@@ -153,10 +154,10 @@ class PatternsDialog(QtGui.QDialog):
         Parameters.patterns_file = patterns_file_path
 
     def read_patterns(self):
-        Parameters.patterns = InpFile.read_patterns(Parameters.patterns_file)
+        InpFile.read_patterns(self.parameters, self.parameters.patterns_file)
 
         self.lst_patterns.clear()
-        for pattern in Parameters.patterns:
+        for pattern in self.parameters.patterns:
             desc = ' (' + pattern.desc + ')' if pattern.desc is not None else ''
             self.lst_patterns.addItem(pattern.id + desc)
 
@@ -175,9 +176,9 @@ class PatternsDialog(QtGui.QDialog):
             return
 
         # Check for ID unique
-        overwrite_p = None
-        for pattern in Parameters.patterns:
-            if pattern.id == self.txt_id.text():
+        overwrite_p_index = -1
+        for p in range(len(self.parameters.patterns)):
+            if self.parameters.patterns[p].id == self.txt_id.text():
                 ret = QtGui.QMessageBox.question(
                     self,
                     Parameters.plug_in_name,
@@ -186,7 +187,7 @@ class PatternsDialog(QtGui.QDialog):
                 if ret == QtGui.QMessageBox.No:
                     return
                 else:
-                    overwrite_p = pattern
+                    overwrite_p_index = p
                 break
 
         values = []
@@ -195,25 +196,24 @@ class PatternsDialog(QtGui.QDialog):
             values.append(self.from_item_to_val(item))
 
         # Update
-        if overwrite_p is not None:
-            overwrite_p.desc = self.txt_desc.text()
-            overwrite_p.values = values
-            InpFile.write_pattern(Parameters.patterns_file, overwrite_p)
+        new_pattern = Pattern(self.txt_id.text(), self.txt_desc.text(), values)
+        if overwrite_p_index >= 0:
+            self.parameters.patterns[overwrite_p_index] = new_pattern
+            InpFile.write_patterns(self.parameters, self.parameters.patterns_file)
+            self.read_patterns()
+            self.lst_patterns.setCurrentRow(overwrite_p_index)
 
         # Save new
         else:
-            new_pattern = Pattern(self.txt_id.text(), self.txt_desc.text(), values)
-            Parameters.patterns.append(new_pattern)
-            InpFile.write_pattern(Parameters.patterns_file, new_pattern)
-
-        self.read_patterns()
+            self.parameters.patterns.append(new_pattern)
+            InpFile.write_patterns(self.parameters, self.parameters.patterns_file)
+            self.read_patterns()
 
     def del_pattern(self):
         selected_row = self.lst_patterns.currentRow()
         self.lst_patterns.takeItem(selected_row)
-        del Parameters.patterns[selected_row]
-        print 'pts', len(Parameters.patterns)
-        InpFile.write_pattern(Parameters.patterns_file)
+        del self.parameters.patterns[selected_row]
+        InpFile.write_patterns(self.parameters, self.parameters.patterns_file)
 
     def data_changed(self):
         self.values[:] = []

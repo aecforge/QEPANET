@@ -12,13 +12,14 @@ from ..geo_utils import raster_utils
 
 class AddPumpTool(QgsMapTool):
 
-    def __init__(self, data_dock):
+    def __init__(self, data_dock, parameters):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
         self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
+        self.parameters = parameters
 
         self.mouse_pt = None
         self.mouse_clicked = False
@@ -40,7 +41,7 @@ class AddPumpTool(QgsMapTool):
 
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
-        elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, self.mouse_pt, 1)
+        elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, self.mouse_pt, 1)
 
         if elev is not None:
             self.elev = elev
@@ -90,12 +91,12 @@ class AddPumpTool(QgsMapTool):
             else:
 
                 request = QgsFeatureRequest().setFilterFid(self.snapped_pipe_id)
-                feats = Parameters.pipes_vlay.getFeatures(request)
+                feats = self.parameters.pipes_vlay.getFeatures(request)
                 features = [feat for feat in feats]
                 if len(features) == 1:
 
                     # Check whether the pipe has a start and an end node
-                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(features[0].geometry())
+                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.parameters, features[0].geometry())
 
                     if not start_node or not end_node:
                         self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.') # TODO: softcode
@@ -106,7 +107,7 @@ class AddPumpTool(QgsMapTool):
                     dist_2 = end_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
 
                     # Get the attributes of the closest junction
-                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(features[0].geometry(), False, True, True)
+                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.parameters, features[0].geometry(), False, True, True)
                     if dist_1 < dist_2:
                         closest_junction_ft = start_node
                     else:
@@ -119,6 +120,7 @@ class AddPumpTool(QgsMapTool):
                         pump_curve_id = None
 
                     LinkHandler.create_new_pump(
+                        self.parameters,
                         self.data_dock,
                         features[0],
                         closest_junction_ft,
@@ -127,27 +129,27 @@ class AddPumpTool(QgsMapTool):
 
     def activate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.parameters.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_pipes], self.iface.mapCanvas())
 
         # Editing
-        if not Parameters.junctions_vlay.isEditable():
-            Parameters.junctions_vlay.startEditing()
-        if not Parameters.pipes_vlay.isEditable():
-            Parameters.pipes_vlay.startEditing()
-        if not Parameters.pumps_vlay.isEditable():
-            Parameters.pumps_vlay.startEditing()
+        if not self.parameters.junctions_vlay.isEditable():
+            self.parameters.junctions_vlay.startEditing()
+        if not self.parameters.pipes_vlay.isEditable():
+            self.parameters.pipes_vlay.startEditing()
+        if not self.parameters.pumps_vlay.isEditable():
+            self.parameters.pumps_vlay.startEditing()
 
     def deactivate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,

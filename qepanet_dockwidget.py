@@ -43,7 +43,7 @@ from tools.data_stores import ShapefileDS
 from tools.exceptions import ShpExistsExcpetion
 from tools.move_tool import MoveTool
 from tools.parameters import Parameters, RegExValidators, ConfigFile
-
+from ui import misc
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qepanet_dockwidget.ui'))
@@ -53,7 +53,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
 
-    def __init__(self, iface):
+    def __init__(self, iface, parameters):
         """Constructor."""
         super(QEpanetDockWidget, self).__init__(iface.mainWindow())
         # Set up the user interface from Designer.
@@ -61,13 +61,14 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # self.<objectname>, and you can use autoconnect slots - see
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
-        self.setupUi(self)
-        self.setWindowTitle(Parameters.plug_in_name)
-
         self.iface = iface
+        self.parameters = parameters
+        self.parameters.attach(self)
+
+        self.setupUi(self)
+        self.setWindowTitle(parameters.plug_in_name)
 
         self.decimals = 1
-
         # Tools buttons
         self.btn_add_junction.setCheckable(True)
         self.btn_add_reservoir.setCheckable(True)
@@ -104,26 +105,26 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if self.cbo_junctions.count() >= 0:
             layer_id = self.cbo_junctions.itemData(self.cbo_junctions.currentIndex())
-            Parameters.junctions_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+            self.parameters.junctions_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
         if self.cbo_pipes.count() >= 0:
             layer_id = self.cbo_pipes.itemData(self.cbo_pipes.currentIndex())
-            Parameters.pipes_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+            self.parameters.pipes_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
         if self.cbo_pumps.count() >= 0:
             layer_id = self.cbo_pumps.itemData(self.cbo_pumps.currentIndex())
-            Parameters.pumps_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+            self.parameters.pumps_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
         if self.cbo_reservoirs.count() >= 0:
             layer_id = self.cbo_reservoirs.itemData(self.cbo_reservoirs.currentIndex())
-            Parameters.reservoirs_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+            self.parameters.reservoirs_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
         if self.cbo_tanks.count() >= 0:
             layer_id = self.cbo_tanks.itemData(self.cbo_tanks.currentIndex())
-            Parameters.tanks_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+            self.parameters.tanks_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
         if self.cbo_valves.count() >= 0:
             layer_id = self.cbo_valves.itemData(self.cbo_valves.currentIndex())
-            Parameters.valves_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+            self.parameters.valves_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
         if self.cbo_dem.count() >= 0:
             layer_id = self.cbo_dem.itemData(self.cbo_dem.currentIndex())
-            Parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+            self.parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
         QtCore.QObject.connect(self.btn_symbology, QtCore.SIGNAL('pressed()'), self.apply_symbologies)
 
@@ -177,13 +178,17 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Other tools
         QtCore.QObject.connect(self.btn_create_layers, QtCore.SIGNAL('pressed()'), self.create_layers)
 
-        self.txt_snap_tolerance.setText(str(Parameters.snap_tolerance))
+        self.txt_snap_tolerance.setText(str(parameters.snap_tolerance))
         self.txt_snap_tolerance.setValidator(RegExValidators.get_pos_decimals())
         QtCore.QObject.connect(self.txt_snap_tolerance, QtCore.SIGNAL('editingFinished()'), self.snap_tolerance_changed)
 
         QtCore.QObject.connect(self.btn_pattern_editor, QtCore.SIGNAL('pressed()'), self.pattern_editor)
 
         # TODO: read parameters from parameters file and set previous GUI settings
+
+    # This method needed by observable
+    def update(self, observable):
+        print 'updated', type(observable)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -199,7 +204,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_junction.setChecked(True)
             return
 
-        tool = AddJunctionTool(self)
+        tool = AddJunctionTool(self, self.parameters)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
@@ -213,7 +218,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_reservoir.setChecked(True)
             return
 
-        tool = AddReservoirTool(self)
+        tool = AddReservoirTool(self, self.parameters)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
@@ -227,7 +232,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_tank.setChecked(True)
             return
 
-        tool = AddTankTool(self)
+        tool = AddTankTool(self, self.parameters)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
@@ -241,7 +246,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_pipe.setChecked(True)
             return
 
-        tool = AddPipeTool(self)
+        tool = AddPipeTool(self, self.parameters)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
@@ -255,7 +260,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_pump.setChecked(True)
             return
 
-        tool = AddPumpTool(self)
+        tool = AddPumpTool(self, self.parameters)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
@@ -269,7 +274,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_valve.setChecked(True)
             return
 
-        tool = AddValveTool(self, )
+        tool = AddValveTool(self, self.parameters)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
@@ -284,7 +289,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_move_element.setChecked(False)
             return
 
-        tool = MoveTool(self)
+        tool = MoveTool(self, self.parameters)
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
@@ -327,18 +332,18 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.iface.messageBar().pushInfo(Parameters.plug_in_name, e.message)
 
         # Load layers in QGIS
-        Parameters.valves_vlay = self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.valves_table_name + '.shp'), Tables.valves_table_name, 'ogr')
-        Parameters.pumps_vlay = self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.pumps_table_name + '.shp'), Tables.pumps_table_name, 'ogr')
-        Parameters.pipes_vlay = self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.pipes_table_name + '.shp'), Tables.pipes_table_name, 'ogr')
-        Parameters.tanks_vlay = self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.tanks_table_name + '.shp'), Tables.tanks_table_name, 'ogr')
-        Parameters.reservoirs_vlay = self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.reservoirs_table_name + '.shp'), Tables.reservoirs_table_name, 'ogr')
-        Parameters.junctions_vlay = self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.junctions_table_name + '.shp'), Tables.junctions_table_name, 'ogr')
+        self.parameters.valves_vlay(self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.valves_table_name + '.shp'), Tables.valves_table_name, 'ogr'))
+        self.parameters.pumps_vlay(self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.pumps_table_name + '.shp'), Tables.pumps_table_name, 'ogr'))
+        self.parameters.pipes_vlay(self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.pipes_table_name + '.shp'), Tables.pipes_table_name, 'ogr'))
+        self.parameters.tanks_vlay(self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.tanks_table_name + '.shp'), Tables.tanks_table_name, 'ogr'))
+        self.parameters.reservoirs_vlay(self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.reservoirs_table_name + '.shp'), Tables.reservoirs_table_name, 'ogr'))
+        self.parameters.junctions_vlay(self.iface.addVectorLayer(
+            os.path.join(shp_folder, Tables.junctions_table_name + '.shp'), Tables.junctions_table_name, 'ogr'))
 
         self.preselect_layers_combos()
 
@@ -348,64 +353,64 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     # TODO: update snappers in all the tools that use snapping
     def cbo_junctions_activated(self, index):
         layer_id = self.cbo_junctions.itemData(index)
-        Parameters.junctions_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.parameters.junctions_vlay(utils.LayerUtils.get_lay_from_id(layer_id))
 
     def cbo_reservoirs_activated(self, index):
         layer_id = self.cbo_reservoirs.itemData(index)
-        Parameters.reservoirs_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.parameters.reservoirs_vlay(utils.LayerUtils.get_lay_from_id(layer_id))
 
     def cbo_tanks_activated(self, index):
         layer_id = self.cbo_tanks.itemData(index)
-        Parameters.tanks_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.parameters.tanks_vlay (utils.LayerUtils.get_lay_from_id(layer_id))
 
     def cbo_pipes_activated(self, index):
         layer_id = self.cbo_pipes.itemData(index)
-        Parameters.pipes_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.parameters.pipes_vlay(utils.LayerUtils.get_lay_from_id(layer_id))
 
     def cbo_pumps_activated(self, index):
         layer_id = self.cbo_pumps.itemData(index)
-        Parameters.pumps_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.parameters.pumps_vlay(utils.LayerUtils.get_lay_from_id(layer_id))
 
     def cbo_valves_activated(self, index):
         layer_id = self.cbo_valves.itemData(index)
-        Parameters.valves_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.parameters.valves_vlay(utils.LayerUtils.get_lay_from_id(layer_id))
 
     def cbo_dem_activated(self, index):
         layer_id = self.cbo_dem.itemData(index)
-        Parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.parameters.dem_rlay(utils.LayerUtils.get_lay_from_id(layer_id))
 
     def cbo_pipe_roughness_activated(self):
         self.update_roughness_params(self.get_combo_current_data(self.cbo_pipe_roughness))
 
     def snap_tolerance_changed(self):
-        Parameters.snap_tolerance = float(self.txt_snap_tolerance.text())
+        self.parameters.snap_tolerance(float(self.txt_snap_tolerance.text()))
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.junctions_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.junctions_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.reservoirs_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.reservoirs_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.tanks_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.tanks_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       0,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
     def pattern_editor(self):
@@ -432,11 +437,10 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 # Save patterns file path in configuration file
                 config_file.set_patterns_file_path(patterns_file_path)
 
-        Parameters.patterns_file = patterns_file_path
+        self.parameters.patterns_file = patterns_file_path
 
-        pattern_dialog = PatternsDialog(self.iface.mainWindow())
+        pattern_dialog = PatternsDialog(self.iface.mainWindow(), self.parameters)
         pattern_dialog.show()
-
 
     def update_layers_combos(self):
 
@@ -475,14 +479,14 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                         self.cbo_valves.addItem(layer.name(), layer.id())
 
         # Reset combo selections
-        Parameters.junctions_vlay = self.set_layercombo_index(self.cbo_junctions, prev_nodes_lay_id)
-        Parameters.reservoirs_vlay = self.set_layercombo_index(self.cbo_reservoirs, prev_reservoirs_lay_id)
-        Parameters.tanks_vlay = self.set_layercombo_index(self.cbo_tanks, prev_tanks_lay_id)
-        Parameters.pipes_vlay = self.set_layercombo_index(self.cbo_pipes, prev_pipes_lay_id)
-        Parameters.pumps_vlay = self.set_layercombo_index(self.cbo_pumps, prev_pumps_lay_id)
-        Parameters.valves_vlay = self.set_layercombo_index(self.cbo_valves, prev_valves_lay_id)
+        self.parameters.junctions_vlay = self.set_layercombo_index(self.cbo_junctions, prev_nodes_lay_id)
+        self.parameters.reservoirs_vlay = self.set_layercombo_index(self.cbo_reservoirs, prev_reservoirs_lay_id)
+        self.parameters.tanks_vlay = self.set_layercombo_index(self.cbo_tanks, prev_tanks_lay_id)
+        self.parameters.pipes_vlay = self.set_layercombo_index(self.cbo_pipes, prev_pipes_lay_id)
+        self.parameters.pumps_vlay = self.set_layercombo_index(self.cbo_pumps, prev_pumps_lay_id)
+        self.parameters.valves_vlay = self.set_layercombo_index(self.cbo_valves, prev_valves_lay_id)
 
-        Parameters.dem_rlay = self.set_layercombo_index(self.cbo_dem, prev_dem_lay_id)
+        self.parameters.dem_rlay = self.set_layercombo_index(self.cbo_dem, prev_dem_lay_id)
 
     def preselect_layers_combos(self):
 
@@ -505,54 +509,54 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def apply_symbologies(self):
 
-        if Parameters.junctions_vlay is not None:
+        if self.parameters.junctions_vlay is not None:
             ns = symbology.NodeSymbology()
             renderer = ns.make_simple_node_sym_renderer(3)
-            Parameters.junctions_vlay.setRendererV2(renderer)
+            self.parameters.junctions_vlay.setRendererV2(renderer)
 
-        if Parameters.reservoirs_vlay is not None:
+        if self.parameters.reservoirs_vlay is not None:
             ns = symbology.NodeSymbology()
-            renderer = ns.make_svg_node_sym_renderer(Parameters.reservoir_icon_svg_name, 7)
-            Parameters.reservoirs_vlay.setRendererV2(renderer)
+            renderer = ns.make_svg_node_sym_renderer(self.parameters.reservoirs_vlay, misc.reservoir_icon_svg_name, 7)
+            self.parameters.reservoirs_vlay.setRendererV2(renderer)
 
-        if Parameters.tanks_vlay is not None:
+        if self.parameters.tanks_vlay is not None:
             ns = symbology.NodeSymbology()
-            renderer = ns.make_svg_node_sym_renderer(Parameters.tank_icon_svg_name, 7)
-            Parameters.tanks_vlay.setRendererV2(renderer)
+            renderer = ns.make_svg_node_sym_renderer(self.parameters.tanks_vlay, misc.tank_icon_svg_name, 7)
+            self.parameters.tanks_vlay.setRendererV2(renderer)
 
-        if Parameters.pipes_vlay is not None:
+        if self.parameters.pipes_vlay is not None:
             ls = symbology.LinkSymbology()
             renderer = ls.make_simple_link_sym_renderer()
-            Parameters.pipes_vlay.setRendererV2(renderer)
+            self.parameters.pipes_vlay.setRendererV2(renderer)
 
-        if Parameters.pumps_vlay is not None:
+        if self.parameters.pumps_vlay is not None:
             ls = symbology.LinkSymbology()
-            renderer = ls.make_svg_link_sym_renderer(Parameters.pump_icon_svg_name, 7)
-            Parameters.pumps_vlay.setRendererV2(renderer)
+            renderer = ls.make_svg_link_sym_renderer(misc.pump_icon_svg_name, 7)
+            self.parameters.pumps_vlay.setRendererV2(renderer)
 
-        if Parameters.valves_vlay is not None:
+        if self.parameters.valves_vlay is not None:
             ls = symbology.LinkSymbology()
-            renderer = ls.make_svg_link_sym_renderer(Parameters.valve_icon_svg_name, 7)
-            Parameters.valves_vlay.setRendererV2(renderer)
+            renderer = ls.make_svg_link_sym_renderer(misc.valve_icon_svg_name, 7)
+            self.parameters.valves_vlay.setRendererV2(renderer)
 
-        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.junctions_vlay)
-        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.reservoirs_vlay)
-        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.tanks_vlay)
-        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.pipes_vlay)
-        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.pumps_vlay)
-        symbology.refresh_layer(self.iface.mapCanvas(), Parameters.valves_vlay)
+        symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.junctions_vlay)
+        symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.reservoirs_vlay)
+        symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.tanks_vlay)
+        symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.pipes_vlay)
+        symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.pumps_vlay)
+        symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.valves_vlay)
 
     def update_patterns_combo(self):
         self.cbo_node_pattern.clear()
-        if Parameters.patterns is not None:
-            for pattern in Parameters.patterns:
+        if self.parameters.junctions_vlay is not None:
+            for pattern in self.parameters.patterns:
                 self.cbo_node_pattern.addItem(pattern.desc, pattern)
 
     def update_curves_combo(self):
         self.cbo_tank_curve.clear()
         self.cbo_pump_curve.clear()
-        if Parameters.curves is not None:
-            for value in Parameters.curves:
+        if self.parameters.curves is not None:
+            for value in self.parameters.curves:
                 self.cbo_tank_curve.addItem(value.name, value)
                 self.cbo_pump_curve.addItem(value.name, value)
 

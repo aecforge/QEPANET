@@ -16,10 +16,13 @@ class Pattern:
     section_name = 'PATTERNS'
     section_header = 'ID              	Multipliers'
 
-    def __init__(self, id, desc=None, values=[]):
+    def __init__(self, id, desc=None, values=None):
         self.id = id
         self.desc = desc
-        self.values = values[:]
+        if values is None:
+            self.values = []
+        else:
+            self.values = values[:]
 
     def add_value(self, val):
         self.values.append(val)

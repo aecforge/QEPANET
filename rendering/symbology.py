@@ -24,7 +24,7 @@ class NodeSymbology:
         renderer = QgsSingleSymbolRendererV2(symbol)
         return renderer
 
-    def make_svg_node_sym_renderer(self, icon_name, size):
+    def make_svg_node_sym_renderer(self, vlay, icon_name, size):
 
         current_dir = os.path.dirname(__file__)
 
@@ -32,7 +32,7 @@ class NodeSymbology:
         svg_style['name'] = os.path.join(current_dir, icon_name)
         svg_style['size'] = str(size)
         symbol_layer = QgsSvgMarkerSymbolLayerV2.create(svg_style)
-        symbol = QgsSymbolV2.defaultSymbol(Parameters.reservoirs_vlay.geometryType())
+        symbol = QgsSymbolV2.defaultSymbol(vlay.geometryType())
         symbol.changeSymbolLayer(0, symbol_layer)
         renderer = QgsSingleSymbolRendererV2(symbol)
 

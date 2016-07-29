@@ -12,18 +12,21 @@ from ..rendering import symbology
 
 class MoveTool(QgsMapTool):
 
-    def __init__(self, data_dock):
+    def __init__(self, data_dock, parameters):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
         self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
+        self.parameters = parameters
 
         self.elev = -1
         self.vertex_marker = QgsVertexMarker(self.canvas())
         self.mouse_clicked = False
         self.snapper = None
+
+        self.clicked_pt = None
 
         self.snap_results = None
         self.adj_links_fts = None
@@ -59,16 +62,16 @@ class MoveTool(QgsMapTool):
             self.selected_node_ft = None
             self.adj_links_fts = None
             for snap_result in self.snap_results:
-                if snap_result.layer.name() == Parameters.junctions_vlay.name() or\
-                        snap_result.layer.name() == Parameters.reservoirs_vlay.name() or\
-                        snap_result.layer.name() == Parameters.tanks_vlay.name():
+                if snap_result.layer.name() == self.parameters.junctions_vlay.name() or\
+                        snap_result.layer.name() == self.parameters.reservoirs_vlay.name() or\
+                        snap_result.layer.name() == self.parameters.tanks_vlay.name():
 
                     node_feat_id = snap_result.snappedAtGeometry
                     request = QgsFeatureRequest().setFilterFid(node_feat_id)
                     node = list(snap_result.layer.getFeatures(request))
                     self.selected_node_ft = QgsFeature(node[0])
                     self.selected_node_ft_lay = snap_result.layer
-                    self.adj_links_fts = NetworkUtils.find_adjacent_links(self.selected_node_ft.geometry())
+                    self.adj_links_fts = NetworkUtils.find_adjacent_links(self.parameters, self.selected_node_ft.geometry())
 
             # No selected nodes: it's just a vertex
             if self.selected_node_ft is None:
@@ -125,29 +128,31 @@ class MoveTool(QgsMapTool):
                         if self.adj_links_fts['pumps']:
                             self.pump_valve_ft = self.adj_links_fts['pumps'][0]
                             self.pump_or_valve = 'pump'
-                            adj_links = NetworkUtils.find_links_adjacent_to_link(Parameters.pumps_vlay, self.pump_valve_ft, False, True, True)
+                            adj_links = NetworkUtils.find_links_adjacent_to_link(self.parameters, self.parameters.pumps_vlay, self.pump_valve_ft, False, True, True)
                         elif self.adj_links_fts['valves']:
                             self.pump_valve_ft = self.adj_links_fts['valves'][0]
                             self.pump_or_valve = 'valve'
-                            adj_links = NetworkUtils.find_links_adjacent_to_link(Parameters.valves_vlay, self.pump_valve_ft, False, True, True)
+                            adj_links = NetworkUtils.find_links_adjacent_to_link(self.parameters, self.parameters.valves_vlay, self.pump_valve_ft, False, True, True)
+                        else:
+                            return
 
                         adj_pipes = adj_links['pipes']
 
                         # Find the nodes adjacent to the pump/valve
-                        self.adj_junctions = NetworkUtils.find_start_end_nodes(self.pump_valve_ft.geometry())
+                        self.adj_junctions = NetworkUtils.find_start_end_nodes(self.parameters, self.pump_valve_ft.geometry())
 
                         pump_valve = self.pump_valve_ft.geometry().asPolyline()
 
                         adj_pipe_pts_1 = adj_pipes[0].geometry().asPolyline()
-                        if NetworkUtils.points_overlap(pump_valve[0], adj_pipe_pts_1[0]) or \
-                                NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve[0]), adj_pipe_pts_1[-1]):
+                        if NetworkUtils.points_overlap(pump_valve[0], adj_pipe_pts_1[0], self.parameters.tolerance) or \
+                                NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve[0]), adj_pipe_pts_1[-1], self.parameters.tolerance):
                             closest_1 = adj_pipes[0].geometry().closestVertex(pump_valve[0])
 
                             self.adj_pipes_fts_d[adj_pipes[0]] = closest_1[1]
 
                         adj_pipe_pts_2 = adj_pipes[1].geometry().asPolyline()
-                        if NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve[1]), adj_pipe_pts_2[0]) or \
-                                NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve[1]), adj_pipe_pts_2[-1]):
+                        if NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve[1]), adj_pipe_pts_2[0], self.parameters.tolerance) or \
+                                NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve[1]), adj_pipe_pts_2[-1], self.parameters.tolerance):
                             closest_2 = adj_pipes[1].geometry().closestVertex(pump_valve[1])
 
                             self.adj_pipes_fts_d[adj_pipes[1]] = closest_2[1]
@@ -178,7 +183,7 @@ class MoveTool(QgsMapTool):
 
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
-        elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, self.mouse_pt, 1)
+        elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, self.mouse_pt, 1)
         if elev is not None:
             self.elev = elev
             self.data_dock.lbl_elev_val.setText("{0:.2f}".format(self.elev))
@@ -254,29 +259,38 @@ class MoveTool(QgsMapTool):
                 # No adjacent links: it's just a pipe vertex
                 if self.adj_links_fts is None:
                     feat = vector_utils.get_feats_by_id(self.snap_results[0].layer, self.snap_results[0].snappedAtGeometry)
-                    LinkHandler.move_pipe_vertex(feat[0], self.mouse_pt, self.snap_results[0].snappedVertexNr)
+                    LinkHandler.move_pipe_vertex(self.parameters, feat[0], self.mouse_pt, self.snap_results[0].snappedVertexNr)
 
                 # It's a node
                 else:
-
                     # Not pump or valve: plain junction
                     if not self.pump_valve_selected:
 
                         # Update junction geometry
-                        NodeHandler.move_element(self.selected_node_ft_lay, self.selected_node_ft, self.mouse_pt)
+                        NodeHandler.move_element(
+                            self.selected_node_ft_lay,
+                            self.parameters.dem_rlay,
+                            self.selected_node_ft,
+                            self.mouse_pt)
 
                         # Update pipes
                         for feat, vertex_index in self.adj_pipes_fts_d.iteritems():
-                            LinkHandler.move_pipe_vertex(feat, self.mouse_pt, vertex_index)
+                            LinkHandler.move_pipe_vertex(self.parameters, feat, self.mouse_pt, vertex_index)
 
                     # Pump or valve
                     else:
+
                         # Update junctions geometry
-                        NodeHandler.move_element(Parameters.junctions_vlay, self.adj_junctions[0],
+                        NodeHandler.move_element(self.parameters.junctions_vlay,
+                                                 self.parameters.dem_rlay,
+                                                 self.adj_junctions[0],
                                                  QgsPoint(
                                                     self.adj_junctions[0].geometry().asPoint().x() + self.delta_vec.x(),
                                                     self.adj_junctions[0].geometry().asPoint().y() + self.delta_vec.y()))
-                        NodeHandler.move_element(Parameters.junctions_vlay, self.adj_junctions[1],
+
+                        NodeHandler.move_element(self.parameters.junctions_vlay,
+                                                 self.parameters.dem_rlay,
+                                                 self.adj_junctions[1],
                                                  QgsPoint(
                                                      self.adj_junctions[1].geometry().asPoint().x() + self.delta_vec.x(),
                                                      self.adj_junctions[1].geometry().asPoint().y() + self.delta_vec.y()))
@@ -286,12 +300,17 @@ class MoveTool(QgsMapTool):
 
                         # Pump or valve
                         if self.pump_or_valve == 'pump':
-                            lay = Parameters.pumps_vlay
+                            lay = self.parameters.pumps_vlay
                         elif self.pump_or_valve == 'valve':
-                            lay = Parameters.valves_vlay
+                            lay = self.parameters.valves_vlay
+
+                        # Move the pump/valve
                         LinkHandler.move_pump_valve(lay, self.pump_valve_ft, self.delta_vec)
+
+                        # Move the adjacent pipes' vertices
                         for feat, vertex_index in self.adj_pipes_fts_d.iteritems():
-                            LinkHandler.move_pipe_vertex(feat,
+                            LinkHandler.move_pipe_vertex(self.parameters,
+                                                         feat,
                                                          QgsPoint(
                                                              feat.geometry().vertexAt(vertex_index).x() + self.delta_vec.x(),
                                                              feat.geometry().vertexAt(vertex_index).y() + self.delta_vec.y()),
@@ -300,12 +319,12 @@ class MoveTool(QgsMapTool):
 
                     self.adj_pipes_fts_d.clear()
 
-                symbology.refresh_layer(self.iface.mapCanvas(), Parameters.junctions_vlay)
-                symbology.refresh_layer(self.iface.mapCanvas(), Parameters.reservoirs_vlay)
-                symbology.refresh_layer(self.iface.mapCanvas(), Parameters.tanks_vlay)
-                symbology.refresh_layer(self.iface.mapCanvas(), Parameters.pipes_vlay)
-                symbology.refresh_layer(self.iface.mapCanvas(), Parameters.pumps_vlay)
-                symbology.refresh_layer(self.iface.mapCanvas(), Parameters.valves_vlay)
+                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.junctions_vlay)
+                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.reservoirs_vlay)
+                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.tanks_vlay)
+                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.pipes_vlay)
+                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.pumps_vlay)
+                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.valves_vlay)
 
     def activate(self):
 
@@ -314,56 +333,56 @@ class MoveTool(QgsMapTool):
         self.iface.mapCanvas().setCursor(cursor)
 
         # Snapping
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.junctions_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.junctions_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.reservoirs_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.reservoirs_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.tanks_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.tanks_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
-        snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
-        snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(Parameters.reservoirs_vlay)
-        snap_layer_tanks = NetworkUtils.set_up_snap_layer(Parameters.tanks_vlay)
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay)
+        snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.parameters.junctions_vlay)
+        snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(self.parameters.reservoirs_vlay)
+        snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.parameters.tanks_vlay)
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.parameters.pipes_vlay)
 
         self.snapper = NetworkUtils.set_up_snapper(
             [snap_layer_junctions, snap_layer_reservoirs, snap_layer_tanks, snap_layer_pipes],
             self.iface.mapCanvas())
 
         # Editing
-        if not Parameters.junctions_vlay.isEditable():
-            Parameters.junctions_vlay.startEditing()
-        if not Parameters.reservoirs_vlay.isEditable():
-            Parameters.reservoirs_vlay.startEditing()
-        if not Parameters.tanks_vlay.isEditable():
-            Parameters.tanks_vlay.startEditing()
-        if not Parameters.pipes_vlay.isEditable():
-            Parameters.pipes_vlay.startEditing()
-        if not Parameters.pumps_vlay.isEditable():
-            Parameters.pumps_vlay.startEditing()
-        if not Parameters.valves_vlay.isEditable():
-            Parameters.valves_vlay.startEditing()
+        if not self.parameters.junctions_vlay.isEditable():
+            self.parameters.junctions_vlay.startEditing()
+        if not self.parameters.reservoirs_vlay.isEditable():
+            self.parameters.reservoirs_vlay.startEditing()
+        if not self.parameters.tanks_vlay.isEditable():
+            self.parameters.tanks_vlay.startEditing()
+        if not self.parameters.pipes_vlay.isEditable():
+            self.parameters.pipes_vlay.startEditing()
+        if not self.parameters.pumps_vlay.isEditable():
+            self.parameters.pumps_vlay.startEditing()
+        if not self.parameters.valves_vlay.isEditable():
+            self.parameters.valves_vlay.startEditing()
 
     def deactivate(self):
         self.rubber_bands_d.clear()

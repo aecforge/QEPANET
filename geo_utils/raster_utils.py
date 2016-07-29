@@ -122,7 +122,7 @@ class SimpleRaster:
         self.stats = RasterStats(min_val, max_val, avg_val)
 
 
-class RasterStats():
+class RasterStats:
 
     min_val = None
     max_val = None
@@ -364,11 +364,16 @@ def calc_area_stats_km2_continuous(raster, interval_width=None, intervals_count=
     return FormattedRasterStats(min_val, max_val, avg_val, intervals, num_cells * cell_area_km2, None, caption, headers)
 
 
-def calc_area_stats_km2_discrete(raster, caption='-', headers=['-','-']):
+def calc_area_stats_km2_discrete(raster, caption=None, headers=None):
     """
     :type raster: SimpleRaster
     :rtype: collections.OrderedDict
     """
+    if caption is None:
+        caption = '-'
+
+    if headers is None:
+        headers = ['-', '-']
 
     min_val = sys.float_info.max
     max_val = -min_val

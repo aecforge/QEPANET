@@ -13,13 +13,14 @@ from ..geo_utils import raster_utils
 
 class AddValveTool(QgsMapTool):
 
-    def __init__(self, data_dock):
+    def __init__(self, data_dock, parameters):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
         self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
+        self.parameters = parameters
 
         self.mouse_pt = None
         self.mouse_clicked = False
@@ -41,7 +42,7 @@ class AddValveTool(QgsMapTool):
 
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
-        elev = raster_utils.read_layer_val_from_coord(Parameters.dem_rlay, self.mouse_pt, 1)
+        elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, self.mouse_pt, 1)
 
         if elev is not None:
             self.elev = elev
@@ -91,12 +92,12 @@ class AddValveTool(QgsMapTool):
             else:
 
                 request = QgsFeatureRequest().setFilterFid(self.snapped_pipe_id)
-                feats = Parameters.pipes_vlay.getFeatures(request)
+                feats = self.parameters.pipes_vlay.getFeatures(request)
                 features = [feat for feat in feats]
                 if len(features) == 1:
 
                     # Check whether the pipe has a start and an end node
-                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(features[0].geometry())
+                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.parameters, features[0].geometry())
 
                     if not start_node or not end_node:
                         self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.')      # TODO: softcode
@@ -107,7 +108,7 @@ class AddValveTool(QgsMapTool):
                     dist_2 = end_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
 
                     # Get the attributes of the closest junction
-                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(features[0].geometry(), False, True,
+                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.parameters, features[0].geometry(), False, True,
                                                                                True)
                     if dist_1 < dist_2:
                         closest_junction_ft = start_node
@@ -124,6 +125,7 @@ class AddValveTool(QgsMapTool):
                         setting = self.data_dock.cbo_valve_curve.itemData(self.cbo_valve_curve.currentIndex())
 
                     LinkHandler.create_new_valve(
+                        self.parameters,
                         self.data_dock,
                         features[0],
                         closest_junction_ft,
@@ -135,23 +137,23 @@ class AddValveTool(QgsMapTool):
 
     def activate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,
-                                                      Parameters.snap_tolerance,
+                                                      self.parameters.snap_tolerance,
                                                       True)
 
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(Parameters.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.parameters.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_pipes], self.iface.mapCanvas())
 
         # Editing
-        if not Parameters.valves_vlay.isEditable():
-            Parameters.valves_vlay.startEditing()
+        if not self.parameters.valves_vlay.isEditable():
+            self.parameters.valves_vlay.startEditing()
 
     def deactivate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(Parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,

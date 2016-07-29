@@ -12,14 +12,14 @@ class InpFile:
         pass
 
     @staticmethod
-    def write_pattern(inp_file_path, pattern=None):
+    def write_patterns(parameters, inp_file_path):
 
         # Rewrite whole file
         with codecs.open(inp_file_path, 'w', encoding='UTF-8') as inp_f:
             InpFile.write_lines(inp_f, InpFile.build_section_keyword(Pattern.section_name))
             InpFile.write_lines(inp_f, InpFile.build_comment(Pattern.section_header))
 
-            for pattern in Parameters.patterns:
+            for pattern in parameters.patterns:
                 if pattern.desc is not None:
                     InpFile.write_lines(inp_f, InpFile.build_comment(pattern.desc))
                 InpFile.write_lines(inp_f, InpFile.from_values_to_lines(pattern.values, line_header=pattern.id, vals_per_line=6))
@@ -34,7 +34,7 @@ class InpFile:
                 inp_file.write(line + '\n')
 
     @staticmethod
-    def read_patterns(inp_file_path):
+    def read_patterns(parameters, inp_file_path):
 
         start_line = None
         end_line = None
@@ -71,7 +71,10 @@ class InpFile:
                     for w in range(1, len(words)):
                         patterns_d[words[0]].add_value(float(words[w]))
 
-        return patterns_d.values()
+        parameters.patterns = patterns_d.values()
+
+        # Update GUI
+
 
     @staticmethod
     def read_curves(inp_file_path):
@@ -116,7 +119,7 @@ class InpFile:
         return curves_d.values()
 
     @staticmethod
-    def write_inp_file(inp_file_path, title):
+    def write_inp_file(parameters, inp_file_path, title):
 
         out = []
 
@@ -132,7 +135,7 @@ class InpFile:
             out.append(Junction.section_header)
             out.append(InpFile.build_dashline(Junction.section_header))
 
-            f_fts = Parameters.junctions_vlay.getFeatures()
+            f_fts = parameters.junctions_vlay.getFeatures()
 
     @staticmethod
     def split_line(line, n=255):
