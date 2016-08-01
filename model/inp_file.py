@@ -52,7 +52,8 @@ class InpFile:
                     break
 
         if start_line is None:
-            return []
+            parameters.patterns = []
+            return
 
         if end_line is None:
             end_line = len(lines)
@@ -72,8 +73,6 @@ class InpFile:
                         patterns_d[words[0]].add_value(float(words[w]))
 
         parameters.patterns = patterns_d.values()
-
-        # Update GUI
 
 
     @staticmethod

@@ -123,26 +123,42 @@ class PatternsDialog(QtGui.QDialog):
 
     def list_item_changed(self):
         p_index = self.lst_patterns.currentRow()
-        current_pattern = self.parameters.patterns[p_index]
 
-        # Update GUI
-        self.txt_id.setText(current_pattern.id)
-        self.txt_desc.setText(current_pattern.desc)
+        if p_index >= 0:
+            current_pattern = self.parameters.patterns[p_index]
 
-        # Update table and chart
-        self.update_graph = False
-        for v in range(len(current_pattern.values)):
-            self.table.setItem(1, v, QtGui.QTableWidgetItem(str(current_pattern.values[v])))
-        self.update_graph = True
+            # Update GUI
+            self.txt_id.setText(current_pattern.id)
+            self.txt_desc.setText(current_pattern.desc)
 
-        self.static_canvas.draw_bars_graph(current_pattern.values)
+            # Update table and chart
+            self.update_graph = False
+            for v in range(len(current_pattern.values)):
+                self.table.setItem(1, v, QtGui.QTableWidgetItem(str(current_pattern.values[v])))
+            self.update_graph = True
+
+            self.static_canvas.draw_bars_graph(current_pattern.values)
+
+        else:
+
+            self.txt_id.setText('')
+            self.txt_desc.setText('')
+
+            # Update table and chart
+            self.update_graph = False
+            for v in range(self.table.columnCount()):
+                self.table.setItem(1, v, QtGui.QTableWidgetItem(''))
+            self.update_graph = True
+
+            self.static_canvas.draw_bars_graph([0] * 24)
 
     def select_file(self):
+
         config_file = ConfigFile(Parameters.config_file_path)
         patterns_file_path = QtGui.QFileDialog.getOpenFileName(
             self,
             'Select patterns file',
-            None,
+            self.txt_file.text(),
             'Patterns files (*.txt *.inp)')
 
         if patterns_file_path is None or patterns_file_path == '':
@@ -152,6 +168,7 @@ class PatternsDialog(QtGui.QDialog):
             config_file.set_patterns_file_path(patterns_file_path)
 
         Parameters.patterns_file = patterns_file_path
+        self.read_patterns()
 
     def read_patterns(self):
         InpFile.read_patterns(self.parameters, self.parameters.patterns_file)
