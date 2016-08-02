@@ -560,6 +560,31 @@ class LinkHandler:
             NodeHandler._delete_feature(parameters.junctions_vlay, adj_nodes[1])
 
     @staticmethod
+    def delete_vertex(parameters, layer, pipe_ft, vertex_index):
+        caps = layer.dataProvider().capabilities()
+
+        if caps & QgsVectorDataProvider.ChangeGeometries:
+            layer.beginEditCommand("Update pipe geometry")
+
+            try:
+                edit_utils = QgsVectorLayerEditUtils(parameters.pipes_vlay)
+                edit_utils.deleteVertexV2(pipe_ft.id(), vertex_index)
+
+                # Retrieve the feature again, and update attributes
+                request = QgsFeatureRequest().setFilterFid(pipe_ft.id())
+                feats = list(parameters.pipes_vlay.getFeatures(request))
+
+                field_index = parameters.pipes_vlay.dataProvider().fieldNameIndex(Pipe.field_name_length)
+                new_3d_length = LinkHandler.calc_3d_length(parameters, feats[0].geometry())
+                parameters.pipes_vlay.changeAttributeValue(pipe_ft.id(), field_index, new_3d_length)
+
+            except Exception as e:
+                parameters.pipes_vlay.destroyEditCommand()
+                raise e
+
+            parameters.pipes_vlay.endEditCommand()
+
+    @staticmethod
     def stitch_pipes(parameters, pipe1_ft, stitch_pt1, pipe2_ft, stitch_pt2, stich_pt_new):
 
         new_geom_pts = []

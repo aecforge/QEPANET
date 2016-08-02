@@ -80,6 +80,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_add_valve.setCheckable(True)
 
         self.btn_move_element.setCheckable(True)
+        self.btn_delete_element.setCheckable(True)
 
         QtCore.QObject.connect(self.btn_add_junction, QtCore.SIGNAL('pressed()'), self.add_junction)
         QtCore.QObject.connect(self.btn_add_reservoir, QtCore.SIGNAL('pressed()'), self.add_reservoir)

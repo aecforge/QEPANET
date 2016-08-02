@@ -130,7 +130,6 @@ class DeleteTool(QgsMapTool):
                             elif adj_links_fts['valves']:
                                 LinkHandler.delete_link(self.parameters, self.parameters.valves_vlay, snapped_ft)
 
-
                     # The node is a reservoir or a tank
                     elif snapped_layer == self.parameters.reservoirs_vlay or \
                                     snapped_layer == self.parameters.tanks_vlay:
@@ -145,7 +144,14 @@ class DeleteTool(QgsMapTool):
                 # If pipe: delete
                 elif snapped_layer == self.parameters.pipes_vlay:
 
-                    LinkHandler.delete_link(self.parameters, snapped_layer, snapped_ft)
+                    vertex = snapped_ft.geometry().closestVertexWithContext(self.snap_results[0].snappedVertex)
+                    vertex_dist = vertex[0]
+                    if vertex_dist < self.parameters.min_dist:
+                        # Delete vertex
+                        LinkHandler.delete_vertex(self.parameters, self.parameters.pipes_vlay, snapped_ft, vertex[1])
+                    else:
+                        # Delete whole feature
+                        LinkHandler.delete_link(self.parameters, snapped_layer, snapped_ft)
 
                 symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.junctions_vlay)
                 symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.reservoirs_vlay)
