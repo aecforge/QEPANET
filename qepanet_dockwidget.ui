@@ -163,14 +163,14 @@
            <item>
             <widget class="QToolBox" name="tbx_elements">
              <property name="currentIndex">
-              <number>7</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>150</width>
+                <width>219</width>
                 <height>225</height>
                </rect>
               </property>
@@ -293,7 +293,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>152</width>
+                <width>236</width>
                 <height>90</height>
                </rect>
               </property>
@@ -346,8 +346,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>148</width>
-                <height>64</height>
+                <width>236</width>
+                <height>69</height>
                </rect>
               </property>
               <attribute name="label">
@@ -355,14 +355,14 @@
               </attribute>
               <layout class="QFormLayout" name="formLayout_3">
                <item row="0" column="0">
-                <widget class="QLabel" name="lbl_reservoir_pressure">
+                <widget class="QLabel" name="lbl_reservoir_head">
                  <property name="text">
-                  <string>Pressure [m]:</string>
+                  <string>Head [m]:</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="txt_reservoir_pressure">
+                <widget class="QLineEdit" name="txt_reservoir_head">
                  <property name="text">
                   <string>0</string>
                  </property>
@@ -389,7 +389,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>174</width>
+                <width>236</width>
                 <height>194</height>
                </rect>
               </property>
@@ -501,7 +501,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>148</width>
+                <width>236</width>
                 <height>220</height>
                </rect>
               </property>
@@ -738,24 +738,57 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
-                <width>126</width>
-                <height>38</height>
+                <y>-20</y>
+                <width>219</width>
+                <height>96</height>
                </rect>
               </property>
               <attribute name="label">
                <string>Pump properties</string>
               </attribute>
               <layout class="QFormLayout" name="formLayout">
+               <property name="fieldGrowthPolicy">
+                <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+               </property>
                <item row="0" column="0">
-                <widget class="QLabel" name="lbl_pump_curve">
+                <widget class="QLabel" name="lbl_pump_param">
                  <property name="text">
-                  <string>Curve:</string>
+                  <string>Param:</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QComboBox" name="cbo_pump_curve"/>
+                <widget class="QComboBox" name="cbo_pump_param"/>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="lbl_pump_power">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>Power:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="txt_pump_power">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="lbl_pump_head">
+                 <property name="text">
+                  <string>Head:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="cbo_pump_head"/>
                </item>
               </layout>
              </widget>
@@ -764,7 +797,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>173</width>
+                <width>236</width>
                 <height>142</height>
                </rect>
               </property>

@@ -3,6 +3,7 @@ import codecs
 from network import Title, Junction, Reservoir, Tank, Pipe, Pump, Valve
 from system_ops import Curve, Pattern
 import math
+from ..model.network_handling import NetworkUtils
 from ..tools.parameters import Parameters
 
 
@@ -74,7 +75,6 @@ class InpFile:
 
         parameters.patterns = patterns_d.values()
 
-
     @staticmethod
     def read_curves(inp_file_path):
 
@@ -130,11 +130,223 @@ class InpFile:
                 out.extend(InpFile.split_line(title))
 
             # Junctions
-            out.append(InpFile.build_section_keyword(Junction.section_name))
-            out.append(Junction.section_header)
-            out.append(InpFile.build_dashline(Junction.section_header))
+            InpFile._append_junctions(parameters, out)
 
-            f_fts = parameters.junctions_vlay.getFeatures()
+            # Reservoirs
+            InpFile._append_reservoirs(parameters, out)
+
+            # Tanks
+            InpFile._append_tanks(parameters, out)
+
+            # Pipes
+            InpFile._append_pipes(parameters, out)
+
+            # Pumps
+            InpFile._append_pumps(parameters, out)
+
+            # Valves
+            InpFile._append_valves(parameters, out)
+
+    @staticmethod
+    def _append_junctions(parameters, out):
+
+        out.append(InpFile.build_section_keyword(Junction.section_name))
+        out.append(Junction.section_header)
+        out.append(InpFile.build_dashline(Junction.section_header))
+
+        j_fts = parameters.junctions_vlay.getFeatures()
+        for j_ft in j_fts:
+            eid = j_ft.attribute(Junction.field_eid)
+            demand = j_ft.attribute(Junction.field_name_demand)
+            elev = j_ft.attribute(Junction.field_name_elevation)
+            elev_corr = j_ft.attribute(Junction.field_name_elev_corr)
+            pattern = j_ft.attribute(Junction.field_name_pattern)
+
+            if elev_corr is None:
+                elev_corr = 0
+
+            elev += elev_corr
+
+            line = InpFile.pad(eid)
+            line += InpFile.pad('{0:.2f}'.format(elev))
+            if demand is not None:
+                line += InpFile.pad('{0:.5f}'.format(demand))
+            else:
+                line += InpFile.pad('')
+
+            if pattern is not None:
+                line += InpFile.pad(pattern)
+            else:
+                line += InpFile.pad('')
+
+            out.append(line)
+
+    @staticmethod
+    def _append_reservoirs(parameters, out):
+
+        out.append(InpFile.build_section_keyword(Reservoir.section_name))
+        out.append(Reservoir.section_header)
+        out.append(InpFile.build_dashline(Reservoir.section_header))
+
+        r_fts = parameters.reservoirs_vlay.getFeatures()
+        for r_ft in r_fts:
+            eid = r_ft.attribute(Reservoir.field_name_eid)
+            elev = r_ft.attribute(Reservoir.field_name_elevation)
+            elev_corr = r_ft.attribute(Reservoir.field_name_elev_corr)
+            head = r_ft.attribute(Reservoir.field_name_head)
+            pattern = r_ft.attribute(Reservoir.field_name_pattern)
+
+            if elev is None:
+                elev = 0
+            if elev_corr is None:
+                elev_corr = 0
+
+            head += elev + elev_corr
+
+            # Line
+            line = InpFile.pad(eid)
+            line += InpFile.pad('{0:.2f}'.format(head))
+            line += InpFile.pad(pattern)
+
+            out.append(line)
+
+    @staticmethod
+    def _append_tanks(parameters, out):
+
+        out.append(InpFile.build_section_keyword(Tank.section_name))
+        out.append(Tank.section_header)
+        out.append(InpFile.build_dashline(Tank.section_header))
+
+        t_fts = parameters.tanks_vlay.getFeatures()
+        for t_ft in t_fts:
+            eid = t_ft.attribute(Tank.field_name_eid)
+            curve = t_ft.attribute(Tank.field_name_curve)
+            diameter = t_ft.attribute(Tank.field_name_diameter)
+            elev = t_ft.attribute(Tank.field_name_elevation)
+            elev_corr = t_ft.attribute(Tank.field_name_elev_corr)
+            level_init = t_ft.attribute(Tank.field_name_level_init)
+            level_max = t_ft.attribute(Tank.field_name_level_max)
+            level_min = t_ft.attribute(Tank.field_name_level_min)
+            vol_min = t_ft.attribute(Tank.field_name_vol_min)
+
+            if elev_corr is None:
+                elev_corr = 0
+
+            elev += elev_corr
+
+            # Line
+            line = InpFile.pad(eid)
+            line += InpFile.pad('{0:.2f}'.format(elev))
+            line += InpFile.pad('{0:.4f}'.format(level_init))
+            line += InpFile.pad('{0:.4f}'.format(level_min))
+            line += InpFile.pad('{0:.4f}'.format(level_max))
+            line += InpFile.pad('{0:.1f}'.format(diameter))
+            line += InpFile.pad('{0:.4f}'.format(vol_min))
+            if curve is not None:
+                line += InpFile.pad(curve)
+
+            out.append(line)
+
+    @staticmethod
+    def _append_pipes(parameters, out):
+
+        out.append(InpFile.build_section_keyword(Pipe.section_name))
+        out.append(Pipe.section_header)
+        out.append(InpFile.build_dashline(Pipe.section_header))
+
+        p_fts = parameters.pipes_vlay.getFeatures()
+        for p_ft in p_fts:
+            eid = p_ft.attribute(Pipe.field_name_eid)
+
+            # Find start/end nodes
+            adj_nodes = NetworkUtils.find_start_end_nodes(parameters, p_ft.geometry())
+            start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
+            end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
+
+            length = p_ft.attribute(Pipe.field_name_length)
+            diameter = p_ft.attribute(Pipe.field_name_diameter)
+            roughness = p_ft.attribute(Pipe.field_name_roughness)
+            minor_loss = p_ft.attribute(Pipe.field_name_minor_loss)
+            status = p_ft.attribute(Pipe.field_name_status)
+
+            # Line
+            line = InpFile.pad(eid)
+            line += InpFile.pad(start_node_id)
+            line += InpFile.pad(end_node_id)
+            line += InpFile.pad('{0:.2f}'.format(length))
+            line += InpFile.pad('{0:.2f}'.format(diameter))
+            line += InpFile.pad('{0:.2f}'.format(roughness))
+            line += InpFile.pad('{0:.2f}'.format(minor_loss))
+            line += InpFile.pad(status)
+
+            out.append(line)
+
+    @staticmethod
+    def _append_pumps(parameters, out):
+
+        out.append(InpFile.build_section_keyword(Pump.section_name))
+        out.append(Pump.section_header)
+        out.append(InpFile.build_dashline(Pump.section_header))
+
+        p_fts = parameters.pumps_vlay.getFeatures()
+        for p_ft in p_fts:
+            eid = p_ft.attribute(Pump.field_name_eid)
+
+            # Find start/end nodes
+            adj_nodes = NetworkUtils.find_start_end_nodes(parameters, p_ft.geometry(), False, True, True)
+            start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
+            end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
+
+            # Parameters
+            pump_param = p_ft.attribute(Pump.field_name_param)
+            value = p_ft.attribute(Pump.field_name_value)
+
+            # Line
+            line = InpFile.pad(eid)
+            line += InpFile.pad(start_node_id)
+            line += InpFile.pad(end_node_id)
+
+            if pump_param == Pump.parameters_power:
+                line += InpFile.pad(pump_param + ' ' + '{0:2f}'.format(value))
+            elif pump_param == Pump.parameters_head:
+                line += InpFile.pad(pump_param + ' ' + value)
+            else:
+                # TODO: add support for speed and pattern?
+                line += '0'
+
+            out.append(line)
+
+    @staticmethod
+    def _append_valves(parameters, out):
+
+        out.append(InpFile.build_section_keyword(Valve.section_name))
+        out.append(Valve.section_header)
+        out.append(InpFile.build_dashline(Valve.section_header))
+
+        v_fts = parameters.valves_vlay.getFeatures()
+        for v_ft in v_fts:
+            eid = v_ft.attribute(Valve.field_name_eid)
+
+            # Find start/end nodes
+            adj_nodes = NetworkUtils.find_start_end_nodes(parameters, v_ft.geometry(), False, True, True)
+            start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
+            end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
+
+            diameter = v_ft.attribute(Valve.field_name_diameter)
+            valve_type = v_ft.attribute(Valve.field_name_type)
+            setting = v_ft.attribute(Valve.field_name_setting)
+            minor_loss = v_ft.attribute(Valve.field_name_minor_loss)
+
+            # Line
+            line = InpFile.pad(eid)
+            line += InpFile.pad(start_node_id)
+            line += InpFile.pad(end_node_id)
+            line += InpFile.pad(diameter)
+            line += InpFile.pad(valve_type)
+            line += InpFile.pad(setting)
+            line += InpFile.pad(minor_loss)
+
+            out.append(line)
 
     @staticmethod
     def split_line(line, n=255):
@@ -174,7 +386,7 @@ class InpFile:
         return lines
 
     @staticmethod
-    def pad(text, blanks_nr):
+    def pad(text, blanks_nr=10):
         for t in range(blanks_nr - len(text)):
             text += ' '
         text += '\t'

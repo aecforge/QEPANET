@@ -31,7 +31,7 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsCoordinateReferenceSy
 
 from geo_utils import utils
 from ui.patterns_gui import PatternsDialog
-from model.network import Tables, Valve
+from model.network import Tables, Pump, Valve
 from rendering import symbology
 from tools.add_junction_tool import AddJunctionTool
 from tools.add_pipe_tool import AddPipeTool
@@ -70,6 +70,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.setWindowTitle(parameters.plug_in_name)
 
         self.decimals = 1
+
         # Tools buttons
         self.btn_add_junction.setCheckable(True)
         self.btn_add_reservoir.setCheckable(True)
@@ -105,29 +106,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.update_layers_combos()
         self.preselect_layers_combos()
 
-        if self.cbo_junctions.count() >= 0:
-            layer_id = self.cbo_junctions.itemData(self.cbo_junctions.currentIndex())
-            self.parameters.junctions_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
-        if self.cbo_pipes.count() >= 0:
-            layer_id = self.cbo_pipes.itemData(self.cbo_pipes.currentIndex())
-            self.parameters.pipes_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
-        if self.cbo_pumps.count() >= 0:
-            layer_id = self.cbo_pumps.itemData(self.cbo_pumps.currentIndex())
-            self.parameters.pumps_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
-        if self.cbo_reservoirs.count() >= 0:
-            layer_id = self.cbo_reservoirs.itemData(self.cbo_reservoirs.currentIndex())
-            self.parameters.reservoirs_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
-        if self.cbo_tanks.count() >= 0:
-            layer_id = self.cbo_tanks.itemData(self.cbo_tanks.currentIndex())
-            self.parameters.tanks_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
-        if self.cbo_valves.count() >= 0:
-            layer_id = self.cbo_valves.itemData(self.cbo_valves.currentIndex())
-            self.parameters.valves_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
-
-        if self.cbo_dem.count() >= 0:
-            layer_id = self.cbo_dem.itemData(self.cbo_dem.currentIndex())
-            self.parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
-
         QtCore.QObject.connect(self.btn_symbology, QtCore.SIGNAL('pressed()'), self.apply_symbologies)
 
         # Junctions
@@ -137,7 +115,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.update_patterns_combo()
 
         # Reservoirs
-        self.txt_reservoir_pressure.setValidator(RegExValidators.get_pos_decimals())
+        self.txt_reservoir_head.setValidator(RegExValidators.get_pos_decimals())
         self.txt_reservoir_elev_corr.setValidator(RegExValidators.get_pos_neg_decimals())
 
         self.update_curves_combo()
@@ -168,7 +146,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.cbo_pipe_status.addItem('CV')  # TODO: sofcode
 
         # Pumps
-        self.update_curves_combo()
+        self.cbo_pump_param.addItem(Pump.parameters_head)
+        self.cbo_pump_param.addItem(Pump.parameters_power)
+        self.txt_pump_power.setValidator(RegExValidators.get_pos_decimals())
+
+        QtCore.QObject.connect(self.cbo_pump_param, QtCore.SIGNAL('activated(int)'), self.cbo_pump_param_activated)
 
         # Valves
         self.cbo_valve_type.clear()
@@ -302,6 +284,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
+    def cbo_pump_param_activated(self):
+        selected_param = self.cbo_pump_param.itemText(self.cbo_pump_param.currentIndex())
+        self.lbl_pump_power.setEnabled(selected_param == Pump.parameters_power)
+        self.txt_pump_power.setEnabled(selected_param == Pump.parameters_power)
+        self.lbl_pump_head.setEnabled(selected_param == Pump.parameters_head)
+        self.cbo_pump_head.setEnabled(selected_param == Pump.parameters_head)
+
     def cbo_valve_type_activated(self):
         selected_type = self.cbo_valve_type.itemData(self.cbo_valve_type.currentIndex())
 
@@ -341,20 +330,17 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.iface.messageBar().pushInfo(Parameters.plug_in_name, e.message)
 
         # Load layers in QGIS
-        self.parameters.valves_vlay(self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.valves_table_name + '.shp'), Tables.valves_table_name, 'ogr'))
-        self.parameters.pumps_vlay(self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.pumps_table_name + '.shp'), Tables.pumps_table_name, 'ogr'))
-        self.parameters.pipes_vlay(self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.pipes_table_name + '.shp'), Tables.pipes_table_name, 'ogr'))
-        self.parameters.tanks_vlay(self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.tanks_table_name + '.shp'), Tables.tanks_table_name, 'ogr'))
-        self.parameters.reservoirs_vlay(self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.reservoirs_table_name + '.shp'), Tables.reservoirs_table_name, 'ogr'))
-        self.parameters.junctions_vlay(self.iface.addVectorLayer(
-            os.path.join(shp_folder, Tables.junctions_table_name + '.shp'), Tables.junctions_table_name, 'ogr'))
+        self.parameters.valves_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.valves_table_name + '.shp'), Tables.valves_table_name, 'ogr')
+        self.parameters.pumps_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.pumps_table_name + '.shp'), Tables.pumps_table_name, 'ogr')
+        self.parameters.pipes_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.pipes_table_name + '.shp'), Tables.pipes_table_name, 'ogr')
+        self.parameters.tanks_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.tanks_table_name + '.shp'), Tables.tanks_table_name, 'ogr')
+        self.parameters.reservoirs_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.reservoirs_table_name + '.shp'), Tables.reservoirs_table_name, 'ogr')
+        self.parameters.junctions_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.junctions_table_name + '.shp'), Tables.junctions_table_name, 'ogr')
 
+        self.update_layers_combos()
         self.preselect_layers_combos()
+
+        self.apply_symbologies()
 
     def roughness_slider_changed(self):
         self.lbl_pipe_roughness_val_val.setText(str(self.sli_pipe_roughness.value() / float(10**self.decimals)))
@@ -500,21 +486,36 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def preselect_layers_combos(self):
 
         for layer_id in QgsMapLayerRegistry.instance().mapLayers():
+
+            layer = utils.LayerUtils.get_lay_from_id(layer_id)
+
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.junctions_table_name:
                 self.set_layercombo_index(self.cbo_junctions, layer_id)
+                self.parameters.junctions_vlay = layer
+
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.pipes_table_name:
                 self.set_layercombo_index(self.cbo_pipes, layer_id)
+                self.parameters.pipes_vlay = layer
+
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.pumps_table_name:
                 self.set_layercombo_index(self.cbo_pumps, layer_id)
+                self.parameters.pumps_vlay = layer
+
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.reservoirs_table_name:
                 self.set_layercombo_index(self.cbo_reservoirs, layer_id)
+                self.parameters.reservoirs_vlay = layer
+
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.tanks_table_name:
                 self.set_layercombo_index(self.cbo_tanks, layer_id)
+                self.parameters.tanks_vlay = layer
+
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.valves_table_name:
                 self.set_layercombo_index(self.cbo_valves, layer_id)
+                self.parameters.valves_vlay = layer
 
             if utils.LayerUtils.get_lay_from_id(layer_id).name() == 'dem':
                 self.set_layercombo_index(self.cbo_dem, layer_id)
+                self.parameters.dem_rlay = layer
 
     def apply_symbologies(self):
 
@@ -563,11 +564,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def update_curves_combo(self):
         self.cbo_tank_curve.clear()
-        self.cbo_pump_curve.clear()
+        self.cbo_pump_head.clear()
         if self.parameters.curves is not None:
             for value in self.parameters.curves:
                 self.cbo_tank_curve.addItem(value.name, value)
-                self.cbo_pump_curve.addItem(value.name, value)
+                self.cbo_pump_head.addItem(value.name, value)
 
     def get_combo_current_data(self, combo):
         index = self.cbo_pipe_roughness.currentIndex()

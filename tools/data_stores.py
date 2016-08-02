@@ -94,8 +94,8 @@ class ShapefileDS:
         fields = QgsFields()
         fields.append(QgsField(Reservoir.field_name_eid, QVariant.String))
         fields.append(QgsField(Reservoir.field_name_elevation, QVariant.Double))
-        fields.append(QgsField(Reservoir.field_name_elevation_corr, QVariant.Double))
-        fields.append(QgsField(Reservoir.field_name_pressure, QVariant.Double))
+        fields.append(QgsField(Reservoir.field_name_elev_corr, QVariant.Double))
+        fields.append(QgsField(Reservoir.field_name_head, QVariant.Double))
 
         writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBPoint, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:
@@ -109,7 +109,7 @@ class ShapefileDS:
         fields.append(QgsField(Tank.field_name_curve, QVariant.Int))
         fields.append(QgsField(Tank.field_name_diameter, QVariant.Double))
         fields.append(QgsField(Tank.field_name_elevation, QVariant.Double))
-        fields.append(QgsField(Tank.field_name_elevation_corr, QVariant.Double))
+        fields.append(QgsField(Tank.field_name_elev_corr, QVariant.Double))
         fields.append(QgsField(Tank.field_name_level_init, QVariant.Double))
         fields.append(QgsField(Tank.field_name_level_max, QVariant.Double))
         fields.append(QgsField(Tank.field_name_level_min, QVariant.Double))
@@ -140,7 +140,8 @@ class ShapefileDS:
 
         fields = QgsFields()
         fields.append(QgsField(QgsField(Pump.field_name_eid, QVariant.String)))
-        fields.append(QgsField(QgsField(Pump.field_name_curve, QVariant.Int)))
+        fields.append(QgsField(QgsField(Pump.field_name_param, QVariant.String)))
+        fields.append(QgsField(QgsField(Pump.field_name_value, QVariant.Double)))
 
         writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBLineString, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:

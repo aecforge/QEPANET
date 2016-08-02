@@ -47,7 +47,7 @@ class NodeHandler:
             return new_junct_feat
 
     @staticmethod
-    def create_new_reservoir(parameters, point, eid, elev, elev_corr, pressure):
+    def create_new_reservoir(parameters, point, eid, elev, elev_corr, head):
 
         reservoirs_caps = parameters.reservoirs_vlay.dataProvider().capabilities()
         if reservoirs_caps and QgsVectorDataProvider.AddFeatures:
@@ -60,8 +60,8 @@ class NodeHandler:
                 new_reservoir_feat = QgsFeature(parameters.reservoirs_vlay.pendingFields())
                 new_reservoir_feat.setAttribute(Reservoir.field_name_eid, eid)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_elevation, elev)
-                new_reservoir_feat.setAttribute(Reservoir.field_name_elevation_corr, elev_corr)
-                new_reservoir_feat.setAttribute(Reservoir.field_name_pressure, pressure)
+                new_reservoir_feat.setAttribute(Reservoir.field_name_elev_corr, elev_corr)
+                new_reservoir_feat.setAttribute(Reservoir.field_name_head, head)
 
                 new_reservoir_feat.setGeometry(QgsGeometry.fromPoint(point))
 
@@ -89,7 +89,7 @@ class NodeHandler:
                 new_tank_feat.setAttribute(Tank.field_name_curve, tank_curve_id)
                 new_tank_feat.setAttribute(Tank.field_name_diameter, diameter)
                 new_tank_feat.setAttribute(Tank.field_name_elevation, elev)
-                new_tank_feat.setAttribute(Tank.field_name_elevation_corr, elev_corr)
+                new_tank_feat.setAttribute(Tank.field_name_elev_corr, elev_corr)
                 new_tank_feat.setAttribute(Tank.field_name_level_init, level_init)
                 new_tank_feat.setAttribute(Tank.field_name_level_min, level_min)
                 new_tank_feat.setAttribute(Tank.field_name_level_max, level_max)
@@ -319,7 +319,8 @@ class LinkHandler:
                 if layer == parameters.pumps_vlay:
                     new_ft = QgsFeature(parameters.pumps_vlay.pendingFields())
                     new_ft.setAttribute(Pump.field_name_eid, eid)
-                    new_ft.setAttribute(Pump.field_name_curve, attributes[0])
+                    new_ft.setAttribute(Pump.field_name_param, attributes[0])
+                    new_ft.setAttribute(Pump.field_name_value, attributes[1])
 
                 elif layer == parameters.valves_vlay:
                     new_ft.setAttribute(Valve.field_name_eid, eid)
@@ -541,18 +542,20 @@ class LinkHandler:
             midpoint = NetworkUtils.find_midpoint(adj_nodes[0].geometry().asPoint(),
                                                   adj_nodes[1].geometry().asPoint())
 
-            LinkHandler.stitch_pipes(
-                parameters,
-                adjadj_links['pipes'][0],
-                adj_nodes[0].geometry().asPoint(),
-                adjadj_links['pipes'][1],
-                adj_nodes[1].geometry().asPoint(),
-                midpoint)
+            if len(adjadj_links['pipes']) == 2:
+                LinkHandler.stitch_pipes(
+                    parameters,
+                    adjadj_links['pipes'][0],
+                    adj_nodes[0].geometry().asPoint(),
+                    adjadj_links['pipes'][1],
+                    adj_nodes[1].geometry().asPoint(),
+                    midpoint)
 
             # Delete old links and pipes
             LinkHandler._delete_feature(layer, adj_links_ft)
-            LinkHandler._delete_feature(parameters.pipes_vlay, adjadj_links['pipes'][0])
-            LinkHandler._delete_feature(parameters.pipes_vlay, adjadj_links['pipes'][1])
+
+            for adjadj_link in adjadj_links['pipes']:
+                LinkHandler._delete_feature(parameters.pipes_vlay, adjadj_link)
             NodeHandler._delete_feature(parameters.junctions_vlay, adj_nodes[0])
             NodeHandler._delete_feature(parameters.junctions_vlay, adj_nodes[1])
 

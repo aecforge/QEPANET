@@ -84,7 +84,7 @@ class AddReservoirTool(QgsMapTool):
             # Find first available ID for reservoirs
             eid = NetworkUtils.find_next_id(self.parameters.reservoirs_vlay, 'R') # TODO: softcode
 
-            pressure = float(self.data_dock.txt_reservoir_pressure.text())
+            head = float(self.data_dock.txt_reservoir_head.text())
             elev_corr = float(self.data_dock.txt_reservoir_elev_corr.text())
 
             # No links snapped: create a new stand-alone node
@@ -96,7 +96,7 @@ class AddReservoirTool(QgsMapTool):
                     eid,
                     self.elev,
                     elev_corr,
-                    pressure)
+                    head)
 
             # A link has been snapped
             else:
@@ -128,7 +128,7 @@ class AddReservoirTool(QgsMapTool):
                             eid,
                             self.elev,
                             elev_corr,
-                            pressure)
+                            head)
 
                     else:
                         self.iface.messageBar().pushWarning(

@@ -23,7 +23,7 @@ class Title:
 
 class Junction:
     section_name = 'JUNCTIONS'
-    section_header = 'ID Elev. Demand Pattern'
+    section_header = 'ID              	Elev        	Demand      	Pattern'
     field_name_eid = 'id'
     field_name_demand = 'demand'
     field_name_elevation = 'elev'
@@ -40,25 +40,29 @@ class Junction:
 
 class Reservoir:
     section_name = 'RESERVOIRS'
+    section_header = 'ID              	Head        	Pattern'
     field_name_eid = 'id'
     field_name_elevation = 'elev'
-    field_name_elevation_corr = 'elev_corr'
-    field_name_pressure = 'pressure'
+    field_name_elev_corr = 'elev_corr'
+    field_name_head = 'head'
+    field_name_pattern = 'pattern'
 
     def __init__(self, eid):
         self.eid = eid
         self.elevation = -1
         self.elevation_corr = 0
-        self.pressure = 0
+        self.head = 0
+        self.pattern = 0
 
 
 class Tank:
     section_name = 'TANKS'
+    section_header = 'ID              	Elevation   	InitLevel   	MinLevel    	MaxLevel    	Diameter    	MinVol      	VolCurve'
     field_name_eid = 'id'
     field_name_curve = 'curve'
     field_name_diameter = 'diameter'
     field_name_elevation = 'elev'
-    field_name_elevation_corr = 'elev_corr'
+    field_name_elev_corr = 'elev_corr'
     field_name_level_init = 'init_level'
     field_name_level_max = 'max_level'
     field_name_level_min = 'min_level'
@@ -78,6 +82,7 @@ class Tank:
 
 class Pipe:
     section_name = 'PIPES'
+    section_header = 'ID              	Node1           	Node2           	Length      	Diameter    	Roughness   	MinorLoss   	Status'
     field_name_eid = 'id'
     field_name_demand = 'demand'
     field_name_diameter = 'diameter'
@@ -103,17 +108,22 @@ class Pipe:
 
 class Pump:
     section_name = 'PUMPS'
+    section_header = 'ID              	Node1           	Node2           	Parameters'
     field_name_eid = 'id'
-    field_name_curve = 'curve'
+    field_name_param = 'parameters'
+    field_name_value = 'value'
+
+    parameters_power = 'POWER'
+    parameters_head = 'HEAD'
 
     def __init__(self, eid):
         self.eid = eid
-
-        self.curve = -1
+        self.parameters = Pump.parameters_power
 
 
 class Valve:
     section_name = 'VALVES'
+    section_header = 'ID              	Node1           	Node2           	Diameter    	Type	Setting     	MinorLoss'
     field_name_eid = 'id'
     field_name_diameter = 'diameter'
     field_name_minor_loss = 'minor_loss'
