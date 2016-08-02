@@ -119,13 +119,14 @@ class AddPumpTool(QgsMapTool):
                     else:
                         pump_curve_id = None
 
-                    LinkHandler.create_new_pump(
+                    LinkHandler.create_new_pumpvalve(
                         self.parameters,
                         self.data_dock,
                         features[0],
                         closest_junction_ft,
                         self.snapped_vertex,
-                        pump_curve_id)
+                        self.parameters.pumps_vlay,
+                        [pump_curve_id])
 
     def activate(self):
 

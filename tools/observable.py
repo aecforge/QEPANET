@@ -30,13 +30,11 @@ class Parameters(Observable):
     @junctions_vlay.setter
     def junctions_vlay(self, value):
         self._junctions_vlay = value
-        print 'setto'
         self.notify()
 
 
 class Gui():
     def update(self, subject):
-        print 'notificato'
         print len(subject.junctions_vlay)
 
 
@@ -45,8 +43,6 @@ def main():
   params = Parameters()
   gui = Gui()
   params.attach(gui)
-
-  print params.junctions_vlay
 
   params.junctions_vlay = [10]
   params.detach(gui)

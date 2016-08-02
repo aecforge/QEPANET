@@ -39,9 +39,10 @@ from tools.add_pump_tool import AddPumpTool
 from tools.add_reservoir_tool import AddReservoirTool
 from tools.add_tank_tool import AddTankTool
 from tools.add_valve_tool import AddValveTool
+from tools.move_tool import MoveTool
 from tools.data_stores import ShapefileDS
 from tools.exceptions import ShpExistsExcpetion
-from tools.move_tool import MoveTool
+from tools.delete_tool import DeleteTool
 from tools.parameters import Parameters, RegExValidators, ConfigFile
 from ui import misc
 
@@ -88,6 +89,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QtCore.QObject.connect(self.btn_add_valve, QtCore.SIGNAL('pressed()'), self.add_valve)
 
         QtCore.QObject.connect(self.btn_move_element, QtCore.SIGNAL('pressed()'), self.move_element)
+        QtCore.QObject.connect(self.btn_delete_element, QtCore.SIGNAL('pressed()'), self.delete_element)
 
         # Layers
         QtCore.QObject.connect(self.cbo_junctions, QtCore.SIGNAL('activated(int)'), self.cbo_junctions_activated)
@@ -295,6 +297,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(tool)
         self.set_cursor(QtCore.Qt.CrossCursor)
 
+    def delete_element(self):
+        tool = DeleteTool(self, self.parameters)
+        self.iface.mapCanvas().setMapTool(tool)
+        self.set_cursor(QtCore.Qt.CrossCursor)
+
     def cbo_valve_type_activated(self):
         selected_type = self.cbo_valve_type.itemData(self.cbo_valve_type.currentIndex())
 
@@ -355,31 +362,31 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     # TODO: update snappers in all the tools that use snapping
     def cbo_junctions_activated(self, index):
         layer_id = self.cbo_junctions.itemData(index)
-        self.parameters.junctions_vlay(utils.LayerUtils.get_lay_from_id(layer_id))
+        self.parameters.junctions_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
     def cbo_reservoirs_activated(self, index):
         layer_id = self.cbo_reservoirs.itemData(index)
-        self.parameters.reservoirs_vlay(utils.LayerUtils.get_lay_from_id(layer_id))
+        self.parameters.reservoirs_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
     def cbo_tanks_activated(self, index):
         layer_id = self.cbo_tanks.itemData(index)
-        self.parameters.tanks_vlay (utils.LayerUtils.get_lay_from_id(layer_id))
+        self.parameters.tanks_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
     def cbo_pipes_activated(self, index):
         layer_id = self.cbo_pipes.itemData(index)
-        self.parameters.pipes_vlay(utils.LayerUtils.get_lay_from_id(layer_id))
+        self.parameters.pipes_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
     def cbo_pumps_activated(self, index):
         layer_id = self.cbo_pumps.itemData(index)
-        self.parameters.pumps_vlay(utils.LayerUtils.get_lay_from_id(layer_id))
+        self.parameters.pumps_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
     def cbo_valves_activated(self, index):
         layer_id = self.cbo_valves.itemData(index)
-        self.parameters.valves_vlay(utils.LayerUtils.get_lay_from_id(layer_id))
+        self.parameters.valves_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
     def cbo_dem_activated(self, index):
         layer_id = self.cbo_dem.itemData(index)
-        self.parameters.dem_rlay(utils.LayerUtils.get_lay_from_id(layer_id))
+        self.parameters.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
     def cbo_pipe_roughness_activated(self):
         self.update_roughness_params(self.get_combo_current_data(self.cbo_pipe_roughness))

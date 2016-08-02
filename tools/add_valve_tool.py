@@ -108,8 +108,7 @@ class AddValveTool(QgsMapTool):
                     dist_2 = end_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
 
                     # Get the attributes of the closest junction
-                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.parameters, features[0].geometry(), False, True,
-                                                                               True)
+                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.parameters, features[0].geometry(), False, True, True)
                     if dist_1 < dist_2:
                         closest_junction_ft = start_node
                     else:
@@ -124,16 +123,14 @@ class AddValveTool(QgsMapTool):
                     else:
                         setting = self.data_dock.cbo_valve_curve.itemData(self.cbo_valve_curve.currentIndex())
 
-                    LinkHandler.create_new_valve(
+                    LinkHandler.create_new_pumpvalve(
                         self.parameters,
                         self.data_dock,
                         features[0],
                         closest_junction_ft,
                         self.snapped_vertex,
-                        diameter,
-                        minor_loss,
-                        setting,
-                        selected_type)
+                        self.parameters.valves_vlay,
+                        [diameter, minor_loss, setting, selected_type])
 
     def activate(self):
 

@@ -124,6 +124,13 @@
                 </property>
                </widget>
               </item>
+              <item row="4" column="1">
+               <widget class="QPushButton" name="btn_delete_element">
+                <property name="text">
+                 <string>Delete</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </widget>
            </item>
@@ -163,7 +170,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>219</width>
+                <width>150</width>
                 <height>225</height>
                </rect>
               </property>
@@ -286,7 +293,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>236</width>
+                <width>152</width>
                 <height>90</height>
                </rect>
               </property>
@@ -339,8 +346,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>236</width>
-                <height>69</height>
+                <width>148</width>
+                <height>64</height>
                </rect>
               </property>
               <attribute name="label">
@@ -382,7 +389,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>236</width>
+                <width>174</width>
                 <height>194</height>
                </rect>
               </property>
@@ -494,7 +501,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>236</width>
+                <width>148</width>
                 <height>220</height>
                </rect>
               </property>
@@ -732,8 +739,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>236</width>
-                <height>69</height>
+                <width>126</width>
+                <height>38</height>
                </rect>
               </property>
               <attribute name="label">
@@ -757,7 +764,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>236</width>
+                <width>173</width>
                 <height>142</height>
                </rect>
               </property>
@@ -850,8 +857,8 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-25</y>
-                <width>219</width>
+                <y>0</y>
+                <width>236</width>
                 <height>116</height>
                </rect>
               </property>

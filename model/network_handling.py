@@ -136,6 +136,78 @@ class NodeHandler:
 
             layer.endEditCommand()
 
+    @staticmethod
+    def _delete_feature(layer, feature):
+        caps = layer.dataProvider().capabilities()
+        if caps & QgsVectorDataProvider.DeleteFeatures:
+
+            layer.beginEditCommand('Delete feature')
+
+            try:
+                layer.deleteFeature(feature.id())
+
+            except Exception as e:
+                layer.destroyEditCommand()
+                raise e
+
+            layer.endEditCommand()
+
+    @staticmethod
+    def delete_node(parameters, layer, node_ft):
+
+        # The node is a junction
+        if layer == parameters.junctions_vlay:
+
+            # # The node is a simple node (not part of a pump or valve)
+            # adj_links_fts = NetworkUtils.find_adjacent_links(parameters, node_ft.geometry())
+            #
+            # # Only pipes adjacent to node: it's a simple junction
+            # if not adj_links_fts['pumps'] and not adj_links_fts['valves']:
+
+                # Delete node
+                NodeHandler._delete_feature(layer, node_ft)
+
+                # Delete adjacent pipes
+                adj_pipes = NetworkUtils.find_adjacent_links(parameters, node_ft.geometry())
+                for adj_pipe in adj_pipes['pipes']:
+                    LinkHandler.delete_link(parameters, parameters.pipes_vlay, adj_pipe)
+
+            # # The node is part of a pump or valve
+            # else:
+            #
+            #     if adj_links_fts['pumps'] or adj_links_fts['valves']:
+            #
+            #         if adj_links_fts['pumps']:
+            #             adj_links_ft = adj_links_fts['pumps'][0]
+            #         elif adj_links_fts['valves']:
+            #             adj_links_ft = adj_links_fts['valves'][0]
+            #         else:
+            #             return
+            #
+            #         adjadj_links = NetworkUtils.find_links_adjacent_to_link(parameters, layer, adj_links_ft, False, True, True)
+            #         adj_nodes = NetworkUtils.find_start_end_nodes(parameters, adj_links_ft.geometry(), False, True, True)
+            #
+            #         # Stitch...
+            #         midpoint = NetworkUtils.find_midpoint(adj_nodes[0].geometry().asPoint(), adj_nodes[1].geometry().asPoint())
+            #
+            #         LinkHandler.stitch_pipes(
+            #             parameters,
+            #             adjadj_links['pipes'][0],
+            #             adj_nodes[0].geometry().asPoint(),
+            #             adjadj_links['pipes'][1],
+            #             adj_nodes[1].geometry().asPoint(),
+            #             midpoint)
+
+        # The node is a reservoir or a tank
+        elif layer == parameters.reservoirs_vlay or layer == parameters.tanks_vlay:
+
+            adj_pipes = NetworkUtils.find_adjacent_links(parameters, node_ft.geometry())['pipes']
+
+            NodeHandler._delete_feature(layer, node_ft)
+
+            for adj_pipe in adj_pipes:
+                LinkHandler.delete_link(parameters.pipes_vlay, adj_pipe)
+
 
 class LinkHandler:
     def __init__(self):
@@ -180,29 +252,29 @@ class LinkHandler:
             return new_pipe_ft
 
     @staticmethod
-    def create_new_pump(parameters, data_dock, pipe_ft, closest_junction_ft, position, pump_curve_id):
+    def create_new_pumpvalve(parameters, data_dock, pipe_ft, closest_junction_ft, position, layer, attributes):
 
         # Find start and end nodes positions
         # Get vertex along line next to snapped point
         a, b, next_vertex = pipe_ft.geometry().closestSegmentWithContext(position)
 
-        dist = PointsAlongLineUtils.distance(pipe_ft.geometry(), QgsGeometry.fromPoint(position), parameters)
-        dist_before = dist - 0.5 # TODO: softcode based on projection units
+        dist = PointsAlongLineUtils.distance(pipe_ft.geometry(), QgsGeometry.fromPoint(position), parameters.tolerance)
+        dist_before = dist - 0.5  # TODO: softcode based on projection units
         if dist_before <= 0:
             dist_before = 1
-        dist_after = dist + 0.5 # TODO: softcode based on projection units
+        dist_after = dist + 0.5  # TODO: softcode based on projection units
         if dist_after > pipe_ft.geometry().length():
             dist_after = pipe_ft.geometry().length() - 1
 
         if dist_before >= dist_after:
-            raise Exception('The pipe is too short for a pump to be placed on it.')
+            raise Exception('The pipe is too short for a pump or valve to be placed on it.')
 
         node_before = pipe_ft.geometry().interpolate(dist_before).asPoint()
         node_after = pipe_ft.geometry().interpolate(dist_after).asPoint()
 
         pipes_caps = parameters.pipes_vlay.dataProvider().capabilities()
         junctions_caps = parameters.junctions_vlay.dataProvider().capabilities()
-        pumps_caps = parameters.pumps_vlay.dataProvider().capabilities()
+        caps = layer.dataProvider().capabilities()
 
         if junctions_caps:
             if closest_junction_ft is not None:
@@ -224,111 +296,49 @@ class LinkHandler:
 
         # Split the pipe and create gap
         if pipes_caps:
-            gap = 1 # TODO: softcode pump length
+            gap = 1  # TODO: softcode pump length
             LinkHandler.split_pipe(parameters, pipe_ft, position, gap)
 
-        # Create the new link (the pipe)
-        if pumps_caps:
+        # Create the new link (the pump or valve)
+        if caps:
 
-            pump_eid = NetworkUtils.find_next_id(parameters.pumps_vlay, 'P')  # TODO: softcode
-            pump_geom = QgsGeometry.fromPolyline([node_before, node_after])
+            prefix = ''
+            if layer == parameters.pumps_vlay:
+                prefix = 'P'  # TODO: softcode
+            elif layer == parameters.valves_vlay:
+                prefix = 'V'  # TODO: softcode
+            eid = NetworkUtils.find_next_id(layer, prefix)  # TODO: softcode
 
-            parameters.pumps_vlay.beginEditCommand("Add new pump")
+            geom = QgsGeometry.fromPolyline([node_before, node_after])
 
-            new_pump_ft = None
+            layer.beginEditCommand("Add new pump/valve")
+
             try:
-                new_pump_ft = QgsFeature(parameters.pumps_vlay.pendingFields())
-                new_pump_ft.setAttribute(Pump.field_name_eid, pump_eid)
-                new_pump_ft.setAttribute(Pump.field_name_curve, pump_curve_id)
+                new_ft = QgsFeature(layer.pendingFields())
 
-                new_pump_ft.setGeometry(pump_geom)
+                if layer == parameters.pumps_vlay:
+                    new_ft = QgsFeature(parameters.pumps_vlay.pendingFields())
+                    new_ft.setAttribute(Pump.field_name_eid, eid)
+                    new_ft.setAttribute(Pump.field_name_curve, attributes[0])
 
-                parameters.pumps_vlay.addFeatures([new_pump_ft])
+                elif layer == parameters.valves_vlay:
+                    new_ft.setAttribute(Valve.field_name_eid, eid)
+                    new_ft.setAttribute(Valve.field_name_diameter, attributes[0])
+                    new_ft.setAttribute(Valve.field_name_minor_loss, attributes[1])
+                    new_ft.setAttribute(Valve.field_name_setting, attributes[2])
+                    new_ft.setAttribute(Valve.field_name_type, attributes[3])
+
+                new_ft.setGeometry(geom)
+
+                layer.addFeatures([new_ft])
 
             except Exception as e:
-                parameters.pumps_vlay.destroyEditCommand()
+                layer.destroyEditCommand()
                 raise e
 
-            parameters.pumps_vlay.endEditCommand()
+            layer.endEditCommand()
 
-            return new_pump_ft
-
-    @staticmethod
-    def create_new_valve(parameters, data_dock, valve_ft, closest_junction_ft, position, diameter, minor_loss, setting, pump_type):
-
-        # Find start and end nodes positions
-        # Get vertex along line next to snapped point
-        a, b, next_vertex = valve_ft.geometry().closestSegmentWithContext(position)
-
-        dist = PointsAlongLineUtils.distance(valve_ft.geometry(), QgsGeometry.fromPoint(position), parameters.tolerance)
-        dist_before = dist - 0.5 # TODO: softcode based on projection units
-        if dist_before <= 0:
-            dist_before = 1
-        dist_after = dist + 0.5 # TODO: softcode based on projection units
-        if dist_after > valve_ft.geometry().length():
-            dist_after = valve_ft.geometry().length() - 1
-
-        if dist_before >= dist_after:
-            raise Exception('The pipe is too short for a valve to be placed on it.')
-
-        node_before = valve_ft.geometry().interpolate(dist_before).asPoint()
-        node_after = valve_ft.geometry().interpolate(dist_after).asPoint()
-
-        pipes_caps = parameters.pipes_vlay.dataProvider().capabilities()
-        junctions_caps = parameters.junctions_vlay.dataProvider().capabilities()
-        valves_caps = parameters.valves_vlay.dataProvider().capabilities()
-
-        if junctions_caps:
-            if closest_junction_ft is not None:
-                j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
-                depth = closest_junction_ft.attribute(Junction.field_name_elev_corr)
-                pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
-            else:
-                j_demand = float(data_dock.txt_node_demand.text())
-                depth = float(data_dock.txt_node_depth.text())
-                pattern_id = data_dock.cbo_node_pattern.itemData(data_dock.cbo_node_pattern.currentIndex()).id
-
-            junction_eid = NetworkUtils.find_next_id(parameters.junctions_vlay, 'J')  # TODO: softcode
-            elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, node_before, 1)
-            NodeHandler.create_new_junction(parameters, node_before, junction_eid, elev, j_demand, depth, pattern_id)
-
-            junction_eid = NetworkUtils.find_next_id(parameters.junctions_vlay, 'J')  # TODO: softcode
-            elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, node_after, 1)
-            NodeHandler.create_new_junction(parameters, node_after, junction_eid, elev, j_demand, depth, pattern_id)
-
-        # Split the pipe and create gap
-        if pipes_caps:
-            gap = 1 # TODO: softcode pump length
-            LinkHandler.split_pipe(parameters, valve_ft, position, gap)
-
-        # Create the new link (the pipe)
-        if valves_caps:
-
-            valve_eid = NetworkUtils.find_next_id(parameters.valves_vlay, 'V')  # TODO: softcode
-            valve_geom = QgsGeometry.fromPolyline([node_before, node_after])
-
-            parameters.valves_vlay.beginEditCommand("Add new valve")
-
-            new_valve_ft = None
-            try:
-                new_valve_ft = QgsFeature(parameters.valves_vlay.pendingFields())
-                new_valve_ft.setAttribute(Valve.field_name_eid, valve_eid)
-                new_valve_ft.setAttribute(Valve.field_name_diameter, diameter)
-                new_valve_ft.setAttribute(Valve.field_name_minor_loss, minor_loss)
-                new_valve_ft.setAttribute(Valve.field_name_setting, setting)
-                new_valve_ft.setAttribute(Valve.field_name_type, pump_type)
-
-                new_valve_ft.setGeometry(valve_geom)
-
-                parameters.valves_vlay.addFeatures([new_valve_ft])
-
-            except Exception as e:
-                parameters.valves_vlay.destroyEditCommand()
-                raise e
-
-            parameters.valves_vlay.endEditCommand()
-
-            return new_valve_ft
+            return new_ft
 
     @staticmethod
     def split_pipe(parameters, pipe_ft, split_point, gap=0):
@@ -484,6 +494,101 @@ class LinkHandler:
                 raise e
 
             vlay.endEditCommand()
+
+    @staticmethod
+    def _delete_feature(layer, link_ft):
+
+        caps = layer.dataProvider().capabilities()
+        if caps & QgsVectorDataProvider.DeleteFeatures:
+
+            layer.beginEditCommand('Delete feature')
+
+            try:
+                layer.deleteFeature(link_ft.id())
+
+            except Exception as e:
+                layer.destroyEditCommand()
+                raise e
+
+            layer.endEditCommand()
+
+    @staticmethod
+    def delete_link(parameters, layer, link_ft):
+
+        # The link is a pipe
+        if layer == parameters.pipes_vlay:
+            LinkHandler._delete_feature(layer, link_ft)
+
+        # The link is a pump or valve
+        elif layer == parameters.pumps_vlay or layer == parameters.valves_vlay:
+
+            adj_links_fts = NetworkUtils.find_adjacent_links(parameters, link_ft.geometry())
+
+            if adj_links_fts['pumps']:
+                adj_links_ft = adj_links_fts['pumps'][0]
+            elif adj_links_fts['valves']:
+                adj_links_ft = adj_links_fts['valves'][0]
+            else:
+                return
+
+            adjadj_links = NetworkUtils.find_links_adjacent_to_link(parameters, layer,
+                                                                    adj_links_ft,
+                                                                    False, True, True)
+            adj_nodes = NetworkUtils.find_start_end_nodes(parameters, adj_links_ft.geometry(),
+                                                          False, True, True)
+
+            # Stitch...
+            midpoint = NetworkUtils.find_midpoint(adj_nodes[0].geometry().asPoint(),
+                                                  adj_nodes[1].geometry().asPoint())
+
+            LinkHandler.stitch_pipes(
+                parameters,
+                adjadj_links['pipes'][0],
+                adj_nodes[0].geometry().asPoint(),
+                adjadj_links['pipes'][1],
+                adj_nodes[1].geometry().asPoint(),
+                midpoint)
+
+            # Delete old links and pipes
+            LinkHandler._delete_feature(layer, adj_links_ft)
+            LinkHandler._delete_feature(parameters.pipes_vlay, adjadj_links['pipes'][0])
+            LinkHandler._delete_feature(parameters.pipes_vlay, adjadj_links['pipes'][1])
+            NodeHandler._delete_feature(parameters.junctions_vlay, adj_nodes[0])
+            NodeHandler._delete_feature(parameters.junctions_vlay, adj_nodes[1])
+
+    @staticmethod
+    def stitch_pipes(parameters, pipe1_ft, stitch_pt1, pipe2_ft, stitch_pt2, stich_pt_new):
+
+        new_geom_pts = []
+
+        # Add points from first adjacent link
+        closest_xv1 = pipe1_ft.geometry().closestVertexWithContext(stitch_pt1)
+        if closest_xv1[1] == 0:
+            new_geom_pts.extend(pipe1_ft.geometry().asPolyline()[::-1])
+        else:
+            new_geom_pts.extend(pipe1_ft.geometry().asPolyline())
+
+        del new_geom_pts[-1]
+
+        new_geom_pts.append(stich_pt_new)
+
+        # Add points from second adjacent link
+        closest_xv2 = pipe2_ft.geometry().closestVertexWithContext(stitch_pt2)
+        if closest_xv2[1] == 0:
+            new_geom_pts.extend(pipe2_ft.geometry().asPolyline()[1:])
+        else:
+            new_geom_pts.extend(pipe2_ft.geometry().asPolyline()[::-1][:-1])
+
+        eid = NetworkUtils.find_next_id(parameters.pipes_vlay, 'P')  # TODO: softcode
+
+        # TODO: let the user set the attributes
+        demand = pipe1_ft.attribute(Pipe.field_name_demand)
+        diameter = pipe1_ft.attribute(Pipe.field_name_diameter)
+        loss = pipe1_ft.attribute(Pipe.field_name_minor_loss)
+        roughness = pipe1_ft.attribute(Pipe.field_name_roughness)
+        status = pipe1_ft.attribute(Pipe.field_name_status)
+
+        LinkHandler.create_new_pipe(parameters, eid, demand, diameter, loss, roughness, status, new_geom_pts)
 
     @staticmethod
     def calc_3d_length(parameters, pipe_geom):
@@ -755,3 +860,11 @@ class NetworkUtils:
                 break
 
         return {'junctions': overlap_juncts, 'reservoirs': overlap_reservs, 'tanks': overlap_tanks }
+
+    @staticmethod
+    def find_midpoint(point1, point2):
+
+        mid_x = (point1.x() + point2.x()) / 2
+        mid_y = (point1.y() + point2.y()) / 2
+
+        return QgsPoint(mid_x, mid_y)

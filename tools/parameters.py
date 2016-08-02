@@ -9,7 +9,7 @@ from observable import Observable
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.07'
+    plug_in_name = 'QEPANET 0.09'
     config_file_name = 'config.ini'
 
     path = os.path.dirname(os.path.realpath(__file__))
