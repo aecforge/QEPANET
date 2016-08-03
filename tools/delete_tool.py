@@ -219,7 +219,7 @@ class DeleteTool(QgsMapTool):
             self.parameters.valves_vlay.startEditing()
 
     def deactivate(self):
-        self.data_dock.btn_move_element.setChecked(False)
+        self.data_dock.btn_delete_element.setChecked(False)
 
     def isZoomTool(self):
         return False

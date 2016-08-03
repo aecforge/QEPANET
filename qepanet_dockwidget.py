@@ -71,6 +71,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.decimals = 1
 
+        self.tool = None
+
         # Tools buttons
         self.btn_add_junction.setCheckable(True)
         self.btn_add_reservoir.setCheckable(True)
@@ -183,107 +185,161 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def add_junction(self):
 
-        # Check for junctions and pipes layers selected
-        if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0:
-            self.iface.messageBar().pushWarning(
-                Parameters.plug_in_name,
-                'Please selecte the junctions and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+        if type(self.iface.mapCanvas().mapTool()) is AddJunctionTool:
+            self.iface.mapCanvas().unsetMapTool(self.tool)
             self.btn_add_junction.setChecked(True)
-            return
 
-        tool = AddJunctionTool(self, self.parameters)
-        self.iface.mapCanvas().setMapTool(tool)
-        self.set_cursor(QtCore.Qt.CrossCursor)
+        else:
+            # Check for junctions and pipes layers selected
+            if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0:
+                self.iface.messageBar().pushWarning(
+                    Parameters.plug_in_name,
+                    'Please selecte the junctions and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+                self.btn_add_junction.setChecked(True)
+                return
+
+            self.tool = AddJunctionTool(self, self.parameters)
+            self.iface.mapCanvas().setMapTool(self.tool)
+            self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_reservoir(self):
 
-        # Check for reservoirs and pipes layers selected
-        if self.cbo_reservoirs.count() == 0 or self.cbo_pipes.count() == 0:
-            self.iface.messageBar().pushWarning(
-                Parameters.plug_in_name,
-                'Please selecte the reservoirs and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+        if type(self.iface.mapCanvas().mapTool()) is AddReservoirTool:
+            self.iface.mapCanvas().unsetMapTool(self.tool)
             self.btn_add_reservoir.setChecked(True)
-            return
 
-        tool = AddReservoirTool(self, self.parameters)
-        self.iface.mapCanvas().setMapTool(tool)
-        self.set_cursor(QtCore.Qt.CrossCursor)
+        else:
+            # Check for reservoirs and pipes layers selected
+            if self.cbo_reservoirs.count() == 0 or self.cbo_pipes.count() == 0:
+                self.iface.messageBar().pushWarning(
+                    Parameters.plug_in_name,
+                    'Please selecte the reservoirs and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+                self.btn_add_reservoir.setChecked(True)
+                return
+
+            self.tool = AddReservoirTool(self, self.parameters)
+            self.iface.mapCanvas().setMapTool(self.tool)
+            self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_tank(self):
 
-        # Check for tanks and pipes layers selected
-        if self.cbo_tanks.count() == 0 or self.cbo_pipes.count() == 0:
-            self.iface.messageBar().pushWarning(
-                Parameters.plug_in_name,
-                'Please selecte the tanks and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-            self.btn_add_tank.setChecked(True)
-            return
+        if type(self.iface.mapCanvas().mapTool()) is AddTankTool:
+            self.iface.mapCanvas().unsetMapTool(self.tool)
+            self.btn_add_tank.setChecked(False)
 
-        tool = AddTankTool(self, self.parameters)
-        self.iface.mapCanvas().setMapTool(tool)
-        self.set_cursor(QtCore.Qt.CrossCursor)
+        else:
+            # Check for tanks and pipes layers selected
+            if self.cbo_tanks.count() == 0 or self.cbo_pipes.count() == 0:
+                self.iface.messageBar().pushWarning(
+                    Parameters.plug_in_name,
+                    'Please selecte the tanks and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+                self.btn_add_tank.setChecked(True)
+                return
+
+            tool = AddTankTool(self, self.parameters)
+            self.iface.mapCanvas().setMapTool(tool)
+            self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_pipe(self):
 
-        # Check for junctions and pipes layers selected
-        if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0:
-            self.iface.messageBar().pushWarning(
-                Parameters.plug_in_name,
-                'Please selecte the junctions and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+        if type(self.iface.mapCanvas().mapTool()) is AddPipeTool:
+            self.iface.mapCanvas().unsetMapTool(self.tool)
             self.btn_add_pipe.setChecked(True)
-            return
 
-        tool = AddPipeTool(self, self.parameters)
-        self.iface.mapCanvas().setMapTool(tool)
-        self.set_cursor(QtCore.Qt.CrossCursor)
+        else:
+            # Check for junctions and pipes layers selected
+            if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0:
+                self.iface.messageBar().pushWarning(
+                    Parameters.plug_in_name,
+                    'Please selecte the junctions and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+                self.btn_add_pipe.setChecked(True)
+                return
+
+            self.tool = AddPipeTool(self, self.parameters)
+            self.iface.mapCanvas().setMapTool(self.tool)
+            self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_pump(self):
 
-        # Check for junctions, pipes and pumps layers selected
-        if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0 or self.cbo_pumps.count() == 0:
-            self.iface.messageBar().pushWarning(
-                Parameters.plug_in_name,
-                'Please selecte the junctions, pipes and pumps layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+        if type(self.iface.mapCanvas().mapTool()) is AddPumpTool:
+            self.iface.mapCanvas().unsetMapTool(self.tool)
             self.btn_add_pump.setChecked(True)
-            return
 
-        tool = AddPumpTool(self, self.parameters)
-        self.iface.mapCanvas().setMapTool(tool)
-        self.set_cursor(QtCore.Qt.CrossCursor)
+        else:
+
+            # Check for junctions, pipes and pumps layers selected
+            if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0 or self.cbo_pumps.count() == 0:
+                self.iface.messageBar().pushWarning(
+                    Parameters.plug_in_name,
+                    'Please selecte the junctions, pipes and pumps layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+                self.btn_add_pump.setChecked(True)
+                return
+
+            self.tool = AddPumpTool(self, self.parameters)
+            self.iface.mapCanvas().setMapTool(self.tool)
+            self.set_cursor(QtCore.Qt.CrossCursor)
 
     def add_valve(self):
 
-        # Check for junctions, pipes and valves layers selected
-        if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0 or self.cbo_valves.count() == 0:
-            self.iface.messageBar().pushWarning(
-                Parameters.plug_in_name,
-                'Please selecte the junctions, pipes and valves layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+        if type(self.iface.mapCanvas().mapTool()) is AddValveTool:
+            self.iface.mapCanvas().unsetMapTool(self.tool)
             self.btn_add_valve.setChecked(True)
-            return
 
-        tool = AddValveTool(self, self.parameters)
-        self.iface.mapCanvas().setMapTool(tool)
-        self.set_cursor(QtCore.Qt.CrossCursor)
+        else:
+
+            # Check for junctions, pipes and valves layers selected
+            if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0 or self.cbo_valves.count() == 0:
+                self.iface.messageBar().pushWarning(
+                    Parameters.plug_in_name,
+                    'Please selecte the junctions, pipes and valves layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+                self.btn_add_valve.setChecked(True)
+                return
+
+            self.tool = AddValveTool(self, self.parameters)
+            self.iface.mapCanvas().setMapTool(self.tool)
+            self.set_cursor(QtCore.Qt.CrossCursor)
 
     def move_element(self):
 
-        # Check for all layers selected
-        if self.cbo_junctions.count() == 0 or self.cbo_reservoirs.count() == 0 or self.cbo_tanks.count() == 0 or\
-                self.cbo_pipes.count() == 0 or self.cbo_pumps.count() == 0 or self.cbo_valves.count() == 0:
-            self.iface.messageBar().pushWarning(
-                Parameters.plug_in_name,
-                'Please selecte all the vector layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-            self.btn_move_element.setChecked(False)
-            return
+        if type(self.iface.mapCanvas().mapTool()) is MoveTool:
+            self.iface.mapCanvas().unsetMapTool(self.tool)
+            self.btn_move_element.setChecked(True)
 
-        tool = MoveTool(self, self.parameters)
-        self.iface.mapCanvas().setMapTool(tool)
-        self.set_cursor(QtCore.Qt.CrossCursor)
+        else:
+
+            # Check for all layers selected
+            if self.cbo_junctions.count() == 0 or self.cbo_reservoirs.count() == 0 or self.cbo_tanks.count() == 0 or\
+                    self.cbo_pipes.count() == 0 or self.cbo_pumps.count() == 0 or self.cbo_valves.count() == 0:
+                self.iface.messageBar().pushWarning(
+                    Parameters.plug_in_name,
+                    'Please selecte all the vector layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+                self.btn_move_element.setChecked(True)
+                return
+
+            self.tool = MoveTool(self, self.parameters)
+            self.iface.mapCanvas().setMapTool(self.tool)
+            self.set_cursor(QtCore.Qt.CrossCursor)
 
     def delete_element(self):
-        tool = DeleteTool(self, self.parameters)
-        self.iface.mapCanvas().setMapTool(tool)
-        self.set_cursor(QtCore.Qt.CrossCursor)
+
+        if type(self.iface.mapCanvas().mapTool()) is DeleteTool:
+            self.iface.mapCanvas().unsetMapTool(self.tool)
+            self.btn_delete_element.setChecked(True)
+
+        else:
+
+            # Check for all layers selected
+            if self.cbo_junctions.count() == 0 or self.cbo_reservoirs.count() == 0 or self.cbo_tanks.count() == 0 or\
+                    self.cbo_pipes.count() == 0 or self.cbo_pumps.count() == 0 or self.cbo_valves.count() == 0:
+                self.iface.messageBar().pushWarning(
+                    Parameters.plug_in_name,
+                    'Please selecte all the vector layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
+                self.btn_delete_element.setChecked(True)
+                return
+
+            self.tool = DeleteTool(self, self.parameters)
+            self.iface.mapCanvas().setMapTool(self.tool)
+            self.set_cursor(QtCore.Qt.CrossCursor)
 
     def cbo_pump_param_activated(self):
         selected_param = self.cbo_pump_param.itemText(self.cbo_pump_param.currentIndex())
