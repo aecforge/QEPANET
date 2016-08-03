@@ -152,10 +152,10 @@ class AddPipeTool(QgsMapTool):
                     new_start_junction = rubberband_pts[0]
                     junction_eid = NetworkUtils.find_next_id(self.parameters.junctions_vlay, 'J') # TODO: sofcode
                     elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, new_start_junction, 1)
-                    depth = float(self.data_dock.txt_node_depth.text())
-                    j_demand = float(self.data_dock.txt_node_demand.text())
-                    if self.data_dock.cbo_node_pattern.currentIndex() != -1:
-                        pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
+                    depth = float(self.data_dock.txt_junction_depth.text())
+                    j_demand = float(self.data_dock.txt_junction_demand.text())
+                    if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
+                        pattern_id = self.data_dock.cbo_junction_pattern.itemData(self.data_dock.cbo_junction_pattern.currentIndex()).id
                     else:
                         pattern_id = 0
                     NodeHandler.create_new_junction(self.parameters, new_start_junction, junction_eid, elev, j_demand, depth, pattern_id)
@@ -166,10 +166,10 @@ class AddPipeTool(QgsMapTool):
                     new_end_junction = rubberband_pts[len(rubberband_pts) - 1]
                     junction_eid = NetworkUtils.find_next_id(self.parameters.junctions_vlay, 'J')  # TODO: sofcode
                     elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, new_end_junction, 1)
-                    depth = float(self.data_dock.txt_node_depth.text())
-                    if self.data_dock.cbo_node_pattern.currentIndex() != -1:
-                        pattern_id = self.data_dock.cbo_node_pattern.itemData(
-                            self.data_dock.cbo_node_pattern.currentIndex()).id
+                    depth = float(self.data_dock.txt_junction_depth.text())
+                    if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
+                        pattern_id = self.data_dock.cbo_junction_pattern.itemData(
+                            self.data_dock.cbo_junction_pattern.currentIndex()).id
                     else:
                         pattern_id = 0
                     NodeHandler.create_new_junction(self.parameters, new_end_junction, junction_eid, elev, demand, depth, pattern_id)

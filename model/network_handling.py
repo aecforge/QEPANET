@@ -282,9 +282,9 @@ class LinkHandler:
                 depth = closest_junction_ft.attribute(Junction.field_name_elev_corr)
                 pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
             else:
-                j_demand = float(data_dock.txt_node_demand.text())
-                depth = float(data_dock.txt_node_depth.text())
-                pattern_id = data_dock.cbo_node_pattern.itemData(data_dock.cbo_node_pattern.currentIndex()).id
+                j_demand = float(data_dock.txt_junction_demand.text())
+                depth = float(data_dock.txt_junction_depth.text())
+                pattern_id = data_dock.cbo_junction_pattern.itemData(data_dock.cbo_junction_pattern.currentIndex()).id
 
             junction_eid = NetworkUtils.find_next_id(parameters.junctions_vlay, 'J')  # TODO: softcode
             elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, node_before, 1)

@@ -163,7 +163,7 @@
            <item>
             <widget class="QToolBox" name="tbx_elements">
              <property name="currentIndex">
-              <number>5</number>
+              <number>4</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -302,42 +302,42 @@
               </attribute>
               <layout class="QGridLayout" name="gridLayout_4">
                <item row="1" column="0">
-                <widget class="QLabel" name="lbl_node_depth">
+                <widget class="QLabel" name="lbl_junction_depth">
                  <property name="text">
                   <string>Depth [m]:</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="2">
-                <widget class="QLineEdit" name="txt_node_demand">
+                <widget class="QLineEdit" name="txt_junction_demand">
                  <property name="text">
                   <string>0</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="2">
-                <widget class="QLineEdit" name="txt_node_depth">
+                <widget class="QLineEdit" name="txt_junction_depth">
                  <property name="text">
                   <string>0</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="0">
-                <widget class="QLabel" name="lbl_node_demand">
+                <widget class="QLabel" name="lbl_junction_demand">
                  <property name="text">
                   <string>Demand [?]:</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="0">
-                <widget class="QLabel" name="lbl_node_pattern">
+                <widget class="QLabel" name="lbl_junction_pattern">
                  <property name="text">
                   <string>Pattern:</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="2">
-                <widget class="QComboBox" name="cbo_node_pattern"/>
+                <widget class="QComboBox" name="cbo_junction_pattern"/>
                </item>
               </layout>
              </widget>
@@ -501,7 +501,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>236</width>
+                <width>219</width>
                 <height>220</height>
                </rect>
               </property>
@@ -538,7 +538,7 @@
                   <item row="1" column="0">
                    <widget class="QLabel" name="lbl_pipe_diameter">
                     <property name="text">
-                     <string>Diameter:</string>
+                     <string>Diameter [m]:</string>
                     </property>
                    </widget>
                   </item>
@@ -552,7 +552,7 @@
                   <item row="2" column="0">
                    <widget class="QLabel" name="lbl_pipe_loss">
                     <property name="text">
-                     <string>Minor loss:</string>
+                     <string>Minor loss [-]:</string>
                     </property>
                    </widget>
                   </item>
@@ -569,7 +569,7 @@
                <item>
                 <widget class="QLabel" name="lbl_pipe_roughness">
                  <property name="text">
-                  <string>Roughness:</string>
+                  <string>Roughness [-]:</string>
                  </property>
                 </widget>
                </item>
@@ -738,7 +738,7 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-20</y>
+                <y>-22</y>
                 <width>219</width>
                 <height>96</height>
                </rect>
@@ -783,7 +783,7 @@
                <item row="1" column="0">
                 <widget class="QLabel" name="lbl_pump_head">
                  <property name="text">
-                  <string>Head:</string>
+                  <string>Head [m]:</string>
                  </property>
                 </widget>
                </item>
@@ -846,7 +846,7 @@
                <item row="4" column="0">
                 <widget class="QLabel" name="lbl_valve_minor_loss">
                  <property name="text">
-                  <string>Minor loss coeff:</string>
+                  <string>Minor loss coeff [-]:</string>
                  </property>
                 </widget>
                </item>
@@ -885,6 +885,43 @@
               <zorder>lbl_valve_minor_loss</zorder>
               <zorder>lbl_valve_curve</zorder>
               <zorder>cbo_valve_curve</zorder>
+             </widget>
+             <widget class="QWidget" name="wgt_parameters">
+              <attribute name="label">
+               <string>Parameters</string>
+              </attribute>
+              <layout class="QFormLayout" name="formLayout_8">
+               <item row="0" column="0">
+                <widget class="QLabel" name="lbl_params_units">
+                 <property name="text">
+                  <string>Units system:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QComboBox" name="cbo_params_units"/>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="lbl_params_flow_units">
+                 <property name="text">
+                  <string>Flow units:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QComboBox" name="cbo_params_flow_units"/>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="lbl_params_headloss">
+                 <property name="text">
+                  <string>Head loss:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QComboBox" name="cbo_params_headloss"/>
+               </item>
+              </layout>
              </widget>
              <widget class="QWidget" name="wgt_tools">
               <property name="geometry">

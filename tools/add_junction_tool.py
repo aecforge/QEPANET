@@ -86,11 +86,11 @@ class AddJunctionTool(QgsMapTool):
             # Find first available ID for Junctions
             node_eid = NetworkUtils.find_next_id(self.parameters.junctions_vlay, 'J') # TODO: softcode
 
-            j_demand = float(self.data_dock.txt_node_demand.text())
-            depth = float(self.data_dock.txt_node_depth.text())
+            j_demand = float(self.data_dock.txt_junction_demand.text())
+            depth = float(self.data_dock.txt_junction_depth.text())
 
-            if self.data_dock.cbo_node_pattern.currentIndex() != -1:
-                pattern_id = self.data_dock.cbo_node_pattern.itemData(self.data_dock.cbo_node_pattern.currentIndex()).id
+            if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
+                pattern_id = self.data_dock.cbo_junction_pattern.itemData(self.data_dock.cbo_junction_pattern.currentIndex()).id
             else:
                 pattern_id = None
 
