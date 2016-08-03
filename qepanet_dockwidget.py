@@ -167,20 +167,49 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         QtCore.QObject.connect(self.cbo_valve_type, QtCore.SIGNAL('activated(int)'), self.cbo_valve_type_activated)
 
-        # Parameters
+        # Options
         for unit in self.params.units_sys:
-            self.cbo_params_units.addItem(self.params.units_sys_text[unit], unit)
+            self.cbo_options_units.addItem(self.params.units_sys_text[unit], unit)
 
         for fu in range(len(self.params.units_flow[self.params.units])):
-            self.cbo_params_flow_units.addItem(self.params.units_flow_text[self.params.units][fu], self.params.units_flow[self.params.units][fu])
+            self.cbo_options_flow_units.addItem(self.params.units_flow_text[self.params.units][fu], self.params.units_flow[self.params.units][fu])
 
-        QtCore.QObject.connect(self.cbo_params_units, QtCore.SIGNAL('activated(int)'), self.cbo_params_units_activated)
-        QtCore.QObject.connect(self.cbo_params_flow_units, QtCore.SIGNAL('activated(int)'), self.cbo_params_flow_units_activated)
+        QtCore.QObject.connect(self.cbo_options_units, QtCore.SIGNAL('activated(int)'), self.cbo_options_units_activated)
+        QtCore.QObject.connect(self.cbo_options_flow_units, QtCore.SIGNAL('activated(int)'), self.cbo_options_flow_units_activated)
 
         for key, value in self.params.headlosses_text.iteritems():
-            self.cbo_params_headloss.addItem(value, key)
+            self.cbo_options_headloss.addItem(value, key)
 
-        QtCore.QObject.connect(self.cbo_params_headloss, QtCore.SIGNAL('activated(int)'), self.cbo_params_headloss_activated)
+        QtCore.QObject.connect(self.cbo_options_headloss, QtCore.SIGNAL('activated(int)'), self.cbo_options_headloss_activated)
+
+        # - Hydraulics
+        self.cbo_options_hydraulics.addItem('Use')
+        self.cbo_options_hydraulics.addItem('Save')
+
+        # - Quality
+        self.cbo_options_quality.addItem('None')
+
+        # - Unbalanced
+        self.cbo_options_unbalanced.addItem('Stop')
+        self.cbo_options_unbalanced.addItem('Continue')
+
+        # Times
+        self.cbo_times_units.addItem('Second')
+        self.cbo_times_units.addItem('Minute')
+        self.cbo_times_units.addItem('Hour')
+        self.cbo_times_units.addItem('Day')
+
+        for h in range(24):
+            self.cbo_times_start_clocktime_h.addItem(str(h))
+
+        for m in range(60):
+            self.cbo_times_start_clocktime_m.addItem(str(m))
+
+        self.cbo_times_statistic.addItem('AVERAGED')
+        self.cbo_times_statistic.addItem('MINIMUM')
+        self.cbo_times_statistic.addItem('MAXIMUM')
+        self.cbo_times_statistic.addItem('RANGE')
+        self.cbo_times_statistic.addItem('NONE')
 
         # Other tools
         QtCore.QObject.connect(self.btn_create_layers, QtCore.SIGNAL('pressed()'), self.create_layers)
@@ -390,14 +419,14 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         if setting_on:
             self.lbl_valve_setting.setText(setting_label)
 
-    def cbo_params_units_activated(self):
+    def cbo_options_units_activated(self):
 
-        self.params.units = self.cbo_params_units.itemData(self.cbo_params_units.currentIndex())
+        self.params.units = self.cbo_options_units.itemData(self.cbo_options_units.currentIndex())
 
         # Parameters combo box
-        self.cbo_params_flow_units.clear()
+        self.cbo_options_flow_units.clear()
         for fu in range(len(self.params.units_flow[self.params.units])):
-            self.cbo_params_flow_units.addItem(self.params.units_flow_text[self.params.units][fu],
+            self.cbo_options_flow_units.addItem(self.params.units_flow_text[self.params.units][fu],
                                                self.params.units_flow[self.params.units][fu])
 
         # Junctions
@@ -429,15 +458,15 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.lbl_valve_setting.setText(self.prepare_label('Pressure', self.params.units_pressure[self.params.units]))
         self.lbl_valve_diameter.setText(self.prepare_label('Pressure', self.params.units_diameter_pipes[self.params.units]))
 
-    def cbo_params_flow_units_activated(self):
+    def cbo_options_flow_units_activated(self):
 
-        units = self.cbo_params_flow_units.itemData(self.cbo_params_flow_units.currentIndex())
+        units = self.cbo_options_flow_units.itemData(self.cbo_options_flow_units.currentIndex())
         self.lbl_junction_demand.setText(self.prepare_label('Demand', units))  # TODO: softcode
         self.lbl_pipe_demand.setText(self.prepare_label('Demand', units))  # TODO: softcode
 
-    def cbo_params_headloss_activated(self):
+    def cbo_options_headloss_activated(self):
 
-        self.params.headloss_units = self.cbo_params_headloss.itemData(self.cbo_params_headloss.currentIndex())
+        self.params.headloss_units = self.cbo_options_headloss.itemData(self.cbo_options_headloss.currentIndex())
         self.lbl_pipe_roughness.setText(self.prepare_label('Roughness', self.params.units_roughness[self.params.units][self.params.headloss_units]))
 
     def create_layers(self):
