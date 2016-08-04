@@ -214,54 +214,38 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.txt_emitter_exp.setValidator(RegExValidators.get_pos_decimals())
         self.txt_options_tolerance.setValidator(RegExValidators.get_pos_decimals())
 
-
         # Times --------------------------------------------------------------------------------------------------------
-        self.cbo_times_units.addItem('Second')
-        self.cbo_times_units.addItem('Minute')
-        self.cbo_times_units.addItem('Hour')
-        self.cbo_times_units.addItem('Day')
-        self.cbo_times_units.setCurrentIndex(2)
+        for key, text in self.params.times.unit_text.iteritems():
+            self.cbo_times_units.addItem(text, key)
 
         self.txt_time_duration.setValidator(RegExValidators.get_pos_int())
-        self.txt_time_duration.setText('1')
 
         self.txt_times_hydraulic_timestamp.setInputMask('09:99')
         self.txt_times_hydraulic_timestamp.setValidator(RegExValidators.get_time_hh_mm())
-        self.txt_times_hydraulic_timestamp.setText('01:00')
 
         self.txt_times_quality_timestamp.setInputMask('09:99')
         self.txt_times_quality_timestamp.setValidator(RegExValidators.get_time_hh_mm())
-        self.txt_times_quality_timestamp.setText('00:05')
 
         self.txt_times_rule_timestamp.setInputMask('09:99')
         self.txt_times_rule_timestamp.setValidator(RegExValidators.get_time_hh_mm())
-        self.txt_times_rule_timestamp.setText('01:00')
 
         self.txt_times_pattern_timestamp.setInputMask('09:99')
         self.txt_times_pattern_timestamp.setValidator(RegExValidators.get_time_hh_mm())
-        self.txt_times_pattern_timestamp.setText('01:00')
 
         self.txt_times_pattern_start.setInputMask('09:99')
         self.txt_times_pattern_start.setValidator(RegExValidators.get_time_hh_mm())
-        self.txt_times_pattern_start.setText('00:00')
 
         self.txt_times_report_timestamp.setInputMask('09:99')
         self.txt_times_report_timestamp.setValidator(RegExValidators.get_time_hh_mm())
-        self.txt_times_report_timestamp.setText('01:00')
 
         self.txt_times_report_start.setInputMask('09:99')
         self.txt_times_report_start.setValidator(RegExValidators.get_time_hh_mm())
-        self.txt_times_report_start.setText('00:00')
 
         self.txt_times_start_clocktime.setInputMask('09:99')
         self.txt_times_start_clocktime.setValidator(RegExValidators.get_time_hh_mm())
-        self.txt_times_start_clocktime.setText('00:00')
 
-        self.cbo_times_statistic.addItem('AVERAGED')
-        self.cbo_times_statistic.addItem('MINIMUM')
-        self.cbo_times_statistic.addItem('MAXIMUM')
-        self.cbo_times_statistic.addItem('RANGE')
-        self.cbo_times_statistic.addItem('NONE')
+        for key, text in self.params.times.stats_text.iteritems():
+            self.cbo_times_statistic.addItem(text, key)
 
         # Other tools
         QtCore.QObject.connect(self.btn_create_layers, QtCore.SIGNAL('pressed()'), self.create_layers)
@@ -891,3 +875,16 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.txt_options_demand_mult.setText(str(self.params.options.demand_mult))
         self.txt_emitter_exp.setText(str(self.params.options.emitter_exp))
         self.txt_options_tolerance.setText(str(self.params.options.tolerance))
+
+        # Times
+        self.cbo_times_units.setCurrentIndex(self.cbo_times_units.findData(self.params.times.units))
+        self.txt_time_duration.setText(str(self.params.times.duration))
+        self.txt_times_hydraulic_timestamp.setText(self.params.times.hydraulic_timestamp.get_as_text())
+        self.txt_times_quality_timestamp.setText(self.params.times.quality_timestamp.get_as_text())
+        self.txt_times_rule_timestamp.setText(self.params.times.rule_timestamp.get_as_text())
+        self.txt_times_pattern_timestamp.setText(self.params.times.pattern_timestamp.get_as_text())
+        self.txt_times_pattern_start.setText(self.params.times.pattern_start.get_as_text())
+        self.txt_times_report_timestamp.setText(self.params.times.report_timestamp.get_as_text())
+        self.txt_times_report_start.setText(self.params.times.report_start.get_as_text())
+        self.txt_times_start_clocktime.setText(self.params.times.start_clocktime.get_as_text())
+        self.cbo_times_statistic.setCurrentIndex(self.cbo_times_statistic.findData(self.params.times.statistics))

@@ -6,6 +6,7 @@ from PyQt4.QtCore import QRegExp
 from PyQt4.QtGui import QRegExpValidator
 from observable import Observable
 from ..model.options import Options
+from ..model.times import Times
 
 
 class Parameters(Observable):
@@ -42,6 +43,7 @@ class Parameters(Observable):
         self._min_dist = 1  # TODO: check: 1 m? Why?
 
         self.options = Options()
+        self.times = Times()
 
     # Layers
     @property
