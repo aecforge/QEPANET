@@ -148,6 +148,23 @@ class Valve:
     def __init__(self, eid):
         self.eid = eid
 
+
+class Coordinate:
+    section_name = 'COORDINATES'
+    section_header = 'Node            	X-Coord         	Y-Coord'
+
+    def __init__(self):
+        pass
+
+
+class Vertex:
+    section_name = 'VERTICES'
+    section_header = 'Link            	X-Coord         	Y-Coord'
+
+    def __init__(self):
+        pass
+
+
 class Emitter:
     section_name = 'EMITTERS'
 

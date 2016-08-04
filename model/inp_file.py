@@ -1,6 +1,6 @@
 import codecs
 
-from network import Title, Junction, Reservoir, Tank, Pipe, Pump, Valve
+from network import Title, Junction, Reservoir, Tank, Pipe, Pump, Valve, Coordinate, Vertex
 from system_ops import Curve, Pattern
 import math
 from ..model.network_handling import NetworkUtils
@@ -146,6 +146,12 @@ class InpFile:
 
             # Valves
             InpFile._append_valves(parameters, out)
+
+            # Coordinates
+            InpFile._append_coordinates(parameters, out)
+
+            # Vertices
+            InpFile._append_vertices(parameters, out)
 
     @staticmethod
     def _append_junctions(parameters, out):
@@ -347,6 +353,59 @@ class InpFile:
             line += InpFile.pad(minor_loss)
 
             out.append(line)
+
+    @staticmethod
+    def _append_coordinates(parameters, out):
+        out.append(InpFile.build_section_keyword(Coordinate.section_name))
+        out.append(Coordinate.section_header)
+        out.append(InpFile.build_dashline(Coordinate.section_header))
+
+        for j_ft in parameters.junctions_vlay.getFeatures():
+            eid = j_ft.attribute(Junction.eid)
+            pt = j_ft.geometry().asPoint()
+
+            line = InpFile.pad(eid)
+            line += InpFile.pad('{0:2f}'.format(pt.x()))
+            line += InpFile.pad('{0:2f}'.format(pt.y()))
+
+            out.append(line)
+
+        for r_ft in parameters.reservoirs_vlay.getFeatures():
+            eid = r_ft.attribute(Reservoir.eid)
+            pt = r_ft.geometry().asPoint()
+
+            line = InpFile.pad(eid)
+            line += InpFile.pad('{0:2f}'.format(pt.x()))
+            line += InpFile.pad('{0:2f}'.format(pt.y()))
+
+            out.append(line)
+
+        for t_ft in parameters.tanks_vlay.getFeatures():
+            eid = t_ft.attribute(Tank.eid)
+            pt = t_ft.geometry().asPoint()
+
+            line = InpFile.pad(eid)
+            line += InpFile.pad('{0:2f}'.format(pt.x()))
+            line += InpFile.pad('{0:2f}'.format(pt.y()))
+
+            out.append(line)
+
+    @staticmethod
+    def __append_vertices(parameters, out):
+        out.append(InpFile.build_section_keyword(Vertex.section_name))
+        out.append(Vertex.section_header)
+        out.append(InpFile.build_dashline(Vertex.section_header))
+
+        for p_ft in parameters.pipes_vlay:
+            eid = p_ft.attribute(Pipe.eid)
+            pts = p_ft.geometry().asPolyline()
+            if len(pts) > 2:
+                line = InpFile.pad(eid)
+                for pt in pts[1:-1]:
+                    line += InpFile.pad('{0.2f}'.format(pt.x()))
+                    line += InpFile.pad('{0.2f}'.format(pt.y()))
+
+                out.append(line)
 
     @staticmethod
     def split_line(line, n=255):
