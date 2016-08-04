@@ -83,6 +83,7 @@ class ShapefileDS:
         fields.append(QgsField(Junction.field_name_elevation, QVariant.Double))
         fields.append(QgsField(Junction.field_name_elev_corr, QVariant.Double))
         fields.append(QgsField(Junction.field_name_pattern, QVariant.Int))
+        fields.append(QgsField(Junction.field_name_emitter_coeff, QVariant.Double))
 
         writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBPoint, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:

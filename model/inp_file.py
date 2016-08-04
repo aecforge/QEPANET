@@ -153,6 +153,12 @@ class InpFile:
             # Vertices
             InpFile._append_vertices(parameters, out)
 
+            # Options
+            InpFile._append_options(parameters, out)
+
+            # Times
+            InpFile.append_times(parameters, out)
+
     @staticmethod
     def _append_junctions(parameters, out):
 
@@ -391,7 +397,7 @@ class InpFile:
             out.append(line)
 
     @staticmethod
-    def __append_vertices(parameters, out):
+    def _append_vertices(parameters, out):
         out.append(InpFile.build_section_keyword(Vertex.section_name))
         out.append(Vertex.section_header)
         out.append(InpFile.build_dashline(Vertex.section_header))

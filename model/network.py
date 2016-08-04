@@ -29,6 +29,7 @@ class Junction:
     field_name_elevation = 'elev'
     field_name_elev_corr = 'elev_corr'
     field_name_pattern = 'pattern'
+    field_name_emitter_coeff = 'emitt_coeff'
 
     def __init__(self, eid):
         self.eid = eid
@@ -36,6 +37,7 @@ class Junction:
         self.elevation = -1
         self.elev_corr = 0
         self.pattern = None
+        self.emitter_coeff = 0
 
 
 class Reservoir:

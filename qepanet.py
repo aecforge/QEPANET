@@ -29,10 +29,9 @@ from tools.parameters import Parameters, ConfigFile
 # Initialize Qt resources from file resources.py
 
 # Import the code for the DockWidget
-from qepanet_dockwidget import QEpanetDockWidget
+from ui.qepanet_dockwidget import QEpanetDockWidget
 import os.path
 import resources
-
 
 class QEpanet:
     """QGIS Plugin Implementation."""

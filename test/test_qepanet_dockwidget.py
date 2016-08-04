@@ -14,10 +14,7 @@ __copyright__ = 'Copyright 2016, DICAM - UNITN'
 
 import unittest
 
-from PyQt4.QtGui import QDockWidget
-
-from qepanet_dockwidget import QEpanetDockWidget
-
+from ui.qepanet_dockwidget import QEpanetDockWidget
 from utilities import get_qgis_app
 
 QGIS_APP = get_qgis_app()

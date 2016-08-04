@@ -2,9 +2,10 @@ import ConfigParser
 import codecs
 import os
 
-from PyQt4.QtCore import QRegExp, QObject
+from PyQt4.QtCore import QRegExp
 from PyQt4.QtGui import QRegExpValidator
 from observable import Observable
+from ..model.options import Options
 
 
 class Parameters(Observable):
@@ -17,70 +18,12 @@ class Parameters(Observable):
     config_file_path = os.path.join(path, config_file_name)
     regex_number_pos_decimals = '^[0-9]\d*(\.\d+)?$'
     regex_number_pos_neg_decimals = '^-?[0-9]\d*(\.\d+)?$'
-
-    unit_sys_si = 'SI'
-    unit_sys_us = 'US'
-    units_sys = [unit_sys_si, unit_sys_us]
-    units_sys_text = {unit_sys_si: 'SI METRIC',
-                      unit_sys_us: 'US CUSTOMARY'}  # TODO: softcode
-
-    units_diameter_pipes = {unit_sys_si: 'mm',
-                            unit_sys_us: 'in'}
-
-    units_diameter_tanks = {unit_sys_si: 'm',
-                           unit_sys_us: 'ft'}
-
-    units_flow = {unit_sys_si:
-                      ['LPS', 'LPM', 'MLD', 'CMH', 'CMD'],
-                  unit_sys_us:
-                      ['CFS', 'GPM', 'MGD', 'IMGD', 'AFD']}
-    units_flow_text = {unit_sys_si:
-                           ['LPS - liters per second',
-                            'LPM - liters per minute',
-                            'MLD - million liters per day',
-                            'CMH - cubic meters per hour',
-                            'CMD - cubic meters per day'],
-                       unit_sys_us:
-                           ['CFS - cubic feet per second',
-                            'GPM - gallons per minute',
-                            'MGD - million gallons per day',
-                            'IMGD - Imperial MGD',
-                            'AFD - acre-feet per day']}  # TODO: sofcode
-
-    units_depth = {unit_sys_si: 'm',
-                   unit_sys_us: 'ft'}
-
-    units_volume = {unit_sys_si:  'm3',
-                    unit_sys_us: 'cb.ft'}
-
-    headloss_hw = 'H-W'
-    headloss_dw = 'D-W'
-    headloss_cm = 'C-M'
-    headlosses_text = {headloss_hw: 'Hazen-Williams',
-                       headloss_dw: 'Darcy-Weisbach',
-                       headloss_cm: 'Chezy-Manning'}
-
-    units_power = {unit_sys_si: 'kW',
-                   unit_sys_us: 'hp'}
-
-    units_pressure = {unit_sys_si: 'm',
-                      unit_sys_us: 'psi'}
-
-    units_roughness = {unit_sys_si:
-                           {headloss_hw: '-',
-                            headloss_dw: 'mm',
-                            headloss_cm: '-'},
-                       unit_sys_us:
-                           {headloss_hw: '-',
-                            headloss_dw: '10-3 ft',
-                            headloss_cm: '-'}
-                       }
+    regex_number_pos_int = '^[0-9]\d*$'
+    regex_number_pos_int_no_zero = '^[1-9]\d*$'
+    regex_time_hh_mm = '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
 
     def __init__(self):
         super(Parameters, self).__init__()
-
-        self.units = Parameters.unit_sys_si
-        self.headloss_units = Parameters.headloss_hw
 
         self._junctions_vlay = None
         self._pipes_vlay = None
@@ -97,6 +40,8 @@ class Parameters(Observable):
         self._snap_tolerance = 10
         self._tolerance = 0.01
         self._min_dist = 1  # TODO: check: 1 m? Why?
+
+        self.options = Options()
 
     # Layers
     @property
@@ -242,7 +187,7 @@ class ConfigFile:
         Returns the config object
         """
         if not os.path.exists(self.config_file_path):
-            self.create_config(self.config_file_path)
+            self.create_config()
 
         config = ConfigParser.ConfigParser()
         config.read(self.config_file_path)
@@ -295,5 +240,26 @@ class RegExValidators:
     def get_pos_neg_decimals():
 
         reg_ex = QRegExp(Parameters.regex_number_pos_neg_decimals)
+        validator = QRegExpValidator(reg_ex)
+        return validator
+
+    @staticmethod
+    def get_pos_int():
+
+        reg_ex = QRegExp(Parameters.regex_number_pos_int)
+        validator = QRegExpValidator(reg_ex)
+        return validator
+
+    @staticmethod
+    def get_pos_int_no_zero():
+
+        reg_ex = QRegExp(Parameters.regex_number_pos_int_no_zero)
+        validator = QRegExpValidator(reg_ex)
+        return validator
+
+    @staticmethod
+    def get_time_hh_mm():
+
+        reg_ex = QRegExp(Parameters.regex_time_hh_mm)
         validator = QRegExpValidator(reg_ex)
         return validator
