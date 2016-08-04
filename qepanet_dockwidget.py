@@ -183,6 +183,14 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QtCore.QObject.connect(self.cbo_options_headloss, QtCore.SIGNAL('activated(int)'), self.cbo_options_headloss_activated)
 
         # - Hydraulics
+        self.chk_options_hydraulics.setChecked(False)
+        QtCore.QObject.connect(self.chk_options_hydraulics, QtCore.SIGNAL('stateChanged(int)'), self.chk_options_hydraulics_changed)
+        self.cbo_options_hydraulics.setEnabled(self.chk_options_hydraulics.isChecked())
+        self.txt_options_hydraulics_file.setReadOnly(True)
+        self.txt_options_hydraulics_file.setEnabled(self.chk_options_hydraulics.isChecked())
+        self.btn_options_hydraulics_file.setEnabled(self.chk_options_hydraulics.isChecked())
+        QtCore.QObject.connect(self.btn_options_hydraulics_file, QtCore.SIGNAL('pressed()'), self.btn_options_hydraulics_pressed)
+
         self.cbo_options_hydraulics.addItem('Use')
         self.cbo_options_hydraulics.addItem('Save')
 
@@ -192,12 +200,41 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # - Unbalanced
         self.cbo_options_unbalanced.addItem('Stop')
         self.cbo_options_unbalanced.addItem('Continue')
+        QtCore.QObject.connect(self.cbo_options_unbalanced, QtCore.SIGNAL('activated(int)'), self.cbo_options_unbalanced_changed)
+        self.txt_options_unbalanced.setText('1')
+
+        # - Others
+        self.txt_options_viscosity.setText('1')
+        self.txt_options_diffusivity.setText('1')
+        self.txt_options_spec_gravity.setText('1')
+        self.txt_options_trials.setText('40')
+        self.txt_options_accuracy.setText('0.001')
+        self.txt_options_pattern.setText('1')
+        self.txt_options_demand_mult.setText('1')
+        self.txt_emitter_exp.setText('0.5')
+        self.txt_options_tolerance.setText('0.01')
 
         # Times
         self.cbo_times_units.addItem('Second')
         self.cbo_times_units.addItem('Minute')
         self.cbo_times_units.addItem('Hour')
         self.cbo_times_units.addItem('Day')
+
+        self.txt_time_duration.setText('1')
+        self.txt_times_hydraulic_timestamp.setInputMask('09:99')
+        self.txt_times_hydraulic_timestamp.setText(' 1:00')
+        self.txt_times_quality_timestamp.setInputMask('09:99')
+        self.txt_times_quality_timestamp.setText(' 0:05')
+        self.txt_times_rule_timestamp.setInputMask('09:99')
+        self.txt_times_rule_timestamp.setText(' 1:00')
+        self.txt_times_pattern_timestamp.setInputMask('09:99')
+        self.txt_times_pattern_timestamp.setText(' 1:00')
+        self.txt_times_pattern_start.setInputMask('09:99')
+        self.txt_times_pattern_start.setText(' 0:00')
+        self.txt_times_report_timestamp.setInputMask('09:99')
+        self.txt_times_report_timestamp.setText(' 1:00')
+        self.txt_times_report_start.setInputMask('09:99')
+        self.txt_times_report_start.setText(' 0:00')
 
         for h in range(24):
             self.cbo_times_start_clocktime_h.addItem(str(h))
@@ -468,6 +505,29 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.params.headloss_units = self.cbo_options_headloss.itemData(self.cbo_options_headloss.currentIndex())
         self.lbl_pipe_roughness.setText(self.prepare_label('Roughness', self.params.units_roughness[self.params.units][self.params.headloss_units]))
+
+    def chk_options_hydraulics_changed(self):
+        self.cbo_options_hydraulics.setEnabled(self.chk_options_hydraulics.isChecked())
+        self.txt_options_hydraulics_file.setEnabled(self.chk_options_hydraulics.isChecked())
+        self.btn_options_hydraulics_file.setEnabled(self.chk_options_hydraulics.isChecked())
+
+    def btn_options_hydraulics_pressed(self):
+        file_dialog = QFileDialog(self, 'Select hydraulics file')
+        file_dialog.setLabelText(QtGui.QFileDialog.Accept, 'Select')
+        file_dialog.setLabelText(QtGui.QFileDialog.Reject, 'Cancel')
+        file_dialog.setFileMode(QtGui.QFileDialog.AnyFile)
+
+        file_dialog.exec_()
+
+        hydraulics_file_path = file_dialog.selectedFiles()
+
+        if not hydraulics_file_path or hydraulics_file_path[0] is None or hydraulics_file_path[0] == '':
+            return
+
+        self.txt_options_hydraulics_file.setText(hydraulics_file_path[0])
+
+    def cbo_options_unbalanced_changed(self):
+        self.txt_options_unbalanced.setEnabled(self.cbo_options_unbalanced.itemText(self.cbo_options_unbalanced.currentIndex()) == 'Continue')  # TODO: softcode
 
     def create_layers(self):
 
