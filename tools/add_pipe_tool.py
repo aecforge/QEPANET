@@ -3,8 +3,8 @@
 import sys
 import traceback
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QColor
+from PyQt4.QtCore import Qt, QPoint
+from PyQt4.QtGui import QColor, QMenu
 from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
@@ -12,6 +12,7 @@ from ..model.network import Pipe
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils
+from ..ui.pipe_section_ui import PipeSectionDialog
 
 
 class AddPipeTool(QgsMapTool):
@@ -106,6 +107,15 @@ class AddPipeTool(QgsMapTool):
 
                 # Finalize line
                 pipe_band_geom = self.rubber_band.asGeometry()
+                if pipe_band_geom is None:
+                    menu = QMenu()
+                    section_action = menu.addAction('Section')
+                    action = menu.exec_(self.iface.mapCanvas().mapToGlobal(QPoint(event.pos().x(), event.pos().y())))
+                    if action == section_action:
+                        pattern_dialog = PipeSectionDialog(self.iface.mainWindow(), self.params)
+                        pattern_dialog.show()
+
+                    return
 
                 rubberband_pts = pipe_band_geom.asPolyline()
                 rubberband_pts = self.remove_duplicated_point(rubberband_pts)

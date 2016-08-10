@@ -30,7 +30,7 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsCoordinateReferenceSy
     QgsProject, QgsSnapper, QgsTolerance
 
 from ..geo_utils import utils
-from patterns_gui import PatternsDialog
+from patterns_ui import PatternsDialog
 from ..model.network import Tables, Pump, Valve
 from ..rendering import symbology
 from ..tools.add_junction_tool import AddJunctionTool
@@ -888,3 +888,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.txt_times_report_start.setText(self.params.times.report_start.get_as_text())
         self.txt_times_start_clocktime.setText(self.params.times.start_clocktime.get_as_text())
         self.cbo_times_statistic.setCurrentIndex(self.cbo_times_statistic.findData(self.params.times.statistics))
+
+
+#  TODO NEXT: Add listeners to every control and update parameters

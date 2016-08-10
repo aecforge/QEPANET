@@ -114,6 +114,8 @@ class Pump:
     field_name_eid = 'id'
     field_name_param = 'parameters'
     field_name_value = 'value'
+    field_name_from_node = 'from_node'
+    field_name_to_node = 'to_node'
 
     parameters_power = 'POWER'
     parameters_head = 'HEAD'

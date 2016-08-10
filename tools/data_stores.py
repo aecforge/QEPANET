@@ -141,6 +141,8 @@ class ShapefileDS:
 
         fields = QgsFields()
         fields.append(QgsField(QgsField(Pump.field_name_eid, QVariant.String)))
+        fields.append(QgsField(QgsField(Pump.field_name_from_node, QVariant.String)))
+        fields.append(QgsField(QgsField(Pump.field_name_to_node, QVariant.String)))
         fields.append(QgsField(QgsField(Pump.field_name_param, QVariant.String)))
         fields.append(QgsField(QgsField(Pump.field_name_value, QVariant.Double)))
 
