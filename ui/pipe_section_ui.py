@@ -63,17 +63,7 @@ class SectionCanvas(MyMplCanvas):
         self.axes = self.figure.add_subplot(1, 1, 1)
 
         # Pipe patch
-        maxs = {'x': 0, 'y': 0}
-        vertices = []
-        codes = []
-        for v in range(len(dem_xy['x'])):
-            vertices.append((dem_xy['x'][v], dem_xy['y'][v]))
-            maxs['x'] = max(maxs['x'], dem_xy['x'][v])
-            maxs['y'] = max(maxs['y'], dem_xy['y'][v])
-            codes.append(Path.LINETO)
-        codes[0] = Path.MOVETO
-
-        path = Path(vertices, codes)
+        path, maxs = self.build_path(dem_xy['x'], dem_xy['y'])
         self.pipe_patch = patches.PathPatch(path, edgecolor='b', facecolor='none')
         # self.pipe_patch.set_animated(True)
 
@@ -128,7 +118,7 @@ class SectionCanvas(MyMplCanvas):
             return
         if event.inaxes is None:
             return
-        if event.button != 1:
+        if event.button != 1 and event.button != 3:
             return
         self._ind = self.get_ind_under_point(event)
 
@@ -139,24 +129,45 @@ class SectionCanvas(MyMplCanvas):
             return
         if event.button == 3:
 
-            # Find the distance to the closest vertex
-            min_dist = 1E10
-            min_pos = -1
-            xy = np.asarray(self.pipe_patch.get_path().vertices)
-            xyt = self.pipe_patch.get_transform().transform(xy)
-            for v in range(1, len(xyt)):
-                dist = utils.dist(xyt[v-1][0], xyt[v-1][1], xyt[v][0], xyt[v][1], event.x, event.y)
-                if dist < min_dist:
-                    min_dist = dist
-                    min_pos = v
+            if self._ind is None:
+                # Find the distance to the closest vertex
+                min_dist = 1E10
+                min_pos = -1
+                xy = np.asarray(self.pipe_patch.get_path().vertices)
+                xyt = self.pipe_patch.get_transform().transform(xy)
+                for v in range(1, len(xyt)):
+                    dist = utils.dist(xyt[v-1][0], xyt[v-1][1], xyt[v][0], xyt[v][1], event.x, event.y)
+                    if dist < min_dist:
+                        min_dist = dist
+                        min_pos = v
 
-            if min_dist <= self.epsilon:
-                # Create new vertex
-                xy = np.asarray((event.x, event.y))
-                xyt = self.pipe_patch.get_transform().inverted().transform(xy)
+                if min_dist <= self.epsilon:
+                    # Create new vertex
+                    xy = np.asarray((event.x, event.y))
+                    xyt = self.pipe_patch.get_transform().inverted().transform(xy)
+                    vertices = self.pipe_patch.get_path().vertices
+                    vertices = np.insert(vertices, min_pos, xyt, 0)
+
+                    codes = []
+                    for v in range(len(vertices)):
+                        codes.append(Path.LINETO)
+                    codes[0] = Path.MOVETO
+                    path = Path(vertices, codes)
+
+                    self.axes.patches.remove(self.pipe_patch)
+                    self.pipe_patch = patches.PathPatch(path, edgecolor='b', facecolor='none')
+                    self.axes.add_patch(self.pipe_patch)
+
+                    self.pipe_line.set_data(zip(*vertices))
+
+                    self.restore_region(self.background)
+                    self.axes.draw_artist(self.pipe_patch)
+                    self.axes.draw_artist(self.pipe_line)
+                    self.blit(self.axes.bbox)
+            else:
+                # Delete vertex
                 vertices = self.pipe_patch.get_path().vertices
-                vertices = np.insert(vertices, min_pos, xyt, 0)
-
+                vertices = np.delete(vertices, self._ind, axis=0)
                 codes = []
                 for v in range(len(vertices)):
                     codes.append(Path.LINETO)
@@ -196,3 +207,17 @@ class SectionCanvas(MyMplCanvas):
         self.axes.draw_artist(self.pipe_line)
         self.blit(self.axes.bbox)
 
+    def build_path(self, xs, ys):
+
+        maxs = {'x': 0, 'y': 0}
+        vertices = []
+        codes = []
+        for v in range(len(xs)):
+            vertices.append((xs[v], ys[v]))
+            maxs['x'] = max(maxs['x'], xs[v])
+            maxs['y'] = max(maxs['y'], ys[v])
+            codes.append(Path.LINETO)
+        codes[0] = Path.MOVETO
+
+        path = Path(vertices, codes)
+        return path, maxs
