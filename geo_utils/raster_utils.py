@@ -180,18 +180,35 @@ def write_geotiff_1b(tiff_path, np_data, transform, no_data, projection):
     out_band.FlushCache()
 
 
-def get_coords(col, row, geotransform):
+def get_coords(col, row, ul_coordinate, x_cell_size, y_cell_size):
+
+    x = ul_coordinate.x() + col * x_cell_size + row * 0 + x_cell_size * 0.5
+    y = ul_coordinate.y() + col * 0 + row * y_cell_size + y_cell_size * 0.5
+
+    return QgsPoint(x, y)
+
+
+def get_coords_geotrans(col, row, geotransform):
     """
     :type col: int
     :type row: int
     :type geotransform: GeoTransform
     :rtype: QgsPoint
     """
+    #
+    # x = geotransform.ul_coordinate.x() + col * geotransform.x_cell_size + row * 0 + geotransform.x_cell_size * 0.5
+    # y = geotransform.ul_coordinate.y() + col * 0 + row * geotransform.y_cell_size + geotransform.y_cell_size * 0.5
 
-    x = geotransform.ul_coordinate.x() + col * geotransform.x_cell_size + row * 0 + geotransform.x_cell_size * 0.5
-    y = geotransform.ul_coordinate.y() + col * 0 + row * geotransform.y_cell_size + geotransform.y_cell_size * 0.5
+    return get_coords(col, row, geotransform.ul_coordinate, geotransform.x_cell_size, geotransform.y_cell_size)
 
-    return QgsPoint(x, y)
+
+def get_col_row(coord, ul_coord, x_cell_size, y_cell_size):
+
+    int_point = IntPoint()
+    int_point.x = int((coord.x() - ul_coord.x()) / x_cell_size)
+    int_point.y = int((coord.y() - ul_coord.y()) / y_cell_size)
+
+    return int_point
 
 
 def get_col_row_geotrans(coord, geotransform):
@@ -201,9 +218,9 @@ def get_col_row_geotrans(coord, geotransform):
     :rtype: IntPoint
     """
 
-    int_point = IntPoint()
-    int_point.x = int((coord.x() - geotransform.ul_coordinate.x()) / geotransform.x_cell_size)
-    int_point.y = int((coord.y() - geotransform.ul_coordinate.y()) / geotransform.y_cell_size)
+    # int_point = IntPoint()
+    # int_point.x = int((coord.x() - geotransform.ul_coordinate.x()) / geotransform.x_cell_size)
+    # int_point.y = int((coord.y() - geotransform.ul_coordinate.y()) / geotransform.y_cell_size)
 
     # int_point = IntPoint()
     # int_point.x = int((coord.x() - geotransform[0]) / geotransform[1])
@@ -213,7 +230,7 @@ def get_col_row_geotrans(coord, geotransform):
     # int_point.x = int(math.floor((coord.x() - ll_corner.x()) / cell_size))
     # int_point.y = rows_count - int(math.floor((coord.y() - ll_corner.y()) / cell_size) + 1)
 
-    return int_point
+    return get_col_row(coord, QgsPoint(geotransform.ul_coordinate.x(), geotransform.ul_coordinate.y()), geotransform.x_cell_size, geotransform.y_cell_size)
 
 
 def load_simpleraster(raster_path):
@@ -272,7 +289,7 @@ def read_file_val_from_coord(ras_path, coordinate, band=1):
     return val[0][0]
 
 
-def read_layer_val_from_coord(ras_layer, coordinate, band):
+def read_layer_val_from_coord(ras_layer, coordinate, band=1):
 
     if ras_layer is None:
         return None

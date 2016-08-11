@@ -11,7 +11,7 @@ from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 from ..model.network import Pipe
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
 from parameters import Parameters
-from ..geo_utils import raster_utils
+from ..geo_utils import raster_utils, vector_utils
 from ..ui.pipe_section_ui import PipeSectionDialog
 
 
@@ -24,7 +24,7 @@ class AddPipeTool(QgsMapTool):
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
-        self.parameters = parameters
+        self.params = parameters
 
         self.mouse_pt = None
         self.mouse_clicked = False
@@ -57,7 +57,7 @@ class AddPipeTool(QgsMapTool):
 
         self.rubber_band.movePoint(last_ix - 1, (self.snapped_vertex if self.snapped_vertex is not None else self.mouse_pt))
 
-        elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, self.mouse_pt, 1)
+        elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, self.mouse_pt, 1)
         if elev is not None:
             self.elev = elev
             self.data_dock.lbl_elev_val.setText("{0:.2f}".format(self.elev))
@@ -105,25 +105,31 @@ class AddPipeTool(QgsMapTool):
 
             try:
 
-                # Finalize line
                 pipe_band_geom = self.rubber_band.asGeometry()
+
+                # No rubber band geometry: pop the context menu
                 if pipe_band_geom is None:
                     menu = QMenu()
                     section_action = menu.addAction('Section')
                     action = menu.exec_(self.iface.mapCanvas().mapToGlobal(QPoint(event.pos().x(), event.pos().y())))
                     if action == section_action:
-                        pattern_dialog = PipeSectionDialog(self.iface.mainWindow(), self.params)
+                        pattern_dialog = PipeSectionDialog(
+                            self.iface.mainWindow(),
+                            self.iface,
+                            self.params,
+                            vector_utils.get_feats_by_id(self.params.pipes_vlay, self.snapped_feat_id)[0])
                         pattern_dialog.show()
 
                     return
 
+                # Finalize line
                 rubberband_pts = pipe_band_geom.asPolyline()
                 rubberband_pts = self.remove_duplicated_point(rubberband_pts)
 
                 # Check whether the pipe points are located on existing nodes
                 junct_nrs = [0]
                 for p in range(1, len(rubberband_pts) - 1):
-                    overlapping_nodes = NetworkUtils.find_overlapping_nodes(self.parameters, rubberband_pts[p])
+                    overlapping_nodes = NetworkUtils.find_overlapping_nodes(self.params, rubberband_pts[p])
                     if overlapping_nodes['junctions'] or overlapping_nodes['reservoirs'] or overlapping_nodes['tanks']:
                         junct_nrs.append(p)
 
@@ -140,9 +146,9 @@ class AddPipeTool(QgsMapTool):
                     loss = float(self.data_dock.txt_pipe_loss.text())
                     roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
                     status = self.data_dock.cbo_pipe_status.currentText()
-                    pipe_eid = NetworkUtils.find_next_id(self.parameters.pipes_vlay, 'P')  # TODO: softcode
+                    pipe_eid = NetworkUtils.find_next_id(self.params.pipes_vlay, 'P')  # TODO: softcode
                     pipe_ft = LinkHandler.create_new_pipe(
-                        self.parameters,
+                        self.params,
                         pipe_eid,
                         demand,
                         diameter,
@@ -156,114 +162,114 @@ class AddPipeTool(QgsMapTool):
                     new_pipes_eids.append(pipe_eid)
 
                 # Create start and end node, if they don't exist
-                (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.parameters, new_pipes_fts[0].geometry())
+                (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[0].geometry())
                 new_start_junction = None
                 if not start_junction:
                     new_start_junction = rubberband_pts[0]
-                    junction_eid = NetworkUtils.find_next_id(self.parameters.junctions_vlay, 'J') # TODO: sofcode
-                    elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, new_start_junction, 1)
+                    junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, 'J') # TODO: sofcode
+                    elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_start_junction, 1)
                     depth = float(self.data_dock.txt_junction_depth.text())
                     j_demand = float(self.data_dock.txt_junction_demand.text())
                     if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
                         pattern_id = self.data_dock.cbo_junction_pattern.itemData(self.data_dock.cbo_junction_pattern.currentIndex()).id
                     else:
                         pattern_id = 0
-                    NodeHandler.create_new_junction(self.parameters, new_start_junction, junction_eid, elev, j_demand, depth, pattern_id)
+                    NodeHandler.create_new_junction(self.params, new_start_junction, junction_eid, elev, j_demand, depth, pattern_id)
 
-                (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.parameters, new_pipes_fts[len(new_pipes_fts) - 1].geometry())
+                (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[len(new_pipes_fts) - 1].geometry())
                 new_end_junction = None
                 if not end_junction:
                     new_end_junction = rubberband_pts[len(rubberband_pts) - 1]
-                    junction_eid = NetworkUtils.find_next_id(self.parameters.junctions_vlay, 'J')  # TODO: sofcode
-                    elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, new_end_junction, 1)
+                    junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, 'J')  # TODO: sofcode
+                    elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_end_junction, 1)
                     depth = float(self.data_dock.txt_junction_depth.text())
                     if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
                         pattern_id = self.data_dock.cbo_junction_pattern.itemData(
                             self.data_dock.cbo_junction_pattern.currentIndex()).id
                     else:
                         pattern_id = 0
-                    NodeHandler.create_new_junction(self.parameters, new_end_junction, junction_eid, elev, demand, depth, pattern_id)
+                    NodeHandler.create_new_junction(self.params, new_end_junction, junction_eid, elev, demand, depth, pattern_id)
 
                 # If end or start node intersects a pipe, split it
                 if new_start_junction:
-                    for pipe_ft in self.parameters.pipes_vlay.getFeatures():
+                    for pipe_ft in self.params.pipes_vlay.getFeatures():
                         if pipe_ft.attribute(Pipe.field_name_eid) != new_pipes_eids[0] and\
-                                        pipe_ft.geometry().distance(QgsGeometry.fromPoint(new_start_junction)) < self.parameters.tolerance:
-                            LinkHandler.split_pipe(self.parameters, pipe_ft, new_start_junction)
+                                        pipe_ft.geometry().distance(QgsGeometry.fromPoint(new_start_junction)) < self.params.tolerance:
+                            LinkHandler.split_pipe(self.params, pipe_ft, new_start_junction)
 
                 if new_end_junction:
-                    for pipe_ft in self.parameters.pipes_vlay.getFeatures():
+                    for pipe_ft in self.params.pipes_vlay.getFeatures():
                         if pipe_ft.attribute(Pipe.field_name_eid) != new_pipes_eids[-1] and\
-                                        pipe_ft.geometry().distance(QgsGeometry.fromPoint(new_end_junction)) < self.parameters.tolerance:
-                            LinkHandler.split_pipe(self.parameters, pipe_ft, new_end_junction)
+                                        pipe_ft.geometry().distance(QgsGeometry.fromPoint(new_end_junction)) < self.params.tolerance:
+                            LinkHandler.split_pipe(self.params, pipe_ft, new_end_junction)
 
             except Exception as e:
                 self.rubber_band.reset()
-                self.iface.messageBar().pushWarning('Cannot add new pipe to ' + self.parameters.pipes_vlay.name() + ' layer', repr(e))
+                self.iface.messageBar().pushWarning('Cannot add new pipe to ' + self.params.pipes_vlay.name() + ' layer', repr(e))
                 traceback.print_exc(file=sys.stdout)
 
     def activate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.junctions_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.junctions_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      self.parameters.snap_tolerance,
+                                                      self.params.snap_tolerance,
                                                       True)
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.reservoirs_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.reservoirs_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      self.parameters.snap_tolerance,
+                                                      self.params.snap_tolerance,
                                                       True)
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.tanks_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.tanks_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      self.parameters.snap_tolerance,
+                                                      self.params.snap_tolerance,
                                                       True)
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,
-                                                      self.parameters.snap_tolerance,
+                                                      self.params.snap_tolerance,
                                                       True)
 
-        snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.parameters.junctions_vlay)
-        snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(self.parameters.reservoirs_vlay)
-        snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.parameters.tanks_vlay)
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.parameters.pipes_vlay, None, QgsSnapper.SnapToSegment)
+        snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.params.junctions_vlay)
+        snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(self.params.reservoirs_vlay)
+        snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.params.tanks_vlay)
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToSegment)
 
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_reservoirs, snap_layer_tanks, snap_layer_pipes], self.iface.mapCanvas())
 
         # Editing
-        if not self.parameters.junctions_vlay.isEditable():
-            self.parameters.junctions_vlay.startEditing()
-        if not self.parameters.pipes_vlay.isEditable():
-            self.parameters.pipes_vlay.startEditing()
+        if not self.params.junctions_vlay.isEditable():
+            self.params.junctions_vlay.startEditing()
+        if not self.params.pipes_vlay.isEditable():
+            self.params.pipes_vlay.startEditing()
 
     def deactivate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.junctions_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.junctions_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
                                                       0,
                                                       True)
 
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.reservoirs_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.reservoirs_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
                                                       0,
                                                       True)
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.tanks_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.tanks_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
                                                       0,
                                                       True)
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,

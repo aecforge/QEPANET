@@ -1,21 +1,26 @@
+from qgis.core import QgsPoint
 from PyQt4 import QtGui, QtCore
 from graphs import MyMplCanvas
+from ..geo_utils import bresenham, raster_utils
 from matplotlib.lines import Line2D
 from matplotlib.path import Path
+from collections import OrderedDict
 import utils
 import matplotlib.patches as patches
 import numpy as np
+import math
+
 
 
 class PipeSectionDialog(QtGui.QDialog):
 
-    def __init__(self, parent, iface, parameters):
+    def __init__(self, parent, iface, parameters, pipe_ft):
 
         QtGui.QDialog.__init__(self, parent)
         main_lay = QtGui.QVBoxLayout(self)
 
         self.parent = parent
-        self.parameters = parameters
+        self.params = parameters
 
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
@@ -29,10 +34,55 @@ class PipeSectionDialog(QtGui.QDialog):
         main_lay.addWidget(self.static_canvas)
 
         # DEM and pipe
-        dem_xy = {'x': (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12), 'y': (11, 10, 9, 8, 7, 6, 5, 5, 6, 7, 8, 9, 10)}
-        pipe_xy = {'x': (0, 4, 6, 8, 10, 12), 'y': (5, 4, 3, 2, 1, 3)}
+        # dem_xy = {'x': (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),'y': (11, 10, 9, 8, 7, 6, 5, 5, 6, 7, 8, 9, 10)}
+        # pipe_xy = {'x': (0, 4, 6, 8, 10, 12), 'y': (5, 4, 3, 2, 1, 3)}
 
-        self.static_canvas.draw_pipe_section(dem_xy, pipe_xy)
+        dem_xz = self.find_raster_distz(pipe_ft)
+        pipe_xz = self.find_line_distz(pipe_ft)
+
+        self.static_canvas.draw_pipe_section(dem_xz, pipe_xz)
+
+    def find_line_distz(self, pipe_ft):
+
+        pipe_pts = pipe_ft.geometry().asPolyline()
+        total_dist = 0
+        dist_z = OrderedDict()
+        dist_z[total_dist] = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, pipe_pts[0])
+        for p in range(1, len(pipe_pts)):
+            total_dist += math.sqrt((pipe_pts[p].x() - pipe_pts[p-1].x())**2 + (pipe_pts[p].y() - pipe_pts[p-1].y())**2)
+            dist_z[total_dist] = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, pipe_pts[p])
+
+        return dist_z
+
+    def find_raster_distz(self, pipe_ft):
+
+        dem_extent = self.params.dem_rlay.extent()
+        ul_coord = QgsPoint(dem_extent.xMinimum(), dem_extent.yMaximum())
+        x_cell_size = self.params.dem_rlay.rasterUnitsPerPixelX()
+        y_cell_size = -self.params.dem_rlay.rasterUnitsPerPixelY()
+
+        points = []
+
+        pipe_pts = pipe_ft.geometry().asPolyline()
+        for p in range(1, len(pipe_pts)):
+            start_col_row = raster_utils.get_col_row(pipe_pts[p-1], ul_coord, x_cell_size, y_cell_size)
+            end_col_row = raster_utils.get_col_row(pipe_pts[p], ul_coord, x_cell_size, y_cell_size)
+
+            points.extend(bresenham.get_line((start_col_row.x, start_col_row.y), (end_col_row.x, end_col_row.y)))
+
+        total_dist = 0
+        dist_z = OrderedDict()
+        dist_z[total_dist] = raster_utils.read_layer_val_from_coord(
+            self.params.dem_rlay,
+            raster_utils.get_coords(points[0][0], points[0][1], ul_coord, x_cell_size, y_cell_size))
+
+        for p in range(1, len(points)):
+            total_dist += math.sqrt((points[p][0] - points[p - 1][0]) ** 2 + (points[p][1] - points[p - 1][1]) ** 2)
+            dist_z[total_dist] = raster_utils.read_layer_val_from_coord(
+                self.params.dem_rlay,
+                raster_utils.get_coords(points[p][0], points[p][1], ul_coord, x_cell_size, y_cell_size))
+
+        return dist_z
 
 
 class SectionCanvas(MyMplCanvas):
@@ -46,6 +96,7 @@ class SectionCanvas(MyMplCanvas):
         self.iface = iface
         self.parameters = parameters
         self._ind = 0
+        self.dem_line = None
         self.pipe_patch = None
         self.pipe_line = None
         self.background = None
@@ -62,8 +113,11 @@ class SectionCanvas(MyMplCanvas):
         self.figure.clf()
         self.axes = self.figure.add_subplot(1, 1, 1)
 
+        # DEM line
+        self.dem_line, = self.axes.plot(dem_xy.keys(), dem_xy.values(), color='brown', lw=1)
+
         # Pipe patch
-        path, maxs = self.build_path(dem_xy['x'], dem_xy['y'])
+        path, maxs = self.build_path(pipe_xy.keys(), pipe_xy.values())
         self.pipe_patch = patches.PathPatch(path, edgecolor='b', facecolor='none')
         # self.pipe_patch.set_animated(True)
 
@@ -71,6 +125,7 @@ class SectionCanvas(MyMplCanvas):
         x, y = zip(*self.pipe_patch.get_path().vertices)
         self.pipe_line, = self.axes.plot(x, y, color='r', lw=0.5, marker='o', markerfacecolor='r', animated=True)
 
+        self.axes.add_line(self.dem_line)
         self.axes.add_line(self.pipe_line)
         self.axes.add_patch(self.pipe_patch)
 
@@ -79,9 +134,9 @@ class SectionCanvas(MyMplCanvas):
 
         self.pipe_line.add_callback(self.pipe_changed)
 
-        self.axes.set_title('Coatuib')
-        map_units = self.iface.mapCanvas().mapUnits if self.iface is not None else '?'
-        self.axes.set_xlabel('Distance [' + map_units + ']')
+        # self.axes.set_title('Coatuib')
+        map_units = self.iface.mapCanvas().mapUnits() if self.iface is not None else '?'
+        self.axes.set_xlabel('Distance [' + str(map_units) + ']')
         self.axes.set_ylabel('Elevation')
         self.axes.tick_params(axis=u'both', which=u'both', bottom=u'off', top=u'off', left=u'off', right=u'off')
         self.figure.tight_layout()
