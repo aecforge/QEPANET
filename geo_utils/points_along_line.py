@@ -4,7 +4,6 @@ from collections import OrderedDict
 from qgis.core import QgsGeometry
 
 
-
 class PointsAlongLineGenerator:
 
     def __init__(self, line_geom):
@@ -32,7 +31,7 @@ class PointsAlongLineGenerator:
             position = pt * interval
             if position > length:
                 position = length
-            points[position] = self.line_geom.interpolate(position)
+            points[position] = self.line_geom.interpolate(position).asPoint()
 
         return points
 

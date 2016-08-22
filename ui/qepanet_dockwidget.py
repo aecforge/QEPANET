@@ -154,6 +154,10 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.cbo_pipe_status.addItem('Closed')  # TODO: softcode
         self.cbo_pipe_status.addItem('CV')  # TODO: sofcode
 
+        self.txt_pipe_vertex_dist.setValidator(RegExValidators.get_pos_decimals())
+        # QtCore.QObject.connect(self.txt_pipe_vertex_dist, QtCore.SIGNAL('textChanged(QString)'), self.params.vertex_dist(float(self.txt_pipe)))
+        self.txt_pipe_vertex_dist.textChanged.connect(self.pipe_vertex_dist)
+
         # Pumps --------------------------------------------------------------------------------------------------------
         self.cbo_pump_param.addItem(Pump.parameters_head)
         self.cbo_pump_param.addItem(Pump.parameters_power)
@@ -259,8 +263,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # TODO: read parameters from parameters file and set previous GUI settings
         self.initialize_gui()
 
-
-    # This method needed by observable
+    # This method needed by Observable
     def update(self, observable):
         # Update components
         self.update_patterns_combo()
@@ -809,6 +812,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 return utils.LayerUtils.get_lay_from_id(combo.itemData(0))
             else:
                 return None
+
+    def pipe_vertex_dist(self, vertex_dist):
+        self.params.vertex_dist = float(vertex_dist)
 
     def find_decimals(self, float_string):
         float_string.replace(',', '.')

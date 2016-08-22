@@ -42,6 +42,8 @@ class Parameters(Observable):
         self._tolerance = 0.01
         self._min_dist = 1  # TODO: check: 1 m? Why?
 
+        self._vertex_dist = 100
+
         self.options = Options()
         self.times = Times()
 
@@ -109,7 +111,7 @@ class Parameters(Observable):
         self._dem_rlay = value
         self.notify()
 
-    # Patter / curves
+    # Pattern / curves
     @property
     def curves(self):
         return self._curves
@@ -163,6 +165,15 @@ class Parameters(Observable):
     @min_dist.setter
     def min_dist(self, value):
         self._min_dist = value
+        self.notify()
+
+    @property
+    def vertex_dist(self):
+        return self._vertex_dist
+
+    @vertex_dist.setter
+    def vertex_dist(self, value):
+        self._vertex_dist = value
         self.notify()
 
 

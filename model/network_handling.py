@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from PyQt4.QtCore import QPyNullVariant
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance, QgsPoint,\
-    QgsVectorLayerEditUtils, QgsFeatureRequest
+    QgsVectorLayerEditUtils, QgsFeatureRequest, QgsLineStringV2, QgsPointV2, QgsWKBTypes
 
 from network import Junction, Reservoir, Tank, Pipe, Pump, Valve
 from ..tools.parameters import Parameters
@@ -214,24 +214,38 @@ class LinkHandler:
         pass
 
     @staticmethod
-    def create_new_pipe(parameters, eid, demand, diameter, loss, roughness, status, nodes):
+    def create_new_pipe(params, eid, demand, diameter, loss, roughness, status, nodes):
 
-        pipes_caps = parameters.pipes_vlay.dataProvider().capabilities()
+        pipes_caps = params.pipes_vlay.dataProvider().capabilities()
         if pipes_caps and QgsVectorDataProvider.AddFeatures:
 
             pipe_geom = QgsGeometry.fromPolyline(nodes)
 
-            # Calculate 3D length
-            if parameters.dem_rlay is not None:
-                length_3d = LinkHandler.calc_3d_length(parameters, pipe_geom)
-            else:
-                length_3d = pipe_geom.length()
+            # Densify vertices
+            point_gen = PointsAlongLineGenerator(pipe_geom)
+            dists_and_points = point_gen.get_points_coords(params.vertex_dist, False)
+            pipe_geom_2 = QgsGeometry.fromPolyline(dists_and_points.values())
 
-                parameters.pipes_vlay.beginEditCommand("Add new pipes")
+            line_coords = []
+            for vertex in pipe_geom_2.asPolyline():
+                line_coords.append(QgsPointV2(QgsWKBTypes.PointZ, vertex.x(), vertex.y(), 100))
+
+            linestring = QgsLineStringV2()
+            linestring.setPoints(line_coords)
+            print linestring.asWkt()
+            geom_3d = QgsGeometry(linestring)
+
+            # Calculate 3D length
+            if params.dem_rlay is not None:
+                length_3d = LinkHandler.calc_3d_length(params, pipe_geom_2)
+            else:
+                length_3d = pipe_geom_2.length()
+
+                params.pipes_vlay.beginEditCommand("Add new pipes")
             new_pipe_ft = None
 
             try:
-                new_pipe_ft = QgsFeature(parameters.pipes_vlay.pendingFields())
+                new_pipe_ft = QgsFeature(params.pipes_vlay.pendingFields())
                 new_pipe_ft.setAttribute(Pipe.field_name_eid, eid)
                 new_pipe_ft.setAttribute(Pipe.field_name_demand, demand)
                 new_pipe_ft.setAttribute(Pipe.field_name_diameter, diameter)
@@ -240,15 +254,15 @@ class LinkHandler:
                 new_pipe_ft.setAttribute(Pipe.field_name_roughness, roughness)
                 new_pipe_ft.setAttribute(Pipe.field_name_status, status)
 
-                new_pipe_ft.setGeometry(pipe_geom)
+                new_pipe_ft.setGeometry(geom_3d)
 
-                parameters.pipes_vlay.addFeatures([new_pipe_ft])
+                params.pipes_vlay.addFeatures([new_pipe_ft])
 
             except Exception as e:
-                parameters.pipes_vlay.destroyEditCommand()
+                params.pipes_vlay.destroyEditCommand()
                 raise e
 
-            parameters.pipes_vlay.endEditCommand()
+            params.pipes_vlay.endEditCommand()
             return new_pipe_ft
 
     @staticmethod
@@ -653,17 +667,23 @@ class LinkHandler:
                 end_node_depth = 0
             end_remove = 1
 
-        point_gen = PointsAlongLineGenerator(pipe_geom)
-        dists_and_points = point_gen.get_points_coords(100, False)  # TODO: Softcode the interval between points
+        # point_gen = PointsAlongLineGenerator(pipe_geom)
+        # dists_and_points = point_gen.get_points_coords(vertex_dist, False)
 
         if start_node_ft is not None:
             distance_elev_od[0] = start_node_elev - start_node_depth
 
-        for p in range(start_add, len(dists_and_points) - end_remove):
-            elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, dists_and_points.values()[p].asPoint(), 1)
+        vertices = pipe_geom.asPolyline()
+
+        distances = [0]
+        for p in range(1, len(vertices)):
+            distances.append(distances[p-1] + QgsGeometry.fromPoint(vertices[p]).distance(QgsGeometry.fromPoint(vertices[p-1])))
+
+        for p in range(start_add, len(vertices) - end_remove):
+            elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, vertices[p], 1)
             if elev is None:
                 elev = 0
-            distance_elev_od[dists_and_points.keys()[p]] = elev
+            distance_elev_od[distances[p]] = elev
 
         if end_node_ft is not None:
             distance_elev_od[pipe_geom.length()] = end_node_elev - end_node_depth

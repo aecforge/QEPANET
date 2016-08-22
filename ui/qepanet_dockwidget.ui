@@ -163,13 +163,13 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>7</number>
+              <number>4</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-29</y>
+                <y>0</y>
                 <width>288</width>
                 <height>225</height>
                </rect>
@@ -292,8 +292,8 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-20</y>
-                <width>288</width>
+                <y>0</y>
+                <width>305</width>
                 <height>116</height>
                </rect>
               </property>
@@ -514,9 +514,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
+                <y>-46</y>
                 <width>288</width>
-                <height>220</height>
+                <height>246</height>
                </rect>
               </property>
               <attribute name="label">
@@ -722,24 +722,38 @@
                  <property name="frameShadow">
                   <enum>QFrame::Raised</enum>
                  </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_5">
+                 <layout class="QFormLayout" name="formLayout_10">
                   <property name="margin">
                    <number>0</number>
                   </property>
-                  <item>
-                   <widget class="QLabel" name="lal_pipe_status">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="lbl_pipe_status">
                     <property name="text">
                      <string>Status:</string>
                     </property>
                    </widget>
                   </item>
-                  <item>
+                  <item row="0" column="1">
                    <widget class="QComboBox" name="cbo_pipe_status">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                       <horstretch>0</horstretch>
                       <verstretch>0</verstretch>
                      </sizepolicy>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="lbl_pipe_vertex_dist">
+                    <property name="text">
+                     <string>Vertex dist.:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QLineEdit" name="txt_pipe_vertex_dist">
+                    <property name="text">
+                     <string>100</string>
                     </property>
                    </widget>
                   </item>
@@ -752,9 +766,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-22</y>
-                <width>288</width>
-                <height>96</height>
+                <y>0</y>
+                <width>305</width>
+                <height>90</height>
                </rect>
               </property>
               <attribute name="label">
@@ -901,6 +915,14 @@
               <zorder>cbo_valve_curve</zorder>
              </widget>
              <widget class="QWidget" name="wgt_options">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>288</width>
+                <height>504</height>
+               </rect>
+              </property>
               <attribute name="label">
                <string>Options</string>
               </attribute>
@@ -1173,6 +1195,14 @@
               </layout>
              </widget>
              <widget class="QWidget" name="wgt_times">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>288</width>
+                <height>298</height>
+               </rect>
+              </property>
               <attribute name="label">
                <string>Times</string>
               </attribute>
@@ -1321,6 +1351,9 @@
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QFormLayout" name="formLayout_5">
+                  <property name="fieldGrowthPolicy">
+                   <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+                  </property>
                   <item row="0" column="0">
                    <widget class="QLabel" name="lbl_snap_tolerance">
                     <property name="text">
