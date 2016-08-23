@@ -11,7 +11,6 @@ import numpy as np
 import math
 
 
-
 class PipeSectionDialog(QtGui.QDialog):
 
     def __init__(self, parent, iface, parameters, pipe_ft):

@@ -30,6 +30,7 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsCoordinateReferenceSy
     QgsProject, QgsSnapper, QgsTolerance
 
 from ..geo_utils import utils
+from options_dialogs import HydraulicsDialog, QualityDialog, TimesDialog, EnergyDialog
 from patterns_ui import PatternsDialog
 from ..model.network import Tables, Pump, Valve
 from ..rendering import symbology
@@ -44,6 +45,7 @@ from ..tools.data_stores import ShapefileDS
 from ..tools.exceptions import ShpExistsExcpetion
 from ..tools.delete_tool import DeleteTool
 from ..tools.parameters import Parameters, RegExValidators, ConfigFile
+from utils import prepare_label as pre_l
 import misc
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -72,6 +74,12 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.decimals = 1
 
         self.tool = None
+
+        # Dialogs
+        self.hydraulics_dialog = None
+        self.quality_dialog = None
+        self.times_dialog = None
+        self.energy_dialog = None
 
         # Tools buttons
         self.btn_add_junction.setCheckable(True)
@@ -112,7 +120,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QtCore.QObject.connect(self.btn_symbology, QtCore.SIGNAL('pressed()'), self.apply_symbologies)
 
         # Junctions ----------------------------------------------------------------------------------------------------
-        self.lbl_junction_demand.setText(self.prepare_label('Demand', self.params.options.flow_units))  # TODO: softcode
+        self.lbl_junction_demand.setText(pre_l('Demand', self.params.options.flow_units))  # TODO: softcode
         self.txt_junction_demand.setValidator(RegExValidators.get_pos_decimals())
         self.txt_junction_depth.setValidator(RegExValidators.get_pos_decimals())
         self.txt_junction_emit_coeff.setValidator(RegExValidators.get_pos_decimals())
@@ -129,9 +137,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # -
 
         # Pipes --------------------------------------------------------------------------------------------------------
-        self.lbl_pipe_demand.setText(self.prepare_label('Demand', self.params.options.flow_units))  # TODO: softcode
-        self.lbl_pipe_diameter.setText(self.prepare_label('Diameter', self.params.options.units_diameter_pipes[self.params.options.units]))  # TODO: softcode
-        self.lbl_pipe_loss.setText(self.prepare_label('Minor loss', '-'))
+        self.lbl_pipe_demand.setText(pre_l('Demand', self.params.options.flow_units))  # TODO: softcode
+        self.lbl_pipe_diameter.setText(pre_l('Diameter', self.params.options.units_diameter_pipes[self.params.options.units]))  # TODO: softcode
+        self.lbl_pipe_loss.setText(pre_l('Minor loss', '-'))
 
         self.txt_pipe_demand.setValidator(RegExValidators.get_pos_decimals())
         self.txt_pipe_diameter.setValidator(RegExValidators.get_pos_decimals())
@@ -173,83 +181,10 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QtCore.QObject.connect(self.cbo_valve_type, QtCore.SIGNAL('activated(int)'), self.cbo_valve_type_activated)
 
         # Options ------------------------------------------------------------------------------------------------------
-        for unit in self.params.options.units_sys:
-            self.cbo_options_units.addItem(self.params.options.units_sys_text[unit], unit)
-        for fu in range(len(self.params.options.units_flow[self.params.options.units])):
-            self.cbo_options_flow_units.addItem(self.params.options.units_flow_text[self.params.options.units][fu], self.params.options.units_flow[self.params.options.units][fu])
-
-        QtCore.QObject.connect(self.cbo_options_units, QtCore.SIGNAL('activated(int)'), self.cbo_options_units_activated)
-        QtCore.QObject.connect(self.cbo_options_flow_units, QtCore.SIGNAL('activated(int)'), self.cbo_options_flow_units_activated)
-
-
-        for key, value in self.params.options.headlosses_text.iteritems():
-            self.cbo_options_headloss.addItem(value, key)
-
-        QtCore.QObject.connect(self.cbo_options_headloss, QtCore.SIGNAL('activated(int)'), self.cbo_options_headloss_activated)
-
-        # - Hydraulics
-        QtCore.QObject.connect(self.chk_options_hydraulics, QtCore.SIGNAL('stateChanged(int)'), self.chk_options_hydraulics_changed)
-        QtCore.QObject.connect(self.btn_options_hydraulics_file, QtCore.SIGNAL('pressed()'), self.btn_options_hydraulics_pressed)
-        self.cbo_options_hydraulics.addItem('Use', self.params.options.hydraulics.action_use)
-        self.cbo_options_hydraulics.addItem('Save', self.params.options.hydraulics.action_save)
-        self.txt_options_hydraulics_file.setReadOnly(True)
-
-        # - Quality
-        for id, text in self.params.options.quality.quality_text.iteritems():
-            self.cbo_options_quality.addItem(text, id)
-        QtCore.QObject.connect(self.cbo_options_quality, QtCore.SIGNAL('activated(int)'), self.cbo_options_quality_activated)
-
-        # - Unbalanced
-        for id, text in self.params.options.unbalanced.unb_text.iteritems():
-            self.cbo_options_unbalanced.addItem(text, id)
-
-        QtCore.QObject.connect(self.cbo_options_unbalanced, QtCore.SIGNAL('activated(int)'), self.cbo_options_unbalanced_changed)
-        self.txt_options_unbalanced.setValidator(RegExValidators.get_pos_int_no_zero())
-        self.txt_options_unbalanced.setText('1')
-
-        # - Others
-        self.txt_options_viscosity.setValidator(RegExValidators.get_pos_decimals())
-        self.txt_options_diffusivity.setValidator(RegExValidators.get_pos_decimals())
-        self.txt_options_spec_gravity.setValidator(RegExValidators.get_pos_decimals())
-        self.txt_options_trials.setValidator(RegExValidators.get_pos_int_no_zero())
-        self.txt_options_accuracy.setValidator(RegExValidators.get_pos_decimals())
-        self.txt_options_pattern.setValidator(RegExValidators.get_pos_decimals())
-        self.txt_options_demand_mult.setValidator(RegExValidators.get_pos_decimals())
-        self.txt_emitter_exp.setValidator(RegExValidators.get_pos_decimals())
-        self.txt_options_tolerance.setValidator(RegExValidators.get_pos_decimals())
-
-        # Times --------------------------------------------------------------------------------------------------------
-        for key, text in self.params.times.unit_text.iteritems():
-            self.cbo_times_units.addItem(text, key)
-
-        self.txt_time_duration.setValidator(RegExValidators.get_pos_int())
-
-        self.txt_times_hydraulic_timestamp.setInputMask('09:99')
-        self.txt_times_hydraulic_timestamp.setValidator(RegExValidators.get_time_hh_mm())
-
-        self.txt_times_quality_timestamp.setInputMask('09:99')
-        self.txt_times_quality_timestamp.setValidator(RegExValidators.get_time_hh_mm())
-
-        self.txt_times_rule_timestamp.setInputMask('09:99')
-        self.txt_times_rule_timestamp.setValidator(RegExValidators.get_time_hh_mm())
-
-        self.txt_times_pattern_timestamp.setInputMask('09:99')
-        self.txt_times_pattern_timestamp.setValidator(RegExValidators.get_time_hh_mm())
-
-        self.txt_times_pattern_start.setInputMask('09:99')
-        self.txt_times_pattern_start.setValidator(RegExValidators.get_time_hh_mm())
-
-        self.txt_times_report_timestamp.setInputMask('09:99')
-        self.txt_times_report_timestamp.setValidator(RegExValidators.get_time_hh_mm())
-
-        self.txt_times_report_start.setInputMask('09:99')
-        self.txt_times_report_start.setValidator(RegExValidators.get_time_hh_mm())
-
-        self.txt_times_start_clocktime.setInputMask('09:99')
-        self.txt_times_start_clocktime.setValidator(RegExValidators.get_time_hh_mm())
-
-        for key, text in self.params.times.stats_text.iteritems():
-            self.cbo_times_statistic.addItem(text, key)
+        self.btn_options_hydraulics.pressed.connect(self.btn_hydraulics_pressed)
+        self.btn_options_quality.pressed.connect(self.btn_quality_pressed)
+        self.btn_options_times.pressed.connect(self.btn_times_pressed)
+        self.btn_options_energy.pressed.connect(self.btn_energy_pressed)
 
         # Other tools
         QtCore.QObject.connect(self.btn_create_layers, QtCore.SIGNAL('pressed()'), self.create_layers)
@@ -259,9 +194,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QtCore.QObject.connect(self.txt_snap_tolerance, QtCore.SIGNAL('editingFinished()'), self.snap_tolerance_changed)
 
         QtCore.QObject.connect(self.btn_pattern_editor, QtCore.SIGNAL('pressed()'), self.pattern_editor)
-
-        # TODO: read parameters from parameters file and set previous GUI settings
-        self.initialize_gui()
 
     # This method needed by Observable
     def update(self, observable):
@@ -460,85 +392,25 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         if setting_on:
             self.lbl_valve_setting.setText(setting_label)
 
-    def cbo_options_units_activated(self):
+    def btn_hydraulics_pressed(self):
+        if self.hydraulics_dialog is None:
+            self.hydraulics_dialog = HydraulicsDialog(self, self.params)
+        self.hydraulics_dialog.show()
 
-        self.params.units = self.cbo_options_units.itemData(self.cbo_options_units.currentIndex())
+    def btn_quality_pressed(self):
+        if self.quality_dialog is None:
+            self.quality_dialog = QualityDialog(self, self.params)
+        self.quality_dialog.show()
 
-        # Parameters combo box
-        self.cbo_options_flow_units.clear()
-        for fu in range(len(self.params.options.units_flow[self.params.options.units])):
-            self.cbo_options_flow_units.addItem(self.params.options.units_flow_text[self.params.units][fu],
-                                               self.params.options.units_flow[self.params.units][fu])
+    def btn_times_pressed(self):
+        if self.times_dialog is None:
+            self.times_dialog = TimesDialog(self, self.params)
+        self.times_dialog.show()
 
-        # Junctions
-        self.lbl_junction_demand.setText(self.prepare_label('Demand', self.params.options.units_flow[self.params.options.units][0]))  # TODO: softcode
-        self.lbl_junction_depth.setText(self.prepare_label('Depth', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-
-        # Reservoirs
-        self.lbl_reservoir_head.setText(self.prepare_label('Head', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-        self.lbl_reservoir_elev_corr.setText(self.prepare_label('Elev. corr', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-
-        # Tanks
-        self.lbl_tank_elev_corr.setText(self.prepare_label('Elev. corr.', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-        self.lbl_tank_level_init.setText(self.prepare_label('Level init.', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-        self.lbl_tank_level_min.setText(self.prepare_label('Level min', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-        self.lbl_tank_level_max.setText(self.prepare_label('Level max', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-        self.lbl_tank_diameter.setText(self.prepare_label('Diameter', self.params.options.units_diameter_tanks[self.params.options.units]))  # TODO: softcode
-        self.lbl_tank_vol_min.setText(self.prepare_label('Volume min', self.params.options.units_volume[self.params.options.units]))  # TODO: softcode
-
-        # Pipes
-        self.lbl_pipe_demand.setText(self.prepare_label('Demand', self.params.options.units_flow[self.params.options.units][0]))  # TODO: softcode
-        self.lbl_pipe_diameter.setText(self.prepare_label('Diameter', self.params.options.units_diameter_pipes[self.params.options.units]))  # TODO: softcode
-        self.lbl_pipe_roughness.setText(self.prepare_label('Roughness', self.params.options.units_roughness[self.params.options.units][self.params.options.headloss]))  # TODO: softcode
-
-        # Pumps
-        self.lbl_pump_head.setText(self.prepare_label('Head', self.params.options.units_depth[self.params.options.units]))
-        self.lbl_pump_power.setText(self.prepare_label('Power', self.params.options.units_power[self.params.options.units]))
-
-        # Valves
-        self.lbl_valve_setting.setText(self.prepare_label('Pressure', self.params.options.units_pressure[self.params.options.units]))
-        self.lbl_valve_diameter.setText(self.prepare_label('Pressure', self.params.options.units_diameter_pipes[self.params.options.units]))
-
-    def cbo_options_flow_units_activated(self):
-
-        units = self.cbo_options_flow_units.itemData(self.cbo_options_flow_units.currentIndex())
-        self.lbl_junction_demand.setText(self.prepare_label('Demand', units))  # TODO: softcode
-        self.lbl_pipe_demand.setText(self.prepare_label('Demand', units))  # TODO: softcode
-
-    def cbo_options_headloss_activated(self):
-
-        self.params.options.headloss_units = self.cbo_options_headloss.itemData(self.cbo_options_headloss.currentIndex())
-        self.lbl_pipe_roughness.setText(self.prepare_label('Roughness', self.params.params.options.units_roughness[self.params.options.units][self.params.options.headloss_units]))
-
-    def cbo_options_quality_activated(self):
-        self.lbl_options_quality_id.setEnabled(self.cbo_options_quality.itemData(
-            self.cbo_options_quality.currentIndex()) == self.params.options.quality.quality_trace)
-        self.txt_options_quality_id.setEnabled(self.cbo_options_quality.itemData(
-            self.cbo_options_quality.currentIndex()) == self.params.options.quality.quality_trace)
-
-    def chk_options_hydraulics_changed(self):
-        self.cbo_options_hydraulics.setEnabled(self.chk_options_hydraulics.isChecked())
-        self.txt_options_hydraulics_file.setEnabled(self.chk_options_hydraulics.isChecked())
-        self.btn_options_hydraulics_file.setEnabled(self.chk_options_hydraulics.isChecked())
-
-    def btn_options_hydraulics_pressed(self):
-        file_dialog = QFileDialog(self, 'Select hydraulics file')
-        file_dialog.setLabelText(QtGui.QFileDialog.Accept, 'Select')
-        file_dialog.setLabelText(QtGui.QFileDialog.Reject, 'Cancel')
-        file_dialog.setFileMode(QtGui.QFileDialog.AnyFile)
-
-        file_dialog.exec_()
-
-        hydraulics_file_path = file_dialog.selectedFiles()
-
-        if not hydraulics_file_path or hydraulics_file_path[0] is None or hydraulics_file_path[0] == '':
-            return
-
-        self.txt_options_hydraulics_file.setText(hydraulics_file_path[0])
-
-    def cbo_options_unbalanced_changed(self):
-        self.txt_options_unbalanced.setEnabled(
-            self.cbo_options_unbalanced.itemData(self.cbo_options_unbalanced.currentIndex()) == self.params.options.unbalanced.unb_continue)  # TODO: softcode
+    def btn_energy_pressed(self):
+        if self.energy_dialog is None:
+            self.energy_dialog = EnergyDialog(self, self.params)
+        self.energy_dialog.show()
 
     def create_layers(self):
 
@@ -843,57 +715,3 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         cursor = QtGui.QCursor()
         cursor.setShape(cursor_shape)
         self.iface.mapCanvas().setCursor(cursor)
-
-    def prepare_label(self, label, units):
-
-        if units is not None:
-            label += ' ['
-            label += units
-            label += ']:'
-
-        return label
-
-    def initialize_gui(self):
-
-        # Options
-        self.cbo_options_units.setCurrentIndex(self.cbo_options_units.findData(self.params.options.units))
-        self.cbo_options_flow_units.setCurrentIndex(self.cbo_options_flow_units.findData(self.params.options.flow_units))
-        self.cbo_options_headloss.setCurrentIndex(self.cbo_options_headloss.findData(self.params.options.headloss))
-
-        self.chk_options_hydraulics.setChecked(self.params.options.hydraulics.use_hydraulics)
-        if self.params.options.hydraulics.action is not None:
-            self.cbo_options_hydraulics.setCurrentIndex(self.cbo_options_hydraulics.findData(self.params.options.hydraulics.action))
-        if self.params.options.hydraulics.file is not None:
-            self.txt_options_hydraulics_file.setText(self.params.options.hydraulics.file)
-
-        self.cbo_options_quality.setCurrentIndex(self.cbo_options_quality.findData(self.params.options.quality.quality))
-
-        self.txt_options_viscosity.setText(str(self.params.options.viscosity))
-        self.txt_options_diffusivity.setText(str(self.params.options.diffusivity))
-        self.txt_options_spec_gravity.setText(str(self.params.options.spec_gravity))
-        self.txt_options_trials.setText(str(self.params.options.trials))
-        self.txt_options_accuracy.setText(str(self.params.options.accuracy))
-
-        self.cbo_options_unbalanced.setCurrentIndex(self.cbo_options_unbalanced.findData(self.params.options.unbalanced.unbalanced))
-        self.txt_options_unbalanced.setText(str(self.params.options.unbalanced.trials))
-
-        self.txt_options_pattern.setText(str(self.params.options.pattern))
-        self.txt_options_demand_mult.setText(str(self.params.options.demand_mult))
-        self.txt_emitter_exp.setText(str(self.params.options.emitter_exp))
-        self.txt_options_tolerance.setText(str(self.params.options.tolerance))
-
-        # Times
-        self.cbo_times_units.setCurrentIndex(self.cbo_times_units.findData(self.params.times.units))
-        self.txt_time_duration.setText(str(self.params.times.duration))
-        self.txt_times_hydraulic_timestamp.setText(self.params.times.hydraulic_timestamp.get_as_text())
-        self.txt_times_quality_timestamp.setText(self.params.times.quality_timestamp.get_as_text())
-        self.txt_times_rule_timestamp.setText(self.params.times.rule_timestamp.get_as_text())
-        self.txt_times_pattern_timestamp.setText(self.params.times.pattern_timestamp.get_as_text())
-        self.txt_times_pattern_start.setText(self.params.times.pattern_start.get_as_text())
-        self.txt_times_report_timestamp.setText(self.params.times.report_timestamp.get_as_text())
-        self.txt_times_report_start.setText(self.params.times.report_start.get_as_text())
-        self.txt_times_start_clocktime.setText(self.params.times.start_clocktime.get_as_text())
-        self.cbo_times_statistic.setCurrentIndex(self.cbo_times_statistic.findData(self.params.times.statistics))
-
-
-#  TODO NEXT: Add listeners to every control and update parameters

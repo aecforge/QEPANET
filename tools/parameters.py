@@ -7,6 +7,7 @@ from PyQt4.QtGui import QRegExpValidator
 from observable import Observable
 from ..model.options import Options
 from ..model.times import Times
+from ..model.energy import Energy
 
 
 class Parameters(Observable):
@@ -46,6 +47,7 @@ class Parameters(Observable):
 
         self.options = Options()
         self.times = Times()
+        self.energy = Energy()
 
     # Layers
     @property

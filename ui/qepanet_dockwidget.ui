@@ -163,7 +163,7 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>4</number>
+              <number>7</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -403,7 +403,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>288</width>
+                <width>305</width>
                 <height>194</height>
                </rect>
               </property>
@@ -514,7 +514,7 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-46</y>
+                <y>-39</y>
                 <width>288</width>
                 <height>246</height>
                </rect>
@@ -751,11 +751,7 @@
                    </widget>
                   </item>
                   <item row="1" column="1">
-                   <widget class="QLineEdit" name="txt_pipe_vertex_dist">
-                    <property name="text">
-                     <string>100</string>
-                    </property>
-                   </widget>
+                   <widget class="QLineEdit" name="txt_pipe_vertex_dist"/>
                   </item>
                  </layout>
                 </widget>
@@ -919,8 +915,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>288</width>
-                <height>504</height>
+                <width>305</width>
+                <height>234</height>
                </rect>
               </property>
               <attribute name="label">
@@ -930,395 +926,43 @@
                <property name="fieldGrowthPolicy">
                 <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
                </property>
-               <item row="0" column="0">
-                <widget class="QLabel" name="lbl_options_units">
-                 <property name="text">
-                  <string>Units system:</string>
-                 </property>
-                </widget>
-               </item>
                <item row="0" column="1">
-                <widget class="QComboBox" name="cbo_options_units"/>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="lbl_options_flow_units">
+                <widget class="QPushButton" name="btn_options_hydraulics">
                  <property name="text">
-                  <string>Flow units:</string>
+                  <string>Hydraulics</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QComboBox" name="cbo_options_flow_units"/>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="lbl_options_headloss">
+                <widget class="QPushButton" name="btn_options_quality">
                  <property name="text">
-                  <string>Head loss:</string>
+                  <string>Quality</string>
                  </property>
                 </widget>
                </item>
                <item row="2" column="1">
-                <widget class="QComboBox" name="cbo_options_headloss"/>
-               </item>
-               <item row="3" column="0">
-                <widget class="QCheckBox" name="chk_options_hydraulics">
+                <widget class="QPushButton" name="btn_options_reactions">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="text">
-                  <string>Hydraulics:</string>
+                  <string>Reactions</string>
                  </property>
                 </widget>
                </item>
                <item row="3" column="1">
-                <widget class="QFrame" name="frame_5">
-                 <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_8">
-                  <property name="spacing">
-                   <number>6</number>
-                  </property>
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>9</number>
-                  </property>
-                  <item>
-                   <widget class="QComboBox" name="cbo_options_hydraulics">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLineEdit" name="txt_options_hydraulics_file">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QPushButton" name="btn_options_hydraulics_file">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                    <property name="text">
-                     <string>File...</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="lbl_options_quality">
+                <widget class="QPushButton" name="btn_options_times">
                  <property name="text">
-                  <string>Quality:</string>
+                  <string>Times</string>
                  </property>
                 </widget>
                </item>
                <item row="4" column="1">
-                <widget class="QComboBox" name="cbo_options_quality"/>
-               </item>
-               <item row="6" column="0">
-                <widget class="QLabel" name="lbl_options_viscosity">
+                <widget class="QPushButton" name="btn_options_energy">
                  <property name="text">
-                  <string>Viscosity:</string>
+                  <string>Energy</string>
                  </property>
                 </widget>
-               </item>
-               <item row="6" column="1">
-                <widget class="QLineEdit" name="txt_options_viscosity"/>
-               </item>
-               <item row="7" column="0">
-                <widget class="QLabel" name="lbl_options_diffusivity">
-                 <property name="text">
-                  <string>Diffusivity:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="1">
-                <widget class="QLineEdit" name="txt_options_diffusivity"/>
-               </item>
-               <item row="8" column="0">
-                <widget class="QLabel" name="lbl_options_spec_gravity">
-                 <property name="text">
-                  <string>Spec. gravity:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="1">
-                <widget class="QLineEdit" name="txt_options_spec_gravity"/>
-               </item>
-               <item row="9" column="0">
-                <widget class="QLabel" name="lbl_options_trials">
-                 <property name="text">
-                  <string>Trials:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="1">
-                <widget class="QLineEdit" name="txt_options_trials"/>
-               </item>
-               <item row="10" column="0">
-                <widget class="QLabel" name="lbl_options_accuracy">
-                 <property name="text">
-                  <string>Accuracy:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="1">
-                <widget class="QLineEdit" name="txt_options_accuracy"/>
-               </item>
-               <item row="12" column="0">
-                <widget class="QLabel" name="lbl_options_unbalanced">
-                 <property name="text">
-                  <string>Unbalanced:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="12" column="1">
-                <widget class="QFrame" name="frame_4">
-                 <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout">
-                  <property name="spacing">
-                   <number>6</number>
-                  </property>
-                  <property name="margin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QComboBox" name="cbo_options_unbalanced">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLineEdit" name="txt_options_unbalanced">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item row="13" column="0">
-                <widget class="QLabel" name="lbl_options_pattern">
-                 <property name="text">
-                  <string>Pattern:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="13" column="1">
-                <widget class="QLineEdit" name="txt_options_pattern"/>
-               </item>
-               <item row="14" column="0">
-                <widget class="QLabel" name="lbl_options_demand_mult">
-                 <property name="text">
-                  <string>Demand mult.:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="14" column="1">
-                <widget class="QLineEdit" name="txt_options_demand_mult"/>
-               </item>
-               <item row="15" column="0">
-                <widget class="QLabel" name="lbl_options_emitter_exp">
-                 <property name="text">
-                  <string>Emitter exp.:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="15" column="1">
-                <widget class="QLineEdit" name="txt_emitter_exp"/>
-               </item>
-               <item row="16" column="0">
-                <widget class="QLabel" name="lbl_options_tolerance">
-                 <property name="text">
-                  <string>Tolerance:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="16" column="1">
-                <widget class="QLineEdit" name="txt_options_tolerance"/>
-               </item>
-               <item row="5" column="1">
-                <widget class="QFrame" name="frame_6">
-                 <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QHBoxLayout" name="horizontalLayout_6">
-                  <property name="margin">
-                   <number>0</number>
-                  </property>
-                  <item>
-                   <widget class="QLabel" name="lbl_options_quality_id">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                    <property name="text">
-                     <string>Traced node ID:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QLineEdit" name="txt_options_quality_id">
-                    <property name="enabled">
-                     <bool>false</bool>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-             <widget class="QWidget" name="wgt_times">
-              <property name="geometry">
-               <rect>
-                <x>0</x>
-                <y>0</y>
-                <width>288</width>
-                <height>298</height>
-               </rect>
-              </property>
-              <attribute name="label">
-               <string>Times</string>
-              </attribute>
-              <layout class="QFormLayout" name="formLayout_9">
-               <property name="fieldGrowthPolicy">
-                <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-               </property>
-               <item row="0" column="0">
-                <widget class="QLabel" name="lbl_times_units">
-                 <property name="text">
-                  <string>Units:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QComboBox" name="cbo_times_units"/>
-               </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="lbl_times_hydraulic_timestamp">
-                 <property name="text">
-                  <string>Hydraulic timestamp:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="1">
-                <widget class="QLineEdit" name="txt_times_hydraulic_timestamp"/>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="lbl_times_quality_timestamp">
-                 <property name="text">
-                  <string>Quality timestamp:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QLineEdit" name="txt_times_quality_timestamp"/>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="lbl_times_rule_timestamp">
-                 <property name="text">
-                  <string>Rule timestamp:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="QLineEdit" name="txt_times_rule_timestamp"/>
-               </item>
-               <item row="5" column="0">
-                <widget class="QLabel" name="lbl_times_pattern_timestamp">
-                 <property name="text">
-                  <string>Pattern timestamp:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="5" column="1">
-                <widget class="QLineEdit" name="txt_times_pattern_timestamp"/>
-               </item>
-               <item row="6" column="0">
-                <widget class="QLabel" name="lbl_times_pattern_start">
-                 <property name="text">
-                  <string>Pattern start:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="6" column="1">
-                <widget class="QLineEdit" name="txt_times_pattern_start"/>
-               </item>
-               <item row="7" column="0">
-                <widget class="QLabel" name="lbl_times_report_timestamp">
-                 <property name="text">
-                  <string>Report timestamp:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="1">
-                <widget class="QLineEdit" name="txt_times_report_timestamp"/>
-               </item>
-               <item row="8" column="0">
-                <widget class="QLabel" name="lbl_times_report_start">
-                 <property name="text">
-                  <string>Report start:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="8" column="1">
-                <widget class="QLineEdit" name="txt_times_report_start"/>
-               </item>
-               <item row="9" column="0">
-                <widget class="QLabel" name="lbl_times_start_clocktime">
-                 <property name="text">
-                  <string>Start clocktime:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="0">
-                <widget class="QLabel" name="lbl_times_statistic">
-                 <property name="text">
-                  <string>Statistic:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="10" column="1">
-                <widget class="QComboBox" name="cbo_times_statistic"/>
-               </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="lbl_times_duration">
-                 <property name="text">
-                  <string>Duration:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="1">
-                <widget class="QLineEdit" name="txt_time_duration"/>
-               </item>
-               <item row="9" column="1">
-                <widget class="QLineEdit" name="txt_times_start_clocktime"/>
                </item>
               </layout>
              </widget>

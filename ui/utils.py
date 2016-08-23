@@ -20,10 +20,14 @@ def dist(x1, y1, x2, y2, pt_x, pt_y):  # x3,y3 is the point
     dx = x - pt_x
     dy = y - pt_y
 
-    # Note: If the actual distance does not matter,
-    # if you only want to compare what this function
-    # returns to other results of this function, you
-    # can just return the squared distance instead
-    # (i.e. remove the sqrt) to gain a little performance
-
     return math.sqrt(dx*dx + dy*dy)
+
+
+def prepare_label(label, units):
+
+        if units is not None:
+            label += ' ['
+            label += units
+            label += ']:'
+
+        return label

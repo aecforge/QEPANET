@@ -102,9 +102,19 @@ class Quality:
                     quality_age: 'Age',
                     quality_trace: 'Trace'}
 
+    quality_units_mgl = 'mgL'
+    quality_units_ugl = 'ugL'
+
+    quality_units_text = {quality_units_mgl: 'mg/L',
+                          quality_units_ugl: 'ug/L'}
+
     def __init__(self):
-        self.quality = Quality.quality_none
+        self.parameter = Quality.quality_none
+        self.mass_units = Quality.quality_units_mgl
+        self.relative_diff = 1
         self.trace_junction_id = None
+        self.quality_tol = 0.01
+
 
 class Unbalanced:
     unb_stop = 0

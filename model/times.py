@@ -25,7 +25,7 @@ class Times:
         self.pattern_start = Hour(0, 0)
         self.report_timestamp = Hour(1, 0)
         self.report_start = Hour(0, 0)
-        self.start_clocktime = Hour(0, 0)
+        self.clocktime_start = Hour(0, 0)
         self.statistics = Times.stats_avg
 
 
@@ -35,5 +35,14 @@ class Hour:
         self.hours = hours
         self.mins = mins
 
+    @classmethod
+    def from_string(cls, hhmm_string):
+        cls.hours = int(hhmm_string[0:2])
+        cls.mins = int(hhmm_string[3:5])
+
     def get_as_text(self):
         return str(self.hours).zfill(2) + ':' + str(self.mins).zfill(2)
+
+    def set_from_string(self, hhmm_string):
+        self.hours = int(hhmm_string[0:2])
+        self.mins = int(hhmm_string[3:5])
