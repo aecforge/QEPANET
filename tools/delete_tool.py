@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QCursor, QColor
-from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper, QgsVector
+from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper,\
+    QgsVector, QGis
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
 from ..model.network_handling import NetworkUtils, NodeHandler, LinkHandler
@@ -23,6 +24,7 @@ class DeleteTool(QgsMapTool):
 
         self.elev = -1
         self.vertex_marker = QgsVertexMarker(self.canvas())
+        self.rubber_band = QgsRubberBand(self.data_dock.iface.mapCanvas(), QGis.Polygon)
         self.mouse_clicked = False
         self.snapper = None
 
@@ -44,17 +46,16 @@ class DeleteTool(QgsMapTool):
 
     def canvasPressEvent(self, event):
 
-        if self.snap_results is None:
-            self.clicked_pt = None
-            return
+        # if self.snap_results is None:
+        #     return
 
         if event.button() == Qt.RightButton:
             self.mouse_clicked = False
             self.clicked_pt = None
 
         if event.button() == Qt.LeftButton:
-
             self.mouse_clicked = True
+            self.clicked_pt = self.toMapCoordinates(event.pos())
 
     def canvasMoveEvent(self, event):
 
@@ -87,78 +88,47 @@ class DeleteTool(QgsMapTool):
                 self.selected_node_ft = None
                 self.vertex_marker.hide()
 
+        # Mouse clicked: draw rectangle
+        else:
+            if self.snap_results is None:
+                end_point = self.toMapCoordinates(event.pos())
+                self.show_rect(self.clicked_pt, end_point)
+
     def canvasReleaseEvent(self, event):
 
         if not self.mouse_clicked:
             return
 
-        if event.button() == 1:
+        if event.button() == Qt.LeftButton:
             self.mouse_clicked = False
 
+            # Snapped: one element selected
             if self.snap_results is not None:
 
                 snapped_ft = vector_utils.get_feats_by_id(self.snap_results[0].layer, self.snap_results[0].snappedAtGeometry)[0]
                 snapped_layer = self.snap_results[0].layer
+                self.delete_element(snapped_layer, snapped_ft)
 
-                # If reservoir or tank: delete and stitch pipes
-                if snapped_layer == self.parameters.junctions_vlay or \
-                            snapped_layer == self.parameters.reservoirs_vlay or \
-                        snapped_layer == self.parameters.tanks_vlay:
+            # Not snapped: rectangle
+            else:
+                rubber_band_rect = self.rubber_band.asGeometry().boundingBox()
 
-                    # The node is a junction
-                    if snapped_layer == self.parameters.junctions_vlay:
+                self.rubber_band.reset(QGis.Polygon)
 
-                        adj_links_fts = NetworkUtils.find_adjacent_links(self.parameters, snapped_ft.geometry())
+                self.delete_elements(self.parameters.valves_vlay, rubber_band_rect)
+                self.delete_elements(self.parameters.pumps_vlay, rubber_band_rect)
+                self.delete_elements(self.parameters.pipes_vlay, rubber_band_rect)
+                self.delete_elements(self.parameters.tanks_vlay, rubber_band_rect)
+                self.delete_elements(self.parameters.reservoirs_vlay, rubber_band_rect)
+                self.delete_elements(self.parameters.junctions_vlay, rubber_band_rect)
 
-                        # Only pipes adjacent to node: it's a simple junction
-                        if not adj_links_fts['pumps'] and not adj_links_fts['valves']:
-
-                            # Delete node
-                            NodeHandler.delete_node(self.parameters, snapped_layer, snapped_ft)
-
-                            # Delete adjacent pipes
-                            adj_pipes = NetworkUtils.find_adjacent_links(self.parameters, snapped_ft.geometry())
-                            for adj_pipe in adj_pipes['pipes']:
-                                LinkHandler.delete_link(self.parameters.pipes_vlay, adj_pipe)
-
-                        # The node is part of a pump or valve
-                        else:
-
-                            if adj_links_fts['pumps']:
-                                LinkHandler.delete_link(self.parameters, self.parameters.pumps_vlay, snapped_ft)
-
-                            elif adj_links_fts['valves']:
-                                LinkHandler.delete_link(self.parameters, self.parameters.valves_vlay, snapped_ft)
-
-                    # The node is a reservoir or a tank
-                    elif snapped_layer == self.parameters.reservoirs_vlay or \
-                                    snapped_layer == self.parameters.tanks_vlay:
-
-                        adj_pipes = NetworkUtils.find_adjacent_links(self.parameters, snapped_ft.geometry())['pipes']
-
-                        NodeHandler._delete_feature(snapped_layer, snapped_ft)
-
-                        for adj_pipe in adj_pipes:
-                            LinkHandler.delete_link(self.parameters, self.parameters.pipes_vlay, adj_pipe)
-
-                # If pipe: delete
-                elif snapped_layer == self.parameters.pipes_vlay:
-
-                    vertex = snapped_ft.geometry().closestVertexWithContext(self.snap_results[0].snappedVertex)
-                    vertex_dist = vertex[0]
-                    if vertex_dist < self.parameters.min_dist:
-                        # Delete vertex
-                        LinkHandler.delete_vertex(self.parameters, self.parameters.pipes_vlay, snapped_ft, vertex[1])
-                    else:
-                        # Delete whole feature
-                        LinkHandler.delete_link(self.parameters, snapped_layer, snapped_ft)
-
-                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.junctions_vlay)
-                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.reservoirs_vlay)
-                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.tanks_vlay)
-                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.pipes_vlay)
-                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.pumps_vlay)
-                symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.valves_vlay)
+            # Refresh
+            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.junctions_vlay)
+            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.reservoirs_vlay)
+            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.tanks_vlay)
+            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.pipes_vlay)
+            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.pumps_vlay)
+            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.valves_vlay)
 
     def activate(self):
 
@@ -229,3 +199,83 @@ class DeleteTool(QgsMapTool):
 
     def isEditTool(self):
         return True
+
+    def show_rect(self, start_point, end_point):
+
+        self.rubber_band.reset(QGis.Polygon)
+        if start_point.x() == end_point.x() or start_point.y() == end_point.y():
+            return
+
+        point1 = QgsPoint(start_point.x(), start_point.y())
+        point2 = QgsPoint(start_point.x(), end_point.y())
+        point3 = QgsPoint(end_point.x(), end_point.y())
+        point4 = QgsPoint(end_point.x(), start_point.y())
+
+        self.rubber_band.addPoint(point1, False)
+        self.rubber_band.addPoint(point2, False)
+        self.rubber_band.addPoint(point3, False)
+        self.rubber_band.addPoint(point4, True)  # true to update canvas
+        self.rubber_band.show()
+
+    def delete_elements(self, layer, rectangle):
+        feats = layer.getFeatures()
+        for feat in feats:
+            if rectangle.contains(feat.geometry().boundingBox()):
+                self.delete_element(layer, feat)
+
+    def delete_element(self, layer, feature):
+        # If reservoir or tank: delete and stitch pipes
+        if layer == self.parameters.junctions_vlay or \
+                        layer == self.parameters.reservoirs_vlay or \
+                        layer == self.parameters.tanks_vlay:
+
+            # The node is a junction
+            if layer == self.parameters.junctions_vlay:
+
+                adj_links_fts = NetworkUtils.find_adjacent_links(self.parameters, feature.geometry())
+
+                # Only pipes adjacent to node: it's a simple junction
+                if not adj_links_fts['pumps'] and not adj_links_fts['valves']:
+
+                    # Delete node
+                    NodeHandler.delete_node(self.parameters, layer, feature)
+
+                    # Delete adjacent pipes
+                    adj_pipes = NetworkUtils.find_adjacent_links(self.parameters, feature.geometry())
+                    for adj_pipe in adj_pipes['pipes']:
+                        LinkHandler.delete_link(self.parameters.pipes_vlay, adj_pipe)
+
+                # The node is part of a pump or valve
+                else:
+
+                    if adj_links_fts['pumps']:
+                        LinkHandler.delete_link(self.parameters, self.parameters.pumps_vlay, feature)
+
+                    elif adj_links_fts['valves']:
+                        LinkHandler.delete_link(self.parameters, self.parameters.valves_vlay, feature)
+
+            # The node is a reservoir or a tank
+            elif layer == self.parameters.reservoirs_vlay or \
+                            layer == self.parameters.tanks_vlay:
+
+                adj_pipes = NetworkUtils.find_adjacent_links(self.parameters, feature.geometry())['pipes']
+
+                NodeHandler._delete_feature(layer, feature)
+
+                for adj_pipe in adj_pipes:
+                    LinkHandler.delete_link(self.parameters, self.parameters.pipes_vlay, adj_pipe)
+
+        # If pipe: delete
+        elif layer == self.parameters.pipes_vlay:
+
+            if self.snap_results is not None:
+                vertex = feature.geometry().closestVertexWithContext(self.snap_results[0].snappedVertex)
+                vertex_dist = vertex[0]
+                if vertex_dist < self.parameters.min_dist:
+                    # Delete vertex
+                    LinkHandler.delete_vertex(self.parameters, self.parameters.pipes_vlay, feature, vertex[1])
+                else:
+                    # Delete whole feature
+                    LinkHandler.delete_link(self.parameters, layer, feature)
+            else:
+                LinkHandler.delete_link(self.parameters, layer, feature)

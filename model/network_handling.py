@@ -232,7 +232,6 @@ class LinkHandler:
 
             linestring = QgsLineStringV2()
             linestring.setPoints(line_coords)
-            print linestring.asWkt()
             geom_3d = QgsGeometry(linestring)
 
             # Calculate 3D length
