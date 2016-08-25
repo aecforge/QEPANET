@@ -43,7 +43,7 @@ class Parameters(Observable):
         self._tolerance = 0.01
         self._min_dist = 1  # TODO: check: 1 m? Why?
 
-        self._vertex_dist = 100
+        self._vertex_dist = 10
 
         self.options = Options()
         self.times = Times()

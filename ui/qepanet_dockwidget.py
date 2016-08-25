@@ -163,8 +163,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.cbo_pipe_status.addItem('CV')  # TODO: sofcode
 
         self.txt_pipe_vertex_dist.setValidator(RegExValidators.get_pos_decimals())
-        # QtCore.QObject.connect(self.txt_pipe_vertex_dist, QtCore.SIGNAL('textChanged(QString)'), self.params.vertex_dist(float(self.txt_pipe)))
-        self.txt_pipe_vertex_dist.textChanged.connect(self.pipe_vertex_dist)
+        self.txt_pipe_vertex_dist.setText(str(self.params.vertex_dist))
+        self.txt_pipe_vertex_dist.textChanged.connect(self.pipe_vertex_dist_changed)
 
         # Pumps --------------------------------------------------------------------------------------------------------
         self.cbo_pump_param.addItem(Pump.parameters_head)
@@ -685,7 +685,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             else:
                 return None
 
-    def pipe_vertex_dist(self, vertex_dist):
+    def pipe_vertex_dist_changed(self, vertex_dist):
         self.params.vertex_dist = float(vertex_dist)
 
     def find_decimals(self, float_string):

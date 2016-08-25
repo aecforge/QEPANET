@@ -222,13 +222,21 @@ class LinkHandler:
             pipe_geom = QgsGeometry.fromPolyline(nodes)
 
             # Densify vertices
-            point_gen = PointsAlongLineGenerator(pipe_geom)
-            dists_and_points = point_gen.get_points_coords(params.vertex_dist, False)
+            points_gen = PointsAlongLineGenerator(pipe_geom)
+            dists_and_points = points_gen.get_points_coords(params.vertex_dist, False)
+
+            # Add origianl vertices
+            for v in range(1, len(pipe_geom.asPolyline()) - 1):
+                dist = PointsAlongLineUtils.distance(pipe_geom, QgsGeometry.fromPoint(pipe_geom.asPolyline()[v]), params.tolerance)
+                dists_and_points[dist] = pipe_geom.asPolyline()[v]
+
+            dists_and_points = OrderedDict(sorted(dists_and_points.items()))
             pipe_geom_2 = QgsGeometry.fromPolyline(dists_and_points.values())
 
             line_coords = []
             for vertex in pipe_geom_2.asPolyline():
-                line_coords.append(QgsPointV2(QgsWKBTypes.PointZ, vertex.x(), vertex.y(), 100))
+                z = raster_utils.read_layer_val_from_coord(params.dem_rlay, vertex)
+                line_coords.append(QgsPointV2(QgsWKBTypes.PointZ, vertex.x(), vertex.y(), z))
 
             linestring = QgsLineStringV2()
             linestring.setPoints(line_coords)
@@ -272,6 +280,7 @@ class LinkHandler:
         a, b, next_vertex = pipe_ft.geometry().closestSegmentWithContext(position)
 
         dist = PointsAlongLineUtils.distance(pipe_ft.geometry(), QgsGeometry.fromPoint(position), parameters.tolerance)
+
         dist_before = dist - 0.5  # TODO: softcode based on projection units
         if dist_before <= 0:
             dist_before = 1
