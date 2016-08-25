@@ -12,7 +12,7 @@ from ..model.network import Pipe
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils, vector_utils
-from ..ui.pipe_section_ui import PipeSectionDialog
+from ..ui.section_editor import PipeSectionDialog
 
 
 class AddPipeTool(QgsMapTool):

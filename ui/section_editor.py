@@ -1,7 +1,9 @@
-from qgis.core import QgsPoint
-from PyQt4 import QtGui, QtCore
+from qgis.core import QgsPoint, QgsGeometry, QgsPointV2, QgsLineStringV2, QgsWKBTypes, QgsVertexId
+from PyQt4 import QtCore
+from PyQt4.QtGui import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QPushButton
 from graphs import MyMplCanvas
 from ..geo_utils import bresenham, raster_utils
+from ..model.network_handling import LinkHandler
 from matplotlib.lines import Line2D
 from matplotlib.path import Path
 from collections import OrderedDict
@@ -11,15 +13,16 @@ import numpy as np
 import math
 
 
-class PipeSectionDialog(QtGui.QDialog):
+class PipeSectionDialog(QDialog):
 
     def __init__(self, parent, iface, parameters, pipe_ft):
 
-        QtGui.QDialog.__init__(self, parent)
-        main_lay = QtGui.QVBoxLayout(self)
+        QDialog.__init__(self, parent)
+        main_lay = QVBoxLayout(self)
 
         self.parent = parent
         self.params = parameters
+        self.pipe_ft = pipe_ft
 
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
@@ -27,33 +30,89 @@ class PipeSectionDialog(QtGui.QDialog):
         self.setWindowModality(QtCore.Qt.ApplicationModal)
 
         # Graph canvas
-        self.fra_graph = QtGui.QFrame()
+        self.fra_graph = QFrame()
         self.static_canvas = SectionCanvas(iface, parameters)
 
+        # Buttons
+        self.fra_buttons = QFrame(self)
+        fra_buttons_lay = QHBoxLayout(self.fra_buttons)
+        self.btn_Cancel = QPushButton('Cancel')
+        self.btn_Ok = QPushButton('OK')
+        fra_buttons_lay.addWidget(self.btn_Cancel)
+        fra_buttons_lay.addWidget(self.btn_Ok)
+
         main_lay.addWidget(self.static_canvas)
+        main_lay.addWidget(self.fra_buttons)
 
-        # DEM and pipe
-        # dem_xy = {'x': (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12),'y': (11, 10, 9, 8, 7, 6, 5, 5, 6, 7, 8, 9, 10)}
-        # pipe_xy = {'x': (0, 4, 6, 8, 10, 12), 'y': (5, 4, 3, 2, 1, 3)}
+        self.setup()
+        self.initialize()
 
-        dem_xz = self.find_raster_distz(pipe_ft)
-        pipe_xz = self.find_line_distz(pipe_ft)
+    def setup(self):
 
+        # Buttons
+        self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
+        self.btn_Ok.pressed.connect(self.btn_ok_pressed)
+
+    def initialize(self):
+
+        dem_xz = self.find_raster_distz()
+        pipe_xz = self.find_line_distz()
         self.static_canvas.draw_pipe_section(dem_xz, pipe_xz)
 
-    def find_line_distz(self, pipe_ft):
+    def btn_cancel_pressed(self):
+        self.setVisible(False)
 
-        pipe_pts = pipe_ft.geometry().asPolyline()
+    def btn_ok_pressed(self):
+        new_zs = self.static_canvas.pipe_line.get_ydata()
+
+        # points = [QgsPoint(0, 0), QgsPoint(0, 1)]
+        # pipe_geom_2 = QgsGeometry.fromPolyline(points)
+        #
+        # line_coords = []
+        # for vertex in pipe_geom_2.asPolyline():
+        #     line_coords.append(QgsPointV2(QgsWKBTypes.PointZ, vertex.x(), vertex.y(), 100))
+        #
+        # linestring = QgsLineStringV2()
+        # linestring.setPoints(line_coords)
+        # geom_3d = QgsGeometry(linestring)
+        #
+        # vertex_id = QgsVertexId(0, 0, 0, QgsVertexId.SegmentVertex)
+        # vertex = geom_3d.geometry().vertexAt(vertex_id)
+        # print geom_3d.geometry().vertexAt(vertex_id).asWkt()
+        #
+        # new_pos_pt = QgsPointV2(vertex.x(), vertex.y())
+        # new_pos_pt.addZValue(10)
+        #
+        # geom_3d.geometry().moveVertex(vertex_id, new_pos_pt)
+        # print geom_3d.geometry().vertexAt(vertex_id).asWkt()
+
+        pipe_geom_v2 = self.pipe_ft.geometry().geometry()
+        for p in range(pipe_geom_v2.vertexCount(0, 0)):
+            vertex_id = QgsVertexId(0, 0, p, QgsVertexId.SegmentVertex)
+            vertex = pipe_geom_v2.vertexAt(vertex_id)
+            new_pos_pt = QgsPointV2(vertex.x(), vertex.y())
+            new_pos_pt.addZValue(new_zs[p])
+
+            LinkHandler.move_pipe_vertex(self.params, self.pipe_ft, new_pos_pt, p)
+
+        self.setVisible(False)
+
+    def find_line_distz(self):
+
+        pipe_geom_v2 = self.pipe_ft.geometry().geometry()
         total_dist = 0
         dist_z = OrderedDict()
-        dist_z[total_dist] = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, pipe_pts[0])
-        for p in range(1, len(pipe_pts)):
-            total_dist += math.sqrt((pipe_pts[p].x() - pipe_pts[p-1].x())**2 + (pipe_pts[p].y() - pipe_pts[p-1].y())**2)
-            dist_z[total_dist] = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, pipe_pts[p])
+        dist_z[total_dist] = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, 0, QgsVertexId.SegmentVertex)).z()
+        for p in range(1, pipe_geom_v2.vertexCount(0, 0)):
+            vertex = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p, QgsVertexId.SegmentVertex))
+            vertex_prev = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p-1, QgsVertexId.SegmentVertex))
+            total_dist += math.sqrt((vertex.x() - vertex_prev.x())**2 + (vertex.y() - vertex_prev.y())**2)
+            dist_z[total_dist] = vertex.z()
+            # dist_z[total_dist] = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, pipe_pts[p])
 
         return dist_z
 
-    def find_raster_distz(self, pipe_ft):
+    def find_raster_distz(self):
 
         dem_extent = self.params.dem_rlay.extent()
         ul_coord = QgsPoint(dem_extent.xMinimum(), dem_extent.yMaximum())
@@ -62,7 +121,7 @@ class PipeSectionDialog(QtGui.QDialog):
 
         points = []
 
-        pipe_pts = pipe_ft.geometry().asPolyline()
+        pipe_pts = self.pipe_ft.geometry().asPolyline()
         for p in range(1, len(pipe_pts)):
             start_col_row = raster_utils.get_col_row(pipe_pts[p-1], ul_coord, x_cell_size, y_cell_size)
             end_col_row = raster_utils.get_col_row(pipe_pts[p], ul_coord, x_cell_size, y_cell_size)
@@ -172,16 +231,16 @@ class SectionCanvas(MyMplCanvas):
             return
         if event.inaxes is None:
             return
-        if event.button != 1 and event.button != 3:
+        if event.button != QtCore.Qt.LeftButton and event.button != QtCore.Qt.RightButton:
             return
         self._ind = self.get_ind_under_point(event)
 
     def button_release_callback(self, event):
         if not self.showverts:
             return
-        if event.button == 2:
+        if event.button == QtCore.Qt.MiddleButton:
             return
-        if event.button == 3:
+        if event.button == QtCore.Qt.RightButton:
 
             if self._ind is None:
                 # Find the distance to the closest vertex
@@ -218,6 +277,7 @@ class SectionCanvas(MyMplCanvas):
                     self.axes.draw_artist(self.pipe_patch)
                     self.axes.draw_artist(self.pipe_line)
                     self.blit(self.axes.bbox)
+
             else:
                 # Delete vertex
                 vertices = self.pipe_patch.get_path().vertices

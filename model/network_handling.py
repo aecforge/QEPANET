@@ -441,7 +441,7 @@ class LinkHandler:
             return [pipe_ft_1, pipe_ft_2]
 
     @staticmethod
-    def move_pipe_vertex(parameters, pipe_ft, new_pos_pt, vertex_index):
+    def move_pipe_vertex(parameters, pipe_ft, new_pos_pt_v2, vertex_index):
         caps = parameters.pipes_vlay.dataProvider().capabilities()
 
         if caps & QgsVectorDataProvider.ChangeGeometries:
@@ -449,11 +449,7 @@ class LinkHandler:
 
             try:
                 edit_utils = QgsVectorLayerEditUtils(parameters.pipes_vlay)
-                edit_utils.moveVertex(
-                    new_pos_pt.x(),
-                    new_pos_pt.y(),
-                    pipe_ft.id(),
-                    vertex_index)
+                edit_utils.moveVertexV2(new_pos_pt_v2, pipe_ft.id(), vertex_index)
 
                 # Retrieve the feature again, and update attributes
                 request = QgsFeatureRequest().setFilterFid(pipe_ft.id())

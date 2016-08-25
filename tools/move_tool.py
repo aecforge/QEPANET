@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QCursor, QColor
-from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper, QgsVector
+from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper,\
+    QgsVector, QgsVertexId, QgsPointV2
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
 from ..model.network_handling import NetworkUtils, NodeHandler, LinkHandler
@@ -259,7 +260,14 @@ class MoveTool(QgsMapTool):
                 # No adjacent links: it's just a pipe vertex
                 if self.adj_links_fts is None:
                     feat = vector_utils.get_feats_by_id(self.snap_results[0].layer, self.snap_results[0].snappedAtGeometry)
-                    LinkHandler.move_pipe_vertex(self.parameters, feat[0], self.mouse_pt, self.snap_results[0].snappedVertexNr)
+
+                    vertex_id = QgsVertexId(0, 0, self.snap_results[0].snappedVertexNr, QgsVertexId.SegmentVertex)
+                    vertex_v2 = feat[0].geometry().geometry().vertexAt(vertex_id)
+
+                    new_pos_pt_v2 = QgsPointV2(self.mouse_pt.x(), self.mouse_pt.y())
+                    new_pos_pt_v2.addZValue(vertex_v2.z())
+
+                    LinkHandler.move_pipe_vertex(self.parameters, feat[0], new_pos_pt_v2, self.snap_results[0].snappedVertexNr)
 
                 # It's a node
                 else:
@@ -275,6 +283,12 @@ class MoveTool(QgsMapTool):
 
                         # Update pipes
                         for feat, vertex_index in self.adj_pipes_fts_d.iteritems():
+
+                            vertex_id = QgsVertexId(0, 0, vertex_index, QgsVertexId.SegmentVertex)
+                            vertex_v2 = feat.geometry().geometry().vertexAt(vertex_id)
+                            new_pos_pt_v2 = QgsPointV2(self.mouse_pt.x(), self.mouse_pt.y())
+                            new_pos_pt_v2.addZValue(vertex_v2.z())
+
                             LinkHandler.move_pipe_vertex(self.parameters, feat, self.mouse_pt, vertex_index)
 
                     # Pump or valve
@@ -309,12 +323,16 @@ class MoveTool(QgsMapTool):
 
                         # Move the adjacent pipes' vertices
                         for feat, vertex_index in self.adj_pipes_fts_d.iteritems():
-                            LinkHandler.move_pipe_vertex(self.parameters,
-                                                         feat,
-                                                         QgsPoint(
-                                                             feat.geometry().vertexAt(vertex_index).x() + self.delta_vec.x(),
-                                                             feat.geometry().vertexAt(vertex_index).y() + self.delta_vec.y()),
-                                                         vertex_index)
+
+
+                            vertex_id = QgsVertexId(0, 0, vertex_index, QgsVertexId.SegmentVertex)
+                            vertex_v2 = feat.geometry().geometry().vertexAt(vertex_id)
+                            new_pos_pt_v2 = QgsPointV2(
+                                feat.geometry().vertexAt(vertex_index).x() + self.delta_vec.x(),
+                                feat.geometry().vertexAt(vertex_index).y() + self.delta_vec.y())
+                            new_pos_pt_v2.addZValue(vertex_v2.z())
+
+                            LinkHandler.move_pipe_vertex(self.parameters, feat, new_pos_pt_v2, vertex_index)
                             # In 2.16: LinkHandler.move_pipe_vertex(feat, feat.geometry().vertexAt(vertex_index) + self.delta_vec, vertex_index)
 
                     self.adj_pipes_fts_d.clear()
