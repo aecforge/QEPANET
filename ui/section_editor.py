@@ -6,6 +6,7 @@ from ..geo_utils import bresenham, raster_utils
 from ..model.network_handling import LinkHandler
 from matplotlib.lines import Line2D
 from matplotlib.path import Path
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 from collections import OrderedDict
 import utils
 import matplotlib.patches as patches
@@ -29,11 +30,42 @@ class PipeSectionDialog(QDialog):
         self.setWindowTitle('Pipe section editor')  # TODO: softcode
         self.setWindowModality(QtCore.Qt.ApplicationModal)
 
-        # Graph canvas
-        self.fra_graph = QFrame()
-        self.static_canvas = SectionCanvas(iface, parameters)
+        self.fra_toolbar = QFrame(self)
+        fra_toolbar_lay = QHBoxLayout(self.fra_toolbar)
+        self.btn_zoom = QPushButton('Zoom')
+        self.btn_zoom.clicked.connect(self.btn_zoom_clicked)
 
-        # Buttons
+        self.btn_pan = QPushButton('Pan')
+        self.btn_pan.clicked.connect(self.btn_pan_clicked)
+
+        self.btn_home = QPushButton('Full extent')
+        self.btn_home.clicked.connect(self.btn_home_clicked)
+
+        self.btn_back = QPushButton('Back')
+        self.btn_back.clicked.connect(self.btn_back_clicked)
+
+        self.btn_forth = QPushButton('Forth')
+        self.btn_forth.clicked.connect(self.btn_forth_clicked)
+
+        self.btn_edit = QPushButton('Edit')
+        self.btn_edit.clicked.connect(self.btn_edit_clicked)
+
+        fra_toolbar_lay.addWidget(self.btn_zoom)
+        fra_toolbar_lay.addWidget(self.btn_pan)
+        fra_toolbar_lay.addWidget(self.btn_home)
+        fra_toolbar_lay.addWidget(self.btn_back)
+        fra_toolbar_lay.addWidget(self.btn_forth)
+        fra_toolbar_lay.addWidget(self.btn_edit)
+
+        # Graph canvas
+        self.fra_graph = QFrame(self)
+        self.static_canvas = SectionCanvas(iface, parameters, self)
+
+        # Toolbar
+        self.toolbar = NavigationToolbar2QT(self.static_canvas, self)
+        self.toolbar.hide()
+
+        # OK/Cancel buttons
         self.fra_buttons = QFrame(self)
         fra_buttons_lay = QHBoxLayout(self.fra_buttons)
         self.btn_Cancel = QPushButton('Cancel')
@@ -41,6 +73,7 @@ class PipeSectionDialog(QDialog):
         fra_buttons_lay.addWidget(self.btn_Cancel)
         fra_buttons_lay.addWidget(self.btn_Ok)
 
+        main_lay.addWidget(self.fra_toolbar)
         main_lay.addWidget(self.static_canvas)
         main_lay.addWidget(self.fra_buttons)
 
@@ -59,33 +92,33 @@ class PipeSectionDialog(QDialog):
         pipe_xz = self.find_line_distz()
         self.static_canvas.draw_pipe_section(dem_xz, pipe_xz)
 
+    def btn_home_clicked(self):
+        self.toolbar.home()
+
+    def btn_zoom_clicked(self):
+        self.toolbar.zoom()
+
+    def btn_pan_clicked(self):
+        self.toolbar.pan()
+
+    def btn_back_clicked(self):
+        self.toolbar.back()
+
+    def btn_forth_clicked(self):
+        self.toolbar.forward()
+
+    def btn_edit_clicked(self):
+        # Deactivate tools
+        if self.toolbar._active == "PAN":
+            self.toolbar.pan()
+        elif self.toolbar._active == "ZOOM":
+            self.toolbar.zoom()
+
     def btn_cancel_pressed(self):
         self.setVisible(False)
 
     def btn_ok_pressed(self):
         new_zs = self.static_canvas.pipe_line.get_ydata()
-
-        # points = [QgsPoint(0, 0), QgsPoint(0, 1)]
-        # pipe_geom_2 = QgsGeometry.fromPolyline(points)
-        #
-        # line_coords = []
-        # for vertex in pipe_geom_2.asPolyline():
-        #     line_coords.append(QgsPointV2(QgsWKBTypes.PointZ, vertex.x(), vertex.y(), 100))
-        #
-        # linestring = QgsLineStringV2()
-        # linestring.setPoints(line_coords)
-        # geom_3d = QgsGeometry(linestring)
-        #
-        # vertex_id = QgsVertexId(0, 0, 0, QgsVertexId.SegmentVertex)
-        # vertex = geom_3d.geometry().vertexAt(vertex_id)
-        # print geom_3d.geometry().vertexAt(vertex_id).asWkt()
-        #
-        # new_pos_pt = QgsPointV2(vertex.x(), vertex.y())
-        # new_pos_pt.addZValue(10)
-        #
-        # geom_3d.geometry().moveVertex(vertex_id, new_pos_pt)
-        # print geom_3d.geometry().vertexAt(vertex_id).asWkt()
-
         pipe_geom_v2 = self.pipe_ft.geometry().geometry()
         for p in range(pipe_geom_v2.vertexCount(0, 0)):
             vertex_id = QgsVertexId(0, 0, p, QgsVertexId.SegmentVertex)
@@ -108,7 +141,6 @@ class PipeSectionDialog(QDialog):
             vertex_prev = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p-1, QgsVertexId.SegmentVertex))
             total_dist += math.sqrt((vertex.x() - vertex_prev.x())**2 + (vertex.y() - vertex_prev.y())**2)
             dist_z[total_dist] = vertex.z()
-            # dist_z[total_dist] = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, pipe_pts[p])
 
         return dist_z
 
@@ -147,12 +179,14 @@ class SectionCanvas(MyMplCanvas):
 
     showverts = True
 
-    def __init__(self, iface, parameters):
+    def __init__(self, iface, parameters, parent):
 
         super(self.__class__, self).__init__()
 
         self.iface = iface
         self.parameters = parameters
+        self.parent = parent
+
         self._ind = 0
         self.dem_line = None
         self.pipe_patch = None
@@ -227,20 +261,27 @@ class SectionCanvas(MyMplCanvas):
 
     def button_press_callback(self, event):
 
+        if self.parent.toolbar._active is not None:
+            return
+
         if not self.showverts:
             return
         if event.inaxes is None:
             return
-        if event.button != QtCore.Qt.LeftButton and event.button != QtCore.Qt.RightButton:
+        if event.button != 1 and event.button != 3:
             return
         self._ind = self.get_ind_under_point(event)
 
     def button_release_callback(self, event):
+
+        if self.parent.toolbar._active is not None:
+            return
+
         if not self.showverts:
             return
-        if event.button == QtCore.Qt.MiddleButton:
+        if event.button == 2:
             return
-        if event.button == QtCore.Qt.RightButton:
+        if event.button == 3:
 
             if self._ind is None:
                 # Find the distance to the closest vertex
@@ -302,6 +343,10 @@ class SectionCanvas(MyMplCanvas):
         self._ind = None
 
     def motion_notify_callback(self, event):
+
+        if self.parent.toolbar._active is not None:
+            return
+
         if not self.showverts:
             return
         if self._ind is None:
