@@ -1,6 +1,6 @@
 from qgis.core import QgsPoint, QgsGeometry, QgsPointV2, QgsLineStringV2, QgsWKBTypes, QgsVertexId
 from PyQt4 import QtCore
-from PyQt4.QtGui import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QPushButton
+from PyQt4.QtGui import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QPushButton, QIcon
 from graphs import MyMplCanvas
 from ..geo_utils import bresenham, raster_utils
 from ..model.network_handling import LinkHandler
@@ -12,6 +12,8 @@ import utils
 import matplotlib.patches as patches
 import numpy as np
 import math
+import os
+from utils import set_up_button
 
 
 class PipeSectionDialog(QDialog):
@@ -30,22 +32,32 @@ class PipeSectionDialog(QDialog):
         self.setWindowTitle('Pipe section editor')  # TODO: softcode
         self.setWindowModality(QtCore.Qt.ApplicationModal)
 
+        curr_dir = os.path.dirname(os.path.abspath(__file__))
+
         self.fra_toolbar = QFrame(self)
         fra_toolbar_lay = QHBoxLayout(self.fra_toolbar)
         self.btn_zoom = QPushButton('Zoom')
         self.btn_zoom.clicked.connect(self.btn_zoom_clicked)
+        set_up_button(self.btn_zoom, os.path.join(curr_dir, 'i_zoom.png'), 13, 13,
+                      'Zoom')  # TODO: softcode
 
         self.btn_pan = QPushButton('Pan')
         self.btn_pan.clicked.connect(self.btn_pan_clicked)
+        set_up_button(self.btn_pan, os.path.join(curr_dir, 'i_pan.png'), 15, 15,
+                      'Pan')  # TODO: softcode
 
         self.btn_home = QPushButton('Full extent')
         self.btn_home.clicked.connect(self.btn_home_clicked)
 
         self.btn_back = QPushButton('Back')
         self.btn_back.clicked.connect(self.btn_back_clicked)
+        set_up_button(self.btn_back, os.path.join(curr_dir, 'i_back.png'), 7, 13,
+                      'Back')  # TODO: softcode
 
         self.btn_forth = QPushButton('Forth')
         self.btn_forth.clicked.connect(self.btn_forth_clicked)
+        set_up_button(self.btn_forth, os.path.join(curr_dir, 'i_forth.png'), 7, 13,
+                      'Forward')  # TODO: softcode
 
         self.btn_edit = QPushButton('Edit')
         self.btn_edit.clicked.connect(self.btn_edit_clicked)

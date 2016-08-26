@@ -25,7 +25,7 @@ import os
 
 from PyQt4 import QtCore, uic, QtGui
 from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui import QFileDialog, QMessageBox, QIcon
+from PyQt4.QtGui import QFileDialog, QMessageBox
 from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsCoordinateReferenceSystem,\
     QgsProject, QgsSnapper, QgsTolerance
 
@@ -45,7 +45,7 @@ from ..tools.data_stores import ShapefileDS
 from ..tools.exceptions import ShpExistsExcpetion
 from ..tools.delete_tool import DeleteTool
 from ..tools.parameters import Parameters, RegExValidators, ConfigFile
-from utils import prepare_label as pre_l
+from utils import prepare_label as pre_l, set_up_button
 import misc
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -83,12 +83,22 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         # Tools buttons
         curr_dir = os.path.dirname(os.path.abspath(__file__))
-        self.set_up_button(self.btn_add_junction, os.path.join(curr_dir, 'i_junction.png'), 12, 12)
-        self.set_up_button(self.btn_add_reservoir, os.path.join(curr_dir, 'i_reservoir.png'), 14, 14)
-        self.set_up_button(self.btn_add_tank, os.path.join(curr_dir, 'i_tank.png'), 14, 12)
-        self.set_up_button(self.btn_add_pipe, os.path.join(curr_dir, 'i_pipe.png'), 13, 5)
-        self.set_up_button(self.btn_add_pump, os.path.join(curr_dir, 'i_pump.png'), 15, 11)
-        self.set_up_button(self.btn_add_valve, os.path.join(curr_dir, 'i_valve.png'), 13, 14)
+        set_up_button(self.btn_add_junction, os.path.join(curr_dir, 'i_junction.png'), 12, 12,
+                           'Create junction')  # TODO: softcode
+        set_up_button(self.btn_add_reservoir, os.path.join(curr_dir, 'i_reservoir.png'), 14, 14,
+                           'Create reservoir')  # TODO: softcode
+        set_up_button(self.btn_add_tank, os.path.join(curr_dir, 'i_tank.png'), 14, 12,
+                           'Create tank')  # TODO: softcode
+        set_up_button(self.btn_add_pipe, os.path.join(curr_dir, 'i_pipe.png'), 13, 5,
+                           'Create/edit pipe')  # TODO: softcode
+        set_up_button(self.btn_add_pump, os.path.join(curr_dir, 'i_pump.png'), 15, 11,
+                           'Create pump')  # TODO: softcode
+        set_up_button(self.btn_add_valve, os.path.join(curr_dir, 'i_valve.png'), 13, 14,
+                           'Create valve')  # TODO: softcode
+        set_up_button(self.btn_move_element, os.path.join(curr_dir, 'i_move.png'), 15, 15,
+                           'Move element')  # TODO: softcode
+        set_up_button(self.btn_delete_element, os.path.join(curr_dir, 'i_delete2.png'), 13, 15,
+                           'Delete element(s)')  # TODO: softcode
 
         self.btn_move_element.setCheckable(True)
         self.btn_delete_element.setCheckable(True)
@@ -205,13 +215,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
-
-    def set_up_button(self, button, icon_path, w, h):
-
-        button.setText('')
-        button.setIcon(QIcon(icon_path))
-        self.btn_add_junction.setIconSize(QtCore.QSize(w, h))
-        self.btn_add_junction.setCheckable(True)
 
     def add_junction(self):
 

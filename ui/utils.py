@@ -1,4 +1,6 @@
 import math
+from PyQt4.QtGui import QIcon
+from PyQt4.QtCore import QSize
 
 
 def dist(x1, y1, x2, y2, pt_x, pt_y):  # x3,y3 is the point
@@ -31,3 +33,12 @@ def prepare_label(label, units):
             label += ']:'
 
         return label
+
+
+def set_up_button(button, icon_path, w, h, tooltip_text=None):
+    button.setText('')
+    button.setIcon(QIcon(icon_path))
+    button.setIconSize(QSize(w, h))
+    button.setCheckable(True)
+    if tooltip_text is not None:
+        button.setToolTip(tooltip_text)
