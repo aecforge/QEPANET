@@ -31,7 +31,7 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsCoordinateReferenceSy
 
 from ..geo_utils import utils
 from options_dialogs import HydraulicsDialog, QualityDialog, TimesDialog, EnergyDialog
-from patterns_ui import PatternsDialog
+from curvespatterns_ui import GraphDialog
 from ..model.network import Tables, Pump, Valve
 from ..rendering import symbology
 from ..tools.add_junction_tool import AddJunctionTool
@@ -103,25 +103,25 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_move_element.setCheckable(True)
         self.btn_delete_element.setCheckable(True)
 
-        QtCore.QObject.connect(self.btn_add_junction, QtCore.SIGNAL('pressed()'), self.add_junction)
-        QtCore.QObject.connect(self.btn_add_reservoir, QtCore.SIGNAL('pressed()'), self.add_reservoir)
-        QtCore.QObject.connect(self.btn_add_tank, QtCore.SIGNAL('pressed()'), self.add_tank)
+        self.btn_add_junction.pressed.connect(self.add_junction)
+        self.btn_add_reservoir.pressed.connect(self.add_reservoir)
+        self.btn_add_tank.pressed.connect(self.add_tank)
 
-        QtCore.QObject.connect(self.btn_add_pipe, QtCore.SIGNAL('pressed()'), self.add_pipe)
-        QtCore.QObject.connect(self.btn_add_pump, QtCore.SIGNAL('pressed()'), self.add_pump)
-        QtCore.QObject.connect(self.btn_add_valve, QtCore.SIGNAL('pressed()'), self.add_valve)
+        self.btn_add_pipe.pressed.connect(self.add_pipe)
+        self.btn_add_pump.pressed.connect(self.add_pump)
+        self.btn_add_valve.pressed.connect(self.add_valve)
 
-        QtCore.QObject.connect(self.btn_move_element, QtCore.SIGNAL('pressed()'), self.move_element)
-        QtCore.QObject.connect(self.btn_delete_element, QtCore.SIGNAL('pressed()'), self.delete_element)
+        self.btn_move_element.pressed.connect(self.move_element)
+        self.btn_delete_element.pressed.connect(self.delete_element)
 
         # Layers
-        QtCore.QObject.connect(self.cbo_junctions, QtCore.SIGNAL('activated(int)'), self.cbo_junctions_activated)
-        QtCore.QObject.connect(self.cbo_reservoirs, QtCore.SIGNAL('activated(int)'), self.cbo_reservoirs_activated)
-        QtCore.QObject.connect(self.cbo_tanks, QtCore.SIGNAL('activated(int)'), self.cbo_tanks_activated)
-        QtCore.QObject.connect(self.cbo_pipes, QtCore.SIGNAL('activated(int)'), self.cbo_pipes_activated)
-        QtCore.QObject.connect(self.cbo_pumps, QtCore.SIGNAL('activated(int)'), self.cbo_pumps_activated)
-        QtCore.QObject.connect(self.cbo_valves, QtCore.SIGNAL('activated(int)'), self.cbo_valves_activated)
-        QtCore.QObject.connect(self.cbo_dem, QtCore.SIGNAL('activated(int)'), self.cbo_dem_activated)
+        self.cbo_junctions.activated.connect(self.cbo_junctions_activated)
+        self.cbo_reservoirs.activated.connect(self.cbo_reservoirs_activated)
+        self.cbo_tanks.activated.connect(self.cbo_tanks_activated)
+        self.cbo_pipes.activated.connect(self.cbo_pipes_activated)
+        self.cbo_pumps.activated.connect(self.cbo_pumps_activated)
+        self.cbo_valves.activated.connect(self.cbo_valves_activated)
+        self.cbo_dem.activated.connect(self.cbo_dem_activated)
 
         QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.update_layers_combos)
         QgsMapLayerRegistry.instance().layerRemoved.connect(self.update_layers_combos)
@@ -198,13 +198,14 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_options_energy.pressed.connect(self.btn_energy_pressed)
 
         # Other tools
-        QtCore.QObject.connect(self.btn_create_layers, QtCore.SIGNAL('pressed()'), self.create_layers)
+        self.btn_create_layers.pressed.connect(self.create_layers)
 
         self.txt_snap_tolerance.setText(str(parameters.snap_tolerance))
         self.txt_snap_tolerance.setValidator(RegExValidators.get_pos_decimals())
         QtCore.QObject.connect(self.txt_snap_tolerance, QtCore.SIGNAL('editingFinished()'), self.snap_tolerance_changed)
 
-        QtCore.QObject.connect(self.btn_pattern_editor, QtCore.SIGNAL('pressed()'), self.pattern_editor)
+        self.btn_pattern_editor.pressed.connect(self.pattern_editor)
+        self.btn_curve_editor.pressed.connect(self.curve_editor)
 
     # This method needed by Observable
     def update(self, observable):
@@ -223,6 +224,21 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_junction.setChecked(True)
 
         else:
+            # Check all layers not set
+            if self.cbo_junctions.count() == 0 and self.cbo_reservoirs.count() == 0 and self.cbo_tanks.count() == 0 and\
+                    self.cbo_pipes.count() == 0 and self.cbo_pumps.count() == 0 and self.cbo_valves.count() == 0:
+
+                ret = QtGui.QMessageBox.question(
+                    self.iface.mainWindow(),
+                    Parameters.plug_in_name,
+                    u'It appears that none of the six needed layers have been set. Do you want to create the six needed layers (and relative Shapefiles)?',  # TODO: softcode
+                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+
+                if ret == QtGui.QMessageBox.Yes:
+                    self.create_layers()
+                else:
+                    return
+
             # Check for junctions and pipes layers selected
             if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0:
                 self.iface.messageBar().pushWarning(
@@ -544,8 +560,37 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.params.patterns_file = patterns_file_path
 
-        pattern_dialog = PatternsDialog(self.iface.mainWindow(), self.params)
+        pattern_dialog = GraphDialog(self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_patterns)
         pattern_dialog.show()
+
+    def curve_editor(self):
+
+        # Read patterns path
+        config_file = ConfigFile(Parameters.config_file_path)
+        curves_file_path = config_file.get_curves_file_path()
+        if curves_file_path is None or curves_file_path == '':
+            QMessageBox.information(
+                self.iface.mainWindow(),
+                Parameters.plug_in_name,
+                u'Please select the file where the curves will be saved it in the next dialog.',
+                QMessageBox.Ok)
+
+            curves_file_path = QFileDialog.getOpenFileName(
+                self.iface.mainWindow(),
+                'Select curves file',
+                None,
+                'Curves files (*.txt *.inp)')
+
+            if curves_file_path is None or curves_file_path == '':
+                return
+            else:
+                # Save patterns file path in configuration file
+                config_file.set_curves_file_path(curves_file_path)
+
+        self.params.curves_file = curves_file_path
+
+        curve_dialog = GraphDialog(self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_curves)
+        curve_dialog.show()
 
     def update_layers_combos(self):
 
@@ -677,8 +722,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.cbo_pump_head.clear()
         if self.params.curves is not None:
             for value in self.params.curves:
-                self.cbo_tank_curve.addItem(value.name, value)
-                self.cbo_pump_head.addItem(value.name, value)
+                self.cbo_tank_curve.addItem(value.desc, value)
+                self.cbo_pump_head.addItem(value.desc, value)
 
     def get_combo_current_data(self, combo):
         index = self.cbo_pipe_roughness.currentIndex()

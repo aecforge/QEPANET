@@ -225,36 +225,17 @@ class QEpanet:
 
         config_file = ConfigFile(Parameters.config_file_path)
 
-        # Read curvres path
-        # curves_file_path = config_file.get_curves_file_path()
-        # if curves_file_path is None or curves_file_path == '':
-        #     QMessageBox.warning(
-        #         self.iface.mainWindow(),
-        #         Parameters.plug_in_name,
-        #         u'The curves file is not set. Please select it in the next dialog.',
-        #         QMessageBox.Ok)
-        #
-        #     curves_file_path = QFileDialog.getOpenFileName(
-        #         self.iface.mainWindow(),
-        #         'Select curves file',
-        #         None,
-        #         'Curves files (*.txt *.inp)')
-        #
-        #     if curves_file_path is None or curves_file_path == '':
-        #         return
-        #     else:
-        #         # Save patterns file path in configuration file
-        #         config_file.set_curves_file_path(curves_file_path)
-
         # Read patterns
         patterns_file_path = config_file.get_patterns_file_path()
+        self.parameters.patterns_file = patterns_file_path
         if patterns_file_path is not None and os.path.isfile(patterns_file_path):
-            InpFile.read_patterns(self.parameters, patterns_file_path)
+            InpFile.read_patterns(self.parameters)
 
         # Read curves
         curves_file_path = config_file.get_curves_file_path()
+        self.parameters.curves_file = curves_file_path
         if curves_file_path is not None and os.path.isfile(curves_file_path):
-            Parameters._curves = InpFile.read_curves(curves_file_path)
+            InpFile.read_curves(self.parameters)
 
         if not self.pluginIsActive:
             self.pluginIsActive = True

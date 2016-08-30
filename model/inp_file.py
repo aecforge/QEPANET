@@ -3,6 +3,8 @@ import codecs
 from network import Title, Junction, Reservoir, Tank, Pipe, Pump, Valve, Coordinate, Vertex
 from system_ops import Curve, Pattern
 import math
+from ..model.times import Times
+from options import Options
 from ..model.network_handling import NetworkUtils
 from ..tools.parameters import Parameters
 
@@ -35,11 +37,11 @@ class InpFile:
                 inp_file.write(line + '\n')
 
     @staticmethod
-    def read_patterns(parameters, inp_file_path):
+    def read_patterns(parameters):
 
         start_line = None
         end_line = None
-        with codecs.open(inp_file_path, 'r', encoding='UTF-8') as inp_f:
+        with codecs.open(parameters.patterns_file, 'r', encoding='UTF-8') as inp_f:
 
             lines = inp_f.read().splitlines()
             patterns_started = False
@@ -76,11 +78,11 @@ class InpFile:
         parameters.patterns = patterns_d.values()
 
     @staticmethod
-    def read_curves(inp_file_path):
+    def read_curves(params):
 
         start_line = None
         end_line = None
-        with codecs.open(inp_file_path, 'r', encoding='UTF-8') as inp_f:
+        with codecs.open(params.curves_file, 'r', encoding='UTF-8') as inp_f:
 
             lines = inp_f.read().splitlines()
             for l in range(len(lines)):
@@ -105,7 +107,7 @@ class InpFile:
             if not lines[l].startswith(';'):
                 words = lines[l].replace('\t', ' ').split()
                 if words[0] not in curves_d:
-                    curves_d[words[0]] = Curve(lines[l-1][1:], words[0])
+                    curves_d[words[0]] = Curve(words[0], lines[l-1][1:])
                     x = words[1]
                     y = words[2]
                     curves_d[words[0]].add_xy(x, y)
@@ -115,7 +117,7 @@ class InpFile:
                     y = words[2]
                     curves_d[words[0]].add_xy(x, y)
 
-        return curves_d.values()
+        params.curves = curves_d.values()
 
     @staticmethod
     def write_inp_file(parameters, inp_file_path, title):
@@ -157,10 +159,9 @@ class InpFile:
             InpFile._append_options(parameters, out)
 
             # Times
-            InpFile.append_times(parameters, out)
+            InpFile._append_times(parameters, out)
 
-    @staticmethod
-    def _append_junctions(parameters, out):
+    def _append_junctions(self, parameters, out):
 
         out.append(InpFile.build_section_keyword(Junction.section_name))
         out.append(Junction.section_header)
@@ -193,8 +194,7 @@ class InpFile:
 
             out.append(line)
 
-    @staticmethod
-    def _append_reservoirs(parameters, out):
+    def _append_reservoirs(self, parameters, out):
 
         out.append(InpFile.build_section_keyword(Reservoir.section_name))
         out.append(Reservoir.section_header)
@@ -222,8 +222,7 @@ class InpFile:
 
             out.append(line)
 
-    @staticmethod
-    def _append_tanks(parameters, out):
+    def _append_tanks(self, parameters, out):
 
         out.append(InpFile.build_section_keyword(Tank.section_name))
         out.append(Tank.section_header)
@@ -259,8 +258,7 @@ class InpFile:
 
             out.append(line)
 
-    @staticmethod
-    def _append_pipes(parameters, out):
+    def _append_pipes(self, parameters, out):
 
         out.append(InpFile.build_section_keyword(Pipe.section_name))
         out.append(Pipe.section_header)
@@ -293,8 +291,7 @@ class InpFile:
 
             out.append(line)
 
-    @staticmethod
-    def _append_pumps(parameters, out):
+    def _append_pumps(self, parameters, out):
 
         out.append(InpFile.build_section_keyword(Pump.section_name))
         out.append(Pump.section_header)
@@ -328,8 +325,7 @@ class InpFile:
 
             out.append(line)
 
-    @staticmethod
-    def _append_valves(parameters, out):
+    def _append_valves(self, parameters, out):
 
         out.append(InpFile.build_section_keyword(Valve.section_name))
         out.append(Valve.section_header)
@@ -360,8 +356,7 @@ class InpFile:
 
             out.append(line)
 
-    @staticmethod
-    def _append_coordinates(parameters, out):
+    def _append_coordinates(self, parameters, out):
         out.append(InpFile.build_section_keyword(Coordinate.section_name))
         out.append(Coordinate.section_header)
         out.append(InpFile.build_dashline(Coordinate.section_header))
@@ -396,8 +391,7 @@ class InpFile:
 
             out.append(line)
 
-    @staticmethod
-    def _append_vertices(parameters, out):
+    def _append_vertices(self, parameters, out):
         out.append(InpFile.build_section_keyword(Vertex.section_name))
         out.append(Vertex.section_header)
         out.append(InpFile.build_dashline(Vertex.section_header))
@@ -412,6 +406,46 @@ class InpFile:
                     line += InpFile.pad('{0.2f}'.format(pt.y()))
 
                 out.append(line)
+
+    def _append_options(self, params, out):
+        out.append(InpFile.build_section_keyword(Options.section_name))
+
+        out.append(InpFile.pad('UNITS') + params.options.flow_units)
+        out.append(InpFile.pad('HEADLOSS') + params.options.headloss)
+        if params.options.hydraulics.use_hydraulics:
+            out.append(InpFile.pad('HYDRAULICS') + params.options.hydraulics.action_names[params.options.hydraulics.action])
+        out.append(InpFile.pad('QUALITY') +
+                   params.options.quality_text[params.options.parameter] +
+                   ' ' +
+                   params.options.quality.trace_junction_id)
+        out.append(InpFile.pad('VISCOSITY') + params.options.viscosity)
+        out.append(InpFile.pad('DIFFUSIVITY') + params.options.diffusivity)
+        out.append(InpFile.pad('SPECIFIC GRAVITY') + params.options.spec_gravity)
+        out.append(InpFile.pad('TRIALS') + params.options.trials)
+        out.append(InpFile.pad('ACCURACY') + params.options.accuracy)
+        out.append(InpFile.pad('UNBALANCED') +
+                   params.options.unbalanced.unb_text[params.options.unbalanced.unbalanced] +
+                   ' ' +
+                   params.options.unbalanced.trials)
+        out.append(InpFile.pad('PATTERN') + params.options.pattern)
+        out.append(InpFile.pad('DEMAND MULTIPLIER') + params.options.demand_mult)
+        out.append(InpFile.pad('EMITTER EXPONENT') + params.options.emitter_exp)
+        out.append(InpFile.pad('TOLERANCE') + params.options.tolerance)
+
+    def _append_times(self, params, out):
+
+        out.append(InpFile.build_section_keyword(Times.section_name))
+        out.append(InpFile.pad('DURATION') + params.options.times.duration)
+
+        out.append(InpFile.pad('HYDRAULIC TIMESTAMP') + params.options.times.hydraulic_timestamp.get_as_text())
+        out.append(InpFile.pad('QUALITY TIMESTAMP') + params.options.times.quality_timestamp.get_as_text())
+        out.append(InpFile.pad('RULE TIMESTAMP') + params.options.times.rule_timestamp.get_as_text())
+        out.append(InpFile.pad('PATTERN TIMESTAMP') + params.options.times.pattern_timestamp.get_as_text())
+        out.append(InpFile.pad('PATTERN START') + params.options.times.pattern_start.get_as_text())
+        out.append(InpFile.pad('REPORT TIMESTAMP') + params.options.times.report_timestamp.get_as_text())
+        out.append(InpFile.pad('REPORT START') + params.options.times.report_start.get_as_text())
+        out.append(InpFile.pad('START CLOCKTIME') + params.options.times.clocktime_start.get_as_text())
+        out.append(InpFile.pad('STATISTIC') + params.options.times.statistic)
 
     @staticmethod
     def split_line(line, n=255):

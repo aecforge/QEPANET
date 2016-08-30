@@ -38,12 +38,13 @@ class Parameters(Observable):
         self._patterns = []
         self._patterns_file = None
         self._curves = []
+        self._curves_file = None
 
         self._snap_tolerance = 10
         self._tolerance = 0.01
         self._min_dist = 1  # TODO: check: 1 m? Why?
 
-        self._vertex_dist = 10
+        self._vertex_dist = 50
 
         self.options = Options()
         self.times = Times()
@@ -121,6 +122,15 @@ class Parameters(Observable):
     @curves.setter
     def curves(self, value):
         self._curves = value
+        self.notify()
+
+    @property
+    def curves_file(self):
+        return self._curves_file
+
+    @curves_file.setter
+    def curves_file(self, value):
+        self._curves_file = value
         self.notify()
 
     @property

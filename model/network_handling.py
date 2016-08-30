@@ -214,7 +214,7 @@ class LinkHandler:
         pass
 
     @staticmethod
-    def create_new_pipe(params, eid, demand, diameter, loss, roughness, status, nodes):
+    def create_new_pipe(params, eid, demand, diameter, loss, roughness, status, nodes, densify_vertices):
 
         pipes_caps = params.pipes_vlay.dataProvider().capabilities()
         if pipes_caps and QgsVectorDataProvider.AddFeatures:
@@ -222,13 +222,21 @@ class LinkHandler:
             pipe_geom = QgsGeometry.fromPolyline(nodes)
 
             # Densify vertices
-            points_gen = PointsAlongLineGenerator(pipe_geom)
-            dists_and_points = points_gen.get_points_coords(params.vertex_dist, False)
+            dists_and_points = {}
+            if densify_vertices:
+                points_gen = PointsAlongLineGenerator(pipe_geom)
+                dists_and_points = points_gen.get_points_coords(params.vertex_dist, False)
 
-            # Add origianl vertices
-            for v in range(1, len(pipe_geom.asPolyline()) - 1):
-                dist = PointsAlongLineUtils.distance(pipe_geom, QgsGeometry.fromPoint(pipe_geom.asPolyline()[v]), params.tolerance)
-                dists_and_points[dist] = pipe_geom.asPolyline()[v]
+                # Add original vertices
+                for v in range(1, len(pipe_geom.asPolyline()) - 1):
+                    dist = PointsAlongLineUtils.distance(pipe_geom, QgsGeometry.fromPoint(pipe_geom.asPolyline()[v]), params.tolerance)
+                    dists_and_points[dist] = pipe_geom.asPolyline()[v]
+
+            else:
+                for v in range(len(pipe_geom.asPolyline())):
+                    dist = PointsAlongLineUtils.distance(pipe_geom, QgsGeometry.fromPoint(pipe_geom.asPolyline()[v]),
+                                                         params.tolerance)
+                    dists_and_points[dist] = pipe_geom.asPolyline()[v]
 
             dists_and_points = OrderedDict(sorted(dists_and_points.items()))
             pipe_geom_2 = QgsGeometry.fromPolyline(dists_and_points.values())
@@ -419,7 +427,8 @@ class LinkHandler:
                     loss,
                     roughness,
                     status,
-                    pl1_pts)
+                    pl1_pts,
+                    False)
 
                 # Second new polyline
                 pl2_pts = []
@@ -436,7 +445,8 @@ class LinkHandler:
                     loss,
                     roughness,
                     status,
-                    pl2_pts)
+                    pl2_pts,
+                    False)
 
                 # Delete old pipe
                 parameters.pipes_vlay.deleteFeature(pipe_ft.id())
@@ -634,7 +644,7 @@ class LinkHandler:
         roughness = pipe1_ft.attribute(Pipe.field_name_roughness)
         status = pipe1_ft.attribute(Pipe.field_name_status)
 
-        LinkHandler.create_new_pipe(parameters, eid, demand, diameter, loss, roughness, status, new_geom_pts)
+        LinkHandler.create_new_pipe(parameters, eid, demand, diameter, loss, roughness, status, new_geom_pts, False)
 
     @staticmethod
     def calc_3d_length(parameters, pipe_geom):

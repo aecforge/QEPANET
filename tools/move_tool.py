@@ -289,7 +289,7 @@ class MoveTool(QgsMapTool):
                             new_pos_pt_v2 = QgsPointV2(self.mouse_pt.x(), self.mouse_pt.y())
                             new_pos_pt_v2.addZValue(vertex_v2.z())
 
-                            LinkHandler.move_pipe_vertex(self.parameters, feat, self.mouse_pt, vertex_index)
+                            LinkHandler.move_pipe_vertex(self.parameters, feat, new_pos_pt_v2, vertex_index)
 
                     # Pump or valve
                     else:

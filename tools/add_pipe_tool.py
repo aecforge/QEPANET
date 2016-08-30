@@ -155,7 +155,8 @@ class AddPipeTool(QgsMapTool):
                         loss,
                         roughness,
                         status,
-                        rubberband_pts[junct_nrs[np]:junct_nrs[np+1]+1])
+                        rubberband_pts[junct_nrs[np]:junct_nrs[np+1]+1],
+                        True)
                     self.rubber_band.reset()
 
                     new_pipes_fts.append(pipe_ft)

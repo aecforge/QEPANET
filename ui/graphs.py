@@ -48,11 +48,21 @@ class StaticMplCanvas(MyMplCanvas):
         self.axes.set_xlim(0, lefts[-1] + width)
         self.axes.set_ylim(0, max_val)
 
-        # Common options
         self.axes.set_xlabel('Time (Time period = ' + str(time_period) + ')') #TODO: softcode
         self.axes.set_ylabel('Multiplier') #TODO: softcode
         self.axes.tick_params(axis=u'both', which=u'both', bottom=u'off', top=u'off', left=u'off', right=u'off')
         self.figure.tight_layout()
         self.draw()
 
+    def draw_line_graph(self, xs, ys, x_label, y_label):
 
+        self.figure.clf()
+        self.axes = self.figure.add_subplot(1, 1, 1)
+
+        self.axes.plot(xs, ys)
+
+        self.axes.set_xlabel(x_label)
+        self.axes.set_ylabel(y_label)
+        self.axes.tick_params(axis=u'both', which=u'both', bottom=u'off', top=u'off', left=u'off', right=u'off')
+        self.figure.tight_layout()
+        self.draw()

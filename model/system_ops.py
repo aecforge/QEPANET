@@ -1,9 +1,9 @@
 class Curve:
     section_name = 'CURVES'
 
-    def __init__(self, name, id):
+    def __init__(self, id, desc=None):
         self.id = id
-        self.name = name
+        self.desc = desc
         self.xs = []
         self.ys = []
 
