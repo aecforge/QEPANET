@@ -153,10 +153,10 @@ class NodeHandler:
             layer.endEditCommand()
 
     @staticmethod
-    def delete_node(parameters, layer, node_ft):
+    def delete_node(params, layer, node_ft, del_ad_nodes=True):
 
         # The node is a junction
-        if layer == parameters.junctions_vlay:
+        if layer == params.junctions_vlay:
 
             # # The node is a simple node (not part of a pump or valve)
             # adj_links_fts = NetworkUtils.find_adjacent_links(parameters, node_ft.geometry())
@@ -168,45 +168,21 @@ class NodeHandler:
                 NodeHandler._delete_feature(layer, node_ft)
 
                 # Delete adjacent pipes
-                adj_pipes = NetworkUtils.find_adjacent_links(parameters, node_ft.geometry())
-                for adj_pipe in adj_pipes['pipes']:
-                    LinkHandler.delete_link(parameters, parameters.pipes_vlay, adj_pipe)
-
-            # # The node is part of a pump or valve
-            # else:
-            #
-            #     if adj_links_fts['pumps'] or adj_links_fts['valves']:
-            #
-            #         if adj_links_fts['pumps']:
-            #             adj_links_ft = adj_links_fts['pumps'][0]
-            #         elif adj_links_fts['valves']:
-            #             adj_links_ft = adj_links_fts['valves'][0]
-            #         else:
-            #             return
-            #
-            #         adjadj_links = NetworkUtils.find_links_adjacent_to_link(parameters, layer, adj_links_ft, False, True, True)
-            #         adj_nodes = NetworkUtils.find_start_end_nodes(parameters, adj_links_ft.geometry(), False, True, True)
-            #
-            #         # Stitch...
-            #         midpoint = NetworkUtils.find_midpoint(adj_nodes[0].geometry().asPoint(), adj_nodes[1].geometry().asPoint())
-            #
-            #         LinkHandler.stitch_pipes(
-            #             parameters,
-            #             adjadj_links['pipes'][0],
-            #             adj_nodes[0].geometry().asPoint(),
-            #             adjadj_links['pipes'][1],
-            #             adj_nodes[1].geometry().asPoint(),
-            #             midpoint)
+                if del_ad_nodes:
+                    adj_pipes = NetworkUtils.find_adjacent_links(params, node_ft.geometry())
+                    for adj_pipe in adj_pipes['pipes']:
+                        LinkHandler.delete_link(params, params.pipes_vlay, adj_pipe)
 
         # The node is a reservoir or a tank
-        elif layer == parameters.reservoirs_vlay or layer == parameters.tanks_vlay:
+        elif layer == params.reservoirs_vlay or layer == params.tanks_vlay:
 
-            adj_pipes = NetworkUtils.find_adjacent_links(parameters, node_ft.geometry())['pipes']
+            adj_pipes = NetworkUtils.find_adjacent_links(params, node_ft.geometry())['pipes']
 
             NodeHandler._delete_feature(layer, node_ft)
 
-            for adj_pipe in adj_pipes:
-                LinkHandler.delete_link(parameters.pipes_vlay, adj_pipe)
+            if del_ad_nodes:
+                for adj_pipe in adj_pipes:
+                    LinkHandler.delete_link(params.pipes_vlay, adj_pipe)
 
 
 class LinkHandler:
@@ -223,7 +199,7 @@ class LinkHandler:
 
             # Densify vertices
             dists_and_points = {}
-            if densify_vertices:
+            if densify_vertices and params.vertex_dist > 0:
                 points_gen = PointsAlongLineGenerator(pipe_geom)
                 dists_and_points = points_gen.get_points_coords(params.vertex_dist, False)
 
@@ -733,18 +709,33 @@ class NetworkUtils:
             return intersecting_fts
 
         cands = []
-        for junction_ft in all_feats:
-            if link_geom.buffer(parameters.tolerance, 5).boundingBox().contains(junction_ft.geometry().asPoint()):
-                cands.append(junction_ft)
+        for node_ft in all_feats:
+            if link_geom.buffer(parameters.tolerance, 5).boundingBox().contains(node_ft.geometry().asPoint()):
+                cands.append(node_ft)
 
         if cands:
-            for junction_ft in cands:
-                if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < parameters.tolerance:
-                    intersecting_fts[0] = junction_ft
-                if junction_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[-1])) < parameters.tolerance:
-                    intersecting_fts[1] = junction_ft
+            for node_ft in cands:
+                if node_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < parameters.tolerance:
+                    intersecting_fts[0] = node_ft
+                if node_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[-1])) < parameters.tolerance:
+                    intersecting_fts[1] = node_ft
 
         return intersecting_fts
+
+    @staticmethod
+    def find_node_layer(params, node_geom):
+
+        for feat in params.reservoirs_vlay.getFeatures():
+            if NetworkUtils.points_overlap(node_geom, feat.geometry(), params.tolerance):
+                return params.reservoirs_vlay
+
+        for feat in params.tanks_vlay.getFeatures():
+            if NetworkUtils.points_overlap(node_geom, feat.geometry(), params.tolerance):
+                return params.tanks_vlay
+
+        for feat in params.junctions_vlay.getFeatures():
+            if NetworkUtils.points_overlap(node_geom, feat.geometry(), params.tolerance):
+                return params.junctions_vlay
 
     @staticmethod
     def find_adjacent_links(parameters, node_geom):
@@ -881,17 +872,17 @@ class NetworkUtils:
         return adj_links
 
     @staticmethod
-    def look_for_adjacent_links(parameters, link_ft, link_vlay, search_vlay):
+    def look_for_adjacent_links(params, link_ft, link_vlay, search_vlay):
 
         link_pts = link_ft.geometry().asPolyline()
 
         adj_links = []
         for ft in search_vlay.getFeatures():
             pts = ft.geometry().asPolyline()
-            if NetworkUtils.points_overlap(pts[0], link_pts[0], parameters.tolerance) or \
-                    NetworkUtils.points_overlap(pts[0], link_pts[-1], parameters.tolerance) or \
-                    NetworkUtils.points_overlap(pts[-1], link_pts[0], parameters.tolerance) or \
-                    NetworkUtils.points_overlap(pts[-1], link_pts[-1], parameters.tolerance):
+            if NetworkUtils.points_overlap(pts[0], link_pts[0], params.tolerance) or \
+                    NetworkUtils.points_overlap(pts[0], link_pts[-1], params.tolerance) or \
+                    NetworkUtils.points_overlap(pts[-1], link_pts[0], params.tolerance) or \
+                    NetworkUtils.points_overlap(pts[-1], link_pts[-1], params.tolerance):
 
                 # Check that the feature found is not the same as the input
                 if not (link_vlay.id() == search_vlay.id() and link_ft.id() != ft.id()):

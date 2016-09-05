@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance
+from PyQt4.QtCore import Qt, QPoint
+from PyQt4.QtGui import QColor, QMenu
+from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance, QGis
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from ..model.network import Pump
@@ -20,7 +20,7 @@ class AddPumpTool(QgsMapTool):
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
-        self.parameters = parameters
+        self.params = parameters
 
         self.mouse_pt = None
         self.mouse_clicked = False
@@ -33,7 +33,7 @@ class AddPumpTool(QgsMapTool):
 
     def canvasPressEvent(self, event):
         if event.button() == Qt.RightButton:
-            self.mouse_clicked = False
+            self.mouse_clicked = True
 
         if event.button() == Qt.LeftButton:
             self.mouse_clicked = True
@@ -42,7 +42,7 @@ class AddPumpTool(QgsMapTool):
 
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
-        elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, self.mouse_pt, 1)
+        elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, self.mouse_pt, 1)
 
         if elev is not None:
             self.elev = elev
@@ -92,12 +92,12 @@ class AddPumpTool(QgsMapTool):
             else:
 
                 request = QgsFeatureRequest().setFilterFid(self.snapped_pipe_id)
-                feats = self.parameters.pipes_vlay.getFeatures(request)
+                feats = self.params.pipes_vlay.getFeatures(request)
                 features = [feat for feat in feats]
                 if len(features) == 1:
 
                     # Check whether the pipe has a start and an end node
-                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.parameters, features[0].geometry())
+                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.params, features[0].geometry())
 
                     if not start_node or not end_node:
                         self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.') # TODO: softcode
@@ -108,7 +108,7 @@ class AddPumpTool(QgsMapTool):
                     dist_2 = end_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
 
                     # Get the attributes of the closest junction
-                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.parameters, features[0].geometry(), False, True, True)
+                    (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.params, features[0].geometry(), False, True, True)
                     if dist_1 < dist_2:
                         closest_junction_ft = start_node
                     else:
@@ -125,37 +125,77 @@ class AddPumpTool(QgsMapTool):
                         pump_value = self.data_dock.txt_pump_power.text()
 
                     LinkHandler.create_new_pumpvalve(
-                        self.parameters,
+                        self.params,
                         self.data_dock,
                         features[0],
                         closest_junction_ft,
                         self.snapped_vertex,
-                        self.parameters.pumps_vlay,
+                        self.params.pumps_vlay,
                         [pump_param, pump_value])
+
+        elif event.button() == Qt.RightButton:
+
+            self.mouse_clicked = False
+
+            menu = QMenu()
+            invert_action = menu.addAction('Flip orientation')
+            action = menu.exec_(self.iface.mapCanvas().mapToGlobal(QPoint(event.pos().x(), event.pos().y())))
+            if action == invert_action:
+
+                request = QgsFeatureRequest().setFilterFid(self.snapped_pipe_id)
+                feats = self.params.pipes_vlay.getFeatures(request)
+                features = [feat for feat in feats]
+                if len(features) == 1:
+                    adj_links = NetworkUtils.find_links_adjacent_to_link(
+                        self.params, self.params.pipes_vlay, features[0], True, False, True)
+
+                    for adj_link in adj_links['pumps']:
+                        adj_link_pts = adj_link.geometry().asPolyline()
+                        for adj_link_pt in adj_link_pts:
+                            if NetworkUtils.points_overlap(adj_link_pt, self.snapped_vertex, self.params.tolerance):
+
+                                geom = adj_link.geometry()
+
+                                if geom.wkbType() == QGis.WKBMultiLineString:
+                                    nodes = geom.asMultiPolyline()
+                                    for line in nodes:
+                                        line.reverse()
+                                    newgeom = QgsGeometry.fromMultiPolyline(nodes)
+                                    self.params.pumps_vlay.changeGeometry(adj_link.id(), newgeom)
+
+                                if geom.wkbType() == QGis.WKBLineString:
+                                    nodes = geom.asPolyline()
+                                    nodes.reverse()
+                                    newgeom = QgsGeometry.fromPolyline(nodes)
+                                    self.params.pumps_vlay.changeGeometry(adj_link.id(), newgeom)
+
+                                self.iface.mapCanvas().refresh()
+
+                                break
 
     def activate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,
-                                                      self.parameters.snap_tolerance,
+                                                      self.params.snap_tolerance,
                                                       True)
 
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.parameters.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_pipes], self.iface.mapCanvas())
 
         # Editing
-        if not self.parameters.junctions_vlay.isEditable():
-            self.parameters.junctions_vlay.startEditing()
-        if not self.parameters.pipes_vlay.isEditable():
-            self.parameters.pipes_vlay.startEditing()
-        if not self.parameters.pumps_vlay.isEditable():
-            self.parameters.pumps_vlay.startEditing()
+        if not self.params.junctions_vlay.isEditable():
+            self.params.junctions_vlay.startEditing()
+        if not self.params.pipes_vlay.isEditable():
+            self.params.pipes_vlay.startEditing()
+        if not self.params.pumps_vlay.isEditable():
+            self.params.pumps_vlay.startEditing()
 
     def deactivate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,

@@ -84,8 +84,8 @@ class Hydraulics:
     action_use = 0
     action_save = 1
 
-    action_names = {action_use, 'USE',
-                    action_save, 'SAVE'}
+    action_names = {action_use: 'USE',
+                    action_save: 'SAVE'}
 
     def __init__(self):
         self.use_hydraulics = False

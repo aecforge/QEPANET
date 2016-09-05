@@ -12,7 +12,7 @@ from ..model.energy import Energy
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.12'
+    plug_in_name = 'QEPANET 0.13'
     config_file_name = 'config.ini'
 
     path = os.path.dirname(os.path.realpath(__file__))
@@ -44,7 +44,7 @@ class Parameters(Observable):
         self._tolerance = 0.01
         self._min_dist = 1  # TODO: check: 1 m? Why?
 
-        self._vertex_dist = 50
+        self._vertex_dist = 0
 
         self.options = Options()
         self.times = Times()

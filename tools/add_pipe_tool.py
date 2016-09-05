@@ -147,6 +147,7 @@ class AddPipeTool(QgsMapTool):
                     roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
                     status = self.data_dock.cbo_pipe_status.currentText()
                     pipe_eid = NetworkUtils.find_next_id(self.params.pipes_vlay, 'P')  # TODO: softcode
+
                     pipe_ft = LinkHandler.create_new_pipe(
                         self.params,
                         pipe_eid,
@@ -208,6 +209,10 @@ class AddPipeTool(QgsMapTool):
                 self.rubber_band.reset()
                 self.iface.messageBar().pushWarning('Cannot add new pipe to ' + self.params.pipes_vlay.name() + ' layer', repr(e))
                 traceback.print_exc(file=sys.stdout)
+
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.rubber_band.reset()
 
     def activate(self):
 

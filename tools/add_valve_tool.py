@@ -5,7 +5,7 @@ from PyQt4.QtGui import QColor
 from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
-from ..model.network import Valve
+from ..model.network import Valve, Pipe
 from ..model.network_handling import LinkHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils
@@ -115,7 +115,8 @@ class AddValveTool(QgsMapTool):
                         closest_junction_ft = end_node
 
                     # Create the valve
-                    diameter = self.data_dock.txt_valve_diameter.text()
+                    diameter = features[0].attribute(Pipe.field_name_diameter)
+                    # diameter = self.data_dock.txt_valve_diameter.text()
                     minor_loss = self.data_dock.txt_valve_minor_loss.text()
                     selected_type = self.data_dock.cbo_valve_type.itemData(self.data_dock.cbo_valve_type.currentIndex())
                     if selected_type != Valve.type_gpv:

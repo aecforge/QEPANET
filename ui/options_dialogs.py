@@ -132,10 +132,10 @@ class HydraulicsDialog(QDialog):
         self.chk_hydraulics.stateChanged.connect(self.chk_hydraulics_changed)
         self.btn_hydraulics_file.pressed.connect(self.btn_hydraulics_pressed)
         self.cbo_hydraulics.addItem(
-            self.params.options.hydraulics.actions_names[self.params.options.hydraulics.action_use],
+            self.params.options.hydraulics.action_names[self.params.options.hydraulics.action_use],
             self.params.options.hydraulics.action_use)
         self.cbo_hydraulics.addItem(
-            self.params.options.hydraulics.actions_names[self.params.options.hydraulics.action_save],
+            self.params.options.hydraulics.action_names[self.params.options.hydraulics.action_save],
             self.params.options.hydraulics.action_save)
         self.txt_hydraulics_file.setReadOnly(True)
 

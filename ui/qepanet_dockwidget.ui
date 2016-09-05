@@ -163,14 +163,14 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>8</number>
+              <number>6</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>288</width>
+                <width>150</width>
                 <height>225</height>
                </rect>
               </property>
@@ -293,7 +293,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>162</width>
                 <height>116</height>
                </rect>
               </property>
@@ -360,8 +360,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
-                <height>69</height>
+                <width>148</width>
+                <height>64</height>
                </rect>
               </property>
               <attribute name="label">
@@ -403,7 +403,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>174</width>
                 <height>194</height>
                </rect>
               </property>
@@ -514,8 +514,8 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-26</y>
-                <width>288</width>
+                <y>0</y>
+                <width>154</width>
                 <height>246</height>
                </rect>
               </property>
@@ -763,7 +763,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>153</width>
                 <height>90</height>
                </rect>
               </property>
@@ -829,6 +829,9 @@
                <string>Valve properties</string>
               </attribute>
               <layout class="QFormLayout" name="formLayout_6">
+               <property name="fieldGrowthPolicy">
+                <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+               </property>
                <item row="0" column="0">
                 <widget class="QLabel" name="lbl_valve_type">
                  <property name="text">
@@ -853,34 +856,6 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="lbl_valve_diameter">
-                 <property name="text">
-                  <string>Diameter [mm]:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="1">
-                <widget class="QLineEdit" name="txt_valve_diameter">
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="lbl_valve_minor_loss">
-                 <property name="text">
-                  <string>Minor loss [-]:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="1">
-                <widget class="QLineEdit" name="txt_valve_minor_loss">
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                </widget>
-               </item>
                <item row="2" column="0">
                 <widget class="QLabel" name="lbl_valve_curve">
                  <property name="enabled">
@@ -898,13 +873,25 @@
                  </property>
                 </widget>
                </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="lbl_valve_minor_loss">
+                 <property name="text">
+                  <string>Minor loss [-]:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="txt_valve_minor_loss">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
               <zorder>lbl_valve_type</zorder>
               <zorder>cbo_valve_type</zorder>
               <zorder>lbl_valve_setting</zorder>
               <zorder>txt_valve_setting</zorder>
-              <zorder>lbl_valve_diameter</zorder>
-              <zorder>txt_valve_diameter</zorder>
               <zorder>txt_valve_minor_loss</zorder>
               <zorder>lbl_valve_minor_loss</zorder>
               <zorder>lbl_valve_curve</zorder>
@@ -915,7 +902,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>99</width>
                 <height>157</height>
                </rect>
               </property>
@@ -970,8 +957,8 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-29</y>
-                <width>288</width>
+                <y>0</y>
+                <width>305</width>
                 <height>145</height>
                </rect>
               </property>
