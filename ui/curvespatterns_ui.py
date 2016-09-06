@@ -19,11 +19,11 @@ class GraphDialog(QDialog):
     labels = {edit_patterns: 'Patterns',
               edit_curves: 'Curves'}
 
-    def __init__(self, parent, parameters, edit_type):
+    def __init__(self, parent, params, edit_type):
 
         QDialog.__init__(self, parent)
         main_lay = QVBoxLayout(self)
-        self.params = parameters
+        self.params = params
         self.edit_type = edit_type
 
         self.x_label = ''

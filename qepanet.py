@@ -46,7 +46,7 @@ class QEpanet:
         """
         # Save reference to the QGIS interface
         self.iface = iface
-        self.parameters = Parameters()
+        self.params = Parameters()
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -227,15 +227,15 @@ class QEpanet:
 
         # Read patterns
         patterns_file_path = config_file.get_patterns_file_path()
-        self.parameters.patterns_file = patterns_file_path
+        self.params.patterns_file = patterns_file_path
         if patterns_file_path is not None and os.path.isfile(patterns_file_path):
-            InpFile.read_patterns(self.parameters)
+            InpFile.read_patterns(self.params)
 
         # Read curves
         curves_file_path = config_file.get_curves_file_path()
-        self.parameters.curves_file = curves_file_path
+        self.params.curves_file = curves_file_path
         if curves_file_path is not None and os.path.isfile(curves_file_path):
-            InpFile.read_curves(self.parameters)
+            InpFile.read_curves(self.params)
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
@@ -245,8 +245,8 @@ class QEpanet:
             #    removed on close (see self.onClosePlugin method)
             if self.dockwidget is None:
                 # Create the dockwidget (after translation) and keep reference
-                self.dockwidget = QEpanetDockWidget(self.iface, self.parameters)
-                self.parameters.attach(self.dockwidget)
+                self.dockwidget = QEpanetDockWidget(self.iface, self.params)
+                self.params.attach(self.dockwidget)
 
 
             # connect to provide cleanup on closing of dockwidget

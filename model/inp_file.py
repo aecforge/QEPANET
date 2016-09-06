@@ -161,13 +161,13 @@ class InpFile:
             # Times
             InpFile._append_times(parameters, out)
 
-    def _append_junctions(self, parameters, out):
+    def _append_junctions(self, params, out):
 
         out.append(InpFile.build_section_keyword(Junction.section_name))
         out.append(Junction.section_header)
         out.append(InpFile.build_dashline(Junction.section_header))
 
-        j_fts = parameters.junctions_vlay.getFeatures()
+        j_fts = params.junctions_vlay.getFeatures()
         for j_ft in j_fts:
             eid = j_ft.attribute(Junction.field_eid)
             demand = j_ft.attribute(Junction.field_name_demand)
@@ -194,13 +194,13 @@ class InpFile:
 
             out.append(line)
 
-    def _append_reservoirs(self, parameters, out):
+    def _append_reservoirs(self, params, out):
 
         out.append(InpFile.build_section_keyword(Reservoir.section_name))
         out.append(Reservoir.section_header)
         out.append(InpFile.build_dashline(Reservoir.section_header))
 
-        r_fts = parameters.reservoirs_vlay.getFeatures()
+        r_fts = params.reservoirs_vlay.getFeatures()
         for r_ft in r_fts:
             eid = r_ft.attribute(Reservoir.field_name_eid)
             elev = r_ft.attribute(Reservoir.field_name_elevation)
@@ -222,13 +222,13 @@ class InpFile:
 
             out.append(line)
 
-    def _append_tanks(self, parameters, out):
+    def _append_tanks(self, params, out):
 
         out.append(InpFile.build_section_keyword(Tank.section_name))
         out.append(Tank.section_header)
         out.append(InpFile.build_dashline(Tank.section_header))
 
-        t_fts = parameters.tanks_vlay.getFeatures()
+        t_fts = params.tanks_vlay.getFeatures()
         for t_ft in t_fts:
             eid = t_ft.attribute(Tank.field_name_eid)
             curve = t_ft.attribute(Tank.field_name_curve)
@@ -258,18 +258,18 @@ class InpFile:
 
             out.append(line)
 
-    def _append_pipes(self, parameters, out):
+    def _append_pipes(self, params, out):
 
         out.append(InpFile.build_section_keyword(Pipe.section_name))
         out.append(Pipe.section_header)
         out.append(InpFile.build_dashline(Pipe.section_header))
 
-        p_fts = parameters.pipes_vlay.getFeatures()
+        p_fts = params.pipes_vlay.getFeatures()
         for p_ft in p_fts:
             eid = p_ft.attribute(Pipe.field_name_eid)
 
             # Find start/end nodes
-            adj_nodes = NetworkUtils.find_start_end_nodes(parameters, p_ft.geometry())
+            adj_nodes = NetworkUtils.find_start_end_nodes(params, p_ft.geometry())
             start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
             end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
 
@@ -291,18 +291,18 @@ class InpFile:
 
             out.append(line)
 
-    def _append_pumps(self, parameters, out):
+    def _append_pumps(self, params, out):
 
         out.append(InpFile.build_section_keyword(Pump.section_name))
         out.append(Pump.section_header)
         out.append(InpFile.build_dashline(Pump.section_header))
 
-        p_fts = parameters.pumps_vlay.getFeatures()
+        p_fts = params.pumps_vlay.getFeatures()
         for p_ft in p_fts:
             eid = p_ft.attribute(Pump.field_name_eid)
 
             # Find start/end nodes
-            adj_nodes = NetworkUtils.find_start_end_nodes(parameters, p_ft.geometry(), False, True, True)
+            adj_nodes = NetworkUtils.find_start_end_nodes(params, p_ft.geometry(), False, True, True)
             start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
             end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
 
@@ -325,18 +325,18 @@ class InpFile:
 
             out.append(line)
 
-    def _append_valves(self, parameters, out):
+    def _append_valves(self, params, out):
 
         out.append(InpFile.build_section_keyword(Valve.section_name))
         out.append(Valve.section_header)
         out.append(InpFile.build_dashline(Valve.section_header))
 
-        v_fts = parameters.valves_vlay.getFeatures()
+        v_fts = params.valves_vlay.getFeatures()
         for v_ft in v_fts:
             eid = v_ft.attribute(Valve.field_name_eid)
 
             # Find start/end nodes
-            adj_nodes = NetworkUtils.find_start_end_nodes(parameters, v_ft.geometry(), False, True, True)
+            adj_nodes = NetworkUtils.find_start_end_nodes(params, v_ft.geometry(), False, True, True)
             start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
             end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
 

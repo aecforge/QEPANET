@@ -12,7 +12,7 @@ from ..model.energy import Energy
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.13'
+    plug_in_name = 'QEPANET 0.14'
     config_file_name = 'config.ini'
 
     path = os.path.dirname(os.path.realpath(__file__))

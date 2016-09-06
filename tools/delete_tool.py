@@ -13,14 +13,14 @@ from ..rendering import symbology
 
 class DeleteTool(QgsMapTool):
 
-    def __init__(self, data_dock, parameters):
+    def __init__(self, data_dock, params):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
         self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
-        self.parameters = parameters
+        self.params = params
 
         self.elev = -1
         self.vertex_marker = QgsVertexMarker(self.canvas())
@@ -61,7 +61,7 @@ class DeleteTool(QgsMapTool):
 
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
-        elev = raster_utils.read_layer_val_from_coord(self.parameters.dem_rlay, self.mouse_pt, 1)
+        elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, self.mouse_pt, 1)
         if elev is not None:
             self.elev = elev
             self.data_dock.lbl_elev_val.setText("{0:.2f}".format(self.elev))
@@ -115,20 +115,20 @@ class DeleteTool(QgsMapTool):
 
                 self.rubber_band.reset(QGis.Polygon)
 
-                self.delete_elements(self.parameters.valves_vlay, rubber_band_rect)
-                self.delete_elements(self.parameters.pumps_vlay, rubber_band_rect)
-                self.delete_elements(self.parameters.pipes_vlay, rubber_band_rect)
-                self.delete_elements(self.parameters.tanks_vlay, rubber_band_rect)
-                self.delete_elements(self.parameters.reservoirs_vlay, rubber_band_rect)
-                self.delete_elements(self.parameters.junctions_vlay, rubber_band_rect)
+                self.delete_elements(self.params.valves_vlay, rubber_band_rect)
+                self.delete_elements(self.params.pumps_vlay, rubber_band_rect)
+                self.delete_elements(self.params.pipes_vlay, rubber_band_rect)
+                self.delete_elements(self.params.tanks_vlay, rubber_band_rect)
+                self.delete_elements(self.params.reservoirs_vlay, rubber_band_rect)
+                self.delete_elements(self.params.junctions_vlay, rubber_band_rect)
 
             # Refresh
-            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.junctions_vlay)
-            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.reservoirs_vlay)
-            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.tanks_vlay)
-            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.pipes_vlay)
-            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.pumps_vlay)
-            symbology.refresh_layer(self.iface.mapCanvas(), self.parameters.valves_vlay)
+            symbology.refresh_layer(self.iface.mapCanvas(), self.params.junctions_vlay)
+            symbology.refresh_layer(self.iface.mapCanvas(), self.params.reservoirs_vlay)
+            symbology.refresh_layer(self.iface.mapCanvas(), self.params.tanks_vlay)
+            symbology.refresh_layer(self.iface.mapCanvas(), self.params.pipes_vlay)
+            symbology.refresh_layer(self.iface.mapCanvas(), self.params.pumps_vlay)
+            symbology.refresh_layer(self.iface.mapCanvas(), self.params.valves_vlay)
 
     def activate(self):
 
@@ -137,56 +137,56 @@ class DeleteTool(QgsMapTool):
         self.iface.mapCanvas().setCursor(cursor)
 
         # Snapping
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.junctions_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.junctions_vlay.id(),
                                                       False,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      self.parameters.snap_tolerance,
+                                                      self.params.snap_tolerance,
                                                       True)
 
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.reservoirs_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.reservoirs_vlay.id(),
                                                       False,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      self.parameters.snap_tolerance,
+                                                      self.params.snap_tolerance,
                                                       True)
 
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.tanks_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.tanks_vlay.id(),
                                                       False,
                                                       QgsSnapper.SnapToVertex,
                                                       QgsTolerance.MapUnits,
-                                                      self.parameters.snap_tolerance,
+                                                      self.params.snap_tolerance,
                                                       True)
 
-        QgsProject.instance().setSnapSettingsForLayer(self.parameters.pipes_vlay.id(),
+        QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
                                                       True,
                                                       QgsSnapper.SnapToSegment,
                                                       QgsTolerance.MapUnits,
-                                                      self.parameters.snap_tolerance,
+                                                      self.params.snap_tolerance,
                                                       True)
 
-        snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.parameters.junctions_vlay)
-        snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(self.parameters.reservoirs_vlay)
-        snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.parameters.tanks_vlay)
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.parameters.pipes_vlay, snapping_type=QgsSnapper.SnapToSegment)
+        snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.params.junctions_vlay)
+        snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(self.params.reservoirs_vlay)
+        snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.params.tanks_vlay)
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, snapping_type=QgsSnapper.SnapToSegment)
 
         self.snapper = NetworkUtils.set_up_snapper(
             [snap_layer_junctions, snap_layer_reservoirs, snap_layer_tanks, snap_layer_pipes],
             self.iface.mapCanvas())
 
         # Editing
-        if not self.parameters.junctions_vlay.isEditable():
-            self.parameters.junctions_vlay.startEditing()
-        if not self.parameters.reservoirs_vlay.isEditable():
-            self.parameters.reservoirs_vlay.startEditing()
-        if not self.parameters.tanks_vlay.isEditable():
-            self.parameters.tanks_vlay.startEditing()
-        if not self.parameters.pipes_vlay.isEditable():
-            self.parameters.pipes_vlay.startEditing()
-        if not self.parameters.pumps_vlay.isEditable():
-            self.parameters.pumps_vlay.startEditing()
-        if not self.parameters.valves_vlay.isEditable():
-            self.parameters.valves_vlay.startEditing()
+        if not self.params.junctions_vlay.isEditable():
+            self.params.junctions_vlay.startEditing()
+        if not self.params.reservoirs_vlay.isEditable():
+            self.params.reservoirs_vlay.startEditing()
+        if not self.params.tanks_vlay.isEditable():
+            self.params.tanks_vlay.startEditing()
+        if not self.params.pipes_vlay.isEditable():
+            self.params.pipes_vlay.startEditing()
+        if not self.params.pumps_vlay.isEditable():
+            self.params.pumps_vlay.startEditing()
+        if not self.params.valves_vlay.isEditable():
+            self.params.valves_vlay.startEditing()
 
     def deactivate(self):
         self.data_dock.btn_delete_element.setChecked(False)
@@ -225,57 +225,57 @@ class DeleteTool(QgsMapTool):
 
     def delete_element(self, layer, feature):
         # If reservoir or tank: delete and stitch pipes
-        if layer == self.parameters.junctions_vlay or \
-                        layer == self.parameters.reservoirs_vlay or \
-                        layer == self.parameters.tanks_vlay:
+        if layer == self.params.junctions_vlay or \
+                        layer == self.params.reservoirs_vlay or \
+                        layer == self.params.tanks_vlay:
 
             # The node is a junction
-            if layer == self.parameters.junctions_vlay:
+            if layer == self.params.junctions_vlay:
 
-                adj_links_fts = NetworkUtils.find_adjacent_links(self.parameters, feature.geometry())
+                adj_links_fts = NetworkUtils.find_adjacent_links(self.params, feature.geometry())
 
                 # Only pipes adjacent to node: it's a simple junction
                 if not adj_links_fts['pumps'] and not adj_links_fts['valves']:
 
                     # Delete node
-                    NodeHandler.delete_node(self.parameters, layer, feature)
+                    NodeHandler.delete_node(self.params, layer, feature)
 
                     # Delete adjacent pipes
-                    adj_pipes = NetworkUtils.find_adjacent_links(self.parameters, feature.geometry())
+                    adj_pipes = NetworkUtils.find_adjacent_links(self.params, feature.geometry())
                     for adj_pipe in adj_pipes['pipes']:
-                        LinkHandler.delete_link(self.parameters.pipes_vlay, adj_pipe)
+                        LinkHandler.delete_link(self.params.pipes_vlay, adj_pipe)
 
                 # The node is part of a pump or valve
                 else:
 
                     if adj_links_fts['pumps']:
-                        LinkHandler.delete_link(self.parameters, self.parameters.pumps_vlay, feature)
+                        LinkHandler.delete_link(self.params, self.params.pumps_vlay, feature)
 
                     elif adj_links_fts['valves']:
-                        LinkHandler.delete_link(self.parameters, self.parameters.valves_vlay, feature)
+                        LinkHandler.delete_link(self.params, self.params.valves_vlay, feature)
 
             # The node is a reservoir or a tank
-            elif layer == self.parameters.reservoirs_vlay or \
-                            layer == self.parameters.tanks_vlay:
+            elif layer == self.params.reservoirs_vlay or \
+                            layer == self.params.tanks_vlay:
 
-                adj_pipes = NetworkUtils.find_adjacent_links(self.parameters, feature.geometry())['pipes']
+                adj_pipes = NetworkUtils.find_adjacent_links(self.params, feature.geometry())['pipes']
 
                 NodeHandler._delete_feature(layer, feature)
 
                 for adj_pipe in adj_pipes:
-                    LinkHandler.delete_link(self.parameters, self.parameters.pipes_vlay, adj_pipe)
+                    LinkHandler.delete_link(self.params, self.params.pipes_vlay, adj_pipe)
 
         # If pipe: delete
-        elif layer == self.parameters.pipes_vlay:
+        elif layer == self.params.pipes_vlay:
 
             if self.snap_results is not None:
                 vertex = feature.geometry().closestVertexWithContext(self.snap_results[0].snappedVertex)
                 vertex_dist = vertex[0]
-                if vertex_dist < self.parameters.min_dist:
+                if vertex_dist < self.params.min_dist:
                     # Delete vertex
-                    LinkHandler.delete_vertex(self.parameters, self.parameters.pipes_vlay, feature, vertex[1])
+                    LinkHandler.delete_vertex(self.params, self.params.pipes_vlay, feature, vertex[1])
                 else:
                     # Delete whole feature
-                    LinkHandler.delete_link(self.parameters, layer, feature)
+                    LinkHandler.delete_link(self.params, layer, feature)
             else:
-                LinkHandler.delete_link(self.parameters, layer, feature)
+                LinkHandler.delete_link(self.params, layer, feature)

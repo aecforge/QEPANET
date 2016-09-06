@@ -12,14 +12,14 @@ from ..geo_utils import raster_utils
 
 class AddTankTool(QgsMapTool):
 
-    def __init__(self, data_dock, parameters):
+    def __init__(self, data_dock, params):
         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
 
         self.iface = data_dock.iface
         """:type : QgisInterface"""
         self.data_dock = data_dock
         """:type : DataDock"""
-        self.params = parameters
+        self.params = params
 
         self.mouse_pt = None
         self.mouse_clicked = False

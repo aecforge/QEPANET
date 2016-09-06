@@ -18,13 +18,13 @@ from utils import set_up_button
 
 class PipeSectionDialog(QDialog):
 
-    def __init__(self, parent, iface, parameters, pipe_ft):
+    def __init__(self, parent, iface, params, pipe_ft):
 
         QDialog.__init__(self, parent)
         main_lay = QVBoxLayout(self)
 
         self.parent = parent
-        self.params = parameters
+        self.params = params
         self.pipe_ft = pipe_ft
 
         self.setMinimumWidth(600)
@@ -191,12 +191,12 @@ class SectionCanvas(MyMplCanvas):
 
     showverts = True
 
-    def __init__(self, iface, parameters, parent):
+    def __init__(self, iface, params, parent):
 
         super(self.__class__, self).__init__()
 
         self.iface = iface
-        self.parameters = parameters
+        self.params = params
         self.parent = parent
 
         self._ind = 0

@@ -2,6 +2,7 @@ from PyQt4.QtGui import QDialog, QFormLayout, QLabel, QComboBox, QLineEdit, QChe
     QMessageBox, QFileDialog, QVBoxLayout
 from PyQt4 import QtCore
 from ..tools.parameters import Parameters, RegExValidators
+from ..model.network import Valve
 from ..model.times import Hour
 from utils import prepare_label as pre_l
 import os
@@ -11,11 +12,11 @@ min_height = 400
 
 
 class HydraulicsDialog(QDialog):
-    def __init__(self, parent, parameters):
+    def __init__(self, parent, params):
         QDialog.__init__(self, parent)
 
         self.parent = parent
-        self.params = parameters
+        self.params = params
 
         self.setMinimumWidth(min_width)
         # self.setMinimumHeight(min_height)
@@ -191,11 +192,13 @@ class HydraulicsDialog(QDialog):
 
     def cbo_units_activated(self):
 
+        units = self.cbo_units.itemData(self.cbo_units.currentIndex())
+
         # Parameters combo box
         self.cbo_flow_units.clear()
-        for fu in range(len(self.params.options.units_flow[self.params.options.units])):
-            self.cbo_flow_units.addItem(self.params.options.units_flow_text[self.params.options.units][fu],
-                                               self.params.options.units_flow[self.params.options.units][fu])
+        for fu in range(len(self.params.options.units_flow[units])):
+            self.cbo_flow_units.addItem(self.params.options.units_flow_text[units][fu],
+                                        self.params.options.units_flow[units][fu])
 
     def cbo_headloss_activated(self):
 
@@ -241,8 +244,8 @@ class HydraulicsDialog(QDialog):
             return
 
         # Update parameters and options
-        self.params.units = self.cbo_units.itemData(self.cbo_units.currentIndex())
-        self.params.flow_units = self.cbo_flow_units.itemData(self.cbo_flow_units.currentIndex())
+        self.params.options.units = self.cbo_units.itemData(self.cbo_units.currentIndex())
+        self.params.options.flow_units = self.cbo_flow_units.itemData(self.cbo_flow_units.currentIndex())
         self.params.options.headloss = self.cbo_headloss.itemData(self.cbo_headloss.currentIndex())
         self.params.options.hydraulics.use_hydraulics = self.chk_hydraulics.setChecked
 
@@ -266,6 +269,7 @@ class HydraulicsDialog(QDialog):
 
         # Junctions
         self.parent.lbl_junction_demand.setText(pre_l('Demand', self.params.options.units_flow[self.params.options.units][0]))  # TODO: softcode
+        print '2', self.params.options.units, self.params.options.units_depth[self.params.options.units]
         self.parent.lbl_junction_depth.setText(pre_l('Delta Z', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
 
         # Reservoirs
@@ -290,8 +294,21 @@ class HydraulicsDialog(QDialog):
         self.parent.lbl_pump_power.setText(pre_l('Power', self.params.options.units_power[self.params.options.units]))
 
         # Valves
-        self.parent.lbl_valve_setting.setText(pre_l('Pressure', self.params.options.units_pressure[self.params.options.units]))
-        self.parent.lbl_valve_diameter.setText(pre_l('Pressure', self.params.options.units_diameter_pipes[self.params.options.units]))
+        valve_type = self.parent.cbo_valve_type.itemData(self.parent.cbo_valve_type.currentIndex())
+
+        # Pressure valves
+        if valve_type == Valve.type_psv or valve_type == Valve.type_prv or valve_type == Valve.type_pbv:
+            self.parent.lbl_valve_setting.setText(
+                pre_l('Pressure', self.params.options.units_pressure[self.params.options.units]))
+        # FCV valve: Flow
+        if valve_type == Valve.type_fcv:
+            self.parent.lbl_valve_setting.setText(
+                pre_l('Flow', self.params.options.flow_units))
+        # Throttle control valve
+        elif valve_type == Valve.type_tcv:
+            self.parent.lbl_valve_setting.setText(
+                pre_l('Loss coeff.', '-'))
+        # self.parent.lbl_valve_diameter.setText(pre_l('Pressure', self.params.options.units_diameter_pipes[self.params.options.units]))
 
         # Flow units
         units = self.cbo_flow_units.itemData(self.cbo_flow_units.currentIndex())
@@ -323,12 +340,12 @@ class HydraulicsDialog(QDialog):
 
 class QualityDialog(QDialog):
 
-    def __init__(self, parent, parameters):
+    def __init__(self, parent, params):
 
         QDialog.__init__(self, parent)
 
         self.parent = parent
-        self.params = parameters
+        self.params = params
 
         self.setMinimumWidth(min_width)
         # self.setMinimumHeight(min_height)
@@ -418,12 +435,12 @@ class QualityDialog(QDialog):
 
 class TimesDialog(QDialog):
 
-    def __init__(self, parent, parameters):
+    def __init__(self, parent, params):
 
         QDialog.__init__(self, parent)
 
         self.parent = parent
-        self.params = parameters
+        self.params = params
 
         self.setMinimumWidth(min_width)
 
@@ -574,12 +591,12 @@ class TimesDialog(QDialog):
 
 class EnergyDialog(QDialog):
 
-    def __init__(self, parent, parameters):
+    def __init__(self, parent, params):
 
         QDialog.__init__(self, parent)
 
         self.parent = parent
-        self.params = parameters
+        self.params = params
 
         self.setMinimumWidth(min_width)
         # self.setMinimumHeight(min_height)

@@ -122,7 +122,7 @@ class Pump:
 
     def __init__(self, eid):
         self.eid = eid
-        self.parameters = Pump.parameters_power
+        self.params = Pump.parameters_power
 
 
 class Valve:

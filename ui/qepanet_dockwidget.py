@@ -56,15 +56,15 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
 
-    def __init__(self, iface, parameters):
+    def __init__(self, iface, params):
         """Constructor."""
         super(QEpanetDockWidget, self).__init__(iface.mainWindow())
         self.iface = iface
-        self.params = parameters
+        self.params = params
         self.params.attach(self)
 
         self.setupUi(self)
-        self.setWindowTitle(parameters.plug_in_name)
+        self.setWindowTitle(params.plug_in_name)
 
         self.decimals = 1
 
@@ -195,7 +195,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Other tools
         self.btn_create_layers.pressed.connect(self.create_layers)
 
-        self.txt_snap_tolerance.setText(str(parameters.snap_tolerance))
+        self.txt_snap_tolerance.setText(str(params.snap_tolerance))
         self.txt_snap_tolerance.setValidator(RegExValidators.get_pos_decimals())
         QtCore.QObject.connect(self.txt_snap_tolerance, QtCore.SIGNAL('editingFinished()'), self.snap_tolerance_changed)
 
@@ -398,9 +398,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         setting_on = True
         setting_label = '-'
         if selected_type == Valve.type_pbv or selected_type == Valve.type_prv or selected_type == Valve.type_psv:
-            setting_label = 'Pressure[m]'  # TODO: softcode
+            setting_label = 'Pressure' + ' [' + self.params.options.units_depth[self.params.options.units] + ']' # TODO: softcode
         elif selected_type == Valve.type_fcv:
-            setting_label = 'Flow [???]:'  # TODO: softcode
+            setting_label = 'Flow:' + ' [' + self.params.options.flow_units + ']' # TODO: softcode
         elif selected_type == Valve.type_tcv:
             setting_label = 'Loss coeff. [-]:' # TODO: softcode
         elif selected_type == Valve.type_gpv:
