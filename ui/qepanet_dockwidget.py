@@ -32,6 +32,7 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsCoordinateReferenceSy
 from ..geo_utils import utils
 from options_dialogs import HydraulicsDialog, QualityDialog, TimesDialog, EnergyDialog
 from curvespatterns_ui import GraphDialog
+from ..model.inp_file import InpFile
 from ..model.network import Tables, Pump, Valve
 from ..rendering import symbology
 from ..tools.add_junction_tool import AddJunctionTool
@@ -192,7 +193,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_options_times.pressed.connect(self.btn_times_pressed)
         self.btn_options_energy.pressed.connect(self.btn_energy_pressed)
 
-        # Other tools
+        # Tools
         self.btn_create_layers.pressed.connect(self.create_layers)
 
         self.txt_snap_tolerance.setText(str(params.snap_tolerance))
@@ -201,6 +202,12 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.btn_pattern_editor.pressed.connect(self.pattern_editor)
         self.btn_curve_editor.pressed.connect(self.curve_editor)
+
+        # EPANET
+        self.btn_generate_inp.pressed.connect(self.generate_inp)
+        self.btn_run.pressed.connect(self.run)
+
+        InpFile.write_inp_file(self.params, 'd:/temp/inp.inp', 'merda')
 
     # This method needed by Observable
     def update(self, observable):
@@ -586,6 +593,18 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         curve_dialog = GraphDialog(self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_curves)
         curve_dialog.show()
+
+    def generate_inp(self):
+
+        inp_file_path = QFileDialog.getSaveFileName(
+            self,
+            'Select INP file',
+            None,
+            'Files (*.inp)')
+        InpFile.write_inp_file(self.params, inp_file_path, self.txt_prj_title.text())
+
+    def run(self):
+        pass
 
     def update_layers_combos(self):
 

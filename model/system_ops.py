@@ -7,9 +7,34 @@ class Curve:
         self.xs = []
         self.ys = []
 
-    def add_xy(self, x, y):
+    def append_xy(self, x, y):
         self.xs.append(x)
         self.ys.append(y)
+
+
+class Controls:
+    section_name = 'CONTROLS'
+
+    def __init__(self):
+        pass
+
+
+class Demand:
+    section_name = 'DEMANDS'
+
+    def __init__(self):
+        pass
+
+
+class Energy:
+
+    section_name = 'ENERGY'
+
+    def __init__(self):
+        self.pump_efficiency = 75
+        self.energy_price = 0
+        self.price_pattern = None
+        self.demand_charge = 0
 
 
 class Pattern:
@@ -28,8 +53,8 @@ class Pattern:
         self.values.append(val)
 
 
-class Energy:
-    section_name = 'ENERGY'
+class Rule:
+    section_name = 'RULES'
 
     def __init__(self):
         pass
@@ -37,27 +62,7 @@ class Energy:
 
 class Status:
     section_name = 'STATUS'
-
-    def __init__(self):
-        pass
-
-
-class Controls:
-    section_name = 'CONTROLS'
-
-    def __init__(self):
-        pass
-
-
-class Rules:
-    section_name = 'RULES'
-
-    def __init__(self):
-        pass
-
-
-class Demand:
-    section_name = 'DEMANDS'
+    section_header = 'ID              	Status/Setting'
 
     def __init__(self):
         pass

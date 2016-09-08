@@ -129,3 +129,104 @@ class Unbalanced:
     def __init__(self):
         self.unbalanced = Unbalanced.unb_stop
         self.trials = 0
+
+
+class Times:
+
+    section_name = 'TIMES'
+
+    unit_sec = 0
+    unit_min = 1
+    unit_hr = 2
+    unit_day = 3
+    unit_text = {0: 'Second', 1: 'Minute', 2: 'Hour', 3: 'Day'}
+
+    stats_avg = 0
+    stats_min = 1
+    stats_max = 2
+    stats_range = 3
+    stats_none = 4
+    stats_text = {0: 'Averaged', 1: 'Minimum', 2: 'Maximum', 3: 'Range', 4: 'None'}
+
+    def __init__(self):
+        self.units = Times.unit_hr
+        self.duration = 1
+        self.hydraulic_timestamp = Hour(1, 0)
+        self.quality_timestamp = Hour(0, 5)
+        self.rule_timestamp = Hour(1, 0)
+        self.pattern_timestamp = Hour(1, 0)
+        self.pattern_start = Hour(0, 0)
+        self.report_timestamp = Hour(1, 0)
+        self.report_start = Hour(0, 0)
+        self.clocktime_start = Hour(0, 0)
+        self.statistic = Times.stats_avg
+
+
+class Hour:
+
+    def __init__(self, hours, mins):
+        self.hours = hours
+        self.mins = mins
+
+    @classmethod
+    def from_string(cls, hhmm_string):
+        cls.hours = int(hhmm_string[0:2])
+        cls.mins = int(hhmm_string[3:5])
+
+    def get_as_text(self):
+        return str(self.hours).zfill(2) + ':' + str(self.mins).zfill(2)
+
+    def set_from_string(self, hhmm_string):
+        self.hours = int(hhmm_string[0:2])
+        self.mins = int(hhmm_string[3:5])
+
+
+class Report:
+
+    section_name = 'REPORT'
+    status_yes = 0
+    status_no = 1
+    status_full = 2
+
+    summary_yes = 0
+    summary_no = 1
+
+    energy_yes = 0
+    energy_no = 1
+
+    nodes_none = 0
+    nodes_all = 1
+    nodes_ids = 2
+
+    links_none = 0
+    links_all = 1
+    links_ids = 2
+
+    statuses_names = {0: 'YES',
+                      1: 'NO',
+                      2: 'FULL'}
+
+    summary_names = {0: 'YES',
+                     1: 'NO'}
+
+    energy_names = {0: 'YES',
+                    1: 'NO'}
+
+    nodes_names = {0: 'NONE',
+                   1: 'ALL'}
+
+    links_names = {0: 'NONE',
+                   1: 'ALL'}
+
+    def __init__(self):
+        self.page_size = 0
+        self.file = None
+        self.status = Report.status_no
+        self.summary = Report.summary_no
+        self.energy = Report.energy_no
+        self.nodes = Report.nodes_none
+        self.nodes_ids = None
+        self.links = Report.links_none
+        self.links_ids = None
+
+        # TODO: add parameters

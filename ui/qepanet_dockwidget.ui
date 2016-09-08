@@ -163,14 +163,14 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>6</number>
+              <number>2</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>150</width>
+                <width>288</width>
                 <height>225</height>
                </rect>
               </property>
@@ -293,7 +293,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>162</width>
+                <width>305</width>
                 <height>116</height>
                </rect>
               </property>
@@ -360,14 +360,17 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>148</width>
-                <height>64</height>
+                <width>305</width>
+                <height>69</height>
                </rect>
               </property>
               <attribute name="label">
                <string>Reservoir properties</string>
               </attribute>
               <layout class="QFormLayout" name="formLayout_3">
+               <property name="fieldGrowthPolicy">
+                <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+               </property>
                <item row="0" column="0">
                 <widget class="QLabel" name="lbl_reservoir_head">
                  <property name="text">
@@ -403,7 +406,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>174</width>
+                <width>288</width>
                 <height>194</height>
                </rect>
               </property>
@@ -515,7 +518,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>154</width>
+                <width>288</width>
                 <height>246</height>
                </rect>
               </property>
@@ -763,7 +766,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>153</width>
+                <width>305</width>
                 <height>90</height>
                </rect>
               </property>
@@ -822,7 +825,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>305</width>
-                <height>142</height>
+                <height>116</height>
                </rect>
               </property>
               <attribute name="label">
@@ -902,7 +905,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>99</width>
+                <width>305</width>
                 <height>157</height>
                </rect>
               </property>
@@ -1013,6 +1016,49 @@
                 <widget class="QPushButton" name="btn_curve_editor">
                  <property name="text">
                   <string>Curve editor</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="page">
+              <attribute name="label">
+               <string>EPANET</string>
+              </attribute>
+              <layout class="QVBoxLayout" name="verticalLayout_8">
+               <item>
+                <widget class="QFrame" name="frame_4">
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <layout class="QFormLayout" name="formLayout_9">
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="lbl_prj_title">
+                    <property name="text">
+                     <string>Project title:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QLineEdit" name="txt_prj_title"/>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btn_generate_inp">
+                 <property name="text">
+                  <string>Generate INP file</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btn_run">
+                 <property name="text">
+                  <string>Run</string>
                  </property>
                 </widget>
                </item>

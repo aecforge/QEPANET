@@ -5,14 +5,14 @@ import os
 from PyQt4.QtCore import QRegExp
 from PyQt4.QtGui import QRegExpValidator
 from observable import Observable
-from ..model.options import Options
-from ..model.times import Times
-from ..model.energy import Energy
+from ..model.options_report import Options, Report
+from ..model.options_report import Times
+from ..model.system_ops import Energy
 
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.14'
+    plug_in_name = 'QEPANET 0.15'
     config_file_name = 'config.ini'
 
     path = os.path.dirname(os.path.realpath(__file__))
@@ -48,6 +48,7 @@ class Parameters(Observable):
 
         self.options = Options()
         self.times = Times()
+        self.report = Report()
         self.energy = Energy()
 
     # Layers

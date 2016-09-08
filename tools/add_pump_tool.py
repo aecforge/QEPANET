@@ -117,9 +117,14 @@ class AddPumpTool(QgsMapTool):
                     # Create the pump
                     pump_param = ''
                     pump_value = 0
+
+                    # Head and pattern
                     if self.data_dock.cbo_pump_param.itemText(self.data_dock.cbo_pump_param.currentIndex()) == Pump.parameters_head:
                         pump_param = Pump.parameters_head
-                        pump_value = self.data_dock.cbo_pump_head.itemData(self.data_dock.cbo_pump_head.currentIndex())
+                        curve = self.data_dock.cbo_pump_head.itemData(self.data_dock.cbo_pump_head.currentIndex())
+                        pump_value = curve.id
+
+                    # Power and value
                     elif self.data_dock.cbo_pump_param.itemText(self.data_dock.cbo_pump_param.currentIndex()) == Pump.parameters_power:
                         pump_param = Pump.parameters_power
                         pump_value = self.data_dock.txt_pump_power.text()

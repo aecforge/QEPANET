@@ -3,7 +3,7 @@ from PyQt4.QtGui import QDialog, QFormLayout, QLabel, QComboBox, QLineEdit, QChe
 from PyQt4 import QtCore
 from ..tools.parameters import Parameters, RegExValidators
 from ..model.network import Valve
-from ..model.times import Hour
+from ..model.options_report import Hour
 from utils import prepare_label as pre_l
 import os
 
@@ -269,7 +269,6 @@ class HydraulicsDialog(QDialog):
 
         # Junctions
         self.parent.lbl_junction_demand.setText(pre_l('Demand', self.params.options.units_flow[self.params.options.units][0]))  # TODO: softcode
-        print '2', self.params.options.units, self.params.options.units_depth[self.params.options.units]
         self.parent.lbl_junction_depth.setText(pre_l('Delta Z', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
 
         # Reservoirs
@@ -658,6 +657,10 @@ class EnergyDialog(QDialog):
         self.txt_pump_efficiency.setText(str(self.params.energy.pump_efficiency))
         self.txt_energy_price.setText(str(self.params.energy.energy_price))
         self.txt_price_pattern.setText(str(self.params.energy.price_pattern) if self.params.energy.price_pattern is not None else '')
+
+        self.lbl_price_pattern.setEnabled(False) # TODO
+        self.txt_price_pattern.setEnabled(False) # TODO
+
         self.txt_demand_charge.setText(str(self.params.energy.demand_charge))
 
     def btn_cancel_pressed(self):

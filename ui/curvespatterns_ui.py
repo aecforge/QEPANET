@@ -1,5 +1,5 @@
 from ..model.inp_file import InpFile
-from ..model.system_ops import Pattern
+from ..model.system_ops import Curve, Pattern
 from ..tools.parameters import Parameters, ConfigFile
 from graphs import StaticMplCanvas
 from PyQt4.QtGui import QDialog, QVBoxLayout, QLabel, QFrame, QMessageBox, QPushButton, QSizePolicy, QHBoxLayout,\
@@ -215,19 +215,25 @@ class GraphDialog(QDialog):
     def select_file(self):
 
         config_file = ConfigFile(Parameters.config_file_path)
-        patterns_file_path = QFileDialog.getOpenFileName(
+
+        file_path = QFileDialog.getOpenFileName(
             self,
             'Select file',
             self.txt_file.text(),
             'Files (*.txt *.inp)')
 
-        if patterns_file_path is None or patterns_file_path == '':
+        if file_path is None or file_path == '':
             return
         else:
-            # Save patterns file path in configuration file
-            config_file.set_patterns_file_path(patterns_file_path)
+            if self.edit_type == GraphDialog.edit_patterns:
+                # Save patterns file path in configuration file
+                config_file.set_patterns_file_path(file_path)
+                Parameters.patterns_file = file_path
+            elif self.edit_type == GraphDialog.edit_curves:
+                # Save curve file path in configuration file
+                config_file.set_curves_file_path(file_path)
+                Parameters.curves_file = file_path
 
-        Parameters.patterns_file = patterns_file_path
         self.read()
 
     def read(self):
@@ -259,45 +265,94 @@ class GraphDialog(QDialog):
                     QMessageBox.Ok)
             return
 
-        # Check for ID unique
-        overwrite_p_index = -1
-        for p in range(len(self.params.patterns)):
-            if self.params.patterns[p].id == self.txt_id.text():
-                ret = QMessageBox.question(
-                    self,
-                    Parameters.plug_in_name,
-                    u'The ID ' + self.txt_id.text() + u' already exists. Overwrite?',  # TODO: softcode
-                    QMessageBox.Yes | QMessageBox.No)
-                if ret == QMessageBox.No:
-                    return
-                else:
-                    overwrite_p_index = p
-                break
+        if self.edit_type == GraphDialog.edit_patterns:
+            # Check for ID unique
+            overwrite_p_index = -1
+            for p in range(len(self.params.patterns)):
+                if self.params.patterns[p].id == self.txt_id.text():
+                    ret = QMessageBox.question(
+                        self,
+                        Parameters.plug_in_name,
+                        u'The ID ' + self.txt_id.text() + u' already exists. Overwrite?',  # TODO: softcode
+                        QMessageBox.Yes | QMessageBox.No)
+                    if ret == QMessageBox.No:
+                        return
+                    else:
+                        overwrite_p_index = p
+                    break
 
-        values = []
-        for col in range(self.table.columnCount()):
-            item = self.table.item(1, col)
-            values.append(self.from_item_to_val(item))
+            values = []
+            for col in range(self.table.columnCount()):
+                item = self.table.item(1, col)
+                values.append(self.from_item_to_val(item))
 
-        # Update
-        new_pattern = Pattern(self.txt_id.text(), self.txt_desc.text(), values)
-        if overwrite_p_index >= 0:
-            self.params.patterns[overwrite_p_index] = new_pattern
-            InpFile.write_patterns(self.params, self.params.patterns_file)
-            self.read()
-            self.lst_list.setCurrentRow(overwrite_p_index)
+            # Update
+            new_pattern = Pattern(self.txt_id.text(), self.txt_desc.text(), values)
+            if overwrite_p_index >= 0:
+                self.params.patterns[overwrite_p_index] = new_pattern
+                InpFile.write_patterns(self.params, self.params.patterns_file)
+                self.read()
+                self.lst_list.setCurrentRow(overwrite_p_index)
 
-        # Save new
-        else:
-            self.params.patterns.append(new_pattern)
-            InpFile.write_patterns(self.params, self.params.patterns_file)
-            self.read()
+            # Save new
+            else:
+                self.params.patterns.append(new_pattern)
+                InpFile.write_patterns(self.params, self.params.patterns_file)
+                self.read()
+
+        elif self.edit_type == GraphDialog.edit_curves:
+            # Check for ID unique
+            overwrite_c_index = -1
+            for c in range(len(self.params.curves)):
+                if self.params.curves[c].id == self.txt_id.text():
+                    ret = QMessageBox.question(
+                        self,
+                        Parameters.plug_in_name,
+                        u'The ID ' + self.txt_id.text() + u' already exists. Overwrite?',  # TODO: softcode
+                        QMessageBox.Yes | QMessageBox.No)
+                    if ret == QMessageBox.No:
+                        return
+                    else:
+                        overwrite_c_index = c
+                    break
+
+            xs = []
+            ys = []
+            for row in range(self.table.rowCount()):
+                item_x = self.table.item(row, 0)
+                item_y = self.table.item(row, 1)
+
+                if item_x is not None and item_y is not None:
+                    xs.append(self.from_item_to_val(item_x))
+                    ys.append(self.from_item_to_val(item_y))
+
+            # Update
+            new_curve = Curve(self.txt_id.text(), self.txt_desc.text())
+            for v in range(len(xs)):
+                new_curve.append_xy(xs[v], ys[v])
+
+            if overwrite_c_index >= 0:
+                self.params.curves[overwrite_c_index] = new_curve
+                InpFile.write_curves(self.params, self.params.curves_file)
+                self.read()
+                self.lst_list.setCurrentRow(overwrite_c_index)
+
+            # Save new
+            else:
+                self.params.patterns.append(new_curve)
+                InpFile.write_curves(self.params, self.params.curves_file)
+                self.read()
 
     def del_pattern(self):
         selected_row = self.lst_list.currentRow()
         self.lst_list.takeItem(selected_row)
-        del self.params.patterns[selected_row]
-        InpFile.write_patterns(self.params, self.params.patterns_file)
+
+        if self.edit_type == GraphDialog.edit_curves:
+            del self.params.curves[selected_row]
+            InpFile.write_curves(self.curves, self.params.curves_file)
+        elif self.edit_type == GraphDialog.edit_patterns:
+            del self.params.patterns[selected_row]
+            InpFile.write_patterns(self.params, self.params.patterns_file)
 
     def data_changed(self):
 

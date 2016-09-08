@@ -23,7 +23,7 @@ class Title:
 
 class Junction:
     section_name = 'JUNCTIONS'
-    section_header = 'ID              	Elev        	Demand      	Pattern'
+    section_header = 'ID               	Elev      	Demand    	Pattern'
     field_name_eid = 'id'
     field_name_demand = 'demand'
     field_name_elevation = 'elev'
@@ -42,7 +42,7 @@ class Junction:
 
 class Reservoir:
     section_name = 'RESERVOIRS'
-    section_header = 'ID              	Head        	Pattern'
+    section_header = 'ID               	Head      	Pattern'
     field_name_eid = 'id'
     field_name_elevation = 'elev'
     field_name_elev_corr = 'elev_corr'
@@ -59,7 +59,7 @@ class Reservoir:
 
 class Tank:
     section_name = 'TANKS'
-    section_header = 'ID              	Elevation   	InitLevel   	MinLevel    	MaxLevel    	Diameter    	MinVol      	VolCurve'
+    section_header = 'ID                	Elevation 	InitLevel 	MinLevel  	MaxLevel  	Diameter  	MinVol    	VolCurve'
     field_name_eid = 'id'
     field_name_curve = 'curve'
     field_name_diameter = 'diameter'
@@ -84,7 +84,7 @@ class Tank:
 
 class Pipe:
     section_name = 'PIPES'
-    section_header = 'ID              	Node1           	Node2           	Length      	Diameter    	Roughness   	MinorLoss   	Status'
+    section_header = 'ID              	Node1           	Node2           	Length      	Diameter    	Roughness  	MinorLoss  	Status'
     field_name_eid = 'id'
     field_name_demand = 'demand'
     field_name_diameter = 'diameter'
@@ -127,7 +127,7 @@ class Pump:
 
 class Valve:
     section_name = 'VALVES'
-    section_header = 'ID              	Node1           	Node2           	Diameter    	Type	Setting     	MinorLoss'
+    section_header = 'ID              	Node1           	Node2           	Diameter   	Type      	Setting   	MinorLoss'
     field_name_eid = 'id'
     field_name_diameter = 'diameter'
     field_name_minor_loss = 'minor_loss'
