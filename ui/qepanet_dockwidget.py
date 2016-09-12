@@ -207,7 +207,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_generate_inp.pressed.connect(self.generate_inp)
         self.btn_run.pressed.connect(self.run)
 
-        InpFile.write_inp_file(self.params, 'd:/temp/inp.inp', 'merda')
+        # InpFile.write_inp_file(self.params, 'd:/temp/inp.inp', 'merda')
 
     # This method needed by Observable
     def update(self, observable):
@@ -596,12 +596,19 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def generate_inp(self):
 
+        config_file = ConfigFile(Parameters.config_file_path)
+
+        print config_file.get_inp_file_folder()
+
         inp_file_path = QFileDialog.getSaveFileName(
             self,
             'Select INP file',
-            None,
+            config_file.get_inp_file_folder(),
             'Files (*.inp)')
-        InpFile.write_inp_file(self.params, inp_file_path, self.txt_prj_title.text())
+
+        if inp_file_path is not None and inp_file_path != '':
+            config_file.set_inp_file_folder(os.path.dirname(inp_file_path))
+            InpFile.write_inp_file(self.params, inp_file_path, self.txt_prj_title.text())
 
     def run(self):
         pass

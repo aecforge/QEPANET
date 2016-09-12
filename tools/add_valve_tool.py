@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QColor
+from PyQt4.QtCore import Qt, QPoint
+from PyQt4.QtGui import QColor, QMenu
 from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from ..model.network import Valve, Pipe
 from ..model.network_handling import LinkHandler, NetworkUtils
 from parameters import Parameters
-from ..geo_utils import raster_utils
+from ..geo_utils import raster_utils, vector_utils
+from ..ui.diameter_dialog import DiameterDialog
 
 
 class AddValveTool(QgsMapTool):
@@ -31,9 +32,11 @@ class AddValveTool(QgsMapTool):
         self.vertex_marker = QgsVertexMarker(self.canvas())
         self.elev = -1
 
+        self.diameter_dialog = None
+
     def canvasPressEvent(self, event):
         if event.button() == Qt.RightButton:
-            self.mouse_clicked = False
+            self.mouse_clicked = True
 
         if event.button() == Qt.LeftButton:
             self.mouse_clicked = True
@@ -132,6 +135,52 @@ class AddValveTool(QgsMapTool):
                         self.snapped_vertex,
                         self.params.valves_vlay,
                         [diameter, minor_loss, setting, selected_type])
+
+        elif event.button() == Qt.RightButton:
+
+            self.mouse_clicked = False
+
+            menu = QMenu()
+            diameter_action = menu.addAction('Change diameter...')  # TODO: softcode
+            action = menu.exec_(self.iface.mapCanvas().mapToGlobal(QPoint(event.pos().x(), event.pos().y())))
+
+            request = QgsFeatureRequest().setFilterFid(self.snapped_pipe_id)
+            feats = self.params.pipes_vlay.getFeatures(request)
+            features = [feat for feat in feats]
+            if len(features) == 1:
+                adj_links = NetworkUtils.find_links_adjacent_to_link(
+                    self.params, self.params.pipes_vlay, features[0], True, True, False)
+
+                for valve_ft in adj_links['valves']:
+
+                    # valve_ft = vector_utils.get_feats_by_id(self.params.valves_vlay, self.snapped_pipe_id)[0]
+
+                    if action == diameter_action:
+                        self.diameter_dialog = DiameterDialog(self.iface.mainWindow(), self.params)
+                        self.diameter_dialog.exec_()  # Exec creates modal dialog
+                        new_diameter = self.diameter_dialog.get_diameter()
+                        if new_diameter is None:
+                            return
+
+                        # Update valve diameter
+                        vector_utils.update_attribute(self.params.valves_vlay, valve_ft, Valve.field_name_diameter, new_diameter)
+
+                        # Modify pipes diameters
+                        adj_pipes_fts = NetworkUtils.find_links_adjacent_to_link(
+                            self.params, self.params.valves_vlay, valve_ft, False, True, True)
+
+                        if adj_pipes_fts:
+
+                            for adj_pipe_ft in adj_pipes_fts['pipes']:
+
+                                vector_utils.update_attribute(self.params.pipes_vlay,
+                                                              adj_pipe_ft,
+                                                              Pipe.field_name_diameter,
+                                                              new_diameter)
+
+                            self.iface.messageBar().pushInfo(
+                                Parameters.plug_in_name,
+                                'Diameters of pipes adjacent to valve updated.')  # TODO: softcode
 
     def activate(self):
 

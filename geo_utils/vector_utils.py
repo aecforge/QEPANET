@@ -57,3 +57,17 @@ def get_feats_by_id(vlay, ft_id):
     request = QgsFeatureRequest().setFilterFid(ft_id)
     feats = list(vlay.getFeatures(request))
     return feats
+
+
+def update_attribute(layer, feat, attribute_name, new_val, edit_command_name='Update attribute'):
+
+    layer.beginEditCommand(edit_command_name)
+
+    feat.setAttribute(attribute_name, None)
+    layer.changeAttributeValue(
+        feat.id(),
+        feat.fieldNameIndex(attribute_name),
+        None,
+        new_val)
+
+    layer.endEditCommand()

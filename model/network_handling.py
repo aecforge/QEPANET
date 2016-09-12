@@ -858,7 +858,13 @@ class NetworkUtils:
         return adj_points
 
     @staticmethod
-    def find_links_adjacent_to_link(parameters, link_vlay, link_ft, exclude_pipes=False, exclude_pumps=False, exclude_valves=False):
+    def find_links_adjacent_to_link(
+            parameters,
+            link_vlay,
+            link_ft,
+            exclude_pipes=False,
+            exclude_pumps=False,
+            exclude_valves=False):
         """Finds the links adjacent to a given link"""
 
         adj_links = dict()

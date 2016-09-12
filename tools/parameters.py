@@ -51,6 +51,8 @@ class Parameters(Observable):
         self.report = Report()
         self.energy = Energy()
 
+        self.new_diameter = None
+
     # Layers
     @property
     def junctions_vlay(self):
@@ -250,6 +252,20 @@ class ConfigFile:
         with codecs.open(self.config_file_path, 'wb') as configfile:
             config.write(configfile)
 
+    def get_inp_file_folder(self):
+        self.config.read(self.config_file_path)
+        try:
+            inp_file_folder = self.config.get('EPANET', 'inp_file_folder')  # TODO: softcode
+        except ConfigParser.NoOptionError as e:
+            return None
+        return inp_file_folder
+
+    def set_inp_file_folder(self, inp_file_folder):
+        config = self.get_config()
+        config.set('EPANET', 'inp_file_folder', inp_file_folder)  # TODO: softcode
+
+        with codecs.open(self.config_file_path, 'wb') as configfile:
+            config.write(configfile)
 
 class RegExValidators:
 

@@ -13,6 +13,7 @@ from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils, vector_utils
 from ..ui.section_editor import PipeSectionDialog
+from ..ui.diameter_dialog import DiameterDialog
 
 
 class AddPipeTool(QgsMapTool):
@@ -41,6 +42,8 @@ class AddPipeTool(QgsMapTool):
         self.snapped_vertex_nr = None
         self.vertex_marker = QgsVertexMarker(self.canvas())
         self.elev = -1
+
+        self.diameter_dialog = None
 
     def canvasPressEvent(self, event):
         if event.button() == Qt.RightButton:
@@ -110,15 +113,37 @@ class AddPipeTool(QgsMapTool):
                 # No rubber band geometry: pop the context menu
                 if pipe_band_geom is None:
                     menu = QMenu()
-                    section_action = menu.addAction('Section')
+                    section_action = menu.addAction('Section...')  # TODO: softcode
+                    diameter_action = menu.addAction('Change diameter...')  # TODO: softcode
                     action = menu.exec_(self.iface.mapCanvas().mapToGlobal(QPoint(event.pos().x(), event.pos().y())))
+
+                    pipe_ft = vector_utils.get_feats_by_id(self.params.pipes_vlay, self.snapped_feat_id)[0]
                     if action == section_action:
                         pattern_dialog = PipeSectionDialog(
                             self.iface.mainWindow(),
                             self.iface,
                             self.params,
-                            vector_utils.get_feats_by_id(self.params.pipes_vlay, self.snapped_feat_id)[0])
-                        pattern_dialog.show()
+                            pipe_ft)
+                        pattern_dialog.exec_()
+
+                    elif action == diameter_action:
+                        self.diameter_dialog = DiameterDialog(self.iface.mainWindow(), self.params)
+                        self.diameter_dialog.exec_()  # Exec creates modal dialog
+                        new_diameter = self.diameter_dialog.get_diameter()
+                        if new_diameter is None:
+                            return
+
+                        # Update pipe diameter
+                        vector_utils.update_attribute(self.params.pipes_vlay, pipe_ft, Pipe.field_name_diameter, new_diameter)
+
+                        # Check if a valve is present
+                        adj_valves = NetworkUtils.find_links_adjacent_to_link(
+                            self.params, self.params.pipes_vlay, pipe_ft, True, True, False)
+
+                        if adj_valves:
+                            self.iface.messageBar().pushWarning(
+                                Parameters.plug_in_name,
+                                'Valves detected on the pipe: need to update their diameters too!')  # TODO: softcode
 
                     return
 
