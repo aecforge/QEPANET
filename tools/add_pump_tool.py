@@ -142,8 +142,12 @@ class AddPumpTool(QgsMapTool):
 
             self.mouse_clicked = False
 
+            # Check whether it clicked on a valve vertex
+            if len(NetworkUtils.find_adjacent_links(self.params, self.snapped_vertex)['pumps']) == 0:
+                return
+
             menu = QMenu()
-            invert_action = menu.addAction('Flip orientation')
+            invert_action = menu.addAction('Flip orientation')  # TODO: softcode
             action = menu.exec_(self.iface.mapCanvas().mapToGlobal(QPoint(event.pos().x(), event.pos().y())))
             if action == invert_action:
 

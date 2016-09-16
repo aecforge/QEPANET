@@ -212,7 +212,7 @@ class QEpanet:
     def run(self):
         """Run method that loads and starts the plugin"""
 
-        # Check for parameters file existance
+        # Check for config file existance
         if not os.path.exists(Parameters.config_file_path):
             QMessageBox.critical(
                 self.iface.mainWindow(),

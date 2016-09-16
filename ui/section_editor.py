@@ -71,7 +71,7 @@ class PipeSectionDialog(QDialog):
 
         # Graph canvas
         self.fra_graph = QFrame(self)
-        self.static_canvas = SectionCanvas(iface, parameters, self)
+        self.static_canvas = SectionCanvas(iface, params, self)
 
         # Toolbar
         self.toolbar = NavigationToolbar2QT(self.static_canvas, self)

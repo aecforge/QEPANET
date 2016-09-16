@@ -284,21 +284,21 @@ class LinkHandler:
 
         if junctions_caps:
             if closest_junction_ft is not None:
-                j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
+                # j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
                 depth = closest_junction_ft.attribute(Junction.field_name_elev_corr)
                 pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
             else:
-                j_demand = float(data_dock.txt_junction_demand.text())
+                # j_demand = float(data_dock.txt_junction_demand.text())
                 depth = float(data_dock.txt_junction_depth.text())
                 pattern_id = data_dock.cbo_junction_pattern.itemData(data_dock.cbo_junction_pattern.currentIndex()).id
 
             junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, 'J')  # TODO: softcode
             elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_before, 1)
-            NodeHandler.create_new_junction(params, node_before, junction_eid, elev, j_demand, depth, pattern_id)
+            NodeHandler.create_new_junction(params, node_before, junction_eid, elev, 0, depth, pattern_id)
 
             junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, 'J')  # TODO: softcode
             elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_after, 1)
-            NodeHandler.create_new_junction(params, node_after, junction_eid, elev, j_demand, depth, pattern_id)
+            NodeHandler.create_new_junction(params, node_after, junction_eid, elev, 0, depth, pattern_id)
 
         # Split the pipe and create gap
         if pipes_caps:
@@ -738,17 +738,17 @@ class NetworkUtils:
                 return params.junctions_vlay
 
     @staticmethod
-    def find_adjacent_links(parameters, node_geom):
+    def find_adjacent_links(params, node_geom):
 
         adjacent_links_d = {'pumps': [], 'valves': []}
 
         # Search among pipes
         adjacent_pipes_fts = []
-        for pipe_ft in parameters.pipes_vlay.getFeatures():
+        for pipe_ft in params.pipes_vlay.getFeatures():
             pipe_geom = pipe_ft.geometry()
             nodes = pipe_geom.asPolyline()
-            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0]), parameters.tolerance) or\
-                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1]), parameters.tolerance):
+            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0]), params.tolerance) or\
+                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1]), params.tolerance):
                 adjacent_pipes_fts.append(pipe_ft)
 
         adjacent_links_d['pipes'] = adjacent_pipes_fts
@@ -759,22 +759,22 @@ class NetworkUtils:
 
         # Search among pumps
         adjacent_pumps_fts = []
-        for pump_ft in parameters.pumps_vlay.getFeatures():
+        for pump_ft in params.pumps_vlay.getFeatures():
             pump_geom = pump_ft.geometry()
             nodes = pump_geom.asPolyline()
-            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0]), parameters.tolerance) or \
-                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1]), parameters.tolerance):
+            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0]), params.tolerance) or \
+                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1]), params.tolerance):
                 adjacent_pumps_fts.append(pump_ft)
 
         adjacent_links_d['pumps'] = adjacent_pumps_fts
 
         # Search among valves
         adjacent_valves_fts = []
-        for valve_ft in parameters.valves_vlay.getFeatures():
+        for valve_ft in params.valves_vlay.getFeatures():
             valve_geom = valve_ft.geometry()
             nodes = valve_geom.asPolyline()
-            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0]), parameters.tolerance) or \
-                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1]), parameters.tolerance):
+            if NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[0]), params.tolerance) or \
+                    NetworkUtils.points_overlap(node_geom, QgsGeometry.fromPoint(nodes[len(nodes) - 1]), params.tolerance):
                 adjacent_valves_fts.append(valve_ft)
 
         adjacent_links_d['valves'] = adjacent_valves_fts
@@ -897,24 +897,24 @@ class NetworkUtils:
         return adj_links
 
     @staticmethod
-    def find_overlapping_nodes(parameters, point):
+    def find_overlapping_nodes(params, point):
 
         overlap_juncts = []
         overlap_reservs = []
         overlap_tanks = []
 
-        for junct_feat in parameters.junctions_vlay.getFeatures():
-            if NetworkUtils.points_overlap(junct_feat.geometry(), point, parameters.tolerance):
+        for junct_feat in params.junctions_vlay.getFeatures():
+            if NetworkUtils.points_overlap(junct_feat.geometry(), point, params.tolerance):
                 overlap_juncts.append(junct_feat)
                 break
 
-        for reserv_feat in parameters.reservoirs_vlay.getFeatures():
-            if NetworkUtils.points_overlap(reserv_feat.geometry(), point, parameters.tolerance):
+        for reserv_feat in params.reservoirs_vlay.getFeatures():
+            if NetworkUtils.points_overlap(reserv_feat.geometry(), point, params.tolerance):
                 overlap_reservs.append(reserv_feat)
                 break
 
-        for tank_feat in parameters.tanks_vlay.getFeatures():
-            if NetworkUtils.points_overlap(tank_feat.geometry(), point, parameters.tolerance):
+        for tank_feat in params.tanks_vlay.getFeatures():
+            if NetworkUtils.points_overlap(tank_feat.geometry(), point, params.tolerance):
                 overlap_tanks.append(tank_feat)
                 break
 

@@ -2,7 +2,7 @@
 
 from PyQt4.QtCore import Qt, QPoint
 from PyQt4.QtGui import QColor, QMenu
-from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance
+from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance, QGis
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from ..model.network import Valve, Pipe
@@ -140,8 +140,13 @@ class AddValveTool(QgsMapTool):
 
             self.mouse_clicked = False
 
+            # Check whether it clicked on a valve vertex
+            if len(NetworkUtils.find_adjacent_links(self.params, self.snapped_vertex)['valves']) == 0:
+                return
+
             menu = QMenu()
             diameter_action = menu.addAction('Change diameter...')  # TODO: softcode
+            invert_action = menu.addAction('Flip orientation')  # TODO: softcode
             action = menu.exec_(self.iface.mapCanvas().mapToGlobal(QPoint(event.pos().x(), event.pos().y())))
 
             request = QgsFeatureRequest().setFilterFid(self.snapped_pipe_id)
@@ -181,6 +186,40 @@ class AddValveTool(QgsMapTool):
                             self.iface.messageBar().pushInfo(
                                 Parameters.plug_in_name,
                                 'Diameters of pipes adjacent to valve updated.')  # TODO: softcode
+
+                    elif action == invert_action:
+
+                        request = QgsFeatureRequest().setFilterFid(self.snapped_pipe_id)
+                        feats = self.params.pipes_vlay.getFeatures(request)
+                        features = [feat for feat in feats]
+                        if len(features) == 1:
+                            adj_links = NetworkUtils.find_links_adjacent_to_link(
+                                self.params, self.params.pipes_vlay, features[0], True, True, False)
+
+                            for adj_link in adj_links['valves']:
+                                adj_link_pts = adj_link.geometry().asPolyline()
+                                for adj_link_pt in adj_link_pts:
+                                    if NetworkUtils.points_overlap(adj_link_pt, self.snapped_vertex,
+                                                                   self.params.tolerance):
+
+                                        geom = adj_link.geometry()
+
+                                        if geom.wkbType() == QGis.WKBMultiLineString:
+                                            nodes = geom.asMultiPolyline()
+                                            for line in nodes:
+                                                line.reverse()
+                                            newgeom = QgsGeometry.fromMultiPolyline(nodes)
+                                            self.params.valves_vlay.changeGeometry(adj_link.id(), newgeom)
+
+                                        if geom.wkbType() == QGis.WKBLineString:
+                                            nodes = geom.asPolyline()
+                                            nodes.reverse()
+                                            newgeom = QgsGeometry.fromPolyline(nodes)
+                                            self.params.valves_vlay.changeGeometry(adj_link.id(), newgeom)
+
+                                        self.iface.mapCanvas().refresh()
+
+                                        break
 
     def activate(self):
 

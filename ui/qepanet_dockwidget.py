@@ -148,6 +148,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.lbl_pipe_diameter.setText(pre_l('Diameter', self.params.options.units_diameter_pipes[self.params.options.units]))  # TODO: softcode
         self.lbl_pipe_loss.setText(pre_l('Minor loss', '-'))
 
+        self.txt_pipe_demand.setText('0')
         self.txt_pipe_demand.setValidator(RegExValidators.get_pos_decimals())
         self.txt_pipe_diameter.setValidator(RegExValidators.get_pos_decimals())
         self.txt_pipe_loss.setValidator(RegExValidators.get_pos_decimals())
@@ -208,6 +209,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_run.pressed.connect(self.run)
 
         # InpFile.write_inp_file(self.params, 'd:/temp/inp.inp', 'merda')
+        self.btn_generate_inp.setEnabled(False)
+        self.btn_run.setEnabled(False)
 
     # This method needed by Observable
     def update(self, observable):
@@ -598,8 +601,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         config_file = ConfigFile(Parameters.config_file_path)
 
-        print config_file.get_inp_file_folder()
-
         inp_file_path = QFileDialog.getSaveFileName(
             self,
             'Select INP file',
@@ -697,7 +698,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if self.params.junctions_vlay is not None:
             ns = symbology.NodeSymbology()
-            renderer = ns.make_simple_node_sym_renderer(3)
+            renderer = ns.make_simple_node_sym_renderer(0.5)
             self.params.junctions_vlay.setRendererV2(renderer)
 
         if self.params.reservoirs_vlay is not None:

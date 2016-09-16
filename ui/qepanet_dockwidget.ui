@@ -170,7 +170,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>288</width>
+                <width>150</width>
                 <height>225</height>
                </rect>
               </property>
@@ -293,7 +293,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>162</width>
                 <height>116</height>
                </rect>
               </property>
@@ -371,20 +371,6 @@
                <property name="fieldGrowthPolicy">
                 <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
                </property>
-               <item row="0" column="0">
-                <widget class="QLabel" name="lbl_reservoir_head">
-                 <property name="text">
-                  <string>Head [m]:</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="1">
-                <widget class="QLineEdit" name="txt_reservoir_head">
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                </widget>
-               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="lbl_reservoir_elev_corr">
                  <property name="text">
@@ -399,6 +385,20 @@
                  </property>
                 </widget>
                </item>
+               <item row="0" column="1">
+                <widget class="QLineEdit" name="txt_reservoir_head">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="0">
+                <widget class="QLabel" name="lbl_reservoir_head">
+                 <property name="text">
+                  <string>Head [m]:</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="wgt_ele_tank">
@@ -406,7 +406,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>288</width>
+                <width>174</width>
                 <height>194</height>
                </rect>
               </property>
@@ -518,7 +518,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>288</width>
+                <width>154</width>
                 <height>246</height>
                </rect>
               </property>
@@ -766,7 +766,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>153</width>
                 <height>90</height>
                </rect>
               </property>
@@ -824,7 +824,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>173</width>
                 <height>116</height>
                </rect>
               </property>
@@ -905,7 +905,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>99</width>
                 <height>157</height>
                </rect>
               </property>
@@ -961,7 +961,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>193</width>
                 <height>145</height>
                </rect>
               </property>
@@ -1022,6 +1022,14 @@
               </layout>
              </widget>
              <widget class="QWidget" name="page">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>157</width>
+                <height>116</height>
+               </rect>
+              </property>
               <attribute name="label">
                <string>EPANET</string>
               </attribute>
