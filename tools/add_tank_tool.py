@@ -28,7 +28,7 @@ class AddTankTool(QgsMapTool):
         self.snapped_vertex = None
         self.snapped_vertex_nr = None
         self.vertex_marker = QgsVertexMarker(self.canvas())
-        self.elev = -1
+        self.elev = None
 
     def canvasPressEvent(self, event):
         if event.button() == Qt.RightButton:
@@ -42,10 +42,11 @@ class AddTankTool(QgsMapTool):
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
         elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, self.mouse_pt, 1)
-
+        self.elev = elev
         if elev is not None:
-            self.elev = elev
             self.data_dock.lbl_elev_val.setText("{0:.2f}".format(self.elev))
+        else:
+            self.data_dock.lbl_elev_val.setText('-')
 
         if not self.mouse_clicked:
 
@@ -79,6 +80,12 @@ class AddTankTool(QgsMapTool):
             return
 
         if event.button() == Qt.LeftButton:
+
+            if self.elev is None:
+                self.iface.messageBar().pushWarning(
+                    Parameters.plug_in_name,
+                    'The clicked point falls outside of the DEM.')  # TODO: softcode
+                return
 
             self.mouse_clicked = False
 

@@ -61,9 +61,11 @@ class AddPipeTool(QgsMapTool):
         self.rubber_band.movePoint(last_ix - 1, (self.snapped_vertex if self.snapped_vertex is not None else self.mouse_pt))
 
         elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, self.mouse_pt, 1)
+        self.elev = elev
         if elev is not None:
-            self.elev = elev
             self.data_dock.lbl_elev_val.setText("{0:.2f}".format(self.elev))
+        else:
+            self.data_dock.lbl_elev_val.setText('-')
 
         # Mouse not clicked: snapping to closest vertex
         (retval, result) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
@@ -96,6 +98,12 @@ class AddPipeTool(QgsMapTool):
         # if not self.mouse_clicked:
         #     return
         if event.button() == Qt.LeftButton:
+
+            if self.elev is None:
+                self.iface.messageBar().pushWarning(
+                    Parameters.plug_in_name,
+                    'The clicked point falls outside of the DEM.')  # TODO: softcode
+                return
 
             # Update rubber bands
             self.rubber_band.addPoint((self.snapped_vertex if self.snapped_vertex is not None else self.mouse_pt), True)

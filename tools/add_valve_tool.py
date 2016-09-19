@@ -46,10 +46,11 @@ class AddValveTool(QgsMapTool):
         self.mouse_pt = self.toMapCoordinates(event.pos())
 
         elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, self.mouse_pt, 1)
-
+        self.elev = elev
         if elev is not None:
-            self.elev = elev
             self.data_dock.lbl_elev_val.setText("{0:.2f}".format(self.elev))
+        else:
+            self.data_dock.lbl_elev_val.setText('-')
 
         if not self.mouse_clicked:
 

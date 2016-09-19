@@ -247,7 +247,7 @@ class HydraulicsDialog(QDialog):
         self.params.options.units = self.cbo_units.itemData(self.cbo_units.currentIndex())
         self.params.options.flow_units = self.cbo_flow_units.itemData(self.cbo_flow_units.currentIndex())
         self.params.options.headloss = self.cbo_headloss.itemData(self.cbo_headloss.currentIndex())
-        self.params.options.hydraulics.use_hydraulics = self.chk_hydraulics.setChecked
+        self.params.options.hydraulics.use_hydraulics = self.chk_hydraulics.isChecked()
 
         if self.params.options.hydraulics.action is not None:
             self.params.options.hydraulics.action = self.cbo_hydraulics.itemData(self.cbo_hydraulics.currentIndex())
@@ -428,6 +428,111 @@ class QualityDialog(QDialog):
         self.params.options.quality.relative_diff = float(self.txt_rel_diff.text())
         self.params.options.quality.trace_junction_id = self.txt_trace_node.text()
         self.params.options.quality.quality_tol = float(self.txt_quality_tol.text())
+
+        self.setVisible(False)
+
+
+class ReactionsDialog(QDialog):
+
+    def __init__(self, parent, params):
+
+        QDialog.__init__(self, parent)
+
+        self.parent = parent
+        self.params = params
+
+        self.setMinimumWidth(min_width)
+
+        # Build dialog
+        self.setWindowTitle('Options - Reactions')  # TODO: softcode
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+
+        self.fra_form = QFrame(self)
+        fra_form_lay = QFormLayout(self.fra_form)
+        fra_form_lay.setContentsMargins(10, 10, 10, 10)
+
+        self.lbl_bulk_reaction_order = QLabel('Bulk reaction oreder:')  # TODO: softocode
+        self.txt_bulk_reaction_order = QLineEdit('1')
+        fra_form_lay.addRow(self.lbl_bulk_reaction_order, self.txt_bulk_reaction_order)
+
+        self.lbl_tank_reaction_order = QLabel('Tank reaction oreder:')  # TODO: softocode
+        self.txt_tank_reaction_order = QLineEdit('1')
+        fra_form_lay.addRow(self.lbl_tank_reaction_order, self.txt_tank_reaction_order)
+
+        self.lbl_wall_reaction_order = QLabel('Wall reaction oreder:')  # TODO: softocode
+        self.txt_wall_reaction_order = QLineEdit('1')
+        fra_form_lay.addRow(self.lbl_wall_reaction_order, self.txt_wall_reaction_order)
+
+        self.lbl_global_bulk_coeff = QLabel('Global bulk coeff.:')  # TODO: softocode
+        self.txt_global_bulk_coeff = QLineEdit('1')
+        fra_form_lay.addRow(self.lbl_global_bulk_coeff, self.txt_global_bulk_coeff)
+
+        self.lbl_global_wall_coeff = QLabel('Global wall coeff.:')  # TODO: softocode
+        self.txt_global_wall_coeff = QLineEdit('0')
+        fra_form_lay.addRow(self.lbl_global_wall_coeff, self.txt_global_wall_coeff)
+
+        self.lbl_limiting_conc = QLabel('Limiting concentration:')  # TODO: softocode
+        self.txt_limiting_conc = QLineEdit('0')
+        fra_form_lay.addRow(self.lbl_limiting_conc, self.txt_limiting_conc)
+
+        self.lbl_wall_coeff_corr = QLabel('Wall coeff. correlation:')  # TODO: softocode
+        self.txt_wall_coeff_corr = QLineEdit('0')
+        fra_form_lay.addRow(self.lbl_wall_coeff_corr, self.txt_wall_coeff_corr)
+
+        # Buttons
+        self.fra_buttons = QFrame(self)
+        fra_buttons_lay = QHBoxLayout(self.fra_buttons)
+        self.btn_Cancel = QPushButton('Cancel')
+        self.btn_Ok = QPushButton('OK')
+        fra_buttons_lay.addWidget(self.btn_Cancel)
+        fra_buttons_lay.addWidget(self.btn_Ok)
+
+        # Add to main
+        fra_main_lay = QVBoxLayout(self)
+        fra_main_lay.setContentsMargins(0, 0, 0, 0)
+        fra_main_lay.addWidget(self.fra_form)
+        fra_main_lay.addWidget(self.fra_buttons)
+
+        self.setup()
+        self.initialize()
+
+    def setup(self):
+
+        # Buttons
+        self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
+        self.btn_Ok.pressed.connect(self.btn_ok_pressed)
+
+        self.txt_bulk_reaction_order.setValidator(RegExValidators.get_pos_01())
+        self.txt_wall_reaction_order.setValidator(RegExValidators.get_pos_01())
+        self.txt_tank_reaction_order.setValidator(RegExValidators.get_pos_01())
+        self.txt_global_bulk_coeff.setValidator(RegExValidators.get_pos_01())
+        self.txt_global_wall_coeff.setValidator(RegExValidators.get_pos_01())
+        self.txt_limiting_conc.setValidator(RegExValidators.get_pos_decimals())
+        self.txt_wall_coeff_corr.setValidator(RegExValidators.get_pos_decimals())
+
+    def initialize(self):
+
+        self.txt_bulk_reaction_order.setText(str(self.params.reactions.order_bulk))
+        self.txt_tank_reaction_order.setText(str(self.params.reactions.order_tank))
+        self.txt_wall_reaction_order.setText(str(self.params.reactions.order_wall))
+        self.txt_global_bulk_coeff.setText(str(self.params.reactions.global_bulk))
+        self.txt_global_wall_coeff.setText(str(self.params.reactions.global_wall))
+        self.txt_limiting_conc.setText(str(self.params.reactions.limiting_potential))
+        self.txt_wall_coeff_corr.setText(str(self.params.reactions.roughness_corr))
+
+    def btn_cancel_pressed(self):
+        self.setVisible(False)
+
+    def btn_ok_pressed(self):
+
+        # Update parameters and options
+        self.params.reactions.order_bulk = int(self.txt_bulk_reaction_order.text())
+        self.params.reactions.order_tank = int(self.txt_tank_reaction_order.text())
+        self.params.reactions.order_wall = int(self.txt_wall_reaction_order.text())
+        self.params.reactions.global_bulk = int(self.txt_global_bulk_coeff.text())
+        self.params.reactions.global_wall = int(self.txt_global_wall_coeff.text())
+        self.params.reactions.limiting_potential = float(self.txt_limiting_conc.text())
+        self.params.reactions.roughness_corr = float(self.txt_wall_coeff_corr.text())
 
         self.setVisible(False)
 

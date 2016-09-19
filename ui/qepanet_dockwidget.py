@@ -30,7 +30,7 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsCoordinateReferenceSy
     QgsProject, QgsSnapper, QgsTolerance
 
 from ..geo_utils import utils
-from options_dialogs import HydraulicsDialog, QualityDialog, TimesDialog, EnergyDialog
+from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog
 from curvespatterns_ui import GraphDialog
 from ..model.inp_file import InpFile
 from ..model.network import Tables, Pump, Valve
@@ -74,6 +74,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Dialogs
         self.hydraulics_dialog = None
         self.quality_dialog = None
+        self.reactions_dialog = None
         self.times_dialog = None
         self.energy_dialog = None
 
@@ -191,6 +192,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Options ------------------------------------------------------------------------------------------------------
         self.btn_options_hydraulics.pressed.connect(self.btn_hydraulics_pressed)
         self.btn_options_quality.pressed.connect(self.btn_quality_pressed)
+        self.btn_options_reactions.pressed.connect(self.btn_reactions_pressed)
         self.btn_options_times.pressed.connect(self.btn_times_pressed)
         self.btn_options_energy.pressed.connect(self.btn_energy_pressed)
 
@@ -209,7 +211,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_run.pressed.connect(self.run)
 
         # InpFile.write_inp_file(self.params, 'd:/temp/inp.inp', 'merda')
-        self.btn_generate_inp.setEnabled(False)
+        self.btn_generate_inp.setEnabled(True)
         self.btn_run.setEnabled(False)
 
     # This method needed by Observable
@@ -433,6 +435,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         if self.quality_dialog is None:
             self.quality_dialog = QualityDialog(self, self.params)
         self.quality_dialog.show()
+
+    def btn_reactions_pressed(self):
+        if self.reactions_dialog is None:
+            self.reactions_dialog = ReactionsDialog(self, self.params)
+        self.reactions_dialog.show()
 
     def btn_times_pressed(self):
         if self.times_dialog is None:

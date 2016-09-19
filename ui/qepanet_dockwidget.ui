@@ -163,14 +163,14 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>2</number>
+              <number>7</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>150</width>
+                <width>288</width>
                 <height>225</height>
                </rect>
               </property>
@@ -293,7 +293,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>162</width>
+                <width>305</width>
                 <height>116</height>
                </rect>
               </property>
@@ -406,7 +406,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>174</width>
+                <width>288</width>
                 <height>194</height>
                </rect>
               </property>
@@ -518,7 +518,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>154</width>
+                <width>288</width>
                 <height>246</height>
                </rect>
               </property>
@@ -766,7 +766,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>153</width>
+                <width>305</width>
                 <height>90</height>
                </rect>
               </property>
@@ -824,7 +824,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>173</width>
+                <width>305</width>
                 <height>116</height>
                </rect>
               </property>
@@ -905,7 +905,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>99</width>
+                <width>305</width>
                 <height>157</height>
                </rect>
               </property>
@@ -933,7 +933,7 @@
                <item row="2" column="1">
                 <widget class="QPushButton" name="btn_options_reactions">
                  <property name="enabled">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="text">
                   <string>Reactions</string>
@@ -961,7 +961,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>193</width>
+                <width>305</width>
                 <height>145</height>
                </rect>
               </property>
@@ -1026,7 +1026,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>157</width>
+                <width>305</width>
                 <height>116</height>
                </rect>
               </property>

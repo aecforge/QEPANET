@@ -8,11 +8,12 @@ from observable import Observable
 from ..model.options_report import Options, Report
 from ..model.options_report import Times
 from ..model.system_ops import Energy
+from ..model.water_quality import Reactions
 
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.15'
+    plug_in_name = 'QEPANET 0.16'
     config_file_name = 'config.ini'
 
     path = os.path.dirname(os.path.realpath(__file__))
@@ -21,6 +22,7 @@ class Parameters(Observable):
     regex_number_pos_decimals = '^[0-9]\d*(\.\d+)?$'
     regex_number_pos_neg_decimals = '^-?[0-9]\d*(\.\d+)?$'
     regex_number_pos_int = '^[0-9]\d*$'
+    regex_number_pos_01 = '^[0-1]\d*$'
     regex_number_pos_int_no_zero = '^[1-9]\d*$'
     regex_time_hh_mm = '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
 
@@ -47,6 +49,7 @@ class Parameters(Observable):
         self._vertex_dist = 0
 
         self.options = Options()
+        self.reactions = Reactions()
         self.times = Times()
         self.report = Report()
         self.energy = Energy()
@@ -289,6 +292,12 @@ class RegExValidators:
     def get_pos_int():
 
         reg_ex = QRegExp(Parameters.regex_number_pos_int)
+        validator = QRegExpValidator(reg_ex)
+        return validator
+
+    @staticmethod
+    def get_pos_01():
+        reg_ex = QRegExp(Parameters.regex_number_pos_01)
         validator = QRegExpValidator(reg_ex)
         return validator
 

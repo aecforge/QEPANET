@@ -1,18 +1,21 @@
 import codecs
 
 from network import Title, Junction, Reservoir, Tank, Pipe, Pump, Valve, Coordinate, Vertex
+from qgis.core import NULL
 from system_ops import Controls, Curve, Demand, Energy, Pattern, Rule, Status
 import math
 from ..model.options_report import Times, Report
 from options_report import Options, Quality
 from ..model.network_handling import NetworkUtils
+from ..model.water_quality import Reactions
 from ..tools.parameters import Parameters
 
 
 class InpFile:
     
-    large_pad = 19
-    
+    pad_19 = 19
+    pad_22 = 22
+
     def __init__(self):
         pass
 
@@ -200,7 +203,7 @@ class InpFile:
             # TODO
 
             # Reactions
-            # TODO
+            InpFile._append_reactions(params, out)
 
             # Sources
             # TODO
@@ -231,6 +234,9 @@ class InpFile:
             # Tags
             # NO
 
+            # End
+            out.append('[END]')
+
             # Write
             for line in out:
                 inp_f.write(line + '\n')
@@ -249,9 +255,9 @@ class InpFile:
             eid = j_ft.attribute(Junction.field_name_eid)
             pt = j_ft.geometry().asPoint()
 
-            line = InpFile.pad(eid, InpFile.large_pad)
-            line += InpFile.pad('{0:.2f}'.format(pt.x()), InpFile.large_pad)
-            line += InpFile.pad('{0:.2f}'.format(pt.y()), InpFile.large_pad)
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(pt.x()), InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(pt.y()), InpFile.pad_19)
 
             out.append(line)
 
@@ -259,9 +265,9 @@ class InpFile:
             eid = r_ft.attribute(Reservoir.field_name_eid)
             pt = r_ft.geometry().asPoint()
 
-            line = InpFile.pad(eid, InpFile.large_pad)
-            line += InpFile.pad('{0:.2f}'.format(pt.x()), InpFile.large_pad)
-            line += InpFile.pad('{0:.2f}'.format(pt.y()), InpFile.large_pad)
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(pt.x()), InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(pt.y()), InpFile.pad_19)
 
             out.append(line)
 
@@ -269,9 +275,9 @@ class InpFile:
             eid = t_ft.attribute(Tank.field_name_eid)
             pt = t_ft.geometry().asPoint()
 
-            line = InpFile.pad(eid, InpFile.large_pad)
-            line += InpFile.pad('{0:.2f}'.format(pt.x()), InpFile.large_pad)
-            line += InpFile.pad('{0:.2f}'.format(pt.y()), InpFile.large_pad)
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(pt.x()), InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(pt.y()), InpFile.pad_19)
 
             out.append(line)
 
@@ -285,7 +291,7 @@ class InpFile:
 
             for v in range(len(curve.xs)):
                 out.append(
-                    InpFile.pad(str(curve.id), InpFile.large_pad) +
+                    InpFile.pad(str(curve.id), InpFile.pad_19) +
                     InpFile.pad(str(curve.xs[v])) +
                     InpFile.pad(str(curve.ys[v])))
 
@@ -297,9 +303,9 @@ class InpFile:
     def _append_energy(params, out):
         out.extend(InpFile.build_section_keyword(Energy.section_name))
 
-        out.append(InpFile.pad('GLOBAL EFFICIENCY', InpFile.large_pad) + str(params.energy.pump_efficiency))
-        out.append(InpFile.pad('GLOBAL PRICE', InpFile.large_pad) + str(params.energy.energy_price))
-        out.append(InpFile.pad('DEMAND CHARGE', InpFile.large_pad) + str(params.energy.demand_charge))
+        out.append(InpFile.pad('GLOBAL EFFICIENCY', InpFile.pad_19) + str(params.energy.pump_efficiency))
+        out.append(InpFile.pad('GLOBAL PRICE', InpFile.pad_19) + str(params.energy.energy_price))
+        out.append(InpFile.pad('DEMAND CHARGE', InpFile.pad_19) + str(params.energy.demand_charge))
 
     @staticmethod
     def _append_junctions(params, out):
@@ -315,6 +321,8 @@ class InpFile:
             elev = j_ft.attribute(Junction.field_name_elevation)
             elev_corr = j_ft.attribute(Junction.field_name_elev_corr)
             pattern = j_ft.attribute(Junction.field_name_pattern)
+            if pattern == NULL:
+                pattern = ''
 
             if elev_corr is None:
                 elev_corr = 0
@@ -322,7 +330,7 @@ class InpFile:
             elev += elev_corr
 
             # Line
-            line = InpFile.pad(eid, InpFile.large_pad)
+            line = InpFile.pad(eid, InpFile.pad_19)
             line += InpFile.pad('{0:.2f}'.format(elev))
             if demand is not None:
                 line += InpFile.pad('{0:.5f}'.format(demand))
@@ -342,44 +350,45 @@ class InpFile:
         # Options
         out.extend(InpFile.build_section_keyword(Options.section_name))
 
-        out.append(InpFile.pad('UNITS', InpFile.large_pad) + params.options.flow_units)
-        out.append(InpFile.pad('HEADLOSS', InpFile.large_pad) + params.options.headloss)
+        out.append(InpFile.pad('UNITS', InpFile.pad_22) + params.options.flow_units)
+        out.append(InpFile.pad('HEADLOSS', InpFile.pad_22) + params.options.headloss)
         if params.options.hydraulics.use_hydraulics:
-            out.append(InpFile.pad('HYDRAULICS', InpFile.large_pad) + params.options.hydraulics.action_names[params.options.hydraulics.action])
+            out.append(InpFile.pad('HYDRAULICS', InpFile.pad_22) +
+                       params.options.hydraulics.action_names[params.options.hydraulics.action])
 
         # Quality
-        quality_line = InpFile.pad('QUALITY', InpFile.large_pad) + InpFile.pad(params.options.quality.quality_text[params.options.quality.parameter])
+        quality_line = InpFile.pad('QUALITY', InpFile.pad_22) + InpFile.pad(params.options.quality.quality_text[params.options.quality.parameter])
         if params.options.quality.parameter == Quality.quality_chemical:
             quality_line += InpFile.pad(params.options.quality.mass_units)
         elif params.options.quality.parameter == Quality.quality_trace:
             quality_line += InpFile.pad(params.options.quality.trace_junction_id)
 
-        out.append(InpFile.pad('VISCOSITY', InpFile.large_pad) + str(params.options.viscosity))
-        out.append(InpFile.pad('DIFFUSIVITY', InpFile.large_pad) + str(params.options.diffusivity))
-        out.append(InpFile.pad('SPECIFIC GRAVITY', InpFile.large_pad) + str(params.options.spec_gravity))
-        out.append(InpFile.pad('TRIALS', InpFile.large_pad) + str(params.options.trials))
-        out.append(InpFile.pad('ACCURACY', InpFile.large_pad) + str(params.options.accuracy))
-        out.append(InpFile.pad('UNBALANCED', InpFile.large_pad) +
+        out.append(InpFile.pad('VISCOSITY', InpFile.pad_22) + str(params.options.viscosity))
+        out.append(InpFile.pad('DIFFUSIVITY', InpFile.pad_22) + str(params.options.diffusivity))
+        out.append(InpFile.pad('SPECIFIC GRAVITY', InpFile.pad_22) + str(params.options.spec_gravity))
+        out.append(InpFile.pad('TRIALS', InpFile.pad_22) + str(params.options.trials))
+        out.append(InpFile.pad('ACCURACY', InpFile.pad_22) + str(params.options.accuracy))
+        out.append(InpFile.pad('UNBALANCED', InpFile.pad_22) +
                    params.options.unbalanced.unb_text[params.options.unbalanced.unbalanced] +
                    ' ' +
                    str(params.options.unbalanced.trials))
-        out.append(InpFile.pad('PATTERN', InpFile.large_pad) + str(params.options.pattern))
-        out.append(InpFile.pad('DEMAND MULTIPLIER', InpFile.large_pad) + str(params.options.demand_mult))
-        out.append(InpFile.pad('EMITTER EXPONENT', InpFile.large_pad) + str(params.options.emitter_exp))
-        out.append(InpFile.pad('TOLERANCE', InpFile.large_pad) + str(params.options.tolerance))
+        out.append(InpFile.pad('PATTERN', InpFile.pad_22) + str(params.options.pattern))
+        out.append(InpFile.pad('DEMAND MULTIPLIER', InpFile.pad_22) + str(params.options.demand_mult))
+        out.append(InpFile.pad('EMITTER EXPONENT', InpFile.pad_22) + str(params.options.emitter_exp))
+        out.append(InpFile.pad('TOLERANCE', InpFile.pad_22) + str(params.options.tolerance))
 
         # Report
         out.extend(InpFile.build_section_keyword(Report.section_name))
 
-        out.append(InpFile.pad('PAGESIZE', InpFile.large_pad) + str(params.report.page_size))
+        out.append(InpFile.pad('PAGESIZE', InpFile.pad_22) + str(params.report.page_size))
         if params.report.file is not None:
-            out.append(InpFile.pad('FILE', InpFile.large_pad) + str(params.report.file))
-        out.append(InpFile.pad('STATUS', InpFile.large_pad) + params.report.statuses_names[params.report.status])
-        out.append(InpFile.pad('SUMMARY', InpFile.large_pad) + params.report.summary_names[params.report.summary])
-        out.append(InpFile.pad('ENERGY', InpFile.large_pad) + params.report.energy_names[params.report.energy])
+            out.append(InpFile.pad('FILE', InpFile.pad_22) + str(params.report.file))
+        out.append(InpFile.pad('STATUS', InpFile.pad_22) + params.report.statuses_names[params.report.status])
+        out.append(InpFile.pad('SUMMARY', InpFile.pad_22) + params.report.summary_names[params.report.summary])
+        out.append(InpFile.pad('ENERGY', InpFile.pad_22) + params.report.energy_names[params.report.energy])
 
         # TODO: nodes and links need support for multi-line
-        nodes_line = InpFile.pad('NODES', InpFile.large_pad)
+        nodes_line = InpFile.pad('NODES', InpFile.pad_22)
         if params.report.nodes == params.report.nodes_none or params.report.nodes == params.report.nodes_all:
             nodes_line += params.report.nodes_names[params.report.nodes]
         else:
@@ -390,7 +399,7 @@ class InpFile:
 
         out.append(nodes_line)
 
-        links_line = InpFile.pad('LINKS', InpFile.large_pad)
+        links_line = InpFile.pad('LINKS', InpFile.pad_22)
         if params.report.links == params.report.links_none or params.report.links == params.report.links_all:
             links_line += params.report.links_names[params.report.links]
         else:
@@ -436,12 +445,12 @@ class InpFile:
             status = p_ft.attribute(Pipe.field_name_status)
 
             # Line
-            line = InpFile.pad(eid, InpFile.large_pad)
-            line += InpFile.pad(start_node_id, InpFile.large_pad)
-            line += InpFile.pad(end_node_id, InpFile.large_pad)
-            line += InpFile.pad('{0:.2f}'.format(length), InpFile.large_pad)
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad(start_node_id, InpFile.pad_19)
+            line += InpFile.pad(end_node_id, InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(length), InpFile.pad_19)
             line += InpFile.pad('{0:.2f}'.format(diameter))
-            line += InpFile.pad('{0:.2f}'.format(roughness))
+            line += InpFile.pad('{0:.4f}'.format(roughness))
             line += InpFile.pad('{0:.2f}'.format(minor_loss))
             line += InpFile.pad(status)
 
@@ -468,19 +477,34 @@ class InpFile:
             value = p_ft.attribute(Pump.field_name_value)
 
             # Line
-            line = InpFile.pad(eid, InpFile.large_pad)
-            line += InpFile.pad(start_node_id, InpFile.large_pad)
-            line += InpFile.pad(end_node_id, InpFile.large_pad)
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad(start_node_id, InpFile.pad_19)
+            line += InpFile.pad(end_node_id, InpFile.pad_19)
 
             if pump_param == Pump.parameters_power:
-                line += InpFile.pad(pump_param + ' ' + '{0:2f}'.format(value), InpFile.large_pad)
+                line += InpFile.pad(pump_param + ' ' + '{0:2f}'.format(value), InpFile.pad_19)
             elif pump_param == Pump.parameters_head:
-                line += InpFile.pad(pump_param + ' ' + value, InpFile.large_pad)
+                line += InpFile.pad(pump_param + ' ' + value, InpFile.pad_19)
             else:
                 # TODO: add support for speed and pattern?
                 line += '0'
 
             out.append(line)
+
+    @staticmethod
+    def _append_reactions(params, out):
+
+        out.extend(InpFile.build_section_keyword(Reactions.section_name))
+
+        out.append(InpFile.pad('ORDER BULK', InpFile.pad_22) + str(params.reactions.order_bulk))
+        out.append(InpFile.pad('ORDER TANK', InpFile.pad_22) + str(params.reactions.order_tank))
+        out.append(InpFile.pad('ORDER WALL', InpFile.pad_22) + str(params.reactions.order_wall))
+
+        out.append(InpFile.pad('GLOBAL BULK', InpFile.pad_22) + str(params.reactions.global_bulk))
+        out.append(InpFile.pad('GLOBAL WALL', InpFile.pad_22) + str(params.reactions.global_wall))
+
+        out.append(InpFile.pad('LIMITING POTENTIAL', InpFile.pad_22) + str(params.reactions.limiting_potential))
+        out.append(InpFile.pad('ROUGHNESS CORRELATION', InpFile.pad_22) + str(params.reactions.roughness_corr))
 
     @staticmethod
     def _append_rules(params, out):
@@ -503,18 +527,18 @@ class InpFile:
             eid = r_ft.attribute(Reservoir.field_name_eid)
             elev = r_ft.attribute(Reservoir.field_name_elevation)
             elev_corr = r_ft.attribute(Reservoir.field_name_elev_corr)
-            head = r_ft.attribute(Reservoir.field_name_head)
+            # head = r_ft.attribute(Reservoir.field_name_head)
             # pattern = r_ft.attribute(Reservoir.field_name_pattern) # TODO: add support for pattern
 
-            if elev is None:
+            if elev is None or elev == NULL:
                 elev = 0
-            if elev_corr is None:
+            if elev_corr is None or elev_corr == NULL:
                 elev_corr = 0
 
-            head += elev + elev_corr
+            head = elev + elev_corr
 
             # Line
-            line = InpFile.pad(eid, InpFile.large_pad)
+            line = InpFile.pad(eid, InpFile.pad_19)
             line += InpFile.pad('{0:.2f}'.format(head))
             # line += InpFile.pad(pattern)
 
@@ -545,14 +569,15 @@ class InpFile:
             elev += elev_corr
 
             # Line
-            line = InpFile.pad(eid, InpFile.large_pad)
+            line = InpFile.pad(eid, InpFile.pad_19)
             line += InpFile.pad('{0:.2f}'.format(elev))
             line += InpFile.pad('{0:.4f}'.format(level_init))
             line += InpFile.pad('{0:.4f}'.format(level_min))
             line += InpFile.pad('{0:.4f}'.format(level_max))
             line += InpFile.pad('{0:.1f}'.format(diameter))
             line += InpFile.pad('{0:.4f}'.format(vol_min))
-            if curve is not None:
+
+            if curve is not None and curve != NULL:
                 line += InpFile.pad(curve)
 
             out.append(line)
@@ -561,17 +586,17 @@ class InpFile:
     def _append_times(params, out):
 
         out.extend(InpFile.build_section_keyword(Times.section_name))
-        out.append(InpFile.pad('DURATION', InpFile.large_pad) + str(params.times.duration))
+        out.append(InpFile.pad('DURATION', InpFile.pad_22) + str(params.times.duration))
 
-        out.append(InpFile.pad('HYDRAULIC TIMESTAMP', InpFile.large_pad) + params.times.hydraulic_timestamp.get_as_text())
-        out.append(InpFile.pad('QUALITY TIMESTAMP', InpFile.large_pad) + params.times.quality_timestamp.get_as_text())
-        out.append(InpFile.pad('RULE TIMESTAMP', InpFile.large_pad) + params.times.rule_timestamp.get_as_text())
-        out.append(InpFile.pad('PATTERN TIMESTAMP', InpFile.large_pad) + params.times.pattern_timestamp.get_as_text())
-        out.append(InpFile.pad('PATTERN START', InpFile.large_pad) + params.times.pattern_start.get_as_text())
-        out.append(InpFile.pad('REPORT TIMESTAMP', InpFile.large_pad) + params.times.report_timestamp.get_as_text())
-        out.append(InpFile.pad('REPORT START', InpFile.large_pad) + params.times.report_start.get_as_text())
-        out.append(InpFile.pad('START CLOCKTIME', InpFile.large_pad) + params.times.clocktime_start.get_as_text())
-        out.append(InpFile.pad('STATISTIC', InpFile.large_pad) + str(params.times.statistic))
+        out.append(InpFile.pad('HYDRAULIC TIMESTAMP', InpFile.pad_22) + params.times.hydraulic_timestamp.get_as_text())
+        out.append(InpFile.pad('QUALITY TIMESTAMP', InpFile.pad_22) + params.times.quality_timestamp.get_as_text())
+        out.append(InpFile.pad('RULE TIMESTAMP', InpFile.pad_22) + params.times.rule_timestamp.get_as_text())
+        out.append(InpFile.pad('PATTERN TIMESTAMP', InpFile.pad_22) + params.times.pattern_timestamp.get_as_text())
+        out.append(InpFile.pad('PATTERN START', InpFile.pad_22) + params.times.pattern_start.get_as_text())
+        out.append(InpFile.pad('REPORT TIMESTAMP', InpFile.pad_22) + params.times.report_timestamp.get_as_text())
+        out.append(InpFile.pad('REPORT START', InpFile.pad_22) + params.times.report_start.get_as_text())
+        out.append(InpFile.pad('START CLOCKTIME', InpFile.pad_22) + params.times.clocktime_start.get_as_text())
+        out.append(InpFile.pad('STATISTIC', InpFile.pad_22) + str(params.times.statistic))
 
     @staticmethod
     def _append_valves(params, out):
@@ -589,15 +614,15 @@ class InpFile:
             start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
             end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
 
-            diameter = v_ft.attribute(Valve.field_name_diameter)
+            diameter = str(v_ft.attribute(Valve.field_name_diameter))
             valve_type = v_ft.attribute(Valve.field_name_type)
-            setting = v_ft.attribute(Valve.field_name_setting)
-            minor_loss = v_ft.attribute(Valve.field_name_minor_loss)
+            setting = str(v_ft.attribute(Valve.field_name_setting))
+            minor_loss = str(v_ft.attribute(Valve.field_name_minor_loss))
 
             # Line
-            line = InpFile.pad(eid, InpFile.large_pad)
-            line += InpFile.pad(start_node_id, InpFile.large_pad)
-            line += InpFile.pad(end_node_id, InpFile.large_pad)
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad(start_node_id, InpFile.pad_19)
+            line += InpFile.pad(end_node_id, InpFile.pad_19)
             line += InpFile.pad(str(diameter))
             line += InpFile.pad(valve_type)
             line += InpFile.pad(setting)
@@ -616,9 +641,9 @@ class InpFile:
             pts = p_ft.geometry().asPolyline()
             if len(pts) > 2:
                 for pt in pts[1:-1]:
-                    line = InpFile.pad(eid, InpFile.large_pad)
-                    line += InpFile.pad('{0:.2f}'.format(pt.x()), InpFile.large_pad)
-                    line += InpFile.pad('{0:.2f}'.format(pt.y()), InpFile.large_pad)
+                    line = InpFile.pad(eid, InpFile.pad_19)
+                    line += InpFile.pad('{0:.2f}'.format(pt.x()), InpFile.pad_19)
+                    line += InpFile.pad('{0:.2f}'.format(pt.y()), InpFile.pad_19)
 
                     out.append(line)
 
@@ -631,7 +656,7 @@ class InpFile:
     def from_values_to_lines(values, decimal_places=2, n=255, element_size=10, line_header=None, vals_per_line=None):
 
         if line_header is not None:
-            header = str(InpFile.pad(line_header, InpFile.large_pad))
+            header = str(InpFile.pad(line_header, InpFile.pad_19))
         else:
             header = ''
 
