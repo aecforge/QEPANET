@@ -30,10 +30,11 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsCoordinateReferenceSy
     QgsProject, QgsSnapper, QgsTolerance
 
 from ..geo_utils import utils
-from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog
+from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog, ReportDialog
 from curvespatterns_ui import GraphDialog
 from ..model.inp_file import InpFile
 from ..model.network import Tables, Pump, Valve
+from ..model.runner import ModelRunner
 from ..rendering import symbology
 from ..tools.add_junction_tool import AddJunctionTool
 from ..tools.add_pipe_tool import AddPipeTool
@@ -77,6 +78,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.reactions_dialog = None
         self.times_dialog = None
         self.energy_dialog = None
+        self.report_dialog = None
 
         # Tools buttons
         curr_dir = os.path.dirname(os.path.abspath(__file__))
@@ -195,6 +197,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_options_reactions.pressed.connect(self.btn_reactions_pressed)
         self.btn_options_times.pressed.connect(self.btn_times_pressed)
         self.btn_options_energy.pressed.connect(self.btn_energy_pressed)
+        self.btn_options_report.pressed.connect(self.btn_report_pressed)
 
         # Tools
         self.btn_create_layers.pressed.connect(self.create_layers)
@@ -207,12 +210,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_curve_editor.pressed.connect(self.curve_editor)
 
         # EPANET
-        self.btn_generate_inp.pressed.connect(self.generate_inp)
-        self.btn_run.pressed.connect(self.run)
+        self.btn_generate_inp.pressed.connect(self.btn_generate_inp_pressed)
+        self.btn_epanet_run.pressed.connect(self.btn_epanet_run_pressed)
 
-        # InpFile.write_inp_file(self.params, 'd:/temp/inp.inp', 'merda')
+        self.btn_epanet_output.pressed.connect(self.btn_epanet_output_pressed)
+
         self.btn_generate_inp.setEnabled(True)
-        self.btn_run.setEnabled(False)
+        self.btn_epanet_run.setEnabled(True)
 
     # This method needed by Observable
     def update(self, observable):
@@ -451,6 +455,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.energy_dialog = EnergyDialog(self, self.params)
         self.energy_dialog.show()
 
+    def btn_report_pressed(self):
+        if self.report_dialog is None:
+            self.report_dialog = ReportDialog(self, self.params)
+        self.report_dialog.show()
+
     def create_layers(self):
 
         shp_folder = QFileDialog.getExistingDirectory(
@@ -604,21 +613,38 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         curve_dialog = GraphDialog(self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_curves)
         curve_dialog.show()
 
-    def generate_inp(self):
+    def btn_generate_inp_pressed(self):
 
         config_file = ConfigFile(Parameters.config_file_path)
-
         inp_file_path = QFileDialog.getSaveFileName(
             self,
             'Select INP file',
-            config_file.get_inp_file_folder(),
+            config_file.get_last_inp_file(),
             'Files (*.inp)')
 
         if inp_file_path is not None and inp_file_path != '':
-            config_file.set_inp_file_folder(os.path.dirname(inp_file_path))
+            config_file.set_last_inp_file(inp_file_path)
             InpFile.write_inp_file(self.params, inp_file_path, self.txt_prj_title.text())
 
-    def run(self):
+    def btn_epanet_run_pressed(self):
+
+        config_file = ConfigFile(Parameters.config_file_path)
+        inp_file_path = QFileDialog.getOpenFileName(
+            self,
+            'Select INP file',
+            config_file.get_last_inp_file(),
+            'Files (*.inp)')
+
+        if inp_file_path is not None and inp_file_path != '':
+            config_file.set_last_inp_file(inp_file_path)
+            runner = ModelRunner(self)
+
+            rpt_file = os.path.splitext(inp_file_path)[0] + '.rpt'
+            out_binary_file = os.path.splitext(inp_file_path)[0] + '.out'
+
+            runner.run(inp_file_path, rpt_file, out_binary_file)
+
+    def btn_epanet_output_pressed(self):
         pass
 
     def update_layers_combos(self):

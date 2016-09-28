@@ -46,7 +46,6 @@ class Reservoir:
     field_name_eid = 'id'
     field_name_elevation = 'elev'
     field_name_elev_corr = 'elev_corr'
-    field_name_head = 'head'
     field_name_pattern = 'pattern'
 
     def __init__(self, eid):

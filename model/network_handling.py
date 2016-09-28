@@ -61,7 +61,7 @@ class NodeHandler:
                 new_reservoir_feat.setAttribute(Reservoir.field_name_eid, eid)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_elevation, elev)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_elev_corr, elev_corr)
-                new_reservoir_feat.setAttribute(Reservoir.field_name_head, head)
+                # new_reservoir_feat.setAttribute(Reservoir.field_name_head, head)
 
                 new_reservoir_feat.setGeometry(QgsGeometry.fromPoint(point))
 
@@ -325,8 +325,10 @@ class LinkHandler:
                 if layer == params.pumps_vlay:
                     new_ft = QgsFeature(params.pumps_vlay.pendingFields())
                     new_ft.setAttribute(Pump.field_name_eid, eid)
-                    new_ft.setAttribute(Pump.field_name_param, attributes[0])
-                    new_ft.setAttribute(Pump.field_name_value, attributes[1])
+                    param = attributes[0]
+                    new_ft.setAttribute(Pump.field_name_param, param)
+                    value = attributes[1]
+                    new_ft.setAttribute(Pump.field_name_value, value)
 
                 elif layer == params.valves_vlay:
                     new_ft.setAttribute(Valve.field_name_eid, eid)

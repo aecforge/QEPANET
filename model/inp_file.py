@@ -383,7 +383,7 @@ class InpFile:
         out.append(InpFile.pad('PAGESIZE', InpFile.pad_22) + str(params.report.page_size))
         if params.report.file is not None:
             out.append(InpFile.pad('FILE', InpFile.pad_22) + str(params.report.file))
-        out.append(InpFile.pad('STATUS', InpFile.pad_22) + params.report.statuses_names[params.report.status])
+        out.append(InpFile.pad('STATUS', InpFile.pad_22) + params.report.status_names[params.report.status])
         out.append(InpFile.pad('SUMMARY', InpFile.pad_22) + params.report.summary_names[params.report.summary])
         out.append(InpFile.pad('ENERGY', InpFile.pad_22) + params.report.energy_names[params.report.energy])
 

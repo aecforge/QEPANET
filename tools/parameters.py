@@ -13,7 +13,7 @@ from ..model.water_quality import Reactions
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.16'
+    plug_in_name = 'QEPANET 0.17'
     config_file_name = 'config.ini'
 
     path = os.path.dirname(os.path.realpath(__file__))
@@ -255,20 +255,21 @@ class ConfigFile:
         with codecs.open(self.config_file_path, 'wb') as configfile:
             config.write(configfile)
 
-    def get_inp_file_folder(self):
+    def get_last_inp_file(self):
         self.config.read(self.config_file_path)
         try:
-            inp_file_folder = self.config.get('EPANET', 'inp_file_folder')  # TODO: softcode
+            last_inp_file = self.config.get('EPANET', 'inp_file_path')  # TODO: softcode
         except ConfigParser.NoOptionError as e:
             return None
-        return inp_file_folder
+        return last_inp_file
 
-    def set_inp_file_folder(self, inp_file_folder):
+    def set_last_inp_file(self, last_inp_file):
         config = self.get_config()
-        config.set('EPANET', 'inp_file_folder', inp_file_folder)  # TODO: softcode
+        config.set('EPANET', 'inp_file_path', last_inp_file)  # TODO: softcode
 
         with codecs.open(self.config_file_path, 'wb') as configfile:
             config.write(configfile)
+
 
 class RegExValidators:
 

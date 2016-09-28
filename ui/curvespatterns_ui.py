@@ -300,6 +300,8 @@ class GraphDialog(QDialog):
                 InpFile.write_patterns(self.params, self.params.patterns_file)
                 self.read()
 
+            self.parent.update_patterns_combo()
+
         elif self.edit_type == GraphDialog.edit_curves:
             # Check for ID unique
             overwrite_c_index = -1
@@ -343,13 +345,16 @@ class GraphDialog(QDialog):
                 InpFile.write_curves(self.params, self.params.curves_file)
                 self.read()
 
+            # Update GUI
+            self.parent.update_curves_combo()
+
     def del_pattern(self):
         selected_row = self.lst_list.currentRow()
         self.lst_list.takeItem(selected_row)
 
         if self.edit_type == GraphDialog.edit_curves:
             del self.params.curves[selected_row]
-            InpFile.write_curves(self.curves, self.params.curves_file)
+            InpFile.write_curves(self.params, self.params.curves_file)
         elif self.edit_type == GraphDialog.edit_patterns:
             del self.params.patterns[selected_row]
             InpFile.write_patterns(self.params, self.params.patterns_file)

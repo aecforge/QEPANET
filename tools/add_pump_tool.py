@@ -123,7 +123,10 @@ class AddPumpTool(QgsMapTool):
                     if self.data_dock.cbo_pump_param.itemText(self.data_dock.cbo_pump_param.currentIndex()) == Pump.parameters_head:
                         pump_param = Pump.parameters_head
                         curve = self.data_dock.cbo_pump_head.itemData(self.data_dock.cbo_pump_head.currentIndex())
-                        pump_value = curve.id
+                        if curve is not None:
+                            pump_value = curve.id
+                        else:
+                            pump_value = None
 
                     # Power and value
                     elif self.data_dock.cbo_pump_param.itemText(self.data_dock.cbo_pump_param.currentIndex()) == Pump.parameters_power:
@@ -138,6 +141,10 @@ class AddPumpTool(QgsMapTool):
                         self.snapped_vertex,
                         self.params.pumps_vlay,
                         [pump_param, pump_value])
+
+                    if pump_param == Pump.parameters_head and pump_value == None:
+                        self.iface.messageBar().pushInfo(Parameters.plug_in_name,
+                                                         'The pump was added, but with a NULL value.')
 
         elif event.button() == Qt.RightButton:
 

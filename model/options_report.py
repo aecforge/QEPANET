@@ -202,9 +202,9 @@ class Report:
     links_all = 1
     links_ids = 2
 
-    statuses_names = {0: 'YES',
-                      1: 'NO',
-                      2: 'FULL'}
+    status_names = {0: 'YES',
+                    1: 'NO',
+                    2: 'FULL'}
 
     summary_names = {0: 'YES',
                      1: 'NO'}
@@ -221,12 +221,12 @@ class Report:
     def __init__(self):
         self.page_size = 0
         self.file = None
-        self.status = Report.status_no
-        self.summary = Report.summary_no
-        self.energy = Report.energy_no
-        self.nodes = Report.nodes_none
+        self.status = Report.status_full
+        self.summary = Report.summary_yes
+        self.energy = Report.energy_yes
+        self.nodes = Report.nodes_all
         self.nodes_ids = None
-        self.links = Report.links_none
+        self.links = Report.links_all
         self.links_ids = None
 
         # TODO: add parameters

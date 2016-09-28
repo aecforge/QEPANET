@@ -163,14 +163,14 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>7</number>
+              <number>9</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>288</width>
+                <width>150</width>
                 <height>225</height>
                </rect>
               </property>
@@ -293,7 +293,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>162</width>
                 <height>116</height>
                </rect>
               </property>
@@ -360,8 +360,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
-                <height>69</height>
+                <width>148</width>
+                <height>64</height>
                </rect>
               </property>
               <attribute name="label">
@@ -406,7 +406,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>288</width>
+                <width>174</width>
                 <height>194</height>
                </rect>
               </property>
@@ -518,7 +518,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>288</width>
+                <width>154</width>
                 <height>246</height>
                </rect>
               </property>
@@ -766,7 +766,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>153</width>
                 <height>90</height>
                </rect>
               </property>
@@ -824,7 +824,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>173</width>
                 <height>116</height>
                </rect>
               </property>
@@ -905,8 +905,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
-                <height>157</height>
+                <width>99</width>
+                <height>186</height>
                </rect>
               </property>
               <attribute name="label">
@@ -954,6 +954,13 @@
                  </property>
                 </widget>
                </item>
+               <item row="5" column="1">
+                <widget class="QPushButton" name="btn_options_report">
+                 <property name="text">
+                  <string>Report</string>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="wgt_tools">
@@ -961,7 +968,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>193</width>
                 <height>145</height>
                </rect>
               </property>
@@ -1026,8 +1033,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
-                <height>116</height>
+                <width>288</width>
+                <height>222</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1064,28 +1071,25 @@
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="btn_run">
+                <widget class="QPushButton" name="btn_epanet_run">
                  <property name="text">
                   <string>Run</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPlainTextEdit" name="txt_epanet_console"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btn_epanet_output">
+                 <property name="text">
+                  <string>Output analyser</string>
                  </property>
                 </widget>
                </item>
               </layout>
              </widget>
             </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
            </item>
           </layout>
          </widget>

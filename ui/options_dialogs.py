@@ -3,7 +3,7 @@ from PyQt4.QtGui import QDialog, QFormLayout, QLabel, QComboBox, QLineEdit, QChe
 from PyQt4 import QtCore
 from ..tools.parameters import Parameters, RegExValidators
 from ..model.network import Valve
-from ..model.options_report import Hour
+from ..model.options_report import Hour, Report
 from utils import prepare_label as pre_l
 import os
 
@@ -670,7 +670,7 @@ class TimesDialog(QDialog):
         self.txt_report_timestamp.setText(self.params.times.report_timestamp.get_as_text())
         self.txt_report_start.setText(self.params.times.report_start.get_as_text())
         self.txt_clock_time_start.setText(self.params.times.clocktime_start.get_as_text())
-        self.cbo_statistic.setCurrentIndex(self.cbo_statistic.findData(self.params.times.statistics))
+        self.cbo_statistic.setCurrentIndex(self.cbo_statistic.findData(self.params.times.statistic))
 
     def btn_cancel_pressed(self):
         self.setVisible(False)
@@ -780,3 +780,102 @@ class EnergyDialog(QDialog):
 
         self.setVisible(False)
 
+
+class ReportDialog(QDialog):
+
+    def __init__(self, parent, params):
+
+        QDialog.__init__(self, parent)
+
+        self.parent = parent
+        self.params = params
+
+        self.setMinimumWidth(min_width)
+        # self.setMinimumHeight(min_height)
+
+        # Build dialog
+        self.setWindowTitle('Options - Report')  # TODO: softcode
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+
+        self.fra_form = QFrame(self)
+        fra_form_lay = QFormLayout(self.fra_form)
+        fra_form_lay.setContentsMargins(10, 10, 10, 10)
+
+        self.lbl_status = QLabel('Hydraulic status:')  # TODO: softocode
+        self.cbo_status = QComboBox()
+        fra_form_lay.addRow(self.lbl_status, self.cbo_status)
+
+        self.lbl_summary = QLabel('Summary')  # TODO: softocode
+        self.cbo_summary = QComboBox()
+        fra_form_lay.addRow(self.lbl_summary, self.cbo_summary)
+
+        self.lbl_energy = QLabel('Energy')  # TODO: softocode
+        self.cbo_energy = QComboBox()
+        fra_form_lay.addRow(self.lbl_energy, self.cbo_energy)
+
+        self.lbl_nodes = QLabel('Nodes')  # TODO: softocode
+        self.cbo_nodes = QComboBox()
+        fra_form_lay.addRow(self.lbl_nodes, self.cbo_nodes)
+
+        self.lbl_links = QLabel('Links')  # TODO: softocode
+        self.cbo_links = QComboBox()
+        fra_form_lay.addRow(self.lbl_links, self.cbo_links)
+
+        # Buttons
+        self.fra_buttons = QFrame(self)
+        fra_buttons_lay = QHBoxLayout(self.fra_buttons)
+        self.btn_Cancel = QPushButton('Cancel')
+        self.btn_Ok = QPushButton('OK')
+        fra_buttons_lay.addWidget(self.btn_Cancel)
+        fra_buttons_lay.addWidget(self.btn_Ok)
+
+        # Add to main
+        fra_main_lay = QVBoxLayout(self)
+        fra_main_lay.setContentsMargins(0, 0, 0, 0)
+        fra_main_lay.addWidget(self.fra_form)
+        fra_main_lay.addWidget(self.fra_buttons)
+
+        self.setup()
+        self.initialize()
+
+    def setup(self):
+
+        # Combos
+        for key, value in Report.status_names.iteritems():
+            self.cbo_status.addItem(value, key)
+
+        for key, value in Report.summary_names.iteritems():
+            self.cbo_summary.addItem(value, key)
+
+        for key, value in Report.energy_names.iteritems():
+            self.cbo_energy.addItem(value, key)
+
+        for key, value in Report.nodes_names.iteritems():
+            self.cbo_nodes.addItem(value, key)
+
+        for key, value in Report.links_names.iteritems():
+            self.cbo_links.addItem(value, key)
+
+        # Buttons
+        self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
+        self.btn_Ok.pressed.connect(self.btn_ok_pressed)
+
+    def initialize(self):
+        self.cbo_status.setCurrentIndex(self.cbo_status.findData(self.params.report.status))
+        self.cbo_summary.setCurrentIndex(self.cbo_summary.findData(self.params.report.summary))
+        self.cbo_energy.setCurrentIndex(self.cbo_energy.findData(self.params.report.energy))
+        self.cbo_nodes.setCurrentIndex(self.cbo_nodes.findData(self.params.report.nodes))
+        self.cbo_links.setCurrentIndex(self.cbo_links.findData(self.params.report.links))
+
+    def btn_cancel_pressed(self):
+        self.setVisible(False)
+
+    def btn_ok_pressed(self):
+
+        self.params.report.status = self.cbo_status.itemData(self.cbo_status.currentIndex())
+        self.params.report.summary = self.cbo_summary.itemData(self.cbo_summary.currentIndex())
+        self.params.report.energy = self.cbo_energy.itemData(self.cbo_energy.currentIndex())
+        self.params.report.nodes = self.cbo_nodes.itemData(self.cbo_nodes.currentIndex())
+        self.params.report.links = self.cbo_links.itemData(self.cbo_links.currentIndex())
+
+        self.setVisible(False)
