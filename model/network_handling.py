@@ -353,7 +353,13 @@ class LinkHandler:
     def split_pipe(params, pipe_ft, split_point, gap=0):
 
         # Get vertex along line next to snapped point
-        a, b, next_vertex = pipe_ft.geometry().closestSegmentWithContext(split_point)
+        pipe_dist, vertex_coords, next_vertex = pipe_ft.geometry().closestSegmentWithContext(split_point)
+        a, b, c, d, vertex_dist = pipe_ft.geometry().closestVertex(split_point)
+
+        after_add = 0
+        if vertex_dist < params.tolerance:
+            # It was clicked on a vertex
+            after_add = 1
 
         # Split only if vertex is not at line ends
         demand = pipe_ft.attribute(Pipe.field_name_demand)
@@ -384,8 +390,6 @@ class LinkHandler:
 
             params.junctions_vlay.beginEditCommand("Add new node")
 
-            pipe_ft_1 = None
-            pipe_ft_2 = None
             try:
                 nodes = pipe_ft.geometry().asPolyline()
 
@@ -411,8 +415,8 @@ class LinkHandler:
                 # Second new polyline
                 pl2_pts = []
                 pl2_pts.append(node_after.asPoint())
-                for n in range(len(nodes) - next_vertex):
-                    pl2_pts.append(QgsPoint(nodes[n + next_vertex].x(), nodes[n + next_vertex].y()))
+                for n in range(len(nodes) - next_vertex - after_add):
+                    pl2_pts.append(QgsPoint(nodes[n + next_vertex + after_add].x(), nodes[n + next_vertex + after_add].y()))
 
                 pipe_eid = NetworkUtils.find_next_id(params.pipes_vlay, 'P')  # TODO: softcode
                 pipe_ft_2 = LinkHandler.create_new_pipe(
