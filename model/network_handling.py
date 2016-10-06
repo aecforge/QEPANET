@@ -247,7 +247,17 @@ class LinkHandler:
 
                 new_pipe_ft.setGeometry(geom_3d)
 
+                # Bug: newly created feature is selected (why?). Register previously created features
+                sel_feats = params.pipes_vlay.selectedFeatures()
+
                 params.pipes_vlay.addFeatures([new_pipe_ft])
+
+                # Restore previously selected feature
+                sel_feats_ids = []
+                for sel_feat in sel_feats:
+                    sel_feats_ids.append(sel_feat.id())
+
+                params.pipes_vlay.setSelectedFeatures(sel_feats_ids)
 
             except Exception as e:
                 params.pipes_vlay.destroyEditCommand()
