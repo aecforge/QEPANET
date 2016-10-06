@@ -560,6 +560,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Read patterns path
         config_file = ConfigFile(Parameters.config_file_path)
         patterns_file_path = config_file.get_patterns_file_path()
+
         if patterns_file_path is None or patterns_file_path == '':
             QMessageBox.information(
                 self.iface.mainWindow(),
@@ -581,7 +582,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.params.patterns_file = patterns_file_path
 
-        pattern_dialog = GraphDialog(self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_patterns)
+        pattern_dialog = GraphDialog(self, self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_patterns)
         pattern_dialog.show()
 
     def curve_editor(self):
@@ -610,7 +611,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.params.curves_file = curves_file_path
 
-        curve_dialog = GraphDialog(self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_curves)
+        curve_dialog = GraphDialog(self, self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_curves)
         curve_dialog.show()
 
     def btn_generate_inp_pressed(self):

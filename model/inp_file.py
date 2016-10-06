@@ -1,4 +1,5 @@
 import codecs
+import os
 
 from network import Title, Junction, Reservoir, Tank, Pipe, Pump, Valve, Coordinate, Vertex
 from qgis.core import NULL
@@ -21,6 +22,9 @@ class InpFile:
 
     @staticmethod
     def read_patterns(params):
+
+        if not os.path.isfile(params.patterns_file):
+            return []
 
         start_line = None
         end_line = None
@@ -45,7 +49,6 @@ class InpFile:
             end_line = len(lines)
 
         patterns_d = {}
-
         for l in range(start_line, end_line):
             if not lines[l].startswith(';'):
                 words = lines[l].strip().replace('\t', ' ').split()
@@ -91,6 +94,9 @@ class InpFile:
 
     @staticmethod
     def read_curves(params):
+
+        if not os.path.isfile(params.patterns_file):
+            return []
 
         start_line = None
         end_line = None
@@ -671,7 +677,7 @@ class InpFile:
         if vals_per_line is None:
             vals_per_line = int(math.floor((n - len(header)) / (element_size + 1)))
 
-        lines_nr = int(math.ceil(len(svalues) / vals_per_line))
+        lines_nr = int(math.ceil(len(svalues) / float(vals_per_line)))
 
         lines = []
         v = 0

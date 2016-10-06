@@ -19,10 +19,11 @@ class GraphDialog(QDialog):
     labels = {edit_patterns: 'Patterns',
               edit_curves: 'Curves'}
 
-    def __init__(self, parent, params, edit_type):
+    def __init__(self, dockwidget, parent, params, edit_type):
 
         QDialog.__init__(self, parent)
         main_lay = QVBoxLayout(self)
+        self.dockwidget = dockwidget
         self.params = params
         self.edit_type = edit_type
 
@@ -106,10 +107,25 @@ class GraphDialog(QDialog):
         # self.table.setMinimumHeight(table_height + 10)
         # self.table.setMaximumHeight(table_height + 10)
 
-        for col in range(cols_nr):
-            item = QTableWidgetItem(str(col))
-            self.table.setItem(0, col, item)
-            item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+        # Initialize empty table
+        for row in range(rows_nr):
+            for col in range(cols_nr):
+                if edit_type == self.edit_patterns:
+                    if col == 0:
+                        item = QTableWidgetItem(str(row))
+                        self.table.setItem(row, col, item)
+                        item.setFlags(QtCore.Qt.ItemIsSelectable)
+                    elif col == 1 and row == 0:
+                        item = QTableWidgetItem(str(1))
+                        self.table.setItem(row, col, item)
+                        item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+                else:
+                    if row == 0:
+                        item = QTableWidgetItem(str(0))
+                        self.table.setItem(row, 0, item)
+                        item = QTableWidgetItem(str(1))
+                        self.table.setItem(row, 1, item)
+                        # item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
 
         self.table.itemChanged.connect(self.data_changed)
 
@@ -189,6 +205,7 @@ class GraphDialog(QDialog):
             self.txt_id.setText(current.id)
             self.txt_desc.setText(current.desc)
 
+            # Update graph
             self.update_graph = True
 
             if self.edit_type == self.edit_patterns:
@@ -245,6 +262,7 @@ class GraphDialog(QDialog):
             for pattern in self.params.patterns:
                 desc = ' (' + pattern.desc + ')' if pattern.desc is not None else ''
                 self.lst_list.addItem(pattern.id + desc)
+
         elif self.edit_type == self.edit_curves:
             InpFile.read_curves(self.params)
             for curve in self.params.curves:
@@ -300,7 +318,7 @@ class GraphDialog(QDialog):
                 InpFile.write_patterns(self.params, self.params.patterns_file)
                 self.read()
 
-            self.parent.update_patterns_combo()
+            self.dockwidget.update_patterns_combo()
 
         elif self.edit_type == GraphDialog.edit_curves:
             # Check for ID unique
@@ -346,7 +364,7 @@ class GraphDialog(QDialog):
                 self.read()
 
             # Update GUI
-            self.parent.update_curves_combo()
+            self.dockwidget.update_curves_combo()
 
     def del_pattern(self):
         selected_row = self.lst_list.currentRow()
@@ -378,7 +396,8 @@ class GraphDialog(QDialog):
             if self.edit_type == self.edit_patterns:
                 self.static_canvas.draw_bars_graph(self.ys)
             elif self.edit_type == self.edit_curves:
-                self.static_canvas.draw_line_graph(self.xs, self.ys, self.x_label, self.y_label)
+                series_length = min(len(self.xs), len(self.ys))
+                self.static_canvas.draw_line_graph(self.xs[:series_length], self.ys[:series_length], self.x_label, self.y_label)
 
     def from_item_to_val(self, item):
 

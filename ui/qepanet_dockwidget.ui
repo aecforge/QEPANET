@@ -163,7 +163,7 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>9</number>
+              <number>1</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -293,30 +293,26 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>162</width>
-                <height>116</height>
+                <width>305</width>
+                <height>213</height>
                </rect>
               </property>
               <attribute name="label">
                <string>Junctions properties</string>
               </attribute>
               <layout class="QGridLayout" name="gridLayout_4">
-               <item row="2" column="0">
-                <widget class="QLabel" name="lbl_junction_pattern">
+               <item row="2" column="2">
+                <widget class="QComboBox" name="cbo_junction_pattern"/>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="lbl_junction_emit_coeff">
                  <property name="text">
-                  <string>Pattern:</string>
+                  <string>Emitter coeff.:</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="2">
                 <widget class="QLineEdit" name="txt_junction_demand">
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="2">
-                <widget class="QLineEdit" name="txt_junction_depth">
                  <property name="text">
                   <string>0</string>
                  </property>
@@ -329,6 +325,27 @@
                  </property>
                 </widget>
                </item>
+               <item row="3" column="2">
+                <widget class="QLineEdit" name="txt_junction_emit_coeff">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLineEdit" name="txt_junction_depth">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="lbl_junction_pattern">
+                 <property name="text">
+                  <string>Pattern:</string>
+                 </property>
+                </widget>
+               </item>
                <item row="1" column="0">
                 <widget class="QLabel" name="lbl_junction_depth">
                  <property name="text">
@@ -336,22 +353,18 @@
                  </property>
                 </widget>
                </item>
-               <item row="2" column="2">
-                <widget class="QComboBox" name="cbo_junction_pattern"/>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="lbl_junction_emit_coeff">
-                 <property name="text">
-                  <string>Emitter coeff.:</string>
+               <item row="4" column="2">
+                <spacer name="verticalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
                  </property>
-                </widget>
-               </item>
-               <item row="3" column="2">
-                <widget class="QLineEdit" name="txt_junction_emit_coeff">
-                 <property name="text">
-                  <string>0</string>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
                  </property>
-                </widget>
+                </spacer>
                </item>
               </layout>
              </widget>

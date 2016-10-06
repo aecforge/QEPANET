@@ -20,6 +20,8 @@ class MyMplCanvas(FigureCanvas):
                                    QtGui.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
+        self.axes = self.figure.add_subplot(1, 1, 1)
+
     def compute_initial_figure(self):
         pass
 
@@ -30,9 +32,6 @@ class StaticMplCanvas(MyMplCanvas):
         pass
 
     def draw_bars_graph(self, values, time_period=1):
-
-        self.figure.clf()
-        self.axes = self.figure.add_subplot(1, 1, 1)
 
         width = 1
         lefts = []
@@ -52,12 +51,13 @@ class StaticMplCanvas(MyMplCanvas):
         self.axes.set_ylabel('Multiplier') #TODO: softcode
         self.axes.tick_params(axis=u'both', which=u'both', bottom=u'off', top=u'off', left=u'off', right=u'off')
         self.figure.tight_layout()
+
         self.draw()
 
     def draw_line_graph(self, xs, ys, x_label, y_label):
 
-        self.figure.clf()
-        self.axes = self.figure.add_subplot(1, 1, 1)
+        # self.figure.clf()
+        # self.axes = self.figure.add_subplot(1, 1, 1)
 
         self.axes.plot(xs, ys)
 
