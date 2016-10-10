@@ -163,7 +163,7 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>1</number>
+              <number>8</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -981,8 +981,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>193</width>
-                <height>145</height>
+                <width>305</width>
+                <height>213</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1039,6 +1039,19 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <spacer name="verticalSpacer_2">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="page">
@@ -1046,7 +1059,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>288</width>
+                <width>157</width>
                 <height>222</height>
                </rect>
               </property>

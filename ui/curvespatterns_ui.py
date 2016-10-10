@@ -2,10 +2,10 @@ from ..model.inp_file import InpFile
 from ..model.system_ops import Curve, Pattern
 from ..tools.parameters import Parameters, ConfigFile
 from graphs import StaticMplCanvas
-from PyQt4.QtGui import QDialog, QVBoxLayout, QLabel, QFrame, QMessageBox, QPushButton, QSizePolicy, QHBoxLayout,\
-    QLineEdit, QListWidget, QTableWidget, QFormLayout, QTableWidgetItem, QFileDialog
+from PyQt4.QtGui import *
 from PyQt4 import QtCore
 from PyQt4.QtCore import Qt
+import numpy
 
 
 class GraphDialog(QDialog):
@@ -35,6 +35,8 @@ class GraphDialog(QDialog):
 
         self.setWindowTitle(self.titles[edit_type])  # TODO: softcode
         self.setWindowModality(QtCore.Qt.ApplicationModal)
+
+        self.current = None
 
         # File
         self.lbl_file = QLabel('File:')
@@ -69,14 +71,21 @@ class GraphDialog(QDialog):
 
         # Buttons
         self.fra_buttons = QFrame()
-        # self.fra_buttons.setFrameShape(QFrame.Box)
-        # self.fra_buttons.setContentsMargins(0, 0, 0, 0)
         fra_buttons_lay = QHBoxLayout(self.fra_buttons)
         fra_buttons_lay.setContentsMargins(0, 0, 0, 0)
-        self.btn_save = QPushButton('Save')  # TODO: softcode
+
+        if self.edit_type == self.edit_patterns:
+            ele_name = 'pattern'
+        elif self.edit_type == self.edit_curves:
+            ele_name = 'curve'
+
+        self.btn_new = QPushButton('New ' + ele_name)  # TODO: softcode
+        self.btn_new.clicked.connect(self.new)
+        fra_buttons_lay.addWidget(self.btn_new)
+        self.btn_save = QPushButton('Save current ' + ele_name)  # TODO: softcode
         self.btn_save.clicked.connect(self.save)
         fra_buttons_lay.addWidget(self.btn_save)
-        self.btn_del = QPushButton('Delete')  # TODO: softcode
+        self.btn_del = QPushButton('Delete current ' + ele_name)  # TODO: softcode
         self.btn_del.clicked.connect(self.del_pattern)
         fra_buttons_lay.addWidget(self.btn_del)
 
@@ -96,10 +105,10 @@ class GraphDialog(QDialog):
 
         # Table form
         self.table = QTableWidget(self)
-        rows_nr = 24
-        cols_nr = 2
-        self.table.setRowCount(rows_nr)
-        self.table.setColumnCount(cols_nr)
+        self.rows_nr = 24
+        self.cols_nr = 2
+        self.table.setRowCount(self.rows_nr)
+        self.table.setColumnCount(self.cols_nr)
         self.table.verticalHeader().setVisible(False)
 
         # row_height = self.table.rowHeight(0)
@@ -108,30 +117,30 @@ class GraphDialog(QDialog):
         # self.table.setMaximumHeight(table_height + 10)
 
         # Initialize empty table
-        for row in range(rows_nr):
-            for col in range(cols_nr):
-                if edit_type == self.edit_patterns:
-                    if col == 0:
-                        item = QTableWidgetItem(str(row))
-                        self.table.setItem(row, col, item)
-                        item.setFlags(QtCore.Qt.ItemIsSelectable)
-                    elif col == 1 and row == 0:
-                        item = QTableWidgetItem(str(1))
-                        self.table.setItem(row, col, item)
-                        item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
-                else:
-                    if row == 0:
-                        item = QTableWidgetItem(str(0))
-                        self.table.setItem(row, 0, item)
-                        item = QTableWidgetItem(str(1))
-                        self.table.setItem(row, 1, item)
-                        # item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+        self.clear_table()
 
         self.table.itemChanged.connect(self.data_changed)
 
         self.fra_table = QFrame()
         fra_table_lay = QVBoxLayout(self.fra_table)
         fra_table_lay.setContentsMargins(0, 0, 0, 0)
+
+        if edit_type == self.edit_curves:
+            self.fra_pump_type = QFrame()
+            fra_pump_type_lay = QFormLayout(self.fra_pump_type)
+
+            self.lbl_pump_type = QLabel('Pump type:')  # TODO: softcode
+            self.cbo_pump_type = QComboBox()
+
+            for key, name in Curve.type_names.iteritems():
+                self.cbo_pump_type.addItem(name, key)
+
+            fra_pump_type_lay.addRow(self.lbl_pump_type, self.cbo_pump_type)
+
+            fra_table_lay.addWidget(self.fra_pump_type)
+
+            self.cbo_pump_type.activated.connect(self.cbo_pump_type_activated)
+
         fra_table_lay.addWidget(self.table)
 
         # Graph canvas
@@ -144,9 +153,8 @@ class GraphDialog(QDialog):
         self.fra_top = QFrame()
         fra_top_lay = QVBoxLayout(self.fra_top)
         fra_top_lay.addWidget(self.fra_form)
-        fra_top_lay.addWidget(self.fra_buttons)
         fra_top_lay.addWidget(self.fra_id)
-        fra_top_lay.addWidget(self.fra_table)
+        fra_top_lay.addWidget(self.fra_buttons)
 
         # Bottom frame
         self.fra_bottom = QFrame()
@@ -162,9 +170,14 @@ class GraphDialog(QDialog):
         main_lay.addWidget(self.fra_bottom)
 
         # Read existing patterns/curves
-        self.update_graph = False
+        self.need_to_update_graph = False
         self.read()
-        self.update_graph = True
+
+        self.need_to_update_graph = True
+        self.update_graph()
+
+    def cbo_pump_type_activated(self):
+        self.update_graph()
 
     def setVisible(self, bool):
         QDialog.setVisible(self, bool)
@@ -185,49 +198,50 @@ class GraphDialog(QDialog):
         flags = Qt.ItemFlags()
         flags != Qt.ItemIsEnabled
 
+        # Clear table
+        self.clear_table()
+
+        self.need_to_update_graph = False
         if p_index >= 0:
 
-            self.update_graph = False
             if self.edit_type == self.edit_patterns:
-                current = self.params.patterns[p_index]
-                for v in range(len(current.values)):
+                self.current = self.params.patterns[p_index]
+                for v in range(len(self.current.values)):
                     item = QTableWidgetItem(str(v))
                     item.setFlags(flags)
                     self.table.setItem(v, 0, item)
-                    self.table.setItem(v, 1, QTableWidgetItem(str(current.values[v])))
+                    self.table.setItem(v, 1, QTableWidgetItem(str(self.current.values[v])))
+
             elif self.edit_type == self.edit_curves:
-                current = self.params.curves[p_index]
-                for v in range(len(current.xs)):
-                    self.table.setItem(v, 0, QTableWidgetItem(str(current.xs[v])))
-                    self.table.setItem(v, 1, QTableWidgetItem(str(current.ys[v])))
+                self.current = self.params.curves[p_index]
+                for v in range(len(self.current.xs)):
+                    self.table.setItem(v, 0, QTableWidgetItem(str(self.current.xs[v])))
+                    self.table.setItem(v, 1, QTableWidgetItem(str(self.current.ys[v])))
+
+                curve_type = self.current.type
+                self.cbo_pump_type.setCurrentIndex(curve_type)
 
             # Update GUI
-            self.txt_id.setText(current.id)
-            self.txt_desc.setText(current.desc)
+            self.txt_id.setText(self.current.id)
+            self.txt_desc.setText(self.current.desc)
 
             # Update graph
-            self.update_graph = True
-
-            if self.edit_type == self.edit_patterns:
-                self.static_canvas.draw_bars_graph(current.values)
-            elif self.edit_type == self.edit_curves:
-                self.static_canvas.draw_line_graph(current.xs, current.ys, self.x_label, self.y_label)
+            self.need_to_update_graph = True
+            self.update_graph()
 
         else:
 
+            # No curves
             self.txt_id.setText('')
             self.txt_desc.setText('')
 
             # Update table and chart
-            self.update_graph = False
+            self.need_to_update_graph = False
             for v in range(self.table.columnCount()):
                 self.table.setItem(v, 1, QTableWidgetItem(''))
-            self.update_graph = True
 
-            if self.edit_type == self.edit_patterns:
-                self.static_canvas.draw_bars_graph([0] * 24)
-            elif self.edit_type == self.edit_curves:
-                self.static_canvas.draw_line_graph([0, 1], [0, 0], self.x_label, self.y_label)
+            self.need_to_update_graph = True
+            self.update_graph()
 
     def select_file(self):
 
@@ -260,19 +274,57 @@ class GraphDialog(QDialog):
         if self.edit_type == self.edit_patterns:
             InpFile.read_patterns(self.params)
             for pattern in self.params.patterns:
-                desc = ' (' + pattern.desc + ')' if pattern.desc is not None else ''
-                self.lst_list.addItem(pattern.id + desc)
+                # desc = ' (' + pattern.desc + ')' if pattern.desc is not None else ''
+                self.lst_list.addItem(pattern.id)
 
         elif self.edit_type == self.edit_curves:
             InpFile.read_curves(self.params)
             for curve in self.params.curves:
-                desc = ' (' + curve.desc + ')' if curve.desc is not None else ''
-                self.lst_list.addItem(curve.id + desc)
+                # desc = ' (' + curve.desc + ')' if curve.desc is not None else ''
+                self.lst_list.addItem(curve.id)
 
         if self.lst_list.count() > 0:
             self.lst_list.setCurrentRow(0)
 
+    def new(self):
+
+        old_ids = []
+        if self.edit_type == self.edit_patterns:
+            for pattern in self.params.patterns:
+                old_ids.append(pattern.id)
+        elif self.edit_type == self.edit_curves:
+            for curve in self.params.curves:
+                old_ids.append(curve.id)
+
+        self.new_dialog = NewIdDialog(self, old_ids)
+        self.new_dialog.exec_()
+
+        new_id = self.new_dialog.get_newid()
+        if new_id is None:
+            return
+
+        if self.edit_type == self.edit_patterns:
+            new_pattern = Pattern(new_id)
+            self.params.patterns.append(new_pattern)
+            self.lst_list.addItem(new_pattern.id)
+        elif self.edit_type == self.edit_curves:
+            curve_type = self.cbo_pump_type.itemData(self.cbo_pump_type.currentIndex())
+            new_curve = Curve(new_id, curve_type)
+            self.params.curves.append(new_curve)
+            self.lst_list.addItem(new_curve.id)
+
+        self.lst_list.setCurrentRow(self.lst_list.count() - 1)
+
+        self.txt_id.setText(new_id)
+        self.txt_desc.setText('')
+
+        # Clear table
+        self.clear_table()
+        self.static_canvas.axes.clear()
+
     def save(self):
+
+        self.need_to_update_graph = False
 
         # Check for ID
         if not self.txt_id.text():
@@ -285,56 +337,58 @@ class GraphDialog(QDialog):
 
         if self.edit_type == GraphDialog.edit_patterns:
             # Check for ID unique
-            overwrite_p_index = -1
+            # overwrite_p_index = -1
             for p in range(len(self.params.patterns)):
                 if self.params.patterns[p].id == self.txt_id.text():
-                    ret = QMessageBox.question(
-                        self,
-                        Parameters.plug_in_name,
-                        u'The ID ' + self.txt_id.text() + u' already exists. Overwrite?',  # TODO: softcode
-                        QMessageBox.Yes | QMessageBox.No)
-                    if ret == QMessageBox.No:
-                        return
-                    else:
-                        overwrite_p_index = p
-                    break
-
+            #         ret = QMessageBox.question(
+            #             self,
+            #             Parameters.plug_in_name,
+            #             u'The ID ' + self.txt_id.text() + u' already exists. Overwrite?',  # TODO: softcode
+            #             QMessageBox.Yes | QMessageBox.No)
+            #         if ret == QMessageBox.No:
+            #             return
+            #         else:
+                    overwrite_p_index = p
+            #         break
+            #
             values = []
-            for col in range(self.table.columnCount()):
-                item = self.table.item(1, col)
-                values.append(self.from_item_to_val(item))
+            for row in range(self.table.rowCount()):
+                item = self.table.item(row, 1)
+                if item.text() != '':
+                    values.append(self.from_item_to_val(item))
 
-            # Update
-            new_pattern = Pattern(self.txt_id.text(), self.txt_desc.text(), values)
-            if overwrite_p_index >= 0:
-                self.params.patterns[overwrite_p_index] = new_pattern
-                InpFile.write_patterns(self.params, self.params.patterns_file)
-                self.read()
-                self.lst_list.setCurrentRow(overwrite_p_index)
+            pattern = Pattern(self.txt_id.text(), self.txt_desc.text(), values)
 
-            # Save new
-            else:
-                self.params.patterns.append(new_pattern)
-                InpFile.write_patterns(self.params, self.params.patterns_file)
-                self.read()
-
-            self.dockwidget.update_patterns_combo()
+            # # Update
+            # if overwrite_p_index >= 0:
+            self.params.patterns[overwrite_p_index] = pattern
+            InpFile.write_patterns(self.params, self.params.patterns_file)
+            #     self.read()
+            #     self.lst_list.setCurrentRow(overwrite_p_index)
+            #
+            # # Save new
+            # else:
+            #     self.params.patterns.append(pattern)
+            #     InpFile.write_patterns(self.params, self.params.patterns_file)
+            #     self.read()
+            #
+            # self.dockwidget.update_patterns_combo()
 
         elif self.edit_type == GraphDialog.edit_curves:
             # Check for ID unique
             overwrite_c_index = -1
             for c in range(len(self.params.curves)):
                 if self.params.curves[c].id == self.txt_id.text():
-                    ret = QMessageBox.question(
-                        self,
-                        Parameters.plug_in_name,
-                        u'The ID ' + self.txt_id.text() + u' already exists. Overwrite?',  # TODO: softcode
-                        QMessageBox.Yes | QMessageBox.No)
-                    if ret == QMessageBox.No:
-                        return
-                    else:
-                        overwrite_c_index = c
-                    break
+                    # ret = QMessageBox.question(
+                    #     self,
+                    #     Parameters.plug_in_name,
+                    #     u'The ID ' + self.txt_id.text() + u' already exists. Overwrite?',  # TODO: softcode
+                    #     QMessageBox.Yes | QMessageBox.No)
+                    # if ret == QMessageBox.No:
+                    #     return
+                    # else:
+                    overwrite_c_index = c
+                    # break
 
             xs = []
             ys = []
@@ -342,29 +396,61 @@ class GraphDialog(QDialog):
                 item_x = self.table.item(row, 0)
                 item_y = self.table.item(row, 1)
 
-                if item_x is not None and item_y is not None:
+                if item_x.text() != '' and item_y.text() != '':
                     xs.append(self.from_item_to_val(item_x))
                     ys.append(self.from_item_to_val(item_y))
 
-            # Update
-            new_curve = Curve(self.txt_id.text(), self.txt_desc.text())
+            curve_type = self.cbo_pump_type.itemData(self.cbo_pump_type.currentIndex())
+            curve = Curve(self.txt_id.text(), curve_type, self.txt_desc.text())
             for v in range(len(xs)):
-                new_curve.append_xy(xs[v], ys[v])
+                curve.append_xy(xs[v], ys[v])
 
-            if overwrite_c_index >= 0:
-                self.params.curves[overwrite_c_index] = new_curve
-                InpFile.write_curves(self.params, self.params.curves_file)
-                self.read()
-                self.lst_list.setCurrentRow(overwrite_c_index)
-
-            # Save new
-            else:
-                self.params.patterns.append(new_curve)
-                InpFile.write_curves(self.params, self.params.curves_file)
-                self.read()
+            # # Update
+            # if overwrite_c_index >= 0:
+            self.params.curves[overwrite_c_index] = curve
+            InpFile.write_curves(self.params, self.params.curves_file)
+            #     self.read()
+            #     self.lst_list.setCurrentRow(overwrite_c_index)
+            #
+            # # Save new
+            # else:
+            #     self.params.curves.append(curve)
+            #     InpFile.write_curves(self.params, self.params.curves_file)
+            #     self.read()
 
             # Update GUI
             self.dockwidget.update_curves_combo()
+
+        # self.read()
+        self.need_to_update_graph = True
+
+    def clear_table(self):
+
+        self.need_to_update_graph = False
+        for r in range(self.table.rowCount()):
+            self.table.setItem(r, 0, QTableWidgetItem(None))
+            self.table.setItem(r, 1, QTableWidgetItem(None))
+
+        for row in range(self.rows_nr):
+            for col in range(self.cols_nr):
+                if self.edit_type == self.edit_patterns:
+                    if col == 0:
+                        item = QTableWidgetItem(str(row))
+                        self.table.setItem(row, col, item)
+                        item.setFlags(QtCore.Qt.ItemIsSelectable)
+                    # elif col == 1 and row == 0:
+                    #     item = QTableWidgetItem(str(1))
+                    #     self.table.setItem(row, col, item)
+                    #     item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+
+                elif self.edit_type == self.edit_curves:
+                    if row == 0:
+                        item = QTableWidgetItem(str(0))
+                        self.table.setItem(row, 0, item)
+                        item = QTableWidgetItem(str(1))
+                        self.table.setItem(row, 1, item)
+                        # item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
+        self.need_to_update_graph = True
 
     def del_pattern(self):
         selected_row = self.lst_list.currentRow()
@@ -379,6 +465,14 @@ class GraphDialog(QDialog):
 
     def data_changed(self):
 
+        if self.need_to_update_graph:
+            self.update_graph()
+
+    def update_graph(self):
+
+        if not self.need_to_update_graph:
+            return
+
         self.xs = []
         self.ys = []
         for row in range(self.table.rowCount()):
@@ -392,12 +486,56 @@ class GraphDialog(QDialog):
             if y is not None:
                 self.ys.append(float(y))
 
-        if self.update_graph:
-            if self.edit_type == self.edit_patterns:
-                self.static_canvas.draw_bars_graph(self.ys)
-            elif self.edit_type == self.edit_curves:
-                series_length = min(len(self.xs), len(self.ys))
-                self.static_canvas.draw_line_graph(self.xs[:series_length], self.ys[:series_length], self.x_label, self.y_label)
+        if len(self.xs) == 0 or len(self.ys) == 0:
+            self.static_canvas.clear()
+            return
+
+        if self.edit_type == self.edit_patterns:
+            y_axis_label = 'Average: ' + str(numpy.average(self.ys))
+            self.static_canvas.draw_bars_graph(self.ys, y_axes_label=y_axis_label)
+
+        elif self.edit_type == self.edit_curves:
+
+            # Account for different types of curves
+            cbo_data = self.cbo_pump_type.itemData(self.cbo_pump_type.currentIndex())
+
+            series_length = min(len(self.xs), len(self.ys))
+
+            if cbo_data == Curve.type_efficiency or cbo_data == Curve.type_headloss or cbo_data == Curve.type_volume:
+                self.static_canvas.draw_line_graph(self.xs[:series_length], self.ys[:series_length],
+                                                   self.x_label, self.y_label)
+
+            elif cbo_data == Curve.type_pump:
+                # Needs to account for different types of curves
+                if series_length == 1 or series_length == 3:
+                    if series_length == 1:
+                        # 3 curve points
+                        curve_xs = [0, self.xs[0], self.xs[0] * 2]
+                        curve_ys = [self.ys[0] * 1.33, self.ys[0], 0]
+                        # y = a * x^2 + b * x + c
+
+                    elif series_length == 3:
+                        # 3 curve points
+                        curve_xs = [self.xs[0], self.xs[1], self.xs[2]]
+                        curve_ys = [self.ys[0], self.ys[1], self.ys[2]]
+
+                    (a, b, c) = numpy.polyfit(curve_xs, curve_ys, 2)
+
+                    # Create a few interpolated values
+                    interp_xs = []
+                    interp_ys = []
+                    n_vals = 30
+                    for v in range(n_vals+1):
+                        x = (curve_xs[2] - curve_xs[0]) / n_vals * v
+                        interp_xs.append(x)
+                        y = a * x**2 + b * x + c
+                        interp_ys.append(y)
+
+                    self.static_canvas.draw_line_graph(interp_xs, interp_ys, self.x_label, self.y_label)
+
+                else:
+                    self.static_canvas.draw_line_graph(self.xs[:series_length], self.ys[:series_length],
+                                                       self.x_label, self.y_label)
 
     def from_item_to_val(self, item):
 
@@ -413,3 +551,69 @@ class GraphDialog(QDialog):
             value = None
 
         return value
+
+
+class NewIdDialog(QDialog):
+
+    def __init__(self, parent, old_ids):
+
+        QDialog.__init__(self, parent)
+
+        self.old_ids = old_ids
+
+        main_lay = QVBoxLayout(self)
+
+        self.fra_id = QFrame(self)
+        fra_id_lay = QFormLayout(self.fra_id)
+        self.lbl_id = QLabel('New ID:')
+        self.txt_id = QLineEdit('')
+        fra_id_lay.addRow(self.lbl_id, self.txt_id)
+
+        self.fra_buttons = QFrame()
+        fra_buttons_lay = QHBoxLayout(self.fra_buttons)
+
+        self.btn_ok = QPushButton('OK')
+        self.btn_ok.pressed.connect(self.btn_ok_pressed)
+        self.btn_cancel = QPushButton('Cancel')
+        self.btn_cancel.pressed.connect(self.btn_cancel_pressed)
+        fra_buttons_lay.addWidget(self.btn_ok)
+        fra_buttons_lay.addWidget(self.btn_cancel)
+
+        main_lay.addWidget(self.fra_id)
+        main_lay.addWidget(self.fra_buttons)
+
+        self.new_id = None
+
+    def btn_ok_pressed(self):
+        if not self.check():
+            return
+        self.new_id = self.txt_id.text()
+        self.setVisible(False)
+
+    def btn_cancel_pressed(self):
+        self.new_id = None
+        self.setVisible(False)
+
+    def get_newid(self):
+        return self.new_id
+
+    def check(self):
+        if self.txt_id.text() == '':
+            QMessageBox.warning(
+                self,
+                Parameters.plug_in_name,
+                u'Please specify the new ID.',  # TODO: softcode
+                QMessageBox.Ok)
+            return False
+
+        for old_id in self.old_ids:
+            if old_id.lower() == self.txt_id.text().lower():
+                QMessageBox.warning(
+                    self,
+                    Parameters.plug_in_name,
+                    u'The ID already exists.',  # TODO: softcode
+                    QMessageBox.Ok)
+                return False
+
+        return True
+

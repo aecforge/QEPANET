@@ -1,8 +1,19 @@
 class Curve:
     section_name = 'CURVES'
 
-    def __init__(self, id, desc=None):
+    type_volume = 0
+    type_pump = 1
+    type_efficiency = 2
+    type_headloss = 3
+
+    type_names = {type_volume: 'Volume',
+                  type_pump: 'Pump',
+                  type_efficiency: 'Efficiency',
+                  type_headloss: 'Headloss'}
+
+    def __init__(self, id, type=None, desc=None):
         self.id = id
+        self.type = type
         self.desc = desc
         self.xs = []
         self.ys = []

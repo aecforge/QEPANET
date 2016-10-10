@@ -53,7 +53,11 @@ class InpFile:
             if not lines[l].startswith(';'):
                 words = lines[l].strip().replace('\t', ' ').split()
                 if words[0] not in patterns_d:
-                    patterns_d[words[0]] = Pattern(words[0], lines[l-1][1:])
+                    if lines[l-1].strip().startswith(';'):
+                        pattern_desc = lines[l - 1][1:]
+                    else:
+                        pattern_desc = ''
+                    patterns_d[words[0]] = Pattern(words[0], pattern_desc)
                     for w in range(1, len(words)):
                         patterns_d[words[0]].add_value(float(words[w]))
                     continue
@@ -75,14 +79,6 @@ class InpFile:
             for line in out:
                 p_file.write(line + '\n')
 
-            # InpFile.write_lines(p_file, InpFile.build_section_keyword(Pattern.section_name))
-            # InpFile.write_lines(p_file, InpFile.build_comment(Pattern.section_header))
-            #
-            # for pattern in params.patterns:
-            #     if pattern.desc is not None:
-            #         InpFile.write_lines(p_file, InpFile.build_comment(pattern.desc))
-            #     InpFile.write_lines(p_file, InpFile.from_values_to_lines(pattern.values, line_header=pattern.id, vals_per_line=6))
-
     @staticmethod
     def write_lines(inp_file, lines):
 
@@ -98,7 +94,7 @@ class InpFile:
         if not os.path.isfile(params.patterns_file):
             return []
 
-        start_line = None
+        start_line = 0
         end_line = None
         with codecs.open(params.curves_file, 'r', encoding='UTF-8') as inp_f:
 
@@ -123,9 +119,27 @@ class InpFile:
 
         for l in range(start_line, end_line):
             if not lines[l].startswith(';'):
+                if len(lines[l].strip()) == 0:
+                    continue
                 words = lines[l].replace('\t', ' ').split()
                 if words[0] not in curves_d:
-                    curves_d[words[0]] = Curve(words[0], lines[l-1][1:])
+
+                    curve_metadata = lines[l-1]
+                    curve_type = 0
+                    curve_desc = None
+                    if curve_metadata.startswith(';'):
+
+                        curve_type = 0
+                        cruve_desc = None
+                        for type_id, type_name in Curve.type_names.iteritems():
+                            if curve_metadata.lower()[1:].startswith(type_name.lower()):
+                                curve_type = type_id
+                                curve_metadatas = curve_metadata.split(':')
+                                if len(curve_metadatas) > 1:
+                                    curve_desc = curve_metadatas[1].strip()
+                                break
+
+                    curves_d[words[0]] = Curve(words[0], curve_type, curve_desc)
                     x = words[1]
                     y = words[2]
                     curves_d[words[0]].append_xy(x, y)
@@ -292,8 +306,19 @@ class InpFile:
         out.extend(InpFile.build_section_keyword(Curve.section_name))
 
         for curve in params.curves:
+
+            type_desc = None
+            if curve.type is not None:
+                type_desc = Curve.type_names[curve.type]
+
             if curve.desc is not None:
-                out.extend(InpFile.build_comment(curve.desc))
+                if type_desc is None:
+                    type_desc = curve.desc
+                else:
+                    type_desc += ': ' + curve.desc
+
+            if type_desc is not None:
+                out.extend(InpFile.build_comment(type_desc))
 
             for v in range(len(curve.xs)):
                 out.append(
@@ -676,6 +701,9 @@ class InpFile:
         # Calc elements per line
         if vals_per_line is None:
             vals_per_line = int(math.floor((n - len(header)) / (element_size + 1)))
+
+        if len(values) < vals_per_line:
+            vals_per_line = len(values)
 
         lines_nr = int(math.ceil(len(svalues) / float(vals_per_line)))
 

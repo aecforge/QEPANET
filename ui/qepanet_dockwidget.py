@@ -778,8 +778,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.cbo_pump_head.clear()
         if self.params.curves is not None:
             for value in self.params.curves:
-                self.cbo_tank_curve.addItem(value.desc, value)
-                self.cbo_pump_head.addItem(value.desc, value)
+                self.cbo_tank_curve.addItem(value.id, value)
+                self.cbo_pump_head.addItem(value.id, value)
 
     def get_combo_current_data(self, combo):
         index = self.cbo_pipe_roughness.currentIndex()

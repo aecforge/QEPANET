@@ -1,6 +1,7 @@
 from PyQt4 import QtGui
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+import numpy
 
 
 class MyMplCanvas(FigureCanvas):
@@ -21,6 +22,7 @@ class MyMplCanvas(FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
         self.axes = self.figure.add_subplot(1, 1, 1)
+        self.axes2 = None
 
     def compute_initial_figure(self):
         pass
@@ -31,7 +33,13 @@ class StaticMplCanvas(MyMplCanvas):
     def compute_initial_figure(self):
         pass
 
-    def draw_bars_graph(self, values, time_period=1):
+    def clear(self):
+        self.axes.clear()
+        if self.axes2 is not None:
+            self.axes2.clear()
+        self.draw()
+
+    def draw_bars_graph(self, values, time_period=1, y_axes_label='Multiplier'):
 
         width = 1
         lefts = []
@@ -43,13 +51,24 @@ class StaticMplCanvas(MyMplCanvas):
         if max_val == 0:
             max_val = 1
 
+        # Average
+        avg = numpy.average(values)
+
+        if self.axes2 is None:
+            self.axes2 = self.axes.twinx()
+
+        self.axes2.clear()
+        self.axes2.plot([0, len(values)], [avg, avg], 'k--')
+        self.axes2.set_ylim(0, max_val)
+
         self.axes.bar(lefts, values, width, color=(0, 0.5, 1))
         self.axes.set_xlim(0, lefts[-1] + width)
         self.axes.set_ylim(0, max_val)
 
-        self.axes.set_xlabel('Time (Time period = ' + str(time_period) + ')') #TODO: softcode
-        self.axes.set_ylabel('Multiplier') #TODO: softcode
+        self.axes.set_xlabel('Time (Time period = ' + str(time_period) + ')')  # TODO: softcode
+        self.axes.set_ylabel(y_axes_label)  # TODO: softcode
         self.axes.tick_params(axis=u'both', which=u'both', bottom=u'off', top=u'off', left=u'off', right=u'off')
+
         self.figure.tight_layout()
 
         self.draw()
