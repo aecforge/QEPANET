@@ -1,8 +1,9 @@
 from PyQt4 import QtGui
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+from matplotlib.ticker import FormatStrFormatter
 import numpy
-
+from ..model.binary_out_reader import OutputParamCodes
 
 class MyMplCanvas(FigureCanvas):
 
@@ -60,10 +61,13 @@ class StaticMplCanvas(MyMplCanvas):
         self.axes2.clear()
         self.axes2.plot([0, len(values)], [avg, avg], 'k--')
         self.axes2.set_ylim(0, max_val)
+        self.axes2.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 
         self.axes.bar(lefts, values, width, color=(0, 0.5, 1))
         self.axes.set_xlim(0, lefts[-1] + width)
         self.axes.set_ylim(0, max_val)
+        self.axes.set_xticks(lefts)
+        self.axes.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 
         self.axes.set_xlabel('Time (Time period = ' + str(time_period) + ')')  # TODO: softcode
         self.axes.set_ylabel(y_axes_label)  # TODO: softcode
@@ -83,5 +87,61 @@ class StaticMplCanvas(MyMplCanvas):
         self.axes.set_xlabel(x_label)
         self.axes.set_ylabel(y_label)
         self.axes.tick_params(axis=u'both', which=u'both', bottom=u'off', top=u'off', left=u'off', right=u'off')
+        self.axes.xaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+        self.axes.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
+        self.figure.tight_layout()
+        self.draw()
+
+    def draw_output_line(self, xs, ys_d_d):
+
+        self.figure.clf()
+
+        args = []
+
+        # Convert secs to hours
+        xs_h = [x / 3600 for x in xs]
+
+        x_min = min(xs_h)
+        x_max = max(xs_h)
+
+        plot_pos = 1
+        for param_id, ys_d in ys_d_d.iteritems():
+
+            axes = self.figure.add_subplot(len(ys_d), 1, plot_pos)
+
+            plot_args = []
+            y_min = 1E6
+            y_max = -1E6
+            for element_id, ys in ys_d.iteritems():
+
+                y_min = min(y_min, min(ys[0]))
+                y_max = max(y_max, max(ys[0]))
+
+                plot_args.append(xs_h)
+                plot_args.append(ys[0])
+                # plot_args.append('-')
+
+            axes.tick_params(axis='both', which='major', labelsize=10)
+            axes.set_title(OutputParamCodes.params_names[param_id], fontsize=10)
+
+            # If this is not the last plot, hide the x ticks
+            if plot_pos < len(ys_d):
+                axes.tick_params(axis='x', bottom='off', labelbottom='off')
+            else:
+                axes.set_xlabel('Time [h]', size='x-small')
+
+            # Set axes limits
+            axes.set_xlim(x_min, x_max)
+            y_span = y_max - y_min
+            axes.set_ylim(y_min - y_span * 0.1, y_max + y_span * 0.1)
+
+            axes.set_ylabel(ys[1], size='x-small')
+
+            # Legend
+            # axes.legend(?)
+
+            axes.plot(*plot_args)
+            plot_pos += 1
+
         self.figure.tight_layout()
         self.draw()

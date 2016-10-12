@@ -3,7 +3,7 @@ from PyQt4.QtGui import QDialog, QFormLayout, QLabel, QComboBox, QLineEdit, QChe
 from PyQt4 import QtCore
 from ..tools.parameters import Parameters, RegExValidators
 from ..model.network import Valve
-from ..model.options_report import Hour, Report
+from ..model.options_report import Hour, Report, Times
 from utils import prepare_label as pre_l
 import os
 
@@ -82,8 +82,8 @@ class HydraulicsDialog(QDialog):
         fra_form_lay.addRow(self.lbl_unbalanced, self.fra_unbalanced)
 
         self.lbl_pattern = QLabel('Pattern:')  # TODO: softocode
-        self.txt_pattern = QLineEdit()
-        fra_form_lay.addRow(self.lbl_pattern, self.txt_pattern)
+        self.cbo_pattern = QComboBox()
+        fra_form_lay.addRow(self.lbl_pattern, self.cbo_pattern)
 
         self.lbl_demand_mult = QLabel('Demand multiplier:')  # TODO: softocode
         self.txt_demand_mult = QLineEdit()
@@ -102,8 +102,8 @@ class HydraulicsDialog(QDialog):
         fra_buttons_lay = QHBoxLayout(self.fra_buttons)
         self.btn_Cancel = QPushButton('Cancel')
         self.btn_Ok = QPushButton('OK')
-        fra_buttons_lay.addWidget(self.btn_Cancel)
         fra_buttons_lay.addWidget(self.btn_Ok)
+        fra_buttons_lay.addWidget(self.btn_Cancel)
 
         # Add to main
         fra_main_lay = QVBoxLayout(self)
@@ -148,6 +148,10 @@ class HydraulicsDialog(QDialog):
         self.txt_unbalanced.setValidator(RegExValidators.get_pos_int_no_zero())
         self.txt_unbalanced.setText('1')
 
+        # - Pattern
+        for pattern in self.params.patterns:
+            self.cbo_pattern.addItem(pattern.id, pattern)
+
         # Buttons
         self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
         self.btn_Ok.pressed.connect(self.btn_ok_pressed)
@@ -158,7 +162,6 @@ class HydraulicsDialog(QDialog):
         self.txt_spec_gravity.setValidator(RegExValidators.get_pos_decimals())
         self.txt_max_trials.setValidator(RegExValidators.get_pos_int_no_zero())
         self.txt_accuracy.setValidator(RegExValidators.get_pos_decimals())
-        self.txt_pattern.setValidator(RegExValidators.get_pos_decimals())
         self.txt_demand_mult.setValidator(RegExValidators.get_pos_decimals())
         self.txt_emitter_exp.setValidator(RegExValidators.get_pos_decimals())
         self.txt_tolerance.setValidator(RegExValidators.get_pos_decimals())
@@ -185,7 +188,12 @@ class HydraulicsDialog(QDialog):
         self.txt_unbalanced.setEnabled(self.cbo_unbalanced.currentIndex() != 0)
         self.txt_unbalanced.setText(str(self.params.options.unbalanced.trials))
 
-        self.txt_pattern.setText(str(self.params.options.pattern))
+        if self.params.options.pattern is not None:
+            for i in range(self.cbo_pattern.count()):
+                if self.params.options.pattern.id == self.cbo_pattern.itemText(i):
+                    self.cbo_pattern.setCurrentIndex(i)
+                    break
+
         self.txt_demand_mult.setText(str(self.params.options.demand_mult))
         self.txt_emitter_exp.setText(str(self.params.options.emitter_exp))
         self.txt_tolerance.setText(str(self.params.options.tolerance))
@@ -262,7 +270,7 @@ class HydraulicsDialog(QDialog):
         self.params.options.unbalanced.unbalanced = self.cbo_unbalanced.itemData(self.cbo_unbalanced.currentIndex())
         self.params.options.unbalanced.trials = int(self.txt_unbalanced.text())
 
-        self.params.options.pattern = self.txt_pattern.text()
+        self.params.options.pattern = self.cbo_pattern.itemData(self.cbo_pattern.currentIndex())
         self.params.options.demand_mult = float(self.txt_demand_mult.text())
         self.params.options.emitter_exp = float(self.txt_emitter_exp.text())
         self.params.options.tolerance = float(self.txt_tolerance.text())
@@ -380,10 +388,10 @@ class QualityDialog(QDialog):
         # Buttons
         self.fra_buttons = QFrame(self)
         fra_buttons_lay = QHBoxLayout(self.fra_buttons)
-        self.btn_Cancel = QPushButton('Cancel')
         self.btn_Ok = QPushButton('OK')
-        fra_buttons_lay.addWidget(self.btn_Cancel)
+        self.btn_Cancel = QPushButton('Cancel')
         fra_buttons_lay.addWidget(self.btn_Ok)
+        fra_buttons_lay.addWidget(self.btn_Cancel)
 
         # Add to main
         fra_main_lay = QVBoxLayout(self)
@@ -482,10 +490,10 @@ class ReactionsDialog(QDialog):
         # Buttons
         self.fra_buttons = QFrame(self)
         fra_buttons_lay = QHBoxLayout(self.fra_buttons)
-        self.btn_Cancel = QPushButton('Cancel')
         self.btn_Ok = QPushButton('OK')
-        fra_buttons_lay.addWidget(self.btn_Cancel)
+        self.btn_Cancel = QPushButton('Cancel')
         fra_buttons_lay.addWidget(self.btn_Ok)
+        fra_buttons_lay.addWidget(self.btn_Cancel)
 
         # Add to main
         fra_main_lay = QVBoxLayout(self)
@@ -603,10 +611,10 @@ class TimesDialog(QDialog):
         # Buttons
         self.fra_buttons = QFrame(self)
         fra_buttons_lay = QHBoxLayout(self.fra_buttons)
-        self.btn_Cancel = QPushButton('Cancel')
         self.btn_Ok = QPushButton('OK')
-        fra_buttons_lay.addWidget(self.btn_Cancel)
+        self.btn_Cancel = QPushButton('Cancel')
         fra_buttons_lay.addWidget(self.btn_Ok)
+        fra_buttons_lay.addWidget(self.btn_Cancel)
 
         # Add to main
         fra_main_lay = QVBoxLayout(self)
@@ -621,9 +629,6 @@ class TimesDialog(QDialog):
 
         for key, text in self.params.times.unit_text.iteritems():
             self.cbo_units.addItem(text, key)
-
-        for key, text in self.params.times.stats_text.iteritems():
-            self.cbo_statistic.addItem(text, key)
 
         # Buttons
         self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
@@ -679,7 +684,7 @@ class TimesDialog(QDialog):
 
         # Update parameters and options
         self.params.times.units = self.cbo_units.itemData(self.cbo_units.currentIndex())
-        self.params.times.duration = Hour.from_string(self.txt_duration.text())
+        self.params.times.duration = float(self.txt_duration.text())
         self.params.times.hydraulic_timestamp = Hour.from_string(self.txt_hydraulic_timestamp.text())
         self.params.times.quality_timestamp = Hour.from_string(self.txt_quality_timestamp.text())
         self.params.times.rule_timestamp = Hour.from_string(self.txt_rule_timestamp.text())
@@ -688,7 +693,7 @@ class TimesDialog(QDialog):
         self.params.times.report_timestamp = Hour.from_string(self.txt_report_timestamp.text())
         self.params.times.report_start= Hour.from_string(self.txt_report_start.text())
         self.params.times.clocktime_start = Hour.from_string(self.txt_clock_time_start.text())
-        self.params.times.statistics = self.cbo_statistic.itemData(self.cbo_statistic.currentIndex())
+        self.params.times.statistics = Times.stats_text[self.cbo_statistic.itemData(self.cbo_statistic.currentIndex())]
 
         self.setVisible(False)
 
@@ -732,10 +737,10 @@ class EnergyDialog(QDialog):
         # Buttons
         self.fra_buttons = QFrame(self)
         fra_buttons_lay = QHBoxLayout(self.fra_buttons)
-        self.btn_Cancel = QPushButton('Cancel')
         self.btn_Ok = QPushButton('OK')
-        fra_buttons_lay.addWidget(self.btn_Cancel)
+        self.btn_Cancel = QPushButton('Cancel')
         fra_buttons_lay.addWidget(self.btn_Ok)
+        fra_buttons_lay.addWidget(self.btn_Cancel)
 
         # Add to main
         fra_main_lay = QVBoxLayout(self)
@@ -824,10 +829,10 @@ class ReportDialog(QDialog):
         # Buttons
         self.fra_buttons = QFrame(self)
         fra_buttons_lay = QHBoxLayout(self.fra_buttons)
-        self.btn_Cancel = QPushButton('Cancel')
         self.btn_Ok = QPushButton('OK')
-        fra_buttons_lay.addWidget(self.btn_Cancel)
+        self.btn_Cancel = QPushButton('Cancel')
         fra_buttons_lay.addWidget(self.btn_Ok)
+        fra_buttons_lay.addWidget(self.btn_Cancel)
 
         # Add to main
         fra_main_lay = QVBoxLayout(self)

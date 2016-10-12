@@ -410,7 +410,7 @@ class LinkHandler:
 
                 pl1_pts.append(node_before.asPoint())
 
-                pipe_eid = NetworkUtils.find_next_id(params.pipes_vlay, 'P')  # TODO: softcode
+                pipe_eid = NetworkUtils.find_next_id(params.pipes_vlay, 'L')  # TODO: softcode
                 pipe_ft_1 = LinkHandler.create_new_pipe(
                     params,
                     pipe_eid,
@@ -428,7 +428,7 @@ class LinkHandler:
                 for n in range(len(nodes) - next_vertex - after_add):
                     pl2_pts.append(QgsPoint(nodes[n + next_vertex + after_add].x(), nodes[n + next_vertex + after_add].y()))
 
-                pipe_eid = NetworkUtils.find_next_id(params.pipes_vlay, 'P')  # TODO: softcode
+                pipe_eid = NetworkUtils.find_next_id(params.pipes_vlay, 'L')  # TODO: softcode
                 pipe_ft_2 = LinkHandler.create_new_pipe(
                     params,
                     pipe_eid,
@@ -627,7 +627,7 @@ class LinkHandler:
         else:
             new_geom_pts.extend(pipe2_ft.geometry().asPolyline()[::-1][:-1])
 
-        eid = NetworkUtils.find_next_id(parameters.pipes_vlay, 'P')  # TODO: softcode
+        eid = NetworkUtils.find_next_id(parameters.pipes_vlay, 'L')  # TODO: softcode
 
         # TODO: let the user set the attributes
         demand = pipe1_ft.attribute(Pipe.field_name_demand)

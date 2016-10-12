@@ -83,7 +83,7 @@ class Tank:
 
 class Pipe:
     section_name = 'PIPES'
-    section_header = 'ID              	Node1           	Node2           	Length      	Diameter    	Roughness  	MinorLoss  	Status'
+    section_header = 'ID                	Node1              	Node2              	Length             	Diameter           	Roughness          	MinorLoss          	Status'
     field_name_eid = 'id'
     field_name_demand = 'demand'
     field_name_diameter = 'diameter'
@@ -122,6 +122,7 @@ class Pump:
     def __init__(self, eid):
         self.eid = eid
         self.params = Pump.parameters_power
+        self.value = 0
 
 
 class Valve:

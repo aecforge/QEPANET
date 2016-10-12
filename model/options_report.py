@@ -19,21 +19,22 @@ class Options:
                   unit_sys_us:
                       ['CFS', 'GPM', 'MGD', 'IMGD', 'AFD']}
 
-    units_flow_text = {unit_sys_si:
-                           ['LPS - liters per second',
-                            'LPM - liters per minute',
-                            'MLD - million liters per day',
-                            'CMH - cubic meters per hour',
-                            'CMD - cubic meters per day'],
-                       unit_sys_us:
-                           ['CFS - cubic feet per second',
-                            'GPM - gallons per minute',
-                            'MGD - million gallons per day',
-                            'IMGD - Imperial MGD',
-                            'AFD - acre-feet per day']}  # TODO: sofcode
+    units_flow_text = {'LPS': 'LPS - liters per second',
+                       'LPM': 'LPM - liters per minute',
+                       'MLD': 'MLD - million liters per day',
+                       'CMH': 'CMH - cubic meters per hour',
+                       'CMH': 'CMD - cubic meters per day',
+                       'CFS': 'CFS - cubic feet per second',
+                       'GPM': 'GPM - gallons per minute',
+                       'MGD': 'MGD - million gallons per day',
+                       'IMGD': 'IMGD - Imperial MGD',
+                       'AFS': 'AFD - acre-feet per day'}  # TODO: sofcode
 
     units_depth = {unit_sys_si: 'm',
                    unit_sys_us: 'ft'}
+
+    units_velocity = {unit_sys_si: 'm/s',
+                      unit_sys_us: 'ft/s'}
 
     units_volume = {unit_sys_si: 'm3',
                     unit_sys_us: 'cb.ft'}
@@ -73,7 +74,7 @@ class Options:
             self.trials = 40
             self.accuracy = 0.001
             self.unbalanced = Unbalanced()
-            self.pattern = 1
+            self.pattern = None
             self.demand_mult = 1
             self.emitter_exp = 0.5
             self.tolerance = 0.01
@@ -170,8 +171,7 @@ class Hour:
 
     @classmethod
     def from_string(cls, hhmm_string):
-        cls.hours = int(hhmm_string[0:2])
-        cls.mins = int(hhmm_string[3:5])
+        return cls(int(hhmm_string[0:2]), int(hhmm_string[3:5]))
 
     def get_as_text(self):
         return str(self.hours).zfill(2) + ':' + str(self.mins).zfill(2)

@@ -32,14 +32,14 @@ class DiameterDialog(QDialog):
         self.buttons_form = QFrame(self)
         buttons_form_lay = QHBoxLayout(self.buttons_form)
 
-        self.btn_cancel = QPushButton('Cancel')
         self.btn_ok = QPushButton('OK')
+        self.btn_cancel = QPushButton('Cancel')
 
         self.btn_cancel.pressed.connect(self.btn_cancel_pressed)
         self.btn_ok.pressed.connect(self.btn_ok_pressed)
 
-        buttons_form_lay.addWidget(self.btn_ok)
         buttons_form_lay.addWidget(self.btn_cancel)
+        buttons_form_lay.addWidget(self.btn_ok)
 
         main_lay.addWidget(self.fra_form)
         main_lay.addWidget(self.buttons_form)

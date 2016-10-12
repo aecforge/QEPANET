@@ -403,7 +403,7 @@ class InpFile:
                    params.options.unbalanced.unb_text[params.options.unbalanced.unbalanced] +
                    ' ' +
                    str(params.options.unbalanced.trials))
-        out.append(InpFile.pad('PATTERN', InpFile.pad_22) + str(params.options.pattern))
+        out.append(InpFile.pad('PATTERN', InpFile.pad_22) + params.options.pattern.id)
         out.append(InpFile.pad('DEMAND MULTIPLIER', InpFile.pad_22) + str(params.options.demand_mult))
         out.append(InpFile.pad('EMITTER EXPONENT', InpFile.pad_22) + str(params.options.emitter_exp))
         out.append(InpFile.pad('TOLERANCE', InpFile.pad_22) + str(params.options.tolerance))
@@ -480,9 +480,9 @@ class InpFile:
             line += InpFile.pad(start_node_id, InpFile.pad_19)
             line += InpFile.pad(end_node_id, InpFile.pad_19)
             line += InpFile.pad('{0:.2f}'.format(length), InpFile.pad_19)
-            line += InpFile.pad('{0:.2f}'.format(diameter))
-            line += InpFile.pad('{0:.4f}'.format(roughness))
-            line += InpFile.pad('{0:.2f}'.format(minor_loss))
+            line += InpFile.pad('{0:.2f}'.format(diameter), InpFile.pad_19)
+            line += InpFile.pad('{0:.4f}'.format(roughness), InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(minor_loss), InpFile.pad_19)
             line += InpFile.pad(status)
 
             out.append(line)

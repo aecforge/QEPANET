@@ -31,6 +31,7 @@ from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsCoordinateReferenceSy
 
 from ..geo_utils import utils
 from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog, ReportDialog
+from output_dialog import OutputAnalyserDialog
 from curvespatterns_ui import GraphDialog
 from ..model.inp_file import InpFile
 from ..model.network import Tables, Pump, Valve
@@ -79,6 +80,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.times_dialog = None
         self.energy_dialog = None
         self.report_dialog = None
+        self.output_dialog = None
 
         # Tools buttons
         curr_dir = os.path.dirname(os.path.abspath(__file__))
@@ -646,7 +648,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             runner.run(inp_file_path, rpt_file, out_binary_file)
 
     def btn_epanet_output_pressed(self):
-        pass
+        if self.output_dialog is None:
+            self.output_dialog = OutputAnalyserDialog(self.iface.mainWindow(), self.params)
+        self.output_dialog.setVisible(True)
 
     def update_layers_combos(self):
 

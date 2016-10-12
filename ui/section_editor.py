@@ -82,8 +82,8 @@ class PipeSectionDialog(QDialog):
         fra_buttons_lay = QHBoxLayout(self.fra_buttons)
         self.btn_Cancel = QPushButton('Cancel')
         self.btn_Ok = QPushButton('OK')
-        fra_buttons_lay.addWidget(self.btn_Cancel)
         fra_buttons_lay.addWidget(self.btn_Ok)
+        fra_buttons_lay.addWidget(self.btn_Cancel)
 
         main_lay.addWidget(self.fra_toolbar)
         main_lay.addWidget(self.static_canvas)

@@ -38,6 +38,8 @@ class GraphDialog(QDialog):
 
         self.current = None
 
+        self.current_saved = False
+
         # File
         self.lbl_file = QLabel('File:')
         self.fra_file = QFrame()
@@ -340,17 +342,8 @@ class GraphDialog(QDialog):
             # overwrite_p_index = -1
             for p in range(len(self.params.patterns)):
                 if self.params.patterns[p].id == self.txt_id.text():
-            #         ret = QMessageBox.question(
-            #             self,
-            #             Parameters.plug_in_name,
-            #             u'The ID ' + self.txt_id.text() + u' already exists. Overwrite?',  # TODO: softcode
-            #             QMessageBox.Yes | QMessageBox.No)
-            #         if ret == QMessageBox.No:
-            #             return
-            #         else:
                     overwrite_p_index = p
-            #         break
-            #
+
             values = []
             for row in range(self.table.rowCount()):
                 item = self.table.item(row, 1)
@@ -359,36 +352,15 @@ class GraphDialog(QDialog):
 
             pattern = Pattern(self.txt_id.text(), self.txt_desc.text(), values)
 
-            # # Update
-            # if overwrite_p_index >= 0:
             self.params.patterns[overwrite_p_index] = pattern
             InpFile.write_patterns(self.params, self.params.patterns_file)
-            #     self.read()
-            #     self.lst_list.setCurrentRow(overwrite_p_index)
-            #
-            # # Save new
-            # else:
-            #     self.params.patterns.append(pattern)
-            #     InpFile.write_patterns(self.params, self.params.patterns_file)
-            #     self.read()
-            #
-            # self.dockwidget.update_patterns_combo()
 
         elif self.edit_type == GraphDialog.edit_curves:
             # Check for ID unique
             overwrite_c_index = -1
             for c in range(len(self.params.curves)):
                 if self.params.curves[c].id == self.txt_id.text():
-                    # ret = QMessageBox.question(
-                    #     self,
-                    #     Parameters.plug_in_name,
-                    #     u'The ID ' + self.txt_id.text() + u' already exists. Overwrite?',  # TODO: softcode
-                    #     QMessageBox.Yes | QMessageBox.No)
-                    # if ret == QMessageBox.No:
-                    #     return
-                    # else:
                     overwrite_c_index = c
-                    # break
 
             xs = []
             ys = []
@@ -406,17 +378,10 @@ class GraphDialog(QDialog):
                 curve.append_xy(xs[v], ys[v])
 
             # # Update
-            # if overwrite_c_index >= 0:
+
             self.params.curves[overwrite_c_index] = curve
             InpFile.write_curves(self.params, self.params.curves_file)
-            #     self.read()
-            #     self.lst_list.setCurrentRow(overwrite_c_index)
-            #
-            # # Save new
-            # else:
-            #     self.params.curves.append(curve)
-            #     InpFile.write_curves(self.params, self.params.curves_file)
-            #     self.read()
+            self.lst_list.currentItem().setText(curve.id)
 
             # Update GUI
             self.dockwidget.update_curves_combo()
@@ -454,6 +419,9 @@ class GraphDialog(QDialog):
 
     def del_pattern(self):
         selected_row = self.lst_list.currentRow()
+        if selected_row < 0:
+            return
+
         self.lst_list.takeItem(selected_row)
 
         if self.edit_type == GraphDialog.edit_curves:
@@ -491,7 +459,7 @@ class GraphDialog(QDialog):
             return
 
         if self.edit_type == self.edit_patterns:
-            y_axis_label = 'Average: ' + str(numpy.average(self.ys))
+            y_axis_label = 'Mult. avg.: ' + '{0:.2f}'.format((numpy.average(self.ys)))
             self.static_canvas.draw_bars_graph(self.ys, y_axes_label=y_axis_label)
 
         elif self.edit_type == self.edit_curves:
