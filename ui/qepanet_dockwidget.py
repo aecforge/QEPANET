@@ -649,7 +649,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def btn_epanet_output_pressed(self):
         if self.output_dialog is None:
-            self.output_dialog = OutputAnalyserDialog(self.iface.mainWindow(), self.params)
+            self.output_dialog = OutputAnalyserDialog(self.iface, self.iface.mainWindow(), self.params)
         self.output_dialog.setVisible(True)
 
     def update_layers_combos(self):

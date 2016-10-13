@@ -36,7 +36,12 @@ args.append('g-')
 
 plt.subplot(211)
 # plt.plot(xs, y1, 'b-', xs, y2, 'g-')
-plt.plot(*args)
+lines = plt.plot(*args)
+for line in lines:
+    line.set_label('Label via method')
+plt.legend()
+
+print line
 plt.xlim(0, 5)
 plt.xlabel('time')
 plt.ylabel('s1 and s2')

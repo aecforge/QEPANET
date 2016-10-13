@@ -4,6 +4,7 @@ from PyQt4.QtCore import QSize
 
 from ..geo_utils import raster_utils
 
+
 def dist(x1, y1, x2, y2, pt_x, pt_y):  # x3,y3 is the point
     px = x2-x1
     py = y2-y1
@@ -43,4 +44,6 @@ def set_up_button(button, icon_path, w, h, tooltip_text=None):
     button.setCheckable(True)
     if tooltip_text is not None:
         button.setToolTip(tooltip_text)
+
+
 

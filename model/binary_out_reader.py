@@ -294,6 +294,22 @@ class OutputParamCodes(object):
     LINK_REACTION = 11
     LINK_FRICTION = 12
 
+    PARAM_TYPE_NODE = 0
+    PARAM_TYPE_LINK = 1
+
+    param_types = {NODE_DEMAND: PARAM_TYPE_NODE,
+                   NODE_HEAD: PARAM_TYPE_NODE,
+                   NODE_PRESSURE: PARAM_TYPE_NODE,
+                   NODE_QUALITY: PARAM_TYPE_NODE,
+                   LINK_FLOW: PARAM_TYPE_LINK,
+                   LINK_VELOCITY: PARAM_TYPE_LINK,
+                   LINK_HEADLOSS: PARAM_TYPE_LINK,
+                   LINK_QUALITY: PARAM_TYPE_LINK,
+                   LINK_STATUS_CODE: PARAM_TYPE_LINK,
+                   LINK_SETTING: PARAM_TYPE_LINK,
+                   LINK_REACTION: PARAM_TYPE_LINK,
+                   LINK_FRICTION: PARAM_TYPE_LINK}
+
     params_names = {NODE_DEMAND: 'Node demand',
                     NODE_HEAD: 'Node head',
                     NODE_PRESSURE: 'Node pressure',

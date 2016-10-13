@@ -92,11 +92,9 @@ class StaticMplCanvas(MyMplCanvas):
         self.figure.tight_layout()
         self.draw()
 
-    def draw_output_line(self, xs, ys_d_d):
+    def draw_output_line(self, xs, ys_d_d, params_count):
 
         self.figure.clf()
-
-        args = []
 
         # Convert secs to hours
         xs_h = [x / 3600 for x in xs]
@@ -105,13 +103,24 @@ class StaticMplCanvas(MyMplCanvas):
         x_max = max(xs_h)
 
         plot_pos = 1
+        node_plot_count = -1
+        link_plot_count = -1
+
         for param_id, ys_d in ys_d_d.iteritems():
 
-            axes = self.figure.add_subplot(len(ys_d), 1, plot_pos)
+            param_type = OutputParamCodes.param_types[param_id]
+            if param_type == OutputParamCodes.PARAM_TYPE_NODE:
+                node_plot_count += 1
+            elif param_type == OutputParamCodes.PARAM_TYPE_LINK:
+                link_plot_count += 1
+
+            axes = self.figure.add_subplot(params_count, 1, plot_pos)
 
             plot_args = []
             y_min = 1E6
             y_max = -1E6
+            line_labels = []
+
             for element_id, ys in ys_d.iteritems():
 
                 y_min = min(y_min, min(ys[0]))
@@ -121,11 +130,13 @@ class StaticMplCanvas(MyMplCanvas):
                 plot_args.append(ys[0])
                 # plot_args.append('-')
 
+                line_labels.append(element_id)
+
             axes.tick_params(axis='both', which='major', labelsize=10)
             axes.set_title(OutputParamCodes.params_names[param_id], fontsize=10)
 
             # If this is not the last plot, hide the x ticks
-            if plot_pos < len(ys_d):
+            if plot_pos < params_count:
                 axes.tick_params(axis='x', bottom='off', labelbottom='off')
             else:
                 axes.set_xlabel('Time [h]', size='x-small')
@@ -137,11 +148,17 @@ class StaticMplCanvas(MyMplCanvas):
 
             axes.set_ylabel(ys[1], size='x-small')
 
-            # Legend
-            # axes.legend(?)
+            # Plot lines
+            lines = axes.plot(*plot_args)
 
-            axes.plot(*plot_args)
+            # If this is the first plot per type, add legend
+            if param_type == OutputParamCodes.PARAM_TYPE_NODE and node_plot_count == 0 or \
+                    param_type == OutputParamCodes.PARAM_TYPE_LINK and link_plot_count == 0:
+                for l in range(len(lines)):
+                    lines[l].set_label(line_labels[l])
+                axes.legend(fontsize='x-small')
+
             plot_pos += 1
 
-        self.figure.tight_layout()
+        self.figure.tight_layout(h_pad=0)
         self.draw()

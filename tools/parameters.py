@@ -270,6 +270,21 @@ class ConfigFile:
         with codecs.open(self.config_file_path, 'wb') as configfile:
             config.write(configfile)
 
+    # Out file
+    def get_last_out_file(self):
+        self.config.read(self.config_file_path)
+        try:
+            last_out_file = self.config.get('EPANET', 'out_file_path')  # TODO: softcode
+        except ConfigParser.NoOptionError as e:
+            return None
+        return last_out_file
+
+    def set_last_out_file(self, last_out_file):
+        config = self.get_config()
+        config.set('EPANET', 'out_file_path', last_out_file)  # TODO: softcode
+
+        with codecs.open(self.config_file_path, 'wb') as configfile:
+            config.write(configfile)
 
 class RegExValidators:
 
