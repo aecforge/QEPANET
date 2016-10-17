@@ -23,7 +23,7 @@ class Options:
                        'LPM': 'LPM - liters per minute',
                        'MLD': 'MLD - million liters per day',
                        'CMH': 'CMH - cubic meters per hour',
-                       'CMH': 'CMD - cubic meters per day',
+                       'CMD': 'CMD - cubic meters per day',
                        'CFS': 'CFS - cubic feet per second',
                        'GPM': 'GPM - gallons per minute',
                        'MGD': 'MGD - million gallons per day',

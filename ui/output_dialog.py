@@ -28,6 +28,8 @@ class OutputAnalyserDialog(QDialog):
         self.element_ids_nodes = None
         self.element_ids_links = None
 
+        self.setWindowTitle(Parameters.plug_in_name)
+
         # Selection changed listeners
         self.params.junctions_vlay.selectionChanged.connect(self.feature_sel_changed)
         self.params.reservoirs_vlay.selectionChanged.connect(self.feature_sel_changed)

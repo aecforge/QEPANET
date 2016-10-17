@@ -133,6 +133,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         # Junctions ----------------------------------------------------------------------------------------------------
         self.lbl_junction_demand.setText(pre_l('Demand', self.params.options.flow_units))  # TODO: softcode
+        self.lbl_junction_depth.setText(pre_l('Delta Z', self.params.options.units_depth[self.params.options.units]))
         self.txt_junction_demand.setValidator(RegExValidators.get_pos_decimals())
         self.txt_junction_depth.setValidator(RegExValidators.get_pos_decimals())
         self.txt_junction_emit_coeff.setValidator(RegExValidators.get_pos_decimals())
@@ -141,12 +142,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         # Reservoirs ---------------------------------------------------------------------------------------------------
         self.txt_reservoir_head.setValidator(RegExValidators.get_pos_decimals())
+        self.lbl_reservoir_elev_corr.setText(pre_l('Delta Z', self.params.options.units_depth[self.params.options.units]))
         self.txt_reservoir_elev_corr.setValidator(RegExValidators.get_pos_neg_decimals())
 
         self.update_curves_combo()
 
         # Tanks --------------------------------------------------------------------------------------------------------
-        # -
+        self.lbl_tank_elev_corr.setText(pre_l('Delta Z', self.params.options.units_depth[self.params.options.units]))
 
         # Pipes --------------------------------------------------------------------------------------------------------
         self.lbl_pipe_demand.setText(pre_l('Demand', self.params.options.flow_units))  # TODO: softcode

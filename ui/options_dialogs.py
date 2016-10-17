@@ -119,7 +119,8 @@ class HydraulicsDialog(QDialog):
         for unit in self.params.options.units_sys:
             self.cbo_units.addItem(self.params.options.units_sys_text[unit], unit)
         for fu in range(len(self.params.options.units_flow[self.params.options.units])):
-            self.cbo_flow_units.addItem(self.params.options.units_flow_text[self.params.options.units][fu],
+            flow_units = self.params.options.units_flow[self.params.options.units][fu]
+            self.cbo_flow_units.addItem(self.params.options.units_flow_text[flow_units],
                                         self.params.options.units_flow[self.params.options.units][fu])
 
         self.cbo_units.activated.connect(self.cbo_units_activated)

@@ -286,6 +286,7 @@ class ConfigFile:
         with codecs.open(self.config_file_path, 'wb') as configfile:
             config.write(configfile)
 
+
 class RegExValidators:
 
     def __init__(self):

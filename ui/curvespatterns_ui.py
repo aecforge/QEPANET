@@ -131,7 +131,7 @@ class GraphDialog(QDialog):
             self.fra_pump_type = QFrame()
             fra_pump_type_lay = QFormLayout(self.fra_pump_type)
 
-            self.lbl_pump_type = QLabel('Pump type:')  # TODO: softcode
+            self.lbl_pump_type = QLabel('Curve type:')  # TODO: softcode
             self.cbo_pump_type = QComboBox()
 
             for key, name in Curve.type_names.iteritems():
