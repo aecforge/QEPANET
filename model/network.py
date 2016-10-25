@@ -31,6 +31,9 @@ class Junction:
     field_name_pattern = 'pattern'
     field_name_emitter_coeff = 'emitt_coeff'
 
+    field_names = [field_name_eid, field_name_demand, field_name_elevation, field_name_elev_corr, field_name_pattern,
+                   field_name_emitter_coeff]
+
     def __init__(self, eid):
         self.eid = eid
         self.demand = 0

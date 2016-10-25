@@ -26,14 +26,14 @@ import os
 from PyQt4 import QtCore, uic, QtGui
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui import QFileDialog, QMessageBox
-from qgis.core import QgsMapLayer, QgsMapLayerRegistry, QgsCoordinateReferenceSystem,\
-    QgsProject, QgsSnapper, QgsTolerance
+from qgis.core import *
 
 from ..geo_utils import utils
 from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog, ReportDialog
 from output_dialog import OutputAnalyserDialog
 from curvespatterns_ui import GraphDialog
 from ..model.inp_file import InpFile
+from ..model.inp_reader import InpReader2
 from ..model.network import Tables, Pump, Valve
 from ..model.runner import ModelRunner
 from ..rendering import symbology
@@ -222,6 +222,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_generate_inp.setEnabled(True)
         self.btn_epanet_run.setEnabled(True)
 
+        # Prompt for inp file
+        self.read_inp_file()
+
     # This method needed by Observable
     def update(self, observable):
         # Update components
@@ -231,6 +234,23 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
+
+    def read_inp_file(self):
+        # inp_file_path = QFileDialog.getOpenFileName(
+        #     self.iface.mainWindow(),
+        #     'Select project file',
+        #     None,
+        #     'Project files (*.inp)')
+        #
+        # if inp_file_path is None or inp_file_path == '':
+        #     return
+        # else:
+        #     config_file = ConfigFile(Parameters.config_file_path)
+        #     config_file.set_patterns_file_path(inp_file_path)
+
+        inp_reader = InpReader2()
+        new_layers = inp_reader.read('D:/Progetti/2015/2015_13_TN_EPANET/04_Implementation/INP_Test/Test_cases/5/5.inp')
+        QgsMapLayerRegistry.instance().addMapLayers(new_layers)
 
     def add_junction(self):
 

@@ -256,7 +256,6 @@ class LinkHandler:
                 sel_feats_ids = []
                 for sel_feat in sel_feats:
                     sel_feats_ids.append(sel_feat.id())
-
                 params.pipes_vlay.setSelectedFeatures(sel_feats_ids)
 
             except Exception as e:

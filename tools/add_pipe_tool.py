@@ -68,7 +68,7 @@ class AddPipeTool(QgsMapTool):
             self.data_dock.lbl_elev_val.setText('-')
 
         # Mouse not clicked: snapping to closest vertex
-        (retval, result) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
+        (retval, result) = self.snapper.snapMapPoint(self.mouse_pt)
 
         if len(result) > 0:
 
