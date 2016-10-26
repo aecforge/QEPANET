@@ -223,7 +223,7 @@ class InpFile:
             # TODO
 
             # Reactions
-            InpFile._append_reactions(params, out)
+            InpFile._append_opt_reactions(params, out)
 
             # Sources
             # TODO
@@ -264,6 +264,7 @@ class InpFile:
     @staticmethod
     def _append_controls(params, out):
         out.extend(InpFile.build_section_keyword(Controls.section_name))
+        # TODO
 
     @staticmethod
     def _append_coordinates(params, out):
@@ -329,6 +330,7 @@ class InpFile:
     @staticmethod
     def _append_demands(params, out):
         out.extend(InpFile.build_section_keyword(Demand.section_name))
+        # TODO
 
     @staticmethod
     def _append_energy(params, out):
@@ -349,7 +351,7 @@ class InpFile:
         for j_ft in j_fts:
             eid = j_ft.attribute(Junction.field_name_eid)
             demand = j_ft.attribute(Junction.field_name_demand)
-            elev = j_ft.attribute(Junction.field_name_elevation)
+            elev = j_ft.attribute(Junction.field_name_elev)
             elev_corr = j_ft.attribute(Junction.field_name_elev_corr)
             pattern = j_ft.attribute(Junction.field_name_pattern)
             if pattern == NULL:
@@ -527,7 +529,7 @@ class InpFile:
             out.append(line)
 
     @staticmethod
-    def _append_reactions(params, out):
+    def _append_opt_reactions(params, out):
 
         out.extend(InpFile.build_section_keyword(Reactions.section_name))
 
@@ -543,12 +545,15 @@ class InpFile:
 
     @staticmethod
     def _append_rules(params, out):
-        out.extend(InpFile.build_section_keyword(Rule.section_name))
+        # out.extend(InpFile.build_section_keyword(Rule.section_name))
+        # TODO
+        pass
 
     @staticmethod
     def _append_status(params, out):
         out.extend(InpFile.build_section_keyword(Status.section_name))
         out.append(InpFile.build_section_header(Status.section_header))
+        # TODO
 
     @staticmethod
     def _append_reservoirs(params, out):
@@ -560,7 +565,7 @@ class InpFile:
         r_fts = params.reservoirs_vlay.getFeatures()
         for r_ft in r_fts:
             eid = r_ft.attribute(Reservoir.field_name_eid)
-            elev = r_ft.attribute(Reservoir.field_name_elevation)
+            elev = r_ft.attribute(Reservoir.field_name_elev)
             elev_corr = r_ft.attribute(Reservoir.field_name_elev_corr)
             # head = r_ft.attribute(Reservoir.field_name_head)
             # pattern = r_ft.attribute(Reservoir.field_name_pattern) # TODO: add support for pattern
@@ -591,7 +596,7 @@ class InpFile:
             eid = t_ft.attribute(Tank.field_name_eid)
             curve = t_ft.attribute(Tank.field_name_curve)
             diameter = t_ft.attribute(Tank.field_name_diameter)
-            elev = t_ft.attribute(Tank.field_name_elevation)
+            elev = t_ft.attribute(Tank.field_name_elev)
             elev_corr = t_ft.attribute(Tank.field_name_elev_corr)
             level_init = t_ft.attribute(Tank.field_name_level_init)
             level_max = t_ft.attribute(Tank.field_name_level_max)

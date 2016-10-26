@@ -23,7 +23,7 @@
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
 from PyQt4.QtGui import QAction, QIcon, QMessageBox
 
-from model.inp_file import InpFile
+from model.inp_writer import InpFile
 from tools.parameters import Parameters, ConfigFile
 
 # Initialize Qt resources from file resources.py

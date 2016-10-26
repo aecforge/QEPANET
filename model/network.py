@@ -1,4 +1,6 @@
 from collections import OrderedDict
+from qgis.core import *
+from PyQt4.QtCore import QVariant
 
 
 class Tables:
@@ -26,13 +28,15 @@ class Junction:
     section_header = 'ID               	Elev      	Demand    	Pattern'
     field_name_eid = 'id'
     field_name_demand = 'demand'
-    field_name_elevation = 'elev'
+    field_name_elev = 'elev'
     field_name_elev_corr = 'elev_corr'
     field_name_pattern = 'pattern'
-    field_name_emitter_coeff = 'emitt_coeff'
 
-    field_names = [field_name_eid, field_name_demand, field_name_elevation, field_name_elev_corr, field_name_pattern,
-                   field_name_emitter_coeff]
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_elev, QVariant.Double),
+              QgsField(field_name_elev_corr, QVariant.Double),
+              QgsField(field_name_pattern, QVariant.String),
+              QgsField(field_name_demand, QVariant.Double)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -47,9 +51,13 @@ class Reservoir:
     section_name = 'RESERVOIRS'
     section_header = 'ID               	Head      	Pattern'
     field_name_eid = 'id'
-    field_name_elevation = 'elev'
+    field_name_elev = 'elev'
     field_name_elev_corr = 'elev_corr'
     field_name_pattern = 'pattern'
+
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_elev, QVariant.Double),
+              QgsField(field_name_elev_corr, QVariant.Double)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -65,12 +73,22 @@ class Tank:
     field_name_eid = 'id'
     field_name_curve = 'curve'
     field_name_diameter = 'diameter'
-    field_name_elevation = 'elev'
+    field_name_elev = 'elev'
     field_name_elev_corr = 'elev_corr'
     field_name_level_init = 'init_level'
     field_name_level_max = 'max_level'
     field_name_level_min = 'min_level'
     field_name_vol_min = 'min_vol'
+
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_elev, QVariant.Double),
+              QgsField(field_name_elev_corr, QVariant.Double),
+              QgsField(field_name_level_init, QVariant.Double),
+              QgsField(field_name_level_min, QVariant.Double),
+              QgsField(field_name_level_max, QVariant.Double),
+              QgsField(field_name_diameter, QVariant.Double),
+              QgsField(field_name_vol_min, QVariant.Double),
+              QgsField(field_name_curve, QVariant.Double)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -88,14 +106,18 @@ class Pipe:
     section_name = 'PIPES'
     section_header = 'ID                	Node1              	Node2              	Length             	Diameter           	Roughness          	MinorLoss          	Status'
     field_name_eid = 'id'
-    field_name_demand = 'demand'
     field_name_diameter = 'diameter'
-    field_name_end_node = 'end_node'
     field_name_length = 'length'
     field_name_minor_loss = 'minor_loss'
     field_name_roughness = 'roughness'
-    field_name_start_node = 'start_node'
     field_name_status = 'status'
+
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_length, QVariant.Double),
+              QgsField(field_name_diameter, QVariant.Double),
+              QgsField(field_name_status, QVariant.String),
+              QgsField(field_name_roughness, QVariant.Double),
+              QgsField(field_name_minor_loss, QVariant.Double)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -114,10 +136,16 @@ class Pump:
     section_name = 'PUMPS'
     section_header = 'ID              	Node1           	Node2           	Parameters'
     field_name_eid = 'id'
-    field_name_param = 'parameters'
-    field_name_value = 'value'
-    field_name_from_node = 'from_node'
-    field_name_to_node = 'to_node'
+    field_name_power = 'power'
+    field_name_head = 'head'
+    field_name_pattern = 'pattern'
+    field_name_speed = 'speed'
+
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_head, QVariant.String),
+              QgsField(field_name_power, QVariant.String),
+              QgsField(field_name_speed, QVariant.String),
+              QgsField(field_name_pattern, QVariant.String)]
 
     parameters_power = 'POWER'
     parameters_head = 'HEAD'
@@ -136,6 +164,12 @@ class Valve:
     field_name_minor_loss = 'minor_loss'
     field_name_setting = 'setting'
     field_name_type = 'type'
+
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_diameter, QVariant.Double),
+              QgsField(field_name_type, QVariant.String),
+              QgsField(field_name_setting, QVariant.Double),
+              QgsField(field_name_minor_loss, QVariant.Double)]
 
     type_prv = 'PRV'
     type_psv = 'PSV'

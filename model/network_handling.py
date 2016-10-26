@@ -29,7 +29,7 @@ class NodeHandler:
             try:
                 new_junct_feat = QgsFeature(params.junctions_vlay.pendingFields())
                 new_junct_feat.setAttribute(Junction.field_name_eid, eid)
-                new_junct_feat.setAttribute(Junction.field_name_elevation, elev)
+                new_junct_feat.setAttribute(Junction.field_name_elev, elev)
                 new_junct_feat.setAttribute(Junction.field_name_demand, demand)
                 new_junct_feat.setAttribute(Junction.field_name_elev_corr, depth)
                 new_junct_feat.setAttribute(Junction.field_name_pattern, pattern_id)
@@ -59,7 +59,7 @@ class NodeHandler:
             try:
                 new_reservoir_feat = QgsFeature(params.reservoirs_vlay.pendingFields())
                 new_reservoir_feat.setAttribute(Reservoir.field_name_eid, eid)
-                new_reservoir_feat.setAttribute(Reservoir.field_name_elevation, elev)
+                new_reservoir_feat.setAttribute(Reservoir.field_name_elev, elev)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_elev_corr, elev_corr)
                 # new_reservoir_feat.setAttribute(Reservoir.field_name_head, head)
 
@@ -88,7 +88,7 @@ class NodeHandler:
                 new_tank_feat.setAttribute(Tank.field_name_eid, eid)
                 new_tank_feat.setAttribute(Tank.field_name_curve, tank_curve_id)
                 new_tank_feat.setAttribute(Tank.field_name_diameter, diameter)
-                new_tank_feat.setAttribute(Tank.field_name_elevation, elev)
+                new_tank_feat.setAttribute(Tank.field_name_elev, elev)
                 new_tank_feat.setAttribute(Tank.field_name_elev_corr, elev_corr)
                 new_tank_feat.setAttribute(Tank.field_name_level_init, level_init)
                 new_tank_feat.setAttribute(Tank.field_name_level_min, level_min)
@@ -127,7 +127,7 @@ class NodeHandler:
                 if new_elev is None:
                     new_elev = 0
 
-                field_index = layer.dataProvider().fieldNameIndex(Junction.field_name_elevation)
+                field_index = layer.dataProvider().fieldNameIndex(Junction.field_name_elev)
                 layer.changeAttributeValue(node_ft.id(), field_index, new_elev)
 
             except Exception as e:
@@ -648,7 +648,7 @@ class LinkHandler:
         # Start node
         start_add = 0
         if start_node_ft is not None:
-            start_node_elev = start_node_ft.attribute(Junction.field_name_elevation)
+            start_node_elev = start_node_ft.attribute(Junction.field_name_elev)
             if start_node_elev is None or type(start_node_elev) is QPyNullVariant:
                 start_node_elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, start_node_ft.geometry().asPoint(), 0)
                 if start_node_elev is None:
@@ -662,7 +662,7 @@ class LinkHandler:
         # End node
         end_remove = 0
         if end_node_ft is not None:
-            end_node_elev = end_node_ft.attribute(Junction.field_name_elevation)
+            end_node_elev = end_node_ft.attribute(Junction.field_name_elev)
             if end_node_elev is None or type(end_node_elev) is QPyNullVariant:
                 end_node_elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, end_node_ft.geometry().asPoint(), 0)
                 if end_node_elev is None:

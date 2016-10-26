@@ -206,7 +206,7 @@ class HydraulicsDialog(QDialog):
         # Parameters combo box
         self.cbo_flow_units.clear()
         for fu in range(len(self.params.options.units_flow[units])):
-            self.cbo_flow_units.addItem(self.params.options.units_flow_text[units][fu],
+            self.cbo_flow_units.addItem(self.params.options.units_flow_text[fu],
                                         self.params.options.units_flow[units][fu])
 
     def cbo_headloss_activated(self):
@@ -460,15 +460,15 @@ class ReactionsDialog(QDialog):
         fra_form_lay = QFormLayout(self.fra_form)
         fra_form_lay.setContentsMargins(10, 10, 10, 10)
 
-        self.lbl_bulk_reaction_order = QLabel('Bulk reaction oreder:')  # TODO: softocode
+        self.lbl_bulk_reaction_order = QLabel('Bulk reaction order:')  # TODO: softocode
         self.txt_bulk_reaction_order = QLineEdit('1')
         fra_form_lay.addRow(self.lbl_bulk_reaction_order, self.txt_bulk_reaction_order)
 
-        self.lbl_tank_reaction_order = QLabel('Tank reaction oreder:')  # TODO: softocode
+        self.lbl_tank_reaction_order = QLabel('Tank reaction order:')  # TODO: softocode
         self.txt_tank_reaction_order = QLineEdit('1')
         fra_form_lay.addRow(self.lbl_tank_reaction_order, self.txt_tank_reaction_order)
 
-        self.lbl_wall_reaction_order = QLabel('Wall reaction oreder:')  # TODO: softocode
+        self.lbl_wall_reaction_order = QLabel('Wall reaction order:')  # TODO: softocode
         self.txt_wall_reaction_order = QLineEdit('1')
         fra_form_lay.addRow(self.lbl_wall_reaction_order, self.txt_wall_reaction_order)
 

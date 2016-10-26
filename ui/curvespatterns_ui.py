@@ -1,4 +1,4 @@
-from ..model.inp_file import InpFile
+from ..model.inp_writer import InpFile
 from ..model.system_ops import Curve, Pattern
 from ..tools.parameters import Parameters, ConfigFile
 from graphs import StaticMplCanvas

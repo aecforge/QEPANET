@@ -1,4 +1,4 @@
-# Modified from https://plugins.qgis.org/plugins/ImportEpanetInpFiles/
+# From https://plugins.qgis.org/plugins/ImportEpanetInpFiles/
 
 def LoadFile(inp):
     global inpname, mm
@@ -840,21 +840,23 @@ def getBinInfo():
             if "[" in s1:
                 continue
             mm = s1.split()
-            if len(mm) > 1:
-                if mm[0] == ';ID':
-                    continue
-                elif ";PUMP:" in mm[0].upper():
-                    curvesSectionType.append('PUMP')
-                elif ";EFFICIENCY:" in mm[0].upper():
-                    curvesSectionType.append('EFFICIENCY')
-                elif ";VOLUME:" in mm[0].upper():
-                    curvesSectionType.append('VOLUME')
-                elif ";HEADLOSS:" in mm[0].upper():
-                    curvesSectionType.append('HEADLOSS')
-                else:
-                    curvesSectionType.append('PUMP')
-                # else:
-                if mm[0][0] != ';':
+
+            if len(mm) > 0:
+                if mm[0][0].strip() == ';':
+                    if mm[0] == ';ID':
+                        continue
+                    elif ";PUMP:" in mm[0].upper():
+                        curvesSectionType.append('PUMP')
+                    elif ";EFFICIENCY:" in mm[0].upper():
+                        curvesSectionType.append('EFFICIENCY')
+                    elif ";VOLUME:" in mm[0].upper():
+                        curvesSectionType.append('VOLUME')
+                    elif ";HEADLOSS:" in mm[0].upper():
+                        curvesSectionType.append('HEADLOSS')
+                    else:
+                        curvesSectionType.append('PUMP')
+
+                if mm[0][0].strip() != ';':
                     curvesSection.append(mm)
                     BinCurvesNameID.append(mm[0])
                     BinCurvesXY.append([float(mm[1]), float(mm[2])])
