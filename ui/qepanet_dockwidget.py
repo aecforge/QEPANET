@@ -259,9 +259,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.txt_prj_file.setText(self.inp_file_path)
 
         if os.path.isfile(self.inp_file_path):
-            inp_reader = InpReader()
+            inp_reader = InpReader(self.inp_file_path)
 
-            new_layers_d = inp_reader.read(self.iface, self.inp_file_path, self.params)
+            new_layers_d = inp_reader.read(self.iface, self.params)
 
             if new_layers_d:
                 self.load_layers(new_layers_d)

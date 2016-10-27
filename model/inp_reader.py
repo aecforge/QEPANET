@@ -11,25 +11,29 @@ from ..tools.parameters import Parameters
 from .options_report import Options, Unbalanced, Quality, Report, Hour, Times
 import codecs
 
+
 class InpReader:
 
-    def __init__(self):
+    def __init__(self, inp_path):
         self.iface = None
         self.params = None
-        self.inp_path = None
+        self.inp_path = inp_path
 
-    def read(self, iface, inp_path, params):
+        with codecs.open(self.inp_path, 'r', encoding='UTF-8') as inp_f:
+            self.lines = inp_f.read().splitlines()
+
+    def read(self, iface, params):
 
         self.iface = iface
-        self.inp_path = inp_path
+        self.inp_path = self.inp_path
         self.params = params
 
-        statinfo = os.stat(inp_path)
+        statinfo = os.stat(self.inp_path)
         file_size = statinfo.st_size
         if file_size == 0:
             return None
 
-        d.LoadFile(inp_path)
+        d.LoadFile(self.inp_path)
         d.BinUpdateClass()
         links_count = d.getBinLinkCount()
 
@@ -377,30 +381,69 @@ class InpReader:
                 Pump.section_name: pumps_lay,
                 Valve.section_name: valves_lay}
 
-    def read_extra(self, inp_path, params):
+    def read_section(self, section_name):
 
-        with codecs.open(inp_path, 'r', encoding='UTF-8') as inp_f:
-
-            lines = inp_f.read().splitlines()
-            patterns_started = False
-            for l in range(len(lines)):
-                if lines[l].upper().startswith('[QEPANET]'):
-                    patterns_started = True
-                    start_line = l + 1
-                    continue
-                if lines[l].startswith('[') and patterns_started:
-                    end_line = l - 1
-                    break
+        section_started = False
+        start_line = None
+        end_line = None
+        for l in range(len(self.lines)):
+            if section_name.upper() in self.lines[l].upper():
+                section_started = True
+                start_line = l + 1
+                continue
+            if self.lines[l].startswith('[') and section_started:
+                end_line = l - 1
+                break
 
         if start_line is None:
             return None
 
         if end_line is None:
-            end_line = len(lines)
+            end_line = len(self.lines)
 
-        for l in range(start_line, end_line):
-            if not lines[l].startswith(';'):
-                
+        return self.lines[start_line:end_line]
+
+    def read_extra_junctions(self):
+
+        lines = self.read_section('[QEPANET-JUNCTIONS')
+
+        junctions_elevcorr_od = OrderedDict()
+        for line in lines:
+            if line.strip().startswith(';'):
+                continue
+            words = line.split()
+            if len(words) > 1:
+                junctions_elevcorr_od[words[0].strip()] = float(words[1].strip())
+
+        return junctions_elevcorr_od
+
+    def read_extra_reservoirs(self):
+
+        lines = self.read_section('[QEPANET-RESERVOIRS]')
+
+        reservoirs_elevcorr_od = OrderedDict()
+        for line in lines:
+            if line.strip().startswith(';'):
+                continue
+            words = line.split()
+            if len(words) > 1:
+                reservoirs_elevcorr_od[words[0].strip()] = float(words[1].strip())
+
+        return reservoirs_elevcorr_od
+
+    def read_extra_tanks(self):
+
+        lines = self.read_section('[QEPANET-TANKS]')
+
+        tanks_elevcorr_od = OrderedDict()
+        for line in lines:
+            if line.strip().startswith(';'):
+                continue
+            words = line.split()
+            if len(words) > 1:
+                tanks_elevcorr_od[words[0].strip()] = float(words[1].strip())
+
+        return tanks_elevcorr_od
 
     def update_mixing(self, mixing):
         # TODO
@@ -614,6 +657,5 @@ class InpReader:
 
 
 
-# ir = InpReader()
-# ir.read(None, 'D:/temp/5.inp', None)
-# ir.read('D:/temp/b.inp')
+ir = InpReader('D:/temp/5.inp')
+print ir.read_extra_tanks()
