@@ -33,7 +33,7 @@ from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, Ti
 from output_dialog import OutputAnalyserDialog
 from curvespatterns_ui import GraphDialog
 from ..model.inp_writer import InpFile
-from ..model.inp_reader import InpReader2
+from ..model.inp_reader import InpReader
 from ..model.network import *
 from ..model.runner import ModelRunner
 from ..rendering import symbology
@@ -44,7 +44,7 @@ from ..tools.add_reservoir_tool import AddReservoirTool
 from ..tools.add_tank_tool import AddTankTool
 from ..tools.add_valve_tool import AddValveTool
 from ..tools.move_tool import MoveTool
-from ..tools.data_stores import ShapefileDS
+from ..tools.data_stores import MemoryDS
 from ..tools.exceptions import ShpExistsExcpetion
 from ..tools.delete_tool import DeleteTool
 from ..tools.parameters import Parameters, RegExValidators, ConfigFile
@@ -59,11 +59,12 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
 
-    def __init__(self, iface, params):
+    def __init__(self, iface, params, inp_file_path):
         """Constructor."""
         super(QEpanetDockWidget, self).__init__(iface.mainWindow())
         self.iface = iface
         self.params = params
+        self.inp_file_path = inp_file_path
         self.params.attach(self)
 
         self.setupUi(self)
@@ -83,7 +84,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.output_dialog = None
 
         # Inp file
-        self.btn_project.pressed.connect(self.select_inp_file)
+        self.btn_prj_file.pressed.connect(self.select_inp_file)
+        self.btn_project_save.pressed.connect(self.save_inp_file)
 
         # Tools buttons
         curr_dir = os.path.dirname(os.path.abspath(__file__))
@@ -217,16 +219,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_curve_editor.pressed.connect(self.curve_editor)
 
         # EPANET
-        self.btn_generate_inp.pressed.connect(self.btn_generate_inp_pressed)
         self.btn_epanet_run.pressed.connect(self.btn_epanet_run_pressed)
 
         self.btn_epanet_output.pressed.connect(self.btn_epanet_output_pressed)
 
-        self.btn_generate_inp.setEnabled(True)
         self.btn_epanet_run.setEnabled(True)
 
-        # # Prompt for inp file
-        # self.select_inp_file()
+        self.update_components()
 
     # This method needed by Observable
     def update(self, observable):
@@ -241,7 +240,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def select_inp_file(self):
 
         file_dialog = MyQFileDialog()
-        file_dialog.setWindowTitle('Select an INP file o create a new one') # TODO: Softcode
+        file_dialog.setWindowTitle('Select an INP file or create a new one') # TODO: Softcode
         file_dialog.setLabelText(QFileDialog.Accept, 'Select') # TODO: sofcode
         file_dialog.setFileMode(QFileDialog.AnyFile)
         file_dialog.setFilter("INP files (*.inp)")
@@ -251,42 +250,55 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             if not inp_file_path.lower().endswith('.inp'):
                 inp_file_path += '.inp'
 
-            self.txt_project.setText(inp_file_path)
+            self.inp_file_path = inp_file_path
+            self.params.last_project_dir = os.path.dirname(inp_file_path)
+            self.update_components()
 
-            if os.path.isfile(inp_file_path):
-                inp_reader = InpReader2()
-                new_layers_d = inp_reader.read(inp_file_path, self.params)
-                if new_layers_d:
+    def update_components(self):
 
-                    QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Pipe.section_name])
-                    QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Valve.section_name])
-                    QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Pump.section_name])
-                    QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Tank.section_name])
-                    QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Reservoir.section_name])
-                    QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Junction.section_name])
+        self.txt_prj_file.setText(self.inp_file_path)
 
-                    # update combos and params
-                    if Junction.section_name in new_layers_d.keys():
-                        self.params.junctions_vlay = new_layers_d[Junction.section_name]
-                        self.set_layercombo_index(self.cbo_junctions, new_layers_d[Junction.section_name].id())
-                    if Reservoir.section_name in new_layers_d.keys():
-                        self.params.reservoirs_vlay = new_layers_d[Reservoir.section_name]
-                        self.set_layercombo_index(self.cbo_reservoirs, new_layers_d[Reservoir.section_name].id())
-                    if Tank.section_name in new_layers_d.keys():
-                        self.params.tanks_vlay = new_layers_d[Tank.section_name]
-                        self.set_layercombo_index(self.cbo_tanks, new_layers_d[Tank.section_name].id())
-                    if Pipe.section_name in new_layers_d.keys():
-                        self.params.pipes_vlay = new_layers_d[Pipe.section_name]
-                        self.set_layercombo_index(self.cbo_pipes, new_layers_d[Pipe.section_name].id())
-                    if Pump.section_name in new_layers_d.keys():
-                        self.params.pumps_vlay = new_layers_d[Pump.section_name]
-                        self.set_layercombo_index(self.cbo_pumps, new_layers_d[Pump.section_name].id())
-                    if Valve.section_name in new_layers_d.keys():
-                        self.params.valves_vlay = new_layers_d[Valve.section_name]
-                        self.set_layercombo_index(self.cbo_valves, new_layers_d[Valve.section_name].id())
+        if os.path.isfile(self.inp_file_path):
+            inp_reader = InpReader()
 
-                    # Apply symbologies
-                    self.apply_symbologies()
+            new_layers_d = inp_reader.read(self.iface, self.inp_file_path, self.params)
+
+            if new_layers_d:
+                self.load_layers(new_layers_d)
+            else:
+                self.create_empty_layers()
+
+    def load_layers(self, new_layers_d):
+
+        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Pipe.section_name])
+        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Valve.section_name])
+        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Pump.section_name])
+        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Tank.section_name])
+        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Reservoir.section_name])
+        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Junction.section_name])
+
+        # update combos and params
+        if Junction.section_name in new_layers_d.keys():
+            self.params.junctions_vlay = new_layers_d[Junction.section_name]
+            self.set_layercombo_index(self.cbo_junctions, new_layers_d[Junction.section_name].id())
+        if Reservoir.section_name in new_layers_d.keys():
+            self.params.reservoirs_vlay = new_layers_d[Reservoir.section_name]
+            self.set_layercombo_index(self.cbo_reservoirs, new_layers_d[Reservoir.section_name].id())
+        if Tank.section_name in new_layers_d.keys():
+            self.params.tanks_vlay = new_layers_d[Tank.section_name]
+            self.set_layercombo_index(self.cbo_tanks, new_layers_d[Tank.section_name].id())
+        if Pipe.section_name in new_layers_d.keys():
+            self.params.pipes_vlay = new_layers_d[Pipe.section_name]
+            self.set_layercombo_index(self.cbo_pipes, new_layers_d[Pipe.section_name].id())
+        if Pump.section_name in new_layers_d.keys():
+            self.params.pumps_vlay = new_layers_d[Pump.section_name]
+            self.set_layercombo_index(self.cbo_pumps, new_layers_d[Pump.section_name].id())
+        if Valve.section_name in new_layers_d.keys():
+            self.params.valves_vlay = new_layers_d[Valve.section_name]
+            self.set_layercombo_index(self.cbo_valves, new_layers_d[Valve.section_name].id())
+
+        # Apply symbologies
+        self.apply_symbologies()
 
     def add_junction(self):
 
@@ -522,34 +534,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def create_empty_layers(self):
 
-        # shp_folder = QFileDialog.getExistingDirectory(
-        #     self.iface.mainWindow(),
-        #     'Select the directory where the Shapefiles will be created')
-        #
-        # if shp_folder is None or shp_folder == '':
-        #     return
-
         try:
-            srid = self.iface.mapCanvas().mapRenderer().destinationCrs().authid()
-            srid = int(srid[srid.find(':')+1:])
+            crs = self.iface.mapCanvas().mapRenderer().destinationCrs()
+            new_layers = MemoryDS.create_empty_memory_layers(crs)
+            self.load_layers(new_layers)
 
-
-            # ShapefileDS.create_shapefiles(shp_folder, QgsCoordinateReferenceSystem(srid))
-        except ShpExistsExcpetion as e:
+        except Exception as e:
             self.iface.messageBar().pushInfo(Parameters.plug_in_name, e.message)
-
-        # # Load layers in QGIS
-        # self.params.valves_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.valves_table_name + '.shp'), Tables.valves_table_name, 'ogr')
-        # self.params.pumps_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.pumps_table_name + '.shp'), Tables.pumps_table_name, 'ogr')
-        # self.params.pipes_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.pipes_table_name + '.shp'), Tables.pipes_table_name, 'ogr')
-        # self.params.tanks_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.tanks_table_name + '.shp'), Tables.tanks_table_name, 'ogr')
-        # self.params.reservoirs_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.reservoirs_table_name + '.shp'), Tables.reservoirs_table_name, 'ogr')
-        # self.params.junctions_vlay = self.iface.addVectorLayer(os.path.join(shp_folder, Tables.junctions_table_name + '.shp'), Tables.junctions_table_name, 'ogr')
-
-        self.update_layers_combos()
-        self.preselect_layers_combos()
-
-        self.apply_symbologies()
 
     def roughness_slider_changed(self):
         self.lbl_pipe_roughness_val_val.setText(str(self.sli_pipe_roughness.value() / float(10**self.decimals)))
@@ -676,18 +667,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         curve_dialog = GraphDialog(self, self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_curves)
         curve_dialog.show()
 
-    def btn_generate_inp_pressed(self):
+    def save_inp_file(self):
 
-        config_file = ConfigFile(Parameters.config_file_path)
-        inp_file_path = QFileDialog.getSaveFileName(
-            self,
-            'Select INP file',
-            config_file.get_last_inp_file(),
-            'Files (*.inp)')
-
-        if inp_file_path is not None and inp_file_path != '':
-            config_file.set_last_inp_file(inp_file_path)
-            InpFile.write_inp_file(self.params, inp_file_path, self.txt_prj_title.text())
+        InpFile.write_inp_file(self.params, self.inp_file_path, '')
 
     def btn_epanet_run_pressed(self):
 
@@ -832,16 +814,17 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         symbology.refresh_layer(self.iface.mapCanvas(), self.params.valves_vlay)
 
     def update_patterns_combo(self):
+
         self.cbo_junction_pattern.clear()
         if self.params.junctions_vlay is not None:
-            for pattern in self.params.patterns:
-                self.cbo_junction_pattern.addItem(pattern.desc, pattern)
+            for pattern_id, pattern in self.params.patterns.iteritems():
+                self.cbo_junction_pattern.addItem(pattern_id, pattern)
 
     def update_curves_combo(self):
         self.cbo_tank_curve.clear()
         self.cbo_pump_head.clear()
         if self.params.curves is not None:
-            for value in self.params.curves:
+            for value in self.params.curves.itervalues():
                 self.cbo_tank_curve.addItem(value.id, value)
                 self.cbo_pump_head.addItem(value.id, value)
 

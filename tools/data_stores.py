@@ -14,181 +14,203 @@ class MemoryDS:
         pass
 
     @staticmethod
-    def create_empty_memory_layers():
-        MemoryDS.create_junctions_lay()
-        MemoryDS.create_reservoirs_lay()
-        MemoryDS.create_tanks_lay()
-        MemoryDS.create_pipes_lay()
-        MemoryDS.create_pumps_lay()
-        MemoryDS.create_valves_lay()
+    def create_empty_memory_layers(crs):
+
+        junctions_lay = MemoryDS.create_junctions_lay(crs=crs)
+        reservoirs_lay = MemoryDS.create_reservoirs_lay(crs=crs)
+        tanks_lay = MemoryDS.create_tanks_lay(crs=crs)
+        pipes_lay = MemoryDS.create_pipes_lay(crs=crs)
+        pumps_lay = MemoryDS.create_pumps_lay(crs=crs)
+        valves_lay = MemoryDS.create_valves_lay(crs=crs)
+
+        return {Junction.section_name: junctions_lay,
+                Reservoir.section_name: reservoirs_lay,
+                Tank.section_name: tanks_lay,
+                Pipe.section_name: pipes_lay,
+                Pump.section_name: pumps_lay,
+                Valve.section_name: valves_lay}
 
     @staticmethod
-    def create_junctions_lay(geoms, ids, demands, elevs, elev_corrs, patterns, crs=None):
+    def create_junctions_lay(geoms=None, ids=None, demands=None, elevs=None, elev_corrs=None, patterns=None, crs=None):
 
         junctions_lay = QgsVectorLayer('Point', 'Junctions', 'memory')
         junctions_lay.setCrs(crs)
         junctions_lay_dp = junctions_lay.dataProvider()
         junctions_lay_dp.addAttributes(Junction.fields)
+        junctions_lay.updateFields()
 
-        for n in range(len(geoms)):
-            node_ft = QgsFeature()
-            node_ft.setGeometry(geoms[n])
-            junction_id = ids[n] if ids is not None else None
-            demand = demands[n] if demands is not None else None
-            elev = elevs[n] if elevs is not None else None
-            elev_corr = elev_corrs[n] if elev_corrs is not None else None
-            pattern = patterns[n] if patterns is not None else None
-            # emitter = emitters[n] if emitters is not None else None
+        if geoms is not None:
+            for n in range(len(geoms)):
+                node_ft = QgsFeature()
+                node_ft.setGeometry(geoms[n])
+                junction_id = ids[n] if ids is not None else None
+                demand = demands[n] if demands is not None else None
+                elev = elevs[n] if elevs is not None else None
+                elev_corr = elev_corrs[n] if elev_corrs is not None else None
+                pattern = patterns[n] if patterns is not None else None
+                # emitter = emitters[n] if emitters is not None else None
 
-            node_ft.setAttribute(Junction.field_name_eid, junction_id)
-            node_ft.setAttribute(Junction.field_name_demand, demand)
-            node_ft.setAttribute(Junction.field_name_elev, elev)
-            node_ft.setAttribute(Junction.field_name_elev_corr, elev_corr)
-            node_ft.setAttribute(Junction.field_name_pattern, pattern)
+                node_ft.setAttribute(Junction.field_name_eid, junction_id)
+                # node_ft.setAttribute(Junction.field_name_demand, demand)
+                node_ft.setAttribute(Junction.field_name_elev, elev)
+                node_ft.setAttribute(Junction.field_name_elev_corr, elev_corr)
+                node_ft.setAttribute(Junction.field_name_pattern, pattern)
 
-            junctions_lay.addFeature(node_ft)
+                junctions_lay.addFeature(node_ft)
 
         return junctions_lay
 
     @staticmethod
-    def create_reservoirs_lay(geoms, ids, elevs, elevs_corr, crs=None):
+    def create_reservoirs_lay(geoms=None, ids=None, elevs=None, elevs_corr=None, crs=None):
 
         reservoirs_lay = QgsVectorLayer('Point', 'Reservoirs', 'memory')
         reservoirs_lay.setCrs(crs)
         reservoirs_lay_dp = reservoirs_lay.dataProvider()
         reservoirs_lay_dp.addAttributes(Reservoir.fields)
+        reservoirs_lay.updateFields()
 
-        for n in range(len(geoms)):
-            reservoir_ft = QgsFeature()
-            reservoir_ft.setGeometry(geoms[n])
+        if geoms is not None:
+            for n in range(len(geoms)):
+                reservoir_ft = QgsFeature()
+                reservoir_ft.setGeometry(geoms[n])
 
-            reservoir_id = ids[n] if ids is not None else None
-            elev = elevs[n] if elevs is not None else None
-            elev_corr = elevs_corr[n] if elevs_corr is not None else None
+                reservoir_id = ids[n] if ids is not None else None
+                elev = elevs[n] if elevs is not None else None
+                elev_corr = elevs_corr[n] if elevs_corr is not None else None
 
-            reservoir_ft.setAttribute(Reservoir.field_name_eid, reservoir_id)
-            reservoir_ft.setAttribute(Reservoir.field_name_elev, elev)
-            reservoir_ft.setAttribute(Reservoir.field_name_elev_corr, elev_corr)
-            reservoirs_lay.addFeature(reservoir_ft)
+                reservoir_ft.setAttribute(Reservoir.field_name_eid, reservoir_id)
+                reservoir_ft.setAttribute(Reservoir.field_name_elev, elev)
+                reservoir_ft.setAttribute(Reservoir.field_name_elev_corr, elev_corr)
+                reservoirs_lay.addFeature(reservoir_ft)
 
         return reservoirs_lay
 
     @staticmethod
-    def create_tanks_lay(geoms, ids, curves, diameters, elevs, elevs_corr, levels_init, levels_max, levels_min, vols_min, crs=None):
+    def create_tanks_lay(geoms=None, ids=None, curves=None, diameters=None, elevs=None, elevs_corr=None,
+                         levels_init=None, levels_max=None, levels_min=None, vols_min=None, crs=None):
 
         tanks_lay = QgsVectorLayer('Point', 'Tanks', 'memory')
         tanks_lay.setCrs(crs)
         tanks_lay_dp = tanks_lay.dataProvider()
         tanks_lay_dp.addAttributes(Reservoir.fields)
+        tanks_lay.updateFields()
 
-        for n in range(len(geoms)):
-            reservoir_ft = QgsFeature()
-            reservoir_ft.setGeometry(geoms[n])
+        if geoms is not None:
+            for n in range(len(geoms)):
+                reservoir_ft = QgsFeature()
+                reservoir_ft.setGeometry(geoms[n])
 
-            tank_id = ids[n] if ids is not None else None
-            curve = curves[n] if curves is not None else None
-            diameter = diameters[n] if diameters is not None else None
-            elev = elevs[n] if elevs is not None else None
-            elev_corr = elevs_corr[n] if elevs_corr is not None else None
-            level_init = levels_init[n] if levels_init is not None else None
-            level_max = levels_max[n] if levels_max is not None else None
-            level_min = levels_min[n] if levels_min is not None else None
-            vol_min = vols_min[n] if vols_min is not None else None
+                tank_id = ids[n] if ids is not None else None
+                curve = curves[n] if curves is not None else None
+                diameter = diameters[n] if diameters is not None else None
+                elev = elevs[n] if elevs is not None else None
+                elev_corr = elevs_corr[n] if elevs_corr is not None else None
+                level_init = levels_init[n] if levels_init is not None else None
+                level_max = levels_max[n] if levels_max is not None else None
+                level_min = levels_min[n] if levels_min is not None else None
+                vol_min = vols_min[n] if vols_min is not None else None
 
-            reservoir_ft.setAttribute(Tank.field_name_eid, tank_id)
-            reservoir_ft.setAttribute(Tank.field_name_curve, curve)
-            reservoir_ft.setAttribute(Tank.field_name_diameter, diameter)
-            reservoir_ft.setAttribute(Tank.field_name_elev, elev)
-            reservoir_ft.setAttribute(Tank.field_name_elev_corr, elev_corr)
-            reservoir_ft.setAttribute(Tank.field_name_level_init, level_init)
-            reservoir_ft.setAttribute(Tank.field_name_level_max, level_max)
-            reservoir_ft.setAttribute(Tank.field_name_level_min, level_min)
-            reservoir_ft.setAttribute(Tank.field_name_vol_min, vol_min)
-            tanks_lay.addFeature(reservoir_ft)
+                reservoir_ft.setAttribute(Tank.field_name_eid, tank_id)
+                reservoir_ft.setAttribute(Tank.field_name_curve, curve)
+                reservoir_ft.setAttribute(Tank.field_name_diameter, diameter)
+                reservoir_ft.setAttribute(Tank.field_name_elev, elev)
+                reservoir_ft.setAttribute(Tank.field_name_elev_corr, elev_corr)
+                reservoir_ft.setAttribute(Tank.field_name_level_init, level_init)
+                reservoir_ft.setAttribute(Tank.field_name_level_max, level_max)
+                reservoir_ft.setAttribute(Tank.field_name_level_min, level_min)
+                reservoir_ft.setAttribute(Tank.field_name_vol_min, vol_min)
+                tanks_lay.addFeature(reservoir_ft)
 
         return tanks_lay
 
     @staticmethod
-    def create_pipes_lay(geoms, ids, demands, diameters, lengths, roughnesses, statuses, minor_losses, crs=None):
+    def create_pipes_lay(geoms=None, ids=None, demands=None, diameters=None, lengths=None, roughnesses=None,
+                         statuses=None, minor_losses=None, crs=None):
 
         pipes_lay = QgsVectorLayer('LineString', 'Pipes', 'memory')
         pipes_lay.setCrs(crs)
         pipes_lay_dp = pipes_lay.dataProvider()
         pipes_lay_dp.addAttributes(Pipe.fields)
+        pipes_lay.updateFields()
 
-        for n in range(len(geoms)):
-            pipe_ft = QgsFeature()
-            pipe_ft.setGeometry(geoms[n])
-            
-            pipe_id = ids[n] if ids is not None else None
-            demand = demands[n] if demands is not None else None
-            diameter = diameters[n] if diameters is not None else None
-            length = lengths[n] if lengths is not None else None
-            roughness = roughnesses[n] if roughnesses is not None else None
-            status = statuses[n] if statuses is not None else None
-            minor_loss = minor_losses[n] if minor_losses is not None else None
+        if geoms is not None:
+            for n in range(len(geoms)):
+                pipe_ft = QgsFeature()
+                pipe_ft.setGeometry(geoms[n])
 
-            pipe_ft.setAttribute(Pipe.field_name_eid, pipe_id)
-            pipe_ft.setAttribute(Pipe.field_name_diameter, diameter)
-            pipe_ft.setAttribute(Pipe.field_name_length, length)
-            pipe_ft.setAttribute(Pipe.field_name_roughness, roughness)
-            pipe_ft.setAttribute(Pipe.field_name_status, status)
-            pipe_ft.setAttribute(Pipe.field_name_minor_loss, minor_loss)
-            pipes_lay.addFeature(pipe_ft)
+                pipe_id = ids[n] if ids is not None else None
+                demand = demands[n] if demands is not None else None
+                diameter = diameters[n] if diameters is not None else None
+                length = lengths[n] if lengths is not None else None
+                roughness = roughnesses[n] if roughnesses is not None else None
+                status = statuses[n] if statuses is not None else None
+                minor_loss = minor_losses[n] if minor_losses is not None else None
+
+                pipe_ft.setAttribute(Pipe.field_name_eid, pipe_id)
+                pipe_ft.setAttribute(Pipe.field_name_diameter, diameter)
+                pipe_ft.setAttribute(Pipe.field_name_length, length)
+                pipe_ft.setAttribute(Pipe.field_name_roughness, roughness)
+                pipe_ft.setAttribute(Pipe.field_name_status, status)
+                pipe_ft.setAttribute(Pipe.field_name_minor_loss, minor_loss)
+                pipes_lay.addFeature(pipe_ft)
 
         return pipes_lay
 
     @staticmethod
-    def create_pumps_lay(geoms, ids, head_curve_ids, powers, speeds, patterns, crs=None):
+    def create_pumps_lay(geoms=None, ids=None, head_curve_ids=None, powers=None, speeds=None, patterns=None, crs=None):
         
         pumps_lay = QgsVectorLayer('LineString', 'Pumps', 'memory')
         pumps_lay.setCrs(crs)
         pumps_lay_dp = pumps_lay.dataProvider()
         pumps_lay_dp.addAttributes(Pump.fields)
-        
-        for n in range(len(geoms)):
-            pump_ft = QgsFeature()
-            pump_ft.setGeometry(geoms[n])
+        pumps_lay.updateFields()
 
-            pump_id = ids[n] if ids is not None else None
-            head_curve_id = head_curve_ids[n] if head_curve_ids is not None else None
-            power = powers[n] if powers is not None else None
-            speed = speeds[n] if speeds is not None else None
-            pattern = patterns[n] if patterns is not None else None
+        if geoms is not None:
+            for n in range(len(geoms)):
+                pump_ft = QgsFeature()
+                pump_ft.setGeometry(geoms[n])
 
-            pump_ft.setAttributes(Pump.field_name_eid, pump_id)
-            pump_ft.setAttributes(Pump.field_name_head, head_curve_id)
-            pump_ft.setAttributes(Pump.field_name_power, power)
-            pump_ft.setAttributes(Pump.field_name_speed, speed)
-            pump_ft.setAttributes(Pump.field_name_pattern, pattern)
-            pumps_lay.addFeature(pump_ft)
+                pump_id = ids[n] if ids is not None else None
+                head_curve_id = head_curve_ids[n] if head_curve_ids is not None else None
+                power = powers[n] if powers is not None else None
+                speed = speeds[n] if speeds is not None else None
+                pattern = patterns[n] if patterns is not None else None
+
+                pump_ft.setAttributes(Pump.field_name_eid, pump_id)
+                pump_ft.setAttributes(Pump.field_name_head, head_curve_id)
+                pump_ft.setAttributes(Pump.field_name_power, power)
+                pump_ft.setAttributes(Pump.field_name_speed, speed)
+                pump_ft.setAttributes(Pump.field_name_pattern, pattern)
+                pumps_lay.addFeature(pump_ft)
 
         return pumps_lay
 
     @staticmethod
-    def create_valves_lay(geoms, ids, diameters, minor_losses, settings, types, crs=None):
+    def create_valves_lay(geoms=None, ids=None, diameters=None, minor_losses=None, settings=None, types=None, crs=None):
         
         valves_lay = QgsVectorLayer('LineString', 'Valves', 'memory')
         valves_lay.setCrs(crs)
         valves_lay_dp = valves_lay.dataProvider()
         valves_lay_dp.addAttributes(Valve.fields)
-    
-        for n in range(len(geoms)):
-            valve_ft = QgsFeature()
-            valve_ft.setGeometry(geoms[n])
-    
-            valve_id = ids[n] if ids is not None else None
-            diameter = diameters[n] if diameters is not None else None
-            minor_loss = minor_losses[n] if minor_losses is not None else None
-            setting = settings[n] if settings is not None else None
-            type = types[n] if types is not None else None
-    
-            valve_ft.setAttribute(Valve.field_name_eid, valve_id)
-            valve_ft.setAttribute(Valve.field_name_diameter, diameter)
-            valve_ft.setAttribute(Valve.field_name_minor_loss, minor_loss)
-            valve_ft.setAttribute(Valve.field_name_setting, setting)
-            valve_ft.setAttribute(Valve.field_name_type, type)
-            valves_lay.addFeature(valve_ft)
+        valves_lay.updateFields()
+
+        if geoms is not None:
+            for n in range(len(geoms)):
+                valve_ft = QgsFeature()
+                valve_ft.setGeometry(geoms[n])
+
+                valve_id = ids[n] if ids is not None else None
+                diameter = diameters[n] if diameters is not None else None
+                minor_loss = minor_losses[n] if minor_losses is not None else None
+                setting = settings[n] if settings is not None else None
+                type = types[n] if types is not None else None
+
+                valve_ft.setAttribute(Valve.field_name_eid, valve_id)
+                valve_ft.setAttribute(Valve.field_name_diameter, diameter)
+                valve_ft.setAttribute(Valve.field_name_minor_loss, minor_loss)
+                valve_ft.setAttribute(Valve.field_name_setting, setting)
+                valve_ft.setAttribute(Valve.field_name_type, type)
+                valves_lay.addFeature(valve_ft)
     
         return valves_lay
 
@@ -310,7 +332,7 @@ class ShapefileDS:
 
         fields = QgsFields()
         fields.append(QgsField(QgsField(Pipe.field_name_eid, QVariant.String)))
-        fields.append(QgsField(QgsField(Pipe.field_name_demand, QVariant.Double)))
+        # fields.append(QgsField(QgsField(Pipe.field_name_demand, QVariant.Double)))
         fields.append(QgsField(QgsField(Pipe.field_name_diameter, QVariant.Double)))
         fields.append(QgsField(QgsField(Pipe.field_name_length, QVariant.Double)))
         fields.append(QgsField(QgsField(Pipe.field_name_roughness, QVariant.Double)))

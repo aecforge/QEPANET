@@ -2,29 +2,39 @@
 # (C)Marios Kyriakou 2016
 # University of Cyprus, KIOS Research Center for Intelligent Systems and Networks
 
-from qgis.core import *
-from qgis.gui import *
-from PyQt4.QtCore import QVariant
-# from tools.data_stores import MemoryDS
 from network import *
 
 import readEpanetFile as d
+import os
 from inp_writer import InpFile
 from ..tools.parameters import Parameters
-from .options_report import Options, Unbalanced, Quality, Report
+from .options_report import Options, Unbalanced, Quality, Report, Hour, Times
+import codecs
 
-class InpReader2:
+class InpReader:
 
     def __init__(self):
+        self.iface = None
         self.params = None
+        self.inp_path = None
 
-    def read(self, inp_path, params):
+    def read(self, iface, inp_path, params):
 
+        self.iface = iface
+        self.inp_path = inp_path
         self.params = params
+
+        statinfo = os.stat(inp_path)
+        file_size = statinfo.st_size
+        if file_size == 0:
+            return None
 
         d.LoadFile(inp_path)
         d.BinUpdateClass()
         links_count = d.getBinLinkCount()
+
+        # Map CRS
+        crs = self.iface.mapCanvas().mapRenderer().destinationCrs()
 
         # Get all Sections
         mixing = d.getMixingSection()
@@ -102,10 +112,12 @@ class InpReader2:
         # Get data of Junctions
         if d.getBinNodeJunctionCount() > 0:
             # Write Junction Shapefile
-            posJunctions = QgsVectorLayer('Point', 'Junctions', 'memory')
-            prJunctions = posJunctions.dataProvider()
-            prJunctions.addAttributes(Junction.fields)
-            posJunctions.updateFields()
+            junctions_lay = QgsVectorLayer('Point', 'Junctions', 'memory')
+            junctions_lay.setCrs(crs)
+
+            junctions_lay_dp = junctions_lay.dataProvider()
+            junctions_lay_dp.addAttributes(Junction.fields)
+            junctions_lay.updateFields()
 
             ndEle = d.getBinNodeJunctionElevations()
             ndBaseD = d.getBinNodeBaseDemands()
@@ -117,33 +129,36 @@ class InpReader2:
         if links_count > 0:
 
             # Pipes
-            posPipes = QgsVectorLayer('LineString', 'Pipes', 'memory')
-            prPipe = posPipes.dataProvider()
-            prPipe.addAttributes(Pipe.fields)
-            posPipes.updateFields()
+            pipes_lay = QgsVectorLayer('LineString', 'Pipes', 'memory')
+            pipes_lay.setCrs(crs)
+            pipes_lay_dp = pipes_lay.dataProvider()
+            pipes_lay_dp.addAttributes(Pipe.fields)
+            pipes_lay.updateFields()
 
             # Pumps
-            posPumps = QgsVectorLayer('LineString', 'Pumps', 'memory')
-            prPump = posPumps.dataProvider()
-            prPump.addAttributes(Pump.fields)
-            posPumps.updateFields()
+            pumps_lay = QgsVectorLayer('LineString', 'Pumps', 'memory')
+            pumps_lay.setCrs(crs)
+            pumps_lay_dp = pumps_lay.dataProvider()
+            pumps_lay_dp.addAttributes(Pump.fields)
+            pumps_lay.updateFields()
 
             # Valves
-            posValves = QgsVectorLayer('LineString', 'Valves', 'memory')
-            prValve = posValves.dataProvider()
-            prValve.addAttributes(Valve.fields)
-            posValves.updateFields()
+            valves_lay = QgsVectorLayer('LineString', 'Valves', 'memory')
+            valves_lay.setCrs(crs)
+            valves_lay_dp = valves_lay.dataProvider()
+            valves_lay_dp.addAttributes(Valve.fields)
+            valves_lay.updateFields()
 
             pIndex = d.getBinLinkPumpIndex()
             vIndex = d.getBinLinkValveIndex()
             ndlConn = d.getBinNodesConnectingLinksID()
-            x1 = [];
-            x2 = [];
-            y1 = [];
+            x1 = []
+            x2 = []
+            y1 = []
             y2 = []
             stat = d.getBinLinkInitialStatus()
 
-            kk = 0;
+            kk = 0
             ch = 0
             linkID = d.getBinLinkNameID()
             linkLengths = d.getBinLinkLength()
@@ -153,19 +168,12 @@ class InpReader2:
 
         # Write Tank Shapefile and get tank data
         if d.getBinNodeTankCount() > 0:
-            posTanks = QgsVectorLayer('Point', 'Tanks', 'memory')
-            prTank = posTanks.dataProvider()
+            tanks_lay = QgsVectorLayer('Point', 'Tanks', 'memory')
+            tanks_lay.setCrs(crs)
+            tanks_lay_dp = tanks_lay.dataProvider()
+            tanks_lay_dp.addAttributes(Tank.fields)
 
-            prTank.addAttributes([QgsField('id', QVariant.String),
-                                  QgsField('elevation', QVariant.Double),
-                                  QgsField('initiallev', QVariant.Double),
-                                  QgsField('minimumlev', QVariant.Double),
-                                  QgsField('maximumlev', QVariant.Double),
-                                  QgsField('diameter', QVariant.Double),
-                                  QgsField('minimumvol', QVariant.Double),
-                                  QgsField('volumecurv', QVariant.Double)])
-
-            posTanks.updateFields()
+            tanks_lay.updateFields()
 
             # posTank.startEditing()
 
@@ -180,12 +188,11 @@ class InpReader2:
 
         # Write Reservoir Shapefile
         if d.getBinNodeReservoirCount() > 0:
-            posReservoirs = QgsVectorLayer('Point', 'Reservoirs', 'memory')
-            prReservoirs = posReservoirs.dataProvider()
-
-            prReservoirs.addAttributes(Reservoir.fields)
-
-            posReservoirs.updateFields()
+            reservoirs_lay = QgsVectorLayer('Point', 'Reservoirs', 'memory')
+            reservoirs_lay.setCrs(crs)
+            reservoirs_lay_dp = reservoirs_lay.dataProvider()
+            reservoirs_lay_dp.addAttributes(Reservoir.fields)
+            reservoirs_lay.updateFields()
 
             head = d.getBinNodeReservoirElevations()
             # posReservoirs.startEditing()
@@ -195,6 +202,8 @@ class InpReader2:
 
         vPos = 0
         pPos = 0
+        pPosPower = 0
+        pPosSpeed = 0
 
         for i in range(ss):
             if i == ss / vvLink and vvLink > -1:
@@ -205,8 +214,8 @@ class InpReader2:
                 featJ = QgsFeature()
                 point = QgsPoint(float(x[i]), float(y[i]))
                 featJ.setGeometry(QgsGeometry.fromPoint(point))
-                featJ.setAttributes([ndID[i], ndEle[i], ndPatID[i], ndBaseD[i]])
-                prJunctions.addFeatures([featJ])
+                featJ.setAttributes([ndID[i], ndEle[i], 0, ndPatID[i], ndBaseD[i]]) # TODO: handle elev_corr
+                junctions_lay_dp.addFeatures([featJ])
 
             if i < links_count:
                 if len(stat) == i:
@@ -238,13 +247,26 @@ class InpReader2:
                     pattern = []
                     pumpNameIDPower = d.getBinLinkPumpNameIDPower()
 
+                    param = None
+                    head = None
+                    power = None
+                    speed = 0
+
+                    if pumpID[pPos] in pumpNameIDPower:
+                        param = 'POWER'
+                        power = chPowerPump[pPosPower]
+                        pPosPower += 1
+                    else:
+                        param = 'HEAD'
+                        head = cheadpump[pPos]
+
                     if len(pumpNameIDPower) > 0:
                         for uu in range(0, len(pumpNameIDPower)):
-                            if pumpNameIDPower[uu] == pumpID[i]:
+                            if pumpNameIDPower[uu] == pumpID[pPos]:
                                 power = chPowerPump[uu]
                     if len(patternsIDs) > 0:
                         for uu in range(0, len(ppatt)):
-                            if ppatt[uu] == pumpID[i]:
+                            if ppatt[uu] == pumpID[pPos]:
                                 pattern = patternsIDs[uu]
 
                     if d.getBinCurveCount() > 0 and len(pumpNameIDPower) == 0:
@@ -256,23 +278,30 @@ class InpReader2:
                                 Flow.append(str(curveXY[uu][1]))
                         Curve = d.getBinLinkPumpCurveNameID()[pPos]
 
+                    if pumpID[pPos] in d.getBinLinkPumpSpeedID():
+                        speed = d.getBinLinkPumpSpeed()[pPosSpeed]
+                        pPosSpeed += 1
+
                     featPump = QgsFeature()
                     featPump.setGeometry(QgsGeometry.fromPolyline([point1, point2]))
 
                     Head = ' '.join(Head)
                     Flow = ' '.join(Flow)
-                    if Head == []:
-                        Head = 'NULL'
-                    if Flow == []:
-                        Flow = 'NULL'
-                    if Curve == []:
-                        Curve = 'NULL'
-                    if power == []:
-                        power = 'NULL'
-                    if pattern == []:
-                        pattern = 'NULL'
-                    featPump.setAttributes([linkID[pPos], Head, Flow, power, pattern, Curve])
-                    prPump.addFeatures([featPump])
+                    # if Head:
+                    #     Head = 'NULL'
+                    # if Flow:
+                    #     Flow = 'NULL'
+                    # if Curve:
+                    #     Curve = 'NULL'
+                    # if power:
+                    #     power = 'NULL'
+                    # if pattern:
+                    #     pattern = 'NULL'
+
+                    featPump.setAttributes([linkID[i], param, head, power, speed])
+                    pumps_lay_dp.addFeatures([featPump])
+
+                    pPos += 1
 
                 elif i in vIndex:
                     # Valve
@@ -294,7 +323,7 @@ class InpReader2:
 
                     featValve.setAttributes(
                          [linkID[vPos], linkDiameter[vPos], linkType[vPos], linkInitSett[vPos], linkMinorloss[vPos]])
-                    prValve.addFeatures([featValve])
+                    valves_lay_dp.addFeatures([featValve])
 
                     vPos += 1
 
@@ -321,7 +350,7 @@ class InpReader2:
                     featPipe.setAttributes(
                         [linkID[i], linkLengths[i], linkDiameters[i], stat[i],
                          linkRough[i], linkMinorloss[i]])
-                    prPipe.addFeatures([featPipe])
+                    pipes_lay_dp.addFeatures([featPipe])
 
             if i < d.getBinNodeTankCount():
                 p = d.getBinNodeTankIndex()[i] - 1
@@ -329,24 +358,49 @@ class InpReader2:
                 point = QgsPoint(float(x[p]), float(y[p]))
                 featTank.setGeometry(QgsGeometry.fromPoint(point))
                 featTank.setAttributes(
-                    [ndTankID[i], ndTankelevation[i], initiallev[i], minimumlev[i], maximumlev[i], diameter[i],
+                    [ndTankID[i], ndTankelevation[i], 0, initiallev[i], minimumlev[i], maximumlev[i], diameter[i], # TODO: add elev corr handling
                      minimumvol[i], volumecurv[i]])
-                prTank.addFeatures([featTank])
+                tanks_lay_dp.addFeatures([featTank])
 
             if i < d.getBinNodeReservoirCount():
                 p = d.getBinNodeReservoirIndex()[i] - 1
                 feature = QgsFeature()
                 point = QgsPoint(float(x[p]), float(y[p]))
                 feature.setGeometry(QgsGeometry.fromPoint(point))
-                feature.setAttributes([ndID[p], head[i]])
-                prReservoirs.addFeatures([feature])
+                feature.setAttributes([ndID[p], head[i], 0]) # TODO: add elev corr handling
+                reservoirs_lay_dp.addFeatures([feature])
 
-        return {Junction.section_name: posJunctions,
-                Reservoir.section_name: posReservoirs,
-                Tank.section_name: posTanks,
-                Pipe.section_name: posPipes,
-                Pump.section_name: posPumps,
-                Valve.section_name: posValves}
+        return {Junction.section_name: junctions_lay,
+                Reservoir.section_name: reservoirs_lay,
+                Tank.section_name: tanks_lay,
+                Pipe.section_name: pipes_lay,
+                Pump.section_name: pumps_lay,
+                Valve.section_name: valves_lay}
+
+    def read_extra(self, inp_path, params):
+
+        with codecs.open(inp_path, 'r', encoding='UTF-8') as inp_f:
+
+            lines = inp_f.read().splitlines()
+            patterns_started = False
+            for l in range(len(lines)):
+                if lines[l].upper().startswith('[QEPANET]'):
+                    patterns_started = True
+                    start_line = l + 1
+                    continue
+                if lines[l].startswith('[') and patterns_started:
+                    end_line = l - 1
+                    break
+
+        if start_line is None:
+            return None
+
+        if end_line is None:
+            end_line = len(lines)
+
+        for l in range(start_line, end_line):
+            if not lines[l].startswith(';'):
+                
 
     def update_mixing(self, mixing):
         # TODO
@@ -369,10 +423,10 @@ class InpReader2:
         pass
 
     def update_curves(self):
-        InpFile.read_curves(self.params)
+        InpFile.read_curves(self.params, self.inp_path)
 
     def update_patterns(self):
-        InpFile.read_patterns(self.params)
+        InpFile.read_patterns(self.params, self.inp_path)
 
     def update_controls(self, controls):
         # TODO
@@ -422,31 +476,39 @@ class InpReader2:
     def update_times(self, times):
         for t in times:
             if t[0].upper() == 'DURATION':
-                self.params.times.duration = self.timestamp_from_text(t[1])
+                self.params.times.duration = self.hour_from_text(t[1])
             elif t[0].upper() == 'HYDRAULIC' and t[1].upper() == 'TIMESTAMP':
-                self.params.times.hydraulic_timestamp = self.timestamp_from_text(t[2])
+                self.params.times.hydraulic_timestamp = self.hour_from_text(t[2])
             elif t[0].upper() == 'QUALITY' and t[1].upper() == 'TIMESTAMP':
-                self.params.times.quality_timestamp = self.timestamp_from_text(t[2])
+                self.params.times.quality_timestamp = self.hour_from_text(t[2])
             elif t[0].upper() == 'PATTERN' and t[1].upper() == 'TIMESTAMP':
-                self.params.times.pattern_timestamp = self.timestamp_from_text(t[2])
+                self.params.times.pattern_timestamp = self.hour_from_text(t[2])
             elif t[0].upper() == 'PATTERN' and t[1].upper() == 'START':
-                self.params.times.pattern_start = self.timestamp_from_text(t[2])
+                self.params.times.pattern_start = self.hour_from_text(t[2])
             elif t[0].upper() == 'REPORT' and t[1].upper() == 'TIMESTAMP':
-                self.params.times.report_timestamp = self.timestamp_from_text(t[2])
+                self.params.times.report_timestamp = self.hour_from_text(t[2])
             elif t[0].upper() == 'REPORT' and t[1].upper() == 'START':
-                self.params.times.report_start = self.timestamp_from_text(t[2])
+                self.params.times.report_start = self.hour_from_text(t[2])
             elif t[0].upper() == 'START' and t[1].upper() == 'CLOCKTIME':
-                time = self.timestamp_from_text(t[2])
+                time = self.hour_from_text(t[2])
                 if t[3].upper() == 'PM':
                     time += 12
                 self.params.times.clocktime_start = time
             elif t[0].upper() == 'STATISTIC':
-                self.params.times.statistic = t[1]
+                for key, text in Times.stats_text.iteritems():
+                    if t[1].upper() == text.upper():
+                        self.params.times.statistic = key
+                        break
 
     def update_report(self, report):
         for r in report:
             if r[0].upper() == 'STATUS':
-                self.params.report.status = r[1]
+                if r[1].upper() == 'YES':
+                    self.params.report.status = Report.status_yes
+                elif r[1].upper() == 'NO':
+                    self.params.report.status = Report.status_no
+                elif r[1].upper() == 'FULL':
+                    self.params.report.status = Report.status_full
             elif r[0].upper() == 'SUMMARY':
                 if r[1].upper() == 'YES':
                     self.params.report.summary = Report.summary_yes
@@ -496,7 +558,7 @@ class InpReader2:
                 pass
             elif o[0].upper() == 'UNBALANCED':
                 unbalanced = Unbalanced()
-                if o[1].upper == 'CONTINUE':
+                if o[1].upper() == 'CONTINUE':
                     trials = int(o[2])
                     unbalanced.unbalanced = Unbalanced.unb_continue
                     unbalanced.trials = trials
@@ -504,7 +566,7 @@ class InpReader2:
                     unbalanced.unbalanced = Unbalanced.unb_stop
                 self.params.options.unbalanced = unbalanced
             elif o[0].upper() == 'PATTERN':
-                self.params.options.pattern = o[1]
+                self.params.options.pattern = self.params.patterns[o[1]]
             elif o[0].upper() == 'DEMAND' and o[1].upper() == 'MULTIPLIER':
                 self.params.options.demand_mult = float(o[2])
             elif o[0].upper() == 'EMITTER' and o[2].upper() == 'EXPONENT':
@@ -536,20 +598,22 @@ class InpReader2:
             # elif o[0].upper() == '':
             #     self.params.options.units = ?
 
-    def timestamp_from_text(self, hhmm):
+    def hour_from_text(self, hhmm):
 
         hrs_min = hhmm.split(':')
 
         if hrs_min[0]:
-            hrs = float(hrs_min[0])
+            hrs = int(hrs_min[0])
             mins = 0
         if len(hrs_min) > 1 and hrs_min[1]:
-            mins = float(hrs_min[1])
+            mins = int(hrs_min[1])
 
-        return hrs + mins / 60
+        hour = Hour(hrs, mins)
+
+        return hour
 
 
 
-# ir = InpReader2()
-# ir.read('D:/temp/5.inp', None)
+# ir = InpReader()
+# ir.read(None, 'D:/temp/5.inp', None)
 # ir.read('D:/temp/b.inp')

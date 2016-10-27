@@ -2,6 +2,7 @@ import ConfigParser
 import codecs
 import os
 
+from collections import OrderedDict
 from PyQt4.QtCore import QRegExp
 from PyQt4.QtGui import QRegExpValidator
 from observable import Observable
@@ -9,6 +10,7 @@ from ..model.options_report import Options, Report
 from ..model.options_report import Times
 from ..model.system_ops import Energy
 from ..model.water_quality import Reactions
+
 
 
 class Parameters(Observable):
@@ -37,9 +39,9 @@ class Parameters(Observable):
         self._valves_vlay = None
         self._dem_rlay = None
 
-        self._patterns = []
+        self._patterns = OrderedDict()
         self._patterns_file = None
-        self._curves = []
+        self._curves = OrderedDict()
         self._curves_file = None
 
         self._snap_tolerance = 10
@@ -55,6 +57,11 @@ class Parameters(Observable):
         self.energy = Energy()
 
         self.new_diameter = None
+
+        # Paths
+        self.last_project_dir = None
+        self.last_curves_dir = None
+        self.last_patterns_dir = None
 
     # Layers
     @property

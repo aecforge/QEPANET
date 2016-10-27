@@ -266,6 +266,8 @@ def getBinLinkPumpPatternsPumpID():
     global mm
     return mm[39]
 
+def getBinLinkPumpSpeedID():
+    return mm[62]
 
 # Get Valves Info
 def getBinLinkValveCount():
@@ -463,6 +465,7 @@ def getBinInfo():
     BinLinkPumpPower = []
     BinLinkPumpNameIDPower = []
     BinLinkPumpNameID = []
+    BinLinkPumpSpeedID = []
     BinLinkPumpSpeed = []
     BinLinkPumpPatternsPumpID = []
 
@@ -542,7 +545,8 @@ def getBinInfo():
                     curvesSectionType,  # 44#45#46#47#48#49#50
                     qualitySection, rulesSection, sourcesSection, energySection, reactionsSection,
                     reactionsOptionSection, mixingSection,  # 51#52#53#54#55#56#57
-                    timesSection, optionsSection, reportSection, labelsSection]  # 58#59#60#61
+                    timesSection, optionsSection, reportSection, labelsSection,  # 58#59#60#61
+                    BinLinkPumpSpeedID] # 62
 
         elif "[JUNCTIONS]" in s1:
             sec[0] = 1;
@@ -772,6 +776,7 @@ def getBinInfo():
                         if mm[5][0] != ';':
                             if mm[5] == 'SPEED':
                                 BinLinkPumpSpeed.append(mm[6])
+                                BinLinkPumpSpeedID.append(mm[0])
                             else:
                                 BinLinkPumpPatterns.append(mm[6])
                                 BinLinkPumpPatternsPumpID.append(mm[0])

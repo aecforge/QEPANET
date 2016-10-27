@@ -35,8 +35,6 @@ class ModelRunner:
             if not line:
                 break
 
-            print line
-
             self.dockwidget.txt_epanet_console.appendPlainText(line.replace('\b', ''))
 
         os.close(out[0])

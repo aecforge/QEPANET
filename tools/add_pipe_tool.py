@@ -185,7 +185,6 @@ class AddPipeTool(QgsMapTool):
                     pipe_ft = LinkHandler.create_new_pipe(
                         self.params,
                         pipe_eid,
-                        demand,
                         diameter,
                         loss,
                         roughness,

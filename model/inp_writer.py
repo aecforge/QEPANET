@@ -9,8 +9,6 @@ from ..model.options_report import Times, Report
 from options_report import Options, Quality
 from ..model.network_handling import NetworkUtils
 from ..model.water_quality import Reactions
-from ..tools.parameters import Parameters
-
 
 class InpFile:
     
@@ -21,14 +19,14 @@ class InpFile:
         pass
 
     @staticmethod
-    def read_patterns(params):
+    def read_patterns(params, patterns_file):
 
-        if not os.path.isfile(params.patterns_file):
+        if not os.path.isfile(patterns_file):
             return []
 
         start_line = None
         end_line = None
-        with codecs.open(params.patterns_file, 'r', encoding='UTF-8') as inp_f:
+        with codecs.open(patterns_file, 'r', encoding='UTF-8') as inp_f:
 
             lines = inp_f.read().splitlines()
             patterns_started = False
@@ -65,7 +63,7 @@ class InpFile:
                     for w in range(1, len(words)):
                         patterns_d[words[0]].add_value(float(words[w]))
 
-        params.patterns = patterns_d.values()
+        params.patterns = patterns_d
 
     @staticmethod
     def write_patterns(params, inp_file_path):
@@ -89,14 +87,14 @@ class InpFile:
                 inp_file.write(line + '\n')
 
     @staticmethod
-    def read_curves(params):
+    def read_curves(params, curves_file):
 
-        if not os.path.isfile(params.patterns_file):
+        if not os.path.isfile(curves_file):
             return []
 
         start_line = 0
         end_line = None
-        with codecs.open(params.curves_file, 'r', encoding='UTF-8') as inp_f:
+        with codecs.open(curves_file, 'r', encoding='UTF-8') as inp_f:
 
             lines = inp_f.read().splitlines()
             for l in range(len(lines)):
@@ -149,7 +147,7 @@ class InpFile:
                     y = words[2]
                     curves_d[words[0]].append_xy(x, y)
 
-        params.curves = curves_d.values()
+        params.curves = curves_d
 
     @staticmethod
     def write_curves(params, inp_file_curve):
@@ -306,7 +304,7 @@ class InpFile:
     def _append_curves(params, out):
         out.extend(InpFile.build_section_keyword(Curve.section_name))
 
-        for curve in params.curves:
+        for curve in params.curves.itervalues():
 
             type_desc = None
             if curve.type is not None:
@@ -359,6 +357,7 @@ class InpFile:
 
             if elev_corr is None:
                 elev_corr = 0
+
 
             elev += elev_corr
 
@@ -451,7 +450,7 @@ class InpFile:
     def _append_patterns(params, out):
         out.extend(InpFile.build_section_keyword(Pattern.section_name))
 
-        for pattern in params.patterns:
+        for pattern in params.patterns.itervalues():
             if pattern.desc is not None:
                 out.extend(InpFile.build_comment(pattern.desc))
 
@@ -511,7 +510,6 @@ class InpFile:
 
             # Parameters
             pump_param = p_ft.attribute(Pump.field_name_param)
-            value = p_ft.attribute(Pump.field_name_value)
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
@@ -519,12 +517,15 @@ class InpFile:
             line += InpFile.pad(end_node_id, InpFile.pad_19)
 
             if pump_param == Pump.parameters_power:
+                value = p_ft.attribute(Pump.field_name_power)
                 line += InpFile.pad(pump_param + ' ' + '{0:2f}'.format(value), InpFile.pad_19)
             elif pump_param == Pump.parameters_head:
+                value = p_ft.attribute(Pump.field_name_head)
                 line += InpFile.pad(pump_param + ' ' + value, InpFile.pad_19)
-            else:
-                # TODO: add support for speed and pattern?
-                line += '0'
+
+            speed = p_ft.attribute(Pump.field_name_speed)
+            if speed is not None:
+                line += ' ' + str(speed)
 
             out.append(line)
 

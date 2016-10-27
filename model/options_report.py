@@ -17,7 +17,7 @@ class Options:
     units_flow = {unit_sys_si:
                       ['LPS', 'LPM', 'MLD', 'CMH', 'CMD'],
                   unit_sys_us:
-                      ['CFS', 'GPM', 'MGD', 'IMGD', 'AFD']}
+                      ['CFS', 'GPM', 'MGD', 'IMGD', 'AFS']}
 
     units_flow_text = {'LPS': 'LPS - liters per second',
                        'LPM': 'LPM - liters per minute',

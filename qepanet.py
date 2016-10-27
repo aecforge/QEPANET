@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
-from PyQt4.QtGui import QAction, QIcon, QMessageBox
+from PyQt4.QtGui import QAction, QIcon, QMessageBox, QFileDialog
 
 from model.inp_writer import InpFile
 from tools.parameters import Parameters, ConfigFile
@@ -29,7 +29,7 @@ from tools.parameters import Parameters, ConfigFile
 # Initialize Qt resources from file resources.py
 
 # Import the code for the DockWidget
-from ui.qepanet_dockwidget import QEpanetDockWidget
+from ui.qepanet_dockwidget import QEpanetDockWidget, MyQFileDialog
 import os.path
 import resources
 
@@ -225,17 +225,35 @@ class QEpanet:
 
         config_file = ConfigFile(Parameters.config_file_path)
 
-        # Read patterns
-        patterns_file_path = config_file.get_patterns_file_path()
-        self.params.patterns_file = patterns_file_path
-        if patterns_file_path is not None and os.path.isfile(patterns_file_path):
-            InpFile.read_patterns(self.params)
+        # # Read patterns
+        # patterns_file_path = config_file.get_patterns_file_path()
+        # self.params.patterns_file = patterns_file_path
+        # if patterns_file_path is not None and os.path.isfile(patterns_file_path):
+        #     InpFile.read_patterns(self.params)
+        #
+        # # Read curves
+        # curves_file_path = config_file.get_curves_file_path()
+        # self.params.curves_file = curves_file_path
+        # if curves_file_path is not None and os.path.isfile(curves_file_path):
+        #     InpFile.read_curves(self.params)
 
-        # Read curves
-        curves_file_path = config_file.get_curves_file_path()
-        self.params.curves_file = curves_file_path
-        if curves_file_path is not None and os.path.isfile(curves_file_path):
-            InpFile.read_curves(self.params)
+        # Select inp file
+        file_dialog = MyQFileDialog()
+        file_dialog.setWindowTitle('Select an INP file or create a new one')  # TODO: Softcode
+        file_dialog.setLabelText(QFileDialog.Accept, 'Select')  # TODO: sofcode
+        file_dialog.setFileMode(QFileDialog.AnyFile)
+        file_dialog.setFilter("INP files (*.inp)")
+
+        inp_file_path = None
+        if file_dialog.exec_():
+            inp_file_path = file_dialog.selectedFiles()[0]
+            if not inp_file_path.lower().endswith('.inp'):
+                inp_file_path += '.inp'
+
+            self.params.last_project_dir = os.path.dirname(inp_file_path)
+
+        if inp_file_path is None:
+            return
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
@@ -243,17 +261,16 @@ class QEpanet:
             # dockwidget may not exist if:
             #    first run of plugin
             #    removed on close (see self.onClosePlugin method)
+
             if self.dockwidget is None:
                 # Create the dockwidget (after translation) and keep reference
-                self.dockwidget = QEpanetDockWidget(self.iface, self.params)
+                self.dockwidget = QEpanetDockWidget(self.iface, self.params, inp_file_path)
                 self.params.attach(self.dockwidget)
 
-
-            # connect to provide cleanup on closing of dockwidget
+            # Connect to provide cleanup on closing of dockwidget
             self.dockwidget.closingPlugin.connect(self.onClosePlugin)
 
-            # show the dockwidget
-            # TODO: fix to allow choice of dock location
+            # Show the dockwidget
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
             self.dockwidget.show()
 

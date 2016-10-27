@@ -56,7 +56,7 @@ class GraphDialog(QDialog):
         self.txt_file.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Minimum)
         fra_file_lay.addWidget(self.txt_file)
         self.btn_file = QPushButton('Change')  # TODO: softcode
-        self.btn_file.clicked.connect(self.select_file)
+        self.btn_file.clicked.connect(self.import_file)
         fra_file_lay.addWidget(self.btn_file)
         fra_file_lay.setContentsMargins(0, 0, 0, 0)
 
@@ -68,7 +68,7 @@ class GraphDialog(QDialog):
         self.fra_form = QFrame()
         fra_form1_lay = QFormLayout(self.fra_form)
         fra_form1_lay.setContentsMargins(0, 0, 0, 0)
-        fra_form1_lay.addRow(self.lbl_file, self.fra_file)
+        # fra_form1_lay.addRow(self.lbl_file, self.fra_file)
         fra_form1_lay.addRow(self.lbl_list, self.lst_list)
 
         # Buttons
@@ -81,12 +81,19 @@ class GraphDialog(QDialog):
         elif self.edit_type == self.edit_curves:
             ele_name = 'curve'
 
+        # Buttons
+        self.btn_import = QPushButton('Import ' + ele_name + 's')  # TODO: softcode
+        self.btn_import.clicked.connect(self.import_file)
+        fra_buttons_lay.addWidget(self.btn_import)
+
         self.btn_new = QPushButton('New ' + ele_name)  # TODO: softcode
         self.btn_new.clicked.connect(self.new)
         fra_buttons_lay.addWidget(self.btn_new)
+
         self.btn_save = QPushButton('Save current ' + ele_name)  # TODO: softcode
         self.btn_save.clicked.connect(self.save)
         fra_buttons_lay.addWidget(self.btn_save)
+
         self.btn_del = QPushButton('Delete current ' + ele_name)  # TODO: softcode
         self.btn_del.clicked.connect(self.del_pattern)
         fra_buttons_lay.addWidget(self.btn_del)
@@ -171,9 +178,21 @@ class GraphDialog(QDialog):
         main_lay.addWidget(self.fra_top)
         main_lay.addWidget(self.fra_bottom)
 
-        # Read existing patterns/curves
+        # Get existing patterns/curves
         self.need_to_update_graph = False
-        self.read()
+        if self.edit_type == self.edit_patterns:
+            for pattern_id, pattern in self.params.patterns.iteritems():
+                self.lst_list.addItem(pattern.id)
+
+        elif self.edit_type == self.edit_curves:
+            for curve_id, curve in self.params.curves.iteritems():
+                self.lst_list.addItem(curve.id)
+
+        if self.lst_list.count() > 0:
+            self.lst_list.setCurrentRow(0)
+
+
+        # self.read()
 
         self.need_to_update_graph = True
         self.update_graph()
@@ -207,7 +226,7 @@ class GraphDialog(QDialog):
         if p_index >= 0:
 
             if self.edit_type == self.edit_patterns:
-                self.current = self.params.patterns[p_index]
+                self.current = self.params.patterns[self.lst_list.currentItem().text()]
                 for v in range(len(self.current.values)):
                     item = QTableWidgetItem(str(v))
                     item.setFlags(flags)
@@ -215,7 +234,7 @@ class GraphDialog(QDialog):
                     self.table.setItem(v, 1, QTableWidgetItem(str(self.current.values[v])))
 
             elif self.edit_type == self.edit_curves:
-                self.current = self.params.curves[p_index]
+                self.current = self.params.curves[self.lst_list.currentItem().text()]
                 for v in range(len(self.current.xs)):
                     self.table.setItem(v, 0, QTableWidgetItem(str(self.current.xs[v])))
                     self.table.setItem(v, 1, QTableWidgetItem(str(self.current.ys[v])))
@@ -245,14 +264,23 @@ class GraphDialog(QDialog):
             self.need_to_update_graph = True
             self.update_graph()
 
-    def select_file(self):
+    def import_file(self):
 
         config_file = ConfigFile(Parameters.config_file_path)
+
+        directory = None
+        if self.edit_type == GraphDialog.edit_curves:
+            directory = self.params.last_curves_dir
+        elif self.edit_type == GraphDialog.edit_patterns:
+            directory = self.params.last_patterns_dir
+
+        if directory is None:
+            directory = self.params.last_project_dir
 
         file_path = QFileDialog.getOpenFileName(
             self,
             'Select file',
-            self.txt_file.text(),
+            directory,
             'Files (*.txt *.inp)')
 
         if file_path is None or file_path == '':
@@ -267,23 +295,25 @@ class GraphDialog(QDialog):
                 config_file.set_curves_file_path(file_path)
                 Parameters.curves_file = file_path
 
-        self.read()
+        self.read(file_path)
 
-    def read(self):
+    def read(self, file_path):
 
         self.lst_list.clear()
 
         if self.edit_type == self.edit_patterns:
-            InpFile.read_patterns(self.params)
-            for pattern in self.params.patterns:
+            # InpFile.read_patterns(self.params, file_path)
+            for pattern_id, pattern in self.params.patterns.iteritems():
                 # desc = ' (' + pattern.desc + ')' if pattern.desc is not None else ''
                 self.lst_list.addItem(pattern.id)
+                self.params.patterns[pattern.id] = pattern
 
         elif self.edit_type == self.edit_curves:
-            InpFile.read_curves(self.params)
-            for curve in self.params.curves:
+            # InpFile.read_curves(self.params, file_path)
+            for curve_id, curve in self.params.curves.iteritems():
                 # desc = ' (' + curve.desc + ')' if curve.desc is not None else ''
                 self.lst_list.addItem(curve.id)
+                self.params.curves[curve.id] = curve
 
         if self.lst_list.count() > 0:
             self.lst_list.setCurrentRow(0)
@@ -292,10 +322,10 @@ class GraphDialog(QDialog):
 
         old_ids = []
         if self.edit_type == self.edit_patterns:
-            for pattern in self.params.patterns:
+            for pattern in self.params.patterns.itervalues():
                 old_ids.append(pattern.id)
         elif self.edit_type == self.edit_curves:
-            for curve in self.params.curves:
+            for curve in self.params.curves.itervalues():
                 old_ids.append(curve.id)
 
         self.new_dialog = NewIdDialog(self, old_ids)
@@ -307,12 +337,12 @@ class GraphDialog(QDialog):
 
         if self.edit_type == self.edit_patterns:
             new_pattern = Pattern(new_id)
-            self.params.patterns.append(new_pattern)
+            self.params.patterns[new_pattern.id] = new_pattern
             self.lst_list.addItem(new_pattern.id)
         elif self.edit_type == self.edit_curves:
             curve_type = self.cbo_pump_type.itemData(self.cbo_pump_type.currentIndex())
             new_curve = Curve(new_id, curve_type)
-            self.params.curves.append(new_curve)
+            self.params.curves[new_curve.id] = new_curve
             self.lst_list.addItem(new_curve.id)
 
         self.lst_list.setCurrentRow(self.lst_list.count() - 1)
@@ -338,11 +368,6 @@ class GraphDialog(QDialog):
             return
 
         if self.edit_type == GraphDialog.edit_patterns:
-            # Check for ID unique
-            # overwrite_p_index = -1
-            for p in range(len(self.params.patterns)):
-                if self.params.patterns[p].id == self.txt_id.text():
-                    overwrite_p_index = p
 
             values = []
             for row in range(self.table.rowCount()):
@@ -351,17 +376,14 @@ class GraphDialog(QDialog):
                     values.append(self.from_item_to_val(item))
 
             pattern = Pattern(self.txt_id.text(), self.txt_desc.text(), values)
+            self.params.patterns[pattern.id] = pattern
 
-            self.params.patterns[overwrite_p_index] = pattern
-            InpFile.write_patterns(self.params, self.params.patterns_file)
+            # InpFile.write_patterns(self.params, self.params.patterns_file)
+            self.lst_list.currentItem().setText(pattern.id)
 
         elif self.edit_type == GraphDialog.edit_curves:
-            # Check for ID unique
-            overwrite_c_index = -1
-            for c in range(len(self.params.curves)):
-                if self.params.curves[c].id == self.txt_id.text():
-                    overwrite_c_index = c
 
+            # Check for ID unique
             xs = []
             ys = []
             for row in range(self.table.rowCount()):
@@ -379,8 +401,8 @@ class GraphDialog(QDialog):
 
             # # Update
 
-            self.params.curves[overwrite_c_index] = curve
-            InpFile.write_curves(self.params, self.params.curves_file)
+            self.params.curves[curve.id] = curve
+            # InpFile.write_curves(self.params, self.params.curves_file)
             self.lst_list.currentItem().setText(curve.id)
 
             # Update GUI
@@ -425,11 +447,11 @@ class GraphDialog(QDialog):
         self.lst_list.takeItem(selected_row)
 
         if self.edit_type == GraphDialog.edit_curves:
-            del self.params.curves[selected_row]
-            InpFile.write_curves(self.params, self.params.curves_file)
+            del self.params.curves[self.lst_list.currentItem().text()]
+            # InpFile.write_curves(self.params, self.params.curves_file)
         elif self.edit_type == GraphDialog.edit_patterns:
-            del self.params.patterns[selected_row]
-            InpFile.write_patterns(self.params, self.params.patterns_file)
+            del self.params.patterns[self.lst_list.currentItem().text()]
+            # InpFile.write_patterns(self.params, self.params.patterns_file)
 
     def data_changed(self):
 

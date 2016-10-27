@@ -3,7 +3,7 @@ from PyQt4.QtGui import QDialog, QFormLayout, QLabel, QComboBox, QLineEdit, QChe
 from PyQt4 import QtCore
 from ..tools.parameters import Parameters, RegExValidators
 from ..model.network import Valve
-from ..model.options_report import Hour, Report, Times
+from ..model.options_report import Hour, Report, Times, Options
 from utils import prepare_label as pre_l
 import os
 
@@ -112,16 +112,16 @@ class HydraulicsDialog(QDialog):
         fra_main_lay.addWidget(self.fra_buttons)
 
         self.setup()
-        self.initialize()
 
     def setup(self):
 
+        # Fill units system combo box
         for unit in self.params.options.units_sys:
             self.cbo_units.addItem(self.params.options.units_sys_text[unit], unit)
-        for fu in range(len(self.params.options.units_flow[self.params.options.units])):
-            flow_units = self.params.options.units_flow[self.params.options.units][fu]
-            self.cbo_flow_units.addItem(self.params.options.units_flow_text[flow_units],
-                                        self.params.options.units_flow[self.params.options.units][fu])
+
+        # Fill flow units combo box
+        for fu in Options.units_flow[self.params.options.units]:
+            self.cbo_flow_units.addItem(Options.units_flow_text[fu], fu)
 
         self.cbo_units.activated.connect(self.cbo_units_activated)
         # self.cbo_flow_units.activated.connect(self.cbo_flow_units_activated)
@@ -150,8 +150,8 @@ class HydraulicsDialog(QDialog):
         self.txt_unbalanced.setText('1')
 
         # - Pattern
-        for pattern in self.params.patterns:
-            self.cbo_pattern.addItem(pattern.id, pattern)
+        for pattern_id, pattern in self.params.patterns.iteritems():
+            self.cbo_pattern.addItem(pattern_id, pattern)
 
         # Buttons
         self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
@@ -167,13 +167,18 @@ class HydraulicsDialog(QDialog):
         self.txt_emitter_exp.setValidator(RegExValidators.get_pos_decimals())
         self.txt_tolerance.setValidator(RegExValidators.get_pos_decimals())
 
-    def initialize(self):
-        
+    def show(self):
+        super(HydraulicsDialog, self).show()
+
         self.cbo_units.setCurrentIndex(self.cbo_units.findData(self.params.options.units))
         self.cbo_flow_units.setCurrentIndex(self.cbo_flow_units.findData(self.params.options.flow_units))
         self.cbo_headloss.setCurrentIndex(self.cbo_headloss.findData(self.params.options.headloss))
 
-        self.chk_hydraulics.setChecked(not self.params.options.hydraulics.use_hydraulics)
+        self.chk_hydraulics.setChecked(self.params.options.hydraulics.use_hydraulics)
+        self.btn_hydraulics_file.setEnabled(self.chk_hydraulics.isChecked())
+        self.cbo_hydraulics.setEnabled(self.chk_hydraulics.isChecked())
+        self.txt_hydraulics_file.setEnabled(self.chk_hydraulics.isChecked())
+
         if self.params.options.hydraulics.action is not None:
             self.cbo_hydraulics.setCurrentIndex(self.cbo_hydraulics.findData(self.params.options.hydraulics.action))
         if self.params.options.hydraulics.file is not None:
@@ -189,6 +194,7 @@ class HydraulicsDialog(QDialog):
         self.txt_unbalanced.setEnabled(self.cbo_unbalanced.currentIndex() != 0)
         self.txt_unbalanced.setText(str(self.params.options.unbalanced.trials))
 
+        # Patterns
         if self.params.options.pattern is not None:
             for i in range(self.cbo_pattern.count()):
                 if self.params.options.pattern.id == self.cbo_pattern.itemText(i):
@@ -201,13 +207,12 @@ class HydraulicsDialog(QDialog):
 
     def cbo_units_activated(self):
 
-        units = self.cbo_units.itemData(self.cbo_units.currentIndex())
+        self.params.options.units = self.cbo_units.itemData(self.cbo_units.currentIndex())
 
         # Parameters combo box
         self.cbo_flow_units.clear()
-        for fu in range(len(self.params.options.units_flow[units])):
-            self.cbo_flow_units.addItem(self.params.options.units_flow_text[fu],
-                                        self.params.options.units_flow[units][fu])
+        for fu in Options.units_flow[self.params.options.units]:
+            self.cbo_flow_units.addItem(Options.units_flow_text[fu], fu)
 
     def cbo_headloss_activated(self):
 
@@ -401,7 +406,6 @@ class QualityDialog(QDialog):
         fra_main_lay.addWidget(self.fra_buttons)
 
         self.setup()
-        self.initialize()
 
     def setup(self):
         for key, value in self.params.options.quality.quality_text.iteritems():
@@ -418,7 +422,9 @@ class QualityDialog(QDialog):
         self.txt_rel_diff.setValidator(RegExValidators.get_pos_decimals())
         self.txt_quality_tol.setValidator(RegExValidators.get_pos_decimals())
 
-    def initialize(self):
+    def show(self):
+        super(QualityDialog, self).show()
+
         self.cbo_parameter.setCurrentIndex(self.cbo_parameter.findData(self.params.options.quality.parameter))
         self.cbo_mass_units.setCurrentIndex(self.cbo_mass_units.findData(self.params.options.quality.mass_units))
         self.txt_rel_diff.setText(str(self.params.options.quality.relative_diff))
@@ -503,7 +509,6 @@ class ReactionsDialog(QDialog):
         fra_main_lay.addWidget(self.fra_buttons)
 
         self.setup()
-        self.initialize()
 
     def setup(self):
 
@@ -519,7 +524,8 @@ class ReactionsDialog(QDialog):
         self.txt_limiting_conc.setValidator(RegExValidators.get_pos_decimals())
         self.txt_wall_coeff_corr.setValidator(RegExValidators.get_pos_decimals())
 
-    def initialize(self):
+    def show(self):
+        super(ReactionsDialog, self).show()
 
         self.txt_bulk_reaction_order.setText(str(self.params.reactions.order_bulk))
         self.txt_tank_reaction_order.setText(str(self.params.reactions.order_tank))
@@ -624,7 +630,6 @@ class TimesDialog(QDialog):
         fra_main_lay.addWidget(self.fra_buttons)
 
         self.setup()
-        self.initialize()
 
     def setup(self):
 
@@ -665,9 +670,11 @@ class TimesDialog(QDialog):
         for key, text in self.params.times.stats_text.iteritems():
             self.cbo_statistic.addItem(text, key)
 
-    def initialize(self):
+    def show(self):
+        super(TimesDialog, self).show()
+
         self.cbo_units.setCurrentIndex(self.cbo_units.findData(self.params.times.units))
-        self.txt_duration.setText(str(self.params.times.duration))
+        self.txt_duration.setText(self.params.times.duration.get_as_text())
         self.txt_hydraulic_timestamp.setText(self.params.times.hydraulic_timestamp.get_as_text())
         self.txt_quality_timestamp.setText(self.params.times.quality_timestamp.get_as_text())
         self.txt_rule_timestamp.setText(self.params.times.rule_timestamp.get_as_text())
@@ -677,6 +684,9 @@ class TimesDialog(QDialog):
         self.txt_report_start.setText(self.params.times.report_start.get_as_text())
         self.txt_clock_time_start.setText(self.params.times.clocktime_start.get_as_text())
         self.cbo_statistic.setCurrentIndex(self.cbo_statistic.findData(self.params.times.statistic))
+
+        print 'gigio', self.params.times.statistic
+
 
     def btn_cancel_pressed(self):
         self.setVisible(False)
@@ -750,7 +760,6 @@ class EnergyDialog(QDialog):
         fra_main_lay.addWidget(self.fra_buttons)
 
         self.setup()
-        self.initialize()
 
     def setup(self):
 
@@ -764,7 +773,8 @@ class EnergyDialog(QDialog):
         self.txt_price_pattern.setValidator(RegExValidators.get_pos_int())
         self.txt_demand_charge.setValidator(RegExValidators.get_pos_decimals())
 
-    def initialize(self):
+    def show(self):
+        super(EnergyDialog, self).show()
         self.txt_pump_efficiency.setText(str(self.params.energy.pump_efficiency))
         self.txt_energy_price.setText(str(self.params.energy.energy_price))
         self.txt_price_pattern.setText(str(self.params.energy.price_pattern) if self.params.energy.price_pattern is not None else '')
@@ -842,7 +852,6 @@ class ReportDialog(QDialog):
         fra_main_lay.addWidget(self.fra_buttons)
 
         self.setup()
-        self.initialize()
 
     def setup(self):
 
@@ -866,7 +875,8 @@ class ReportDialog(QDialog):
         self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
         self.btn_Ok.pressed.connect(self.btn_ok_pressed)
 
-    def initialize(self):
+    def show(self):
+        super(ReportDialog, self).show()
         self.cbo_status.setCurrentIndex(self.cbo_status.findData(self.params.report.status))
         self.cbo_summary.setCurrentIndex(self.cbo_summary.findData(self.params.report.summary))
         self.cbo_energy.setCurrentIndex(self.cbo_energy.findData(self.params.report.energy))

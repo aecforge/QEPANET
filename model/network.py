@@ -136,16 +136,16 @@ class Pump:
     section_name = 'PUMPS'
     section_header = 'ID              	Node1           	Node2           	Parameters'
     field_name_eid = 'id'
-    field_name_power = 'power'
+    field_name_param = 'param'
     field_name_head = 'head'
-    field_name_pattern = 'pattern'
+    field_name_power = 'power'
     field_name_speed = 'speed'
 
     fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_param, QVariant.String),
               QgsField(field_name_head, QVariant.String),
-              QgsField(field_name_power, QVariant.String),
-              QgsField(field_name_speed, QVariant.String),
-              QgsField(field_name_pattern, QVariant.String)]
+              QgsField(field_name_power, QVariant.Double),
+              QgsField(field_name_speed, QVariant.Double)]
 
     parameters_power = 'POWER'
     parameters_head = 'HEAD'

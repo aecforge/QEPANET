@@ -55,36 +55,107 @@
             <number>9</number>
            </property>
            <item>
-            <widget class="QFrame" name="frame_5">
+            <widget class="QFrame" name="fra_project">
              <property name="frameShape">
               <enum>QFrame::StyledPanel</enum>
              </property>
              <property name="frameShadow">
               <enum>QFrame::Raised</enum>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout">
-              <property name="margin">
+             <layout class="QVBoxLayout" name="verticalLayout_9">
+              <property name="leftMargin">
                <number>0</number>
               </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>9</number>
+              </property>
               <item>
-               <widget class="QLabel" name="lbl_project">
-                <property name="text">
-                 <string>Project:</string>
+               <widget class="QFrame" name="frame_5">
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
                 </property>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
+                </property>
+                <layout class="QFormLayout" name="formLayout_11">
+                 <property name="fieldGrowthPolicy">
+                  <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+                 </property>
+                 <property name="margin">
+                  <number>0</number>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="lbl_prj_file">
+                   <property name="text">
+                    <string>Project:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QFrame" name="frame_7">
+                   <property name="frameShape">
+                    <enum>QFrame::StyledPanel</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                   </property>
+                   <layout class="QHBoxLayout" name="horizontalLayout">
+                    <property name="margin">
+                     <number>0</number>
+                    </property>
+                    <item>
+                     <widget class="QLineEdit" name="txt_prj_file">
+                      <property name="readOnly">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QToolButton" name="btn_prj_file">
+                      <property name="text">
+                       <string>...</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
                </widget>
               </item>
               <item>
-               <widget class="QLineEdit" name="txt_project">
-                <property name="readOnly">
-                 <bool>true</bool>
+               <widget class="QFrame" name="frame_6">
+                <property name="frameShape">
+                 <enum>QFrame::StyledPanel</enum>
                 </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="btn_project">
-                <property name="text">
-                 <string>...</string>
+                <property name="frameShadow">
+                 <enum>QFrame::Raised</enum>
                 </property>
+                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                 <property name="margin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QPushButton" name="btn_project_reload">
+                   <property name="text">
+                    <string>Reload</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="btn_project_save">
+                   <property name="text">
+                    <string>Save</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </widget>
               </item>
              </layout>
@@ -199,7 +270,7 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>0</number>
+              <number>9</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -343,7 +414,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>305</width>
-                <height>185</height>
+                <height>141</height>
                </rect>
               </property>
               <attribute name="label">
@@ -423,7 +494,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>305</width>
-                <height>185</height>
+                <height>141</height>
                </rect>
               </property>
               <attribute name="label">
@@ -829,7 +900,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>305</width>
-                <height>185</height>
+                <height>141</height>
                </rect>
               </property>
               <attribute name="label">
@@ -887,7 +958,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>305</width>
-                <height>185</height>
+                <height>141</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1030,8 +1101,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
-                <height>185</height>
+                <width>288</width>
+                <height>151</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1109,42 +1180,13 @@
                 <x>0</x>
                 <y>0</y>
                 <width>288</width>
-                <height>222</height>
+                <height>147</height>
                </rect>
               </property>
               <attribute name="label">
                <string>EPANET</string>
               </attribute>
               <layout class="QVBoxLayout" name="verticalLayout_8">
-               <item>
-                <widget class="QFrame" name="frame_4">
-                 <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Raised</enum>
-                 </property>
-                 <layout class="QFormLayout" name="formLayout_9">
-                  <item row="0" column="0">
-                   <widget class="QLabel" name="lbl_prj_title">
-                    <property name="text">
-                     <string>Project title:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QLineEdit" name="txt_prj_title"/>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="btn_generate_inp">
-                 <property name="text">
-                  <string>Generate INP file</string>
-                 </property>
-                </widget>
-               </item>
                <item>
                 <widget class="QPushButton" name="btn_epanet_run">
                  <property name="text">

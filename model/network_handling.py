@@ -30,7 +30,7 @@ class NodeHandler:
                 new_junct_feat = QgsFeature(params.junctions_vlay.pendingFields())
                 new_junct_feat.setAttribute(Junction.field_name_eid, eid)
                 new_junct_feat.setAttribute(Junction.field_name_elev, elev)
-                new_junct_feat.setAttribute(Junction.field_name_demand, demand)
+                # new_junct_feat.setAttribute(Junction.field_name_demand, demand)
                 new_junct_feat.setAttribute(Junction.field_name_elev_corr, depth)
                 new_junct_feat.setAttribute(Junction.field_name_pattern, pattern_id)
 
@@ -190,7 +190,7 @@ class LinkHandler:
         pass
 
     @staticmethod
-    def create_new_pipe(params, eid, demand, diameter, loss, roughness, status, nodes, densify_vertices):
+    def create_new_pipe(params, eid, diameter, loss, roughness, status, nodes, densify_vertices):
 
         pipes_caps = params.pipes_vlay.dataProvider().capabilities()
         if pipes_caps and QgsVectorDataProvider.AddFeatures:
@@ -238,7 +238,7 @@ class LinkHandler:
             try:
                 new_pipe_ft = QgsFeature(params.pipes_vlay.pendingFields())
                 new_pipe_ft.setAttribute(Pipe.field_name_eid, eid)
-                new_pipe_ft.setAttribute(Pipe.field_name_demand, demand)
+                # new_pipe_ft.setAttribute(Pipe.field_name_demand, demand)
                 new_pipe_ft.setAttribute(Pipe.field_name_diameter, diameter)
                 new_pipe_ft.setAttribute(Pipe.field_name_length, length_3d)
                 new_pipe_ft.setAttribute(Pipe.field_name_minor_loss, loss)
@@ -371,7 +371,7 @@ class LinkHandler:
             after_add = 1
 
         # Split only if vertex is not at line ends
-        demand = pipe_ft.attribute(Pipe.field_name_demand)
+        # demand = pipe_ft.attribute(Pipe.field_name_demand)
         p_diameter = pipe_ft.attribute(Pipe.field_name_diameter)
         loss = pipe_ft.attribute(Pipe.field_name_minor_loss)
         roughness = pipe_ft.attribute(Pipe.field_name_roughness)
@@ -413,7 +413,6 @@ class LinkHandler:
                 pipe_ft_1 = LinkHandler.create_new_pipe(
                     params,
                     pipe_eid,
-                    demand,
                     p_diameter,
                     loss,
                     roughness,
@@ -431,7 +430,6 @@ class LinkHandler:
                 pipe_ft_2 = LinkHandler.create_new_pipe(
                     params,
                     pipe_eid,
-                    demand,
                     p_diameter,
                     loss,
                     roughness,
@@ -629,13 +627,13 @@ class LinkHandler:
         eid = NetworkUtils.find_next_id(parameters.pipes_vlay, 'L')  # TODO: softcode
 
         # TODO: let the user set the attributes
-        demand = pipe1_ft.attribute(Pipe.field_name_demand)
+        # demand = pipe1_ft.attribute(Pipe.field_name_demand)
         diameter = pipe1_ft.attribute(Pipe.field_name_diameter)
         loss = pipe1_ft.attribute(Pipe.field_name_minor_loss)
         roughness = pipe1_ft.attribute(Pipe.field_name_roughness)
         status = pipe1_ft.attribute(Pipe.field_name_status)
 
-        LinkHandler.create_new_pipe(parameters, eid, demand, diameter, loss, roughness, status, new_geom_pts, False)
+        LinkHandler.create_new_pipe(parameters, eid, diameter, loss, roughness, status, new_geom_pts, False)
 
     @staticmethod
     def calc_3d_length(parameters, pipe_geom):
