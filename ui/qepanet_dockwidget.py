@@ -258,6 +258,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.txt_prj_file.setText(self.inp_file_path)
 
+        # Read inp file
         if os.path.isfile(self.inp_file_path):
             inp_reader = InpReader(self.inp_file_path)
 
@@ -265,37 +266,78 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
             if new_layers_d:
                 self.load_layers(new_layers_d)
+                self.count_elements()
             else:
                 self.create_empty_layers()
 
+    def count_elements(self):
+
+        jun_count = self.params.junctions_vlay.featureCount()
+        res_count = self.params.reservoirs_vlay.featureCount()
+        tan_count = self.params.tanks_vlay.featureCount()
+        pip_count = self.params.pipes_vlay.featureCount()
+        pum_count = self.params.pumps_vlay.featureCount()
+        val_count = self.params.valves_vlay.featureCount()
+
+        text = 'Load OK. ' +\
+               str(jun_count) + ' junctions, ' + \
+               str(res_count) + ' reservoirs, ' + \
+               str(tan_count) + ' tanks, ' + \
+               str(pip_count) + ' pipes, ' + \
+               str(pum_count) + ' pumps and ' + \
+               str(val_count) + ' valvesl were loaded.'
+
+        msg_box = QMessageBox(self)
+        msg_box.setWindowTitle(Parameters.plug_in_name)
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.setText(text)
+        msg_box.exec_()
+
     def load_layers(self, new_layers_d):
 
-        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Pipe.section_name])
-        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Valve.section_name])
-        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Pump.section_name])
-        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Tank.section_name])
-        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Reservoir.section_name])
-        QgsMapLayerRegistry.instance().addMapLayer(new_layers_d[Junction.section_name])
-
-        # update combos and params
-        if Junction.section_name in new_layers_d.keys():
+        if new_layers_d[Junction.section_name] is not None:
             self.params.junctions_vlay = new_layers_d[Junction.section_name]
-            self.set_layercombo_index(self.cbo_junctions, new_layers_d[Junction.section_name].id())
-        if Reservoir.section_name in new_layers_d.keys():
+        else:
+            self.params.junctions_vlay = MemoryDS.create_junctions_lay(crs=None)
+
+        if new_layers_d[Reservoir.section_name] is not None:
             self.params.reservoirs_vlay = new_layers_d[Reservoir.section_name]
-            self.set_layercombo_index(self.cbo_reservoirs, new_layers_d[Reservoir.section_name].id())
-        if Tank.section_name in new_layers_d.keys():
+        else:
+            self.params.reservoirs_vlay = MemoryDS.create_reservoirs_lay(crs=None)
+
+        if new_layers_d[Tank.section_name] is not None:
             self.params.tanks_vlay = new_layers_d[Tank.section_name]
-            self.set_layercombo_index(self.cbo_tanks, new_layers_d[Tank.section_name].id())
-        if Pipe.section_name in new_layers_d.keys():
+        else:
+            self.params.tanks_vlay = MemoryDS.create_tanks_lay(crs=None)
+
+        if new_layers_d[Pipe.section_name] is not None:
             self.params.pipes_vlay = new_layers_d[Pipe.section_name]
-            self.set_layercombo_index(self.cbo_pipes, new_layers_d[Pipe.section_name].id())
-        if Pump.section_name in new_layers_d.keys():
+        else:
+            self.params.pipes_vlay = MemoryDS.create_pipes_lay(crs=None)
+
+        if new_layers_d[Pump.section_name] is not None:
             self.params.pumps_vlay = new_layers_d[Pump.section_name]
-            self.set_layercombo_index(self.cbo_pumps, new_layers_d[Pump.section_name].id())
-        if Valve.section_name in new_layers_d.keys():
+        else:
+            self.params.pumps_vlay = MemoryDS.create_pumps_lay(crs=None)
+
+        if new_layers_d[Valve.section_name] is not None:
             self.params.valves_vlay = new_layers_d[Valve.section_name]
-            self.set_layercombo_index(self.cbo_valves, new_layers_d[Valve.section_name].id())
+        else:
+            self.params.valves_vlay = MemoryDS.create_valves_lay(crs=None)
+
+        QgsMapLayerRegistry.instance().addMapLayers([self.params.junctions_vlay,
+                                                    self.params.reservoirs_vlay,
+                                                    self.params.tanks_vlay,
+                                                    self.params.pipes_vlay,
+                                                    self.params.pumps_vlay,
+                                                    self.params.valves_vlay])
+
+        self.set_layercombo_index(self.cbo_junctions, self.params.junctions_vlay.id())
+        self.set_layercombo_index(self.cbo_reservoirs, self.params.reservoirs_vlay.id())
+        self.set_layercombo_index(self.cbo_tanks, self.params.tanks_vlay.id())
+        self.set_layercombo_index(self.cbo_pipes, self.params.pipes_vlay.id())
+        self.set_layercombo_index(self.cbo_pumps, self.params.pumps_vlay.id())
+        self.set_layercombo_index(self.cbo_valves, self.params.valves_vlay.id())
 
         # Apply symbologies
         self.apply_symbologies()
@@ -696,11 +738,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def update_layers_combos(self):
 
-        prev_nodes_lay_id = self.cbo_junctions.itemData(self.cbo_junctions.currentIndex())
-        prev_pipes_lay_id = self.cbo_pipes.itemData(self.cbo_pipes.currentIndex())
-        prev_pumps_lay_id = self.cbo_pumps.itemData(self.cbo_pumps.currentIndex())
+        prev_junctions_lay_id = self.cbo_junctions.itemData(self.cbo_junctions.currentIndex())
         prev_reservoirs_lay_id = self.cbo_reservoirs.itemData(self.cbo_reservoirs.currentIndex())
         prev_tanks_lay_id = self.cbo_tanks.itemData(self.cbo_tanks.currentIndex())
+        prev_pipes_lay_id = self.cbo_pipes.itemData(self.cbo_pipes.currentIndex())
+        prev_pumps_lay_id = self.cbo_pumps.itemData(self.cbo_pumps.currentIndex())
         prev_valves_lay_id = self.cbo_valves.itemData(self.cbo_valves.currentIndex())
 
         prev_dem_lay_id = self.cbo_dem.itemData(self.cbo_dem.currentIndex())
@@ -731,12 +773,18 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                         self.cbo_valves.addItem(layer.name(), layer.id())
 
         # Reset combo selections
-        self.params.junctions_vlay = self.set_layercombo_index(self.cbo_junctions, prev_nodes_lay_id)
-        self.params.reservoirs_vlay = self.set_layercombo_index(self.cbo_reservoirs, prev_reservoirs_lay_id)
-        self.params.tanks_vlay = self.set_layercombo_index(self.cbo_tanks, prev_tanks_lay_id)
-        self.params.pipes_vlay = self.set_layercombo_index(self.cbo_pipes, prev_pipes_lay_id)
-        self.params.pumps_vlay = self.set_layercombo_index(self.cbo_pumps, prev_pumps_lay_id)
-        self.params.valves_vlay = self.set_layercombo_index(self.cbo_valves, prev_valves_lay_id)
+        if prev_junctions_lay_id is not None:
+            self.set_layercombo_index(self.cbo_junctions, prev_junctions_lay_id)
+        if prev_reservoirs_lay_id is not None:
+            self.set_layercombo_index(self.cbo_reservoirs, prev_reservoirs_lay_id)
+        if prev_tanks_lay_id is not None:
+            self.params.tanks_vlay = self.set_layercombo_index(self.cbo_tanks, prev_tanks_lay_id)
+        if prev_pipes_lay_id is not None:
+            self.params.pipes_vlay = self.set_layercombo_index(self.cbo_pipes, prev_pipes_lay_id)
+        if prev_pumps_lay_id is not None:
+            self.params.pumps_vlay = self.set_layercombo_index(self.cbo_pumps, prev_pumps_lay_id)
+        if prev_valves_lay_id is not None:
+            self.params.valves_vlay = self.set_layercombo_index(self.cbo_valves, prev_valves_lay_id)
 
         self.params.dem_rlay = self.set_layercombo_index(self.cbo_dem, prev_dem_lay_id)
 

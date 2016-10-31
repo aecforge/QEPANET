@@ -58,6 +58,12 @@ class InpReader:
         report = d.getReportSection()
         options = d.getOptionsSection()
 
+        # Check for QEPANET section in inp file. If it's there, update layer attributes
+        qepanet_junctions_od = self.read_qepanet_junctions()
+        qepanet_tanks_od = self.read_qepanet_tanks()
+        qepanet_reservoirs_od = self.read_qepanet_reservoirs()
+
+        # Create layers and update
         if mixing:
             self.update_mixing(mixing)
         if reactions:
@@ -114,6 +120,7 @@ class InpReader:
                 vertxyFinal.append(vertxy)
 
         # Get data of Junctions
+        junctions_lay = None
         if d.getBinNodeJunctionCount() > 0:
             # Write Junction Shapefile
             junctions_lay = QgsVectorLayer('Point', 'Junctions', 'memory')
@@ -130,6 +137,10 @@ class InpReader:
 
         # Get data of Pipes
         # Write shapefile pipe
+        pipes_lay = None
+        pumps_lay = None
+        valves_lay = None
+
         if links_count > 0:
 
             # Pipes
@@ -171,6 +182,7 @@ class InpReader:
             linkMinorloss = d.getBinLinkMinorLossCoeff()
 
         # Write Tank Shapefile and get tank data
+        tanks_lay = None
         if d.getBinNodeTankCount() > 0:
             tanks_lay = QgsVectorLayer('Point', 'Tanks', 'memory')
             tanks_lay.setCrs(crs)
@@ -191,6 +203,7 @@ class InpReader:
             ndTankID = d.getBinNodeTankNameID()
 
         # Write Reservoir Shapefile
+        reservoirs_lay = None
         if d.getBinNodeReservoirCount() > 0:
             reservoirs_lay = QgsVectorLayer('Point', 'Reservoirs', 'memory')
             reservoirs_lay.setCrs(crs)
@@ -198,7 +211,7 @@ class InpReader:
             reservoirs_lay_dp.addAttributes(Reservoir.fields)
             reservoirs_lay.updateFields()
 
-            head = d.getBinNodeReservoirElevations()
+            reservoirs_elev = d.getBinNodeReservoirElevations()
             # posReservoirs.startEditing()
 
         vvLink = 68
@@ -207,6 +220,7 @@ class InpReader:
         vPos = 0
         pPos = 0
         pPosPower = 0
+        pPosHead = 0
         pPosSpeed = 0
 
         for i in range(ss):
@@ -217,8 +231,13 @@ class InpReader:
             if i < d.getBinNodeJunctionCount():
                 featJ = QgsFeature()
                 point = QgsPoint(float(x[i]), float(y[i]))
+
+                delta_z = 0
+                if qepanet_junctions_od:
+                    delta_z = qepanet_junctions_od[ndID[i]]
+
                 featJ.setGeometry(QgsGeometry.fromPoint(point))
-                featJ.setAttributes([ndID[i], ndEle[i], 0, ndPatID[i], ndBaseD[i]]) # TODO: handle elev_corr
+                featJ.setAttributes([ndID[i], ndEle[i] - delta_z, delta_z, ndPatID[i], ndBaseD[i]])
                 junctions_lay_dp.addFeatures([featJ])
 
             if i < links_count:
@@ -252,7 +271,7 @@ class InpReader:
                     pumpNameIDPower = d.getBinLinkPumpNameIDPower()
 
                     param = None
-                    head = None
+                    reservoirs_elev = None
                     power = None
                     speed = 0
 
@@ -262,7 +281,8 @@ class InpReader:
                         pPosPower += 1
                     else:
                         param = 'HEAD'
-                        head = cheadpump[pPos]
+                        reservoirs_elev = cheadpump[pPosHead]
+                        pPosHead +=1
 
                     if len(pumpNameIDPower) > 0:
                         for uu in range(0, len(pumpNameIDPower)):
@@ -302,7 +322,7 @@ class InpReader:
                     # if pattern:
                     #     pattern = 'NULL'
 
-                    featPump.setAttributes([linkID[i], param, head, power, speed])
+                    featPump.setAttributes([linkID[i], param, reservoirs_elev, power, speed])
                     pumps_lay_dp.addFeatures([featPump])
 
                     pPos += 1
@@ -361,17 +381,28 @@ class InpReader:
                 featTank = QgsFeature()
                 point = QgsPoint(float(x[p]), float(y[p]))
                 featTank.setGeometry(QgsGeometry.fromPoint(point))
+
+                delta_z = 0
+                if qepanet_tanks_od:
+                    delta_z = qepanet_tanks_od[ndTankID[i]]
+
                 featTank.setAttributes(
-                    [ndTankID[i], ndTankelevation[i], 0, initiallev[i], minimumlev[i], maximumlev[i], diameter[i], # TODO: add elev corr handling
+                    [ndTankID[i], ndTankelevation[i] - delta_z, delta_z, initiallev[i], minimumlev[i], maximumlev[i], diameter[i],
                      minimumvol[i], volumecurv[i]])
                 tanks_lay_dp.addFeatures([featTank])
 
             if i < d.getBinNodeReservoirCount():
                 p = d.getBinNodeReservoirIndex()[i] - 1
+
                 feature = QgsFeature()
                 point = QgsPoint(float(x[p]), float(y[p]))
                 feature.setGeometry(QgsGeometry.fromPoint(point))
-                feature.setAttributes([ndID[p], head[i], 0]) # TODO: add elev corr handling
+
+                delta_z = 0
+                if qepanet_reservoirs_od:
+                    delta_z = qepanet_reservoirs_od[ndID[p]]
+
+                feature.setAttributes([ndID[p], reservoirs_elev[i] - delta_z, delta_z])
                 reservoirs_lay_dp.addFeatures([feature])
 
         return {Junction.section_name: junctions_lay,
@@ -380,70 +411,6 @@ class InpReader:
                 Pipe.section_name: pipes_lay,
                 Pump.section_name: pumps_lay,
                 Valve.section_name: valves_lay}
-
-    def read_section(self, section_name):
-
-        section_started = False
-        start_line = None
-        end_line = None
-        for l in range(len(self.lines)):
-            if section_name.upper() in self.lines[l].upper():
-                section_started = True
-                start_line = l + 1
-                continue
-            if self.lines[l].startswith('[') and section_started:
-                end_line = l - 1
-                break
-
-        if start_line is None:
-            return None
-
-        if end_line is None:
-            end_line = len(self.lines)
-
-        return self.lines[start_line:end_line]
-
-    def read_extra_junctions(self):
-
-        lines = self.read_section('[QEPANET-JUNCTIONS')
-
-        junctions_elevcorr_od = OrderedDict()
-        for line in lines:
-            if line.strip().startswith(';'):
-                continue
-            words = line.split()
-            if len(words) > 1:
-                junctions_elevcorr_od[words[0].strip()] = float(words[1].strip())
-
-        return junctions_elevcorr_od
-
-    def read_extra_reservoirs(self):
-
-        lines = self.read_section('[QEPANET-RESERVOIRS]')
-
-        reservoirs_elevcorr_od = OrderedDict()
-        for line in lines:
-            if line.strip().startswith(';'):
-                continue
-            words = line.split()
-            if len(words) > 1:
-                reservoirs_elevcorr_od[words[0].strip()] = float(words[1].strip())
-
-        return reservoirs_elevcorr_od
-
-    def read_extra_tanks(self):
-
-        lines = self.read_section('[QEPANET-TANKS]')
-
-        tanks_elevcorr_od = OrderedDict()
-        for line in lines:
-            if line.strip().startswith(';'):
-                continue
-            words = line.split()
-            if len(words) > 1:
-                tanks_elevcorr_od[words[0].strip()] = float(words[1].strip())
-
-        return tanks_elevcorr_od
 
     def update_mixing(self, mixing):
         # TODO
@@ -534,7 +501,7 @@ class InpReader:
                 self.params.times.report_start = self.hour_from_text(t[2])
             elif t[0].upper() == 'START' and t[1].upper() == 'CLOCKTIME':
                 time = self.hour_from_text(t[2])
-                if t[3].upper() == 'PM':
+                if len(t) > 3 and t[3].upper() == 'PM':
                     time += 12
                 self.params.times.clocktime_start = time
             elif t[0].upper() == 'STATISTIC':
@@ -609,7 +576,10 @@ class InpReader:
                     unbalanced.unbalanced = Unbalanced.unb_stop
                 self.params.options.unbalanced = unbalanced
             elif o[0].upper() == 'PATTERN':
-                self.params.options.pattern = self.params.patterns[o[1]]
+                if o[1] in self.params.patterns:
+                    self.params.options.pattern = self.params.patterns[o[1]]
+                else:
+                    self.params.options.pattern = None
             elif o[0].upper() == 'DEMAND' and o[1].upper() == 'MULTIPLIER':
                 self.params.options.demand_mult = float(o[2])
             elif o[0].upper() == 'EMITTER' and o[2].upper() == 'EXPONENT':
@@ -655,7 +625,73 @@ class InpReader:
 
         return hour
 
+    def read_section(self, section_name):
+
+        section_name = '[' + section_name + ']'
+
+        section_started = False
+        start_line = None
+        end_line = None
+        for l in range(len(self.lines)):
+            if section_name.upper() in self.lines[l].upper():
+                section_started = True
+                start_line = l + 1
+                continue
+            if self.lines[l].startswith('[') and section_started:
+                end_line = l - 1
+                break
+
+        if start_line is None:
+            return None
+
+        if end_line is None:
+            end_line = len(self.lines)
+
+        return self.lines[start_line:end_line]
+
+    def read_qepanet_junctions(self):
+
+        lines = self.read_section('QEPANET-JUNCTIONS')
+
+        junctions_elevcorr_od = OrderedDict()
+        if lines is not None:
+            for line in lines:
+                if line.strip().startswith(';'):
+                    continue
+                words = line.split()
+                if len(words) > 1:
+                    junctions_elevcorr_od[words[0].strip()] = float(words[1].strip())
+
+        return junctions_elevcorr_od
+
+    def read_qepanet_reservoirs(self):
+
+        lines = self.read_section('QEPANET-RESERVOIRS')
+        reservoirs_elevcorr_od = OrderedDict()
+        if lines is not None:
+            for line in lines:
+                if line.strip().startswith(';'):
+                    continue
+                words = line.split()
+                if len(words) > 1:
+                    reservoirs_elevcorr_od[words[0].strip()] = float(words[1].strip())
+
+        return reservoirs_elevcorr_od
+
+    def read_qepanet_tanks(self):
+
+        lines = self.read_section('QEPANET-TANKS')
+        tanks_elevcorr_od = OrderedDict()
+        if lines is not None:
+            for line in lines:
+                if line.strip().startswith(';'):
+                    continue
+                words = line.split()
+                if len(words) > 1:
+                    tanks_elevcorr_od[words[0].strip()] = float(words[1].strip())
+
+        return tanks_elevcorr_od
 
 
-ir = InpReader('D:/temp/5.inp')
-print ir.read_extra_tanks()
+# ir = InpReader('D:/temp/5.inp')
+# print ir.read_qepanet_tanks()

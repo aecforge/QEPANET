@@ -32,6 +32,7 @@ class Controls:
 
 class Demand:
     section_name = 'DEMANDS'
+    section_header = 'Junction        	Demand      	Pattern         	Category'
 
     def __init__(self):
         pass

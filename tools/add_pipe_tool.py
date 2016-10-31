@@ -159,6 +159,9 @@ class AddPipeTool(QgsMapTool):
                 rubberband_pts = pipe_band_geom.asPolyline()[:-1]
                 rubberband_pts = self.remove_duplicated_point(rubberband_pts)
 
+                if len(rubberband_pts) < 2:
+                    return
+
                 # Check whether the pipe points are located on existing nodes
                 junct_nrs = [0]
                 for p in range(1, len(rubberband_pts) - 1):

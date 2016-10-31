@@ -1,7 +1,7 @@
 import codecs
 import os
 
-from network import Title, Junction, Reservoir, Tank, Pipe, Pump, Valve, Coordinate, Vertex
+from network import *
 from qgis.core import NULL
 from system_ops import Controls, Curve, Demand, Energy, Pattern, Rule, Status
 import math
@@ -9,6 +9,7 @@ from ..model.options_report import Times, Report
 from options_report import Options, Quality
 from ..model.network_handling import NetworkUtils
 from ..model.water_quality import Reactions
+
 
 class InpFile:
     
@@ -191,21 +192,21 @@ class InpFile:
             # Valves
             InpFile._append_valves(params, out)
 
-            # Emitters
-            # TODO
+            # Tags
+            # NO
 
-            # SYSTEM OPERATIONS
-            # Curves
-            InpFile._append_curves(params, out)
-
-            # Patterns
-            InpFile._append_patterns(params, out)
-
-            # Energy
-            InpFile._append_energy(params, out)
+            # Demands
+            InpFile._append_demands(params, out)
 
             # Status
             InpFile._append_status(params, out)
+
+            # SYSTEM OPERATIONS
+            # Patterns
+            InpFile._append_patterns(params, out)
+
+            # Curves
+            InpFile._append_curves(params, out)
 
             # Controls
             InpFile._append_controls(params, out)
@@ -213,18 +214,21 @@ class InpFile:
             # Rules
             InpFile._append_rules(params, out)
 
-            # Demands
-            InpFile._append_demands(params, out)
+            # Energy
+            InpFile._append_energy(params, out)
+
+            # Emitters
+            # TODO
 
             # WATER QUALITY
             # Quality
             # TODO
 
-            # Reactions
-            InpFile._append_opt_reactions(params, out)
-
             # Sources
             # TODO
+
+            # Reactions
+            InpFile._append_opt_reactions(params, out)
 
             # Mixing
             # TODO
@@ -249,11 +253,11 @@ class InpFile:
             # Backdrop
             # NO
 
-            # Tags
-            # NO
-
             # End
             out.append('[END]')
+
+            # Write QEPANET proprietary stuff
+            InpFile._append_qepanet(params, out)
 
             # Write
             for line in out:
@@ -328,6 +332,7 @@ class InpFile:
     @staticmethod
     def _append_demands(params, out):
         out.extend(InpFile.build_section_keyword(Demand.section_name))
+        out.append(InpFile.build_section_header(Demand.section_header))
         # TODO
 
     @staticmethod
@@ -350,16 +355,16 @@ class InpFile:
             eid = j_ft.attribute(Junction.field_name_eid)
             demand = j_ft.attribute(Junction.field_name_demand)
             elev = j_ft.attribute(Junction.field_name_elev)
-            elev_corr = j_ft.attribute(Junction.field_name_elev_corr)
+            delta_z = j_ft.attribute(Junction.field_name_delta_z)
             pattern = j_ft.attribute(Junction.field_name_pattern)
             if pattern == NULL:
                 pattern = ''
 
-            if elev_corr is None:
-                elev_corr = 0
+            if delta_z is None:
+                delta_z = 0
 
 
-            elev += elev_corr
+            elev += delta_z
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
@@ -408,7 +413,7 @@ class InpFile:
             pattern_val = params.options.pattern.id
         else:
             pattern_val = 1
-        out.append(InpFile.pad('PATTERN', InpFile.pad_22) + pattern_val)
+        out.append(InpFile.pad('PATTERN', InpFile.pad_22) + str(pattern_val))
         out.append(InpFile.pad('DEMAND MULTIPLIER', InpFile.pad_22) + str(params.options.demand_mult))
         out.append(InpFile.pad('EMITTER EXPONENT', InpFile.pad_22) + str(params.options.emitter_exp))
         out.append(InpFile.pad('TOLERANCE', InpFile.pad_22) + str(params.options.tolerance))
@@ -504,7 +509,7 @@ class InpFile:
             eid = p_ft.attribute(Pump.field_name_eid)
 
             # Find start/end nodes
-            adj_nodes = NetworkUtils.find_start_end_nodes(params, p_ft.geometry(), False, True, True)
+            adj_nodes = NetworkUtils.find_start_end_nodes(params, p_ft.geometry(), False, False, False)
             start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
             end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
 
@@ -567,7 +572,7 @@ class InpFile:
         for r_ft in r_fts:
             eid = r_ft.attribute(Reservoir.field_name_eid)
             elev = r_ft.attribute(Reservoir.field_name_elev)
-            elev_corr = r_ft.attribute(Reservoir.field_name_elev_corr)
+            elev_corr = r_ft.attribute(Reservoir.field_name_delta_z)
             # head = r_ft.attribute(Reservoir.field_name_head)
             # pattern = r_ft.attribute(Reservoir.field_name_pattern) # TODO: add support for pattern
 
@@ -598,7 +603,7 @@ class InpFile:
             curve = t_ft.attribute(Tank.field_name_curve)
             diameter = t_ft.attribute(Tank.field_name_diameter)
             elev = t_ft.attribute(Tank.field_name_elev)
-            elev_corr = t_ft.attribute(Tank.field_name_elev_corr)
+            elev_corr = t_ft.attribute(Tank.field_name_delta_z)
             level_init = t_ft.attribute(Tank.field_name_level_init)
             level_max = t_ft.attribute(Tank.field_name_level_max)
             level_min = t_ft.attribute(Tank.field_name_level_min)
@@ -627,7 +632,7 @@ class InpFile:
     def _append_times(params, out):
 
         out.extend(InpFile.build_section_keyword(Times.section_name))
-        out.append(InpFile.pad('DURATION', InpFile.pad_22) + str(params.times.duration))
+        out.append(InpFile.pad('DURATION', InpFile.pad_22) + params.times.duration.get_as_text())
 
         out.append(InpFile.pad('HYDRAULIC TIMESTAMP', InpFile.pad_22) + params.times.hydraulic_timestamp.get_as_text())
         out.append(InpFile.pad('QUALITY TIMESTAMP', InpFile.pad_22) + params.times.quality_timestamp.get_as_text())
@@ -637,7 +642,7 @@ class InpFile:
         out.append(InpFile.pad('REPORT TIMESTAMP', InpFile.pad_22) + params.times.report_timestamp.get_as_text())
         out.append(InpFile.pad('REPORT START', InpFile.pad_22) + params.times.report_start.get_as_text())
         out.append(InpFile.pad('START CLOCKTIME', InpFile.pad_22) + params.times.clocktime_start.get_as_text())
-        out.append(InpFile.pad('STATISTIC', InpFile.pad_22) + str(params.times.statistic))
+        out.append(InpFile.pad('STATISTIC', InpFile.pad_22) + Times.stats_text[params.times.statistic])
 
     @staticmethod
     def _append_valves(params, out):
@@ -689,6 +694,58 @@ class InpFile:
                     out.append(line)
 
     @staticmethod
+    def _append_qepanet(params, out):
+
+        # QJUNCTIONS
+        out.extend(InpFile.build_section_keyword(QJunction.section_name))
+        out.append(InpFile.build_section_header(QJunction.section_header))
+
+        j_fts = params.junctions_vlay.getFeatures()
+        for j_ft in j_fts:
+            eid = j_ft.attribute(Junction.field_name_eid)
+            delta_z = j_ft.attribute(Junction.field_name_delta_z)
+
+            # Line
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(delta_z))
+
+            out.append(line)
+
+        # QRESERVOIRS
+        out.extend(InpFile.build_section_keyword(QReservoir.section_name))
+        out.append(InpFile.build_section_header(QReservoir.section_header))
+
+        j_fts = params.reservoirs_vlay.getFeatures()
+        for j_ft in j_fts:
+            eid = j_ft.attribute(Reservoir.field_name_eid)
+            delta_z = j_ft.attribute(Reservoir.field_name_delta_z)
+
+            # Line
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(delta_z))
+
+            out.append(line)
+
+        # QTANKS
+        out.extend(InpFile.build_section_keyword(QTank.section_name))
+        out.append(InpFile.build_section_header(QTank.section_header))
+
+        j_fts = params.tanks_vlay.getFeatures()
+        for j_ft in j_fts:
+            eid = j_ft.attribute(Tank.field_name_eid)
+            delta_z = j_ft.attribute(Tank.field_name_delta_z)
+
+            # Line
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(delta_z))
+
+            out.append(line)
+
+        # QOPTIONS
+        out.extend(InpFile.build_section_keyword(QOptions.section_name))
+
+
+    @staticmethod
     def split_line(line, n=255):
         lines = [line[i:i + n] for i in range(0, len(line), n)]
         return lines
@@ -724,6 +781,8 @@ class InpFile:
             for vpl in range(vals_per_line):
                 line += svalues[v]
                 v += 1
+                if v >= len(svalues):
+                    break
             lines.append(line)
 
         return lines

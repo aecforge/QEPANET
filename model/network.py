@@ -29,12 +29,12 @@ class Junction:
     field_name_eid = 'id'
     field_name_demand = 'demand'
     field_name_elev = 'elev'
-    field_name_elev_corr = 'elev_corr'
+    field_name_delta_z = 'delta_z'
     field_name_pattern = 'pattern'
 
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_elev, QVariant.Double),
-              QgsField(field_name_elev_corr, QVariant.Double),
+              QgsField(field_name_delta_z, QVariant.Double),
               QgsField(field_name_pattern, QVariant.String),
               QgsField(field_name_demand, QVariant.Double)]
 
@@ -47,17 +47,49 @@ class Junction:
         self.emitter_coeff = 0
 
 
+class QJunction:
+    section_name = 'QEPANET-JUNCTIONS'
+    section_header = 'ID               	DeltaZ'
+    field_name_eid = 'id'
+    field_name_delta_z = 'delta_z'
+
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_delta_z, QVariant.Double)]
+
+
+class QReservoir:
+    section_name = 'QEPANET-RESERVOIRS'
+    section_header = 'ID               	DeltaZ'
+    field_name_eid = 'id'
+    field_name_delta_z = 'delta_z'
+
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_delta_z, QVariant.Double)]
+
+
+class QTank:
+    section_name = 'QEPANET-TANKS'
+    section_header = 'ID               	DeltaZ'
+    field_name_eid = 'id'
+    field_name_delta_z = 'delta_z'
+
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_delta_z, QVariant.Double)]
+
+class QOptions:
+    section_name = 'QOPTIONS'
+
 class Reservoir:
     section_name = 'RESERVOIRS'
     section_header = 'ID               	Head      	Pattern'
     field_name_eid = 'id'
     field_name_elev = 'elev'
-    field_name_elev_corr = 'elev_corr'
+    field_name_delta_z = 'delta_z'
     field_name_pattern = 'pattern'
 
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_elev, QVariant.Double),
-              QgsField(field_name_elev_corr, QVariant.Double)]
+              QgsField(field_name_delta_z, QVariant.Double)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -74,7 +106,7 @@ class Tank:
     field_name_curve = 'curve'
     field_name_diameter = 'diameter'
     field_name_elev = 'elev'
-    field_name_elev_corr = 'elev_corr'
+    field_name_delta_z = 'delta_z'
     field_name_level_init = 'init_level'
     field_name_level_max = 'max_level'
     field_name_level_min = 'min_level'
@@ -82,7 +114,7 @@ class Tank:
 
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_elev, QVariant.Double),
-              QgsField(field_name_elev_corr, QVariant.Double),
+              QgsField(field_name_delta_z, QVariant.Double),
               QgsField(field_name_level_init, QVariant.Double),
               QgsField(field_name_level_min, QVariant.Double),
               QgsField(field_name_level_max, QVariant.Double),

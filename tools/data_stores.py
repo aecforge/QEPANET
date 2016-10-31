@@ -34,7 +34,8 @@ class MemoryDS:
     def create_junctions_lay(geoms=None, ids=None, demands=None, elevs=None, elev_corrs=None, patterns=None, crs=None):
 
         junctions_lay = QgsVectorLayer('Point', 'Junctions', 'memory')
-        junctions_lay.setCrs(crs)
+        if crs is not None:
+            junctions_lay.setCrs(crs)
         junctions_lay_dp = junctions_lay.dataProvider()
         junctions_lay_dp.addAttributes(Junction.fields)
         junctions_lay.updateFields()
@@ -53,7 +54,7 @@ class MemoryDS:
                 node_ft.setAttribute(Junction.field_name_eid, junction_id)
                 # node_ft.setAttribute(Junction.field_name_demand, demand)
                 node_ft.setAttribute(Junction.field_name_elev, elev)
-                node_ft.setAttribute(Junction.field_name_elev_corr, elev_corr)
+                node_ft.setAttribute(Junction.field_name_delta_z, elev_corr)
                 node_ft.setAttribute(Junction.field_name_pattern, pattern)
 
                 junctions_lay.addFeature(node_ft)
@@ -64,7 +65,8 @@ class MemoryDS:
     def create_reservoirs_lay(geoms=None, ids=None, elevs=None, elevs_corr=None, crs=None):
 
         reservoirs_lay = QgsVectorLayer('Point', 'Reservoirs', 'memory')
-        reservoirs_lay.setCrs(crs)
+        if crs is not None:
+            reservoirs_lay.setCrs(crs)
         reservoirs_lay_dp = reservoirs_lay.dataProvider()
         reservoirs_lay_dp.addAttributes(Reservoir.fields)
         reservoirs_lay.updateFields()
@@ -80,7 +82,7 @@ class MemoryDS:
 
                 reservoir_ft.setAttribute(Reservoir.field_name_eid, reservoir_id)
                 reservoir_ft.setAttribute(Reservoir.field_name_elev, elev)
-                reservoir_ft.setAttribute(Reservoir.field_name_elev_corr, elev_corr)
+                reservoir_ft.setAttribute(Reservoir.field_name_delta_z, elev_corr)
                 reservoirs_lay.addFeature(reservoir_ft)
 
         return reservoirs_lay
@@ -90,15 +92,16 @@ class MemoryDS:
                          levels_init=None, levels_max=None, levels_min=None, vols_min=None, crs=None):
 
         tanks_lay = QgsVectorLayer('Point', 'Tanks', 'memory')
-        tanks_lay.setCrs(crs)
+        if crs is not None:
+            tanks_lay.setCrs(crs)
         tanks_lay_dp = tanks_lay.dataProvider()
-        tanks_lay_dp.addAttributes(Reservoir.fields)
+        tanks_lay_dp.addAttributes(Tank.fields)
         tanks_lay.updateFields()
 
         if geoms is not None:
             for n in range(len(geoms)):
-                reservoir_ft = QgsFeature()
-                reservoir_ft.setGeometry(geoms[n])
+                tanks_ft = QgsFeature()
+                tanks_ft.setGeometry(geoms[n])
 
                 tank_id = ids[n] if ids is not None else None
                 curve = curves[n] if curves is not None else None
@@ -110,16 +113,16 @@ class MemoryDS:
                 level_min = levels_min[n] if levels_min is not None else None
                 vol_min = vols_min[n] if vols_min is not None else None
 
-                reservoir_ft.setAttribute(Tank.field_name_eid, tank_id)
-                reservoir_ft.setAttribute(Tank.field_name_curve, curve)
-                reservoir_ft.setAttribute(Tank.field_name_diameter, diameter)
-                reservoir_ft.setAttribute(Tank.field_name_elev, elev)
-                reservoir_ft.setAttribute(Tank.field_name_elev_corr, elev_corr)
-                reservoir_ft.setAttribute(Tank.field_name_level_init, level_init)
-                reservoir_ft.setAttribute(Tank.field_name_level_max, level_max)
-                reservoir_ft.setAttribute(Tank.field_name_level_min, level_min)
-                reservoir_ft.setAttribute(Tank.field_name_vol_min, vol_min)
-                tanks_lay.addFeature(reservoir_ft)
+                tanks_ft.setAttribute(Tank.field_name_eid, tank_id)
+                tanks_ft.setAttribute(Tank.field_name_curve, curve)
+                tanks_ft.setAttribute(Tank.field_name_diameter, diameter)
+                tanks_ft.setAttribute(Tank.field_name_elev, elev)
+                tanks_ft.setAttribute(Tank.field_name_delta_z, elev_corr)
+                tanks_ft.setAttribute(Tank.field_name_level_init, level_init)
+                tanks_ft.setAttribute(Tank.field_name_level_max, level_max)
+                tanks_ft.setAttribute(Tank.field_name_level_min, level_min)
+                tanks_ft.setAttribute(Tank.field_name_vol_min, vol_min)
+                tanks_lay.addFeature(tanks_ft)
 
         return tanks_lay
 
@@ -128,7 +131,8 @@ class MemoryDS:
                          statuses=None, minor_losses=None, crs=None):
 
         pipes_lay = QgsVectorLayer('LineString', 'Pipes', 'memory')
-        pipes_lay.setCrs(crs)
+        if crs is not None:
+            pipes_lay.setCrs(crs)
         pipes_lay_dp = pipes_lay.dataProvider()
         pipes_lay_dp.addAttributes(Pipe.fields)
         pipes_lay.updateFields()
@@ -160,7 +164,8 @@ class MemoryDS:
     def create_pumps_lay(geoms=None, ids=None, head_curve_ids=None, powers=None, speeds=None, patterns=None, crs=None):
         
         pumps_lay = QgsVectorLayer('LineString', 'Pumps', 'memory')
-        pumps_lay.setCrs(crs)
+        if crs is not None:
+            pumps_lay.setCrs(crs)
         pumps_lay_dp = pumps_lay.dataProvider()
         pumps_lay_dp.addAttributes(Pump.fields)
         pumps_lay.updateFields()
@@ -189,7 +194,8 @@ class MemoryDS:
     def create_valves_lay(geoms=None, ids=None, diameters=None, minor_losses=None, settings=None, types=None, crs=None):
         
         valves_lay = QgsVectorLayer('LineString', 'Valves', 'memory')
-        valves_lay.setCrs(crs)
+        if crs is not None:
+            valves_lay.setCrs(crs)
         valves_lay_dp = valves_lay.dataProvider()
         valves_lay_dp.addAttributes(Valve.fields)
         valves_lay.updateFields()
@@ -288,7 +294,7 @@ class ShapefileDS:
         fields.append(QgsField(QgsField(Junction.field_name_eid, QVariant.String)))
         fields.append(QgsField(QgsField(Junction.field_name_demand, QVariant.Double)))
         fields.append(QgsField(Junction.field_name_elev, QVariant.Double))
-        fields.append(QgsField(Junction.field_name_elev_corr, QVariant.Double))
+        fields.append(QgsField(Junction.field_name_delta_z, QVariant.Double))
         fields.append(QgsField(Junction.field_name_pattern, QVariant.String))
         fields.append(QgsField(Junction.field_name_emitter_coeff, QVariant.Double))
 
@@ -302,7 +308,7 @@ class ShapefileDS:
         fields = QgsFields()
         fields.append(QgsField(Reservoir.field_name_eid, QVariant.String))
         fields.append(QgsField(Reservoir.field_name_elev, QVariant.Double))
-        fields.append(QgsField(Reservoir.field_name_elev_corr, QVariant.Double))
+        fields.append(QgsField(Reservoir.field_name_delta_z, QVariant.Double))
         # fields.append(QgsField(Reservoir.field_name_head, QVariant.Double))
 
         writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBPoint, crs, "ESRI Shapefile")
@@ -317,7 +323,7 @@ class ShapefileDS:
         fields.append(QgsField(Tank.field_name_curve, QVariant.Int))
         fields.append(QgsField(Tank.field_name_diameter, QVariant.Double))
         fields.append(QgsField(Tank.field_name_elev, QVariant.Double))
-        fields.append(QgsField(Tank.field_name_elev_corr, QVariant.Double))
+        fields.append(QgsField(Tank.field_name_delta_z, QVariant.Double))
         fields.append(QgsField(Tank.field_name_level_init, QVariant.Double))
         fields.append(QgsField(Tank.field_name_level_max, QVariant.Double))
         fields.append(QgsField(Tank.field_name_level_min, QVariant.Double))

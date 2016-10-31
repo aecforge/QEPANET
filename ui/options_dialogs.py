@@ -150,6 +150,7 @@ class HydraulicsDialog(QDialog):
         self.txt_unbalanced.setText('1')
 
         # - Pattern
+        self.cbo_pattern.addItem('None (=1.0)', None)
         for pattern_id, pattern in self.params.patterns.iteritems():
             self.cbo_pattern.addItem(pattern_id, pattern)
 
@@ -196,10 +197,13 @@ class HydraulicsDialog(QDialog):
 
         # Patterns
         if self.params.options.pattern is not None:
-            for i in range(self.cbo_pattern.count()):
-                if self.params.options.pattern.id == self.cbo_pattern.itemText(i):
-                    self.cbo_pattern.setCurrentIndex(i)
-                    break
+            if self.params.options.pattern is None:
+                self.cbo_pattern.setCurrentIndex(0)
+            else:
+                for i in range(self.cbo_pattern.count()):
+                    if self.params.options.pattern.id == self.cbo_pattern.itemText(i):
+                        self.cbo_pattern.setCurrentIndex(i)
+                        break
 
         self.txt_demand_mult.setText(str(self.params.options.demand_mult))
         self.txt_emitter_exp.setText(str(self.params.options.emitter_exp))

@@ -15,7 +15,7 @@ from ..model.water_quality import Reactions
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.18'
+    plug_in_name = 'QEPANET 0.19'
     config_file_name = 'config.ini'
 
     path = os.path.dirname(os.path.realpath(__file__))

@@ -31,7 +31,7 @@ class NodeHandler:
                 new_junct_feat.setAttribute(Junction.field_name_eid, eid)
                 new_junct_feat.setAttribute(Junction.field_name_elev, elev)
                 # new_junct_feat.setAttribute(Junction.field_name_demand, demand)
-                new_junct_feat.setAttribute(Junction.field_name_elev_corr, depth)
+                new_junct_feat.setAttribute(Junction.field_name_delta_z, depth)
                 new_junct_feat.setAttribute(Junction.field_name_pattern, pattern_id)
 
                 new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
@@ -60,7 +60,7 @@ class NodeHandler:
                 new_reservoir_feat = QgsFeature(params.reservoirs_vlay.pendingFields())
                 new_reservoir_feat.setAttribute(Reservoir.field_name_eid, eid)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_elev, elev)
-                new_reservoir_feat.setAttribute(Reservoir.field_name_elev_corr, elev_corr)
+                new_reservoir_feat.setAttribute(Reservoir.field_name_delta_z, elev_corr)
                 # new_reservoir_feat.setAttribute(Reservoir.field_name_head, head)
 
                 new_reservoir_feat.setGeometry(QgsGeometry.fromPoint(point))
@@ -89,7 +89,7 @@ class NodeHandler:
                 new_tank_feat.setAttribute(Tank.field_name_curve, tank_curve_id)
                 new_tank_feat.setAttribute(Tank.field_name_diameter, diameter)
                 new_tank_feat.setAttribute(Tank.field_name_elev, elev)
-                new_tank_feat.setAttribute(Tank.field_name_elev_corr, elev_corr)
+                new_tank_feat.setAttribute(Tank.field_name_delta_z, elev_corr)
                 new_tank_feat.setAttribute(Tank.field_name_level_init, level_init)
                 new_tank_feat.setAttribute(Tank.field_name_level_min, level_min)
                 new_tank_feat.setAttribute(Tank.field_name_level_max, level_max)
@@ -294,12 +294,15 @@ class LinkHandler:
         if junctions_caps:
             if closest_junction_ft is not None:
                 # j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
-                depth = closest_junction_ft.attribute(Junction.field_name_elev_corr)
+                depth = closest_junction_ft.attribute(Junction.field_name_delta_z)
                 pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
             else:
                 # j_demand = float(data_dock.txt_junction_demand.text())
                 depth = float(data_dock.txt_junction_depth.text())
-                pattern_id = data_dock.cbo_junction_pattern.itemData(data_dock.cbo_junction_pattern.currentIndex()).id
+                if data_dock.cbo_junction_pattern.currentIndex() == -1:
+                    pattern_id = data_dock.cbo_junction_pattern.itemData(data_dock.cbo_junction_pattern.currentIndex()).id
+                else:
+                    pattern_id = None
 
             junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, 'J')  # TODO: softcode
             elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_before, 1)
@@ -336,8 +339,12 @@ class LinkHandler:
                     new_ft.setAttribute(Pump.field_name_eid, eid)
                     param = attributes[0]
                     new_ft.setAttribute(Pump.field_name_param, param)
-                    value = attributes[1]
-                    new_ft.setAttribute(Pump.field_name_value, value)
+                    head = attributes[1]
+                    new_ft.setAttribute(Pump.field_name_head, head)
+                    power = attributes[2]
+                    new_ft.setAttribute(Pump.field_name_power, power)
+                    speed = attributes[3]
+                    new_ft.setAttribute(Pump.field_name_speed, speed)
 
                 elif layer == params.valves_vlay:
                     new_ft.setAttribute(Valve.field_name_eid, eid)
@@ -652,7 +659,7 @@ class LinkHandler:
                 if start_node_elev is None:
                     start_node_elev = 0
 
-            start_node_depth = start_node_ft.attribute(Junction.field_name_elev_corr)
+            start_node_depth = start_node_ft.attribute(Junction.field_name_delta_z)
             if start_node_depth is None or type(start_node_depth) is QPyNullVariant:
                 start_node_depth = 0
             start_add = 1
@@ -665,7 +672,7 @@ class LinkHandler:
                 end_node_elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, end_node_ft.geometry().asPoint(), 0)
                 if end_node_elev is None:
                     end_node_elev = 0
-            end_node_depth = end_node_ft.attribute(Junction.field_name_elev_corr)
+            end_node_depth = end_node_ft.attribute(Junction.field_name_delta_z)
             if end_node_depth is None or type(end_node_depth) is QPyNullVariant:
                 end_node_depth = 0
             end_remove = 1

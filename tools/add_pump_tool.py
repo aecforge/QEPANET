@@ -117,21 +117,23 @@ class AddPumpTool(QgsMapTool):
 
                     # Create the pump
                     pump_param = ''
-                    pump_value = 0
+                    pump_head = None
+                    pump_power = None
+                    pump_speed = 0
 
                     # Head and pattern
                     if self.data_dock.cbo_pump_param.itemText(self.data_dock.cbo_pump_param.currentIndex()) == Pump.parameters_head:
                         pump_param = Pump.parameters_head
                         curve = self.data_dock.cbo_pump_head.itemData(self.data_dock.cbo_pump_head.currentIndex())
                         if curve is not None:
-                            pump_value = curve.id
+                            pump_head = curve.id
                         else:
-                            pump_value = None
+                            pump_head = None
 
                     # Power and value
                     elif self.data_dock.cbo_pump_param.itemText(self.data_dock.cbo_pump_param.currentIndex()) == Pump.parameters_power:
                         pump_param = Pump.parameters_power
-                        pump_value = self.data_dock.txt_pump_power.text()
+                        pump_power = self.data_dock.txt_pump_power.text()
 
                     LinkHandler.create_new_pumpvalve(
                         self.params,
@@ -140,9 +142,9 @@ class AddPumpTool(QgsMapTool):
                         closest_junction_ft,
                         self.snapped_vertex,
                         self.params.pumps_vlay,
-                        [pump_param, pump_value])
+                        [pump_param, pump_head, pump_power, pump_speed])
 
-                    if pump_param == Pump.parameters_head and pump_value == None:
+                    if pump_param == Pump.parameters_head and pump_head == None:
                         self.iface.messageBar().pushInfo(Parameters.plug_in_name,
                                                          'The pump was added, but with a NULL value.')
 
