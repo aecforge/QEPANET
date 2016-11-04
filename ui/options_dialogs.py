@@ -647,6 +647,9 @@ class TimesDialog(QDialog):
         # Validators
         self.txt_duration.setValidator(RegExValidators.get_pos_int())
 
+        self.txt_duration.setInputMask('09:99')
+        self.txt_duration.setValidator(RegExValidators.get_time_hh_mm())
+
         self.txt_hydraulic_timestamp.setInputMask('09:99')
         self.txt_hydraulic_timestamp.setValidator(RegExValidators.get_time_hh_mm())
 
@@ -691,7 +694,6 @@ class TimesDialog(QDialog):
 
         print 'gigio', self.params.times.statistic
 
-
     def btn_cancel_pressed(self):
         self.setVisible(False)
 
@@ -699,7 +701,7 @@ class TimesDialog(QDialog):
 
         # Update parameters and options
         self.params.times.units = self.cbo_units.itemData(self.cbo_units.currentIndex())
-        self.params.times.duration = float(self.txt_duration.text())
+        self.params.times.duration = Hour.from_string(self.txt_duration.text())
         self.params.times.hydraulic_timestamp = Hour.from_string(self.txt_hydraulic_timestamp.text())
         self.params.times.quality_timestamp = Hour.from_string(self.txt_quality_timestamp.text())
         self.params.times.rule_timestamp = Hour.from_string(self.txt_rule_timestamp.text())

@@ -151,7 +151,7 @@ class Times:
 
     def __init__(self):
         self.units = Times.unit_hr
-        self.duration = 1
+        self.duration = Hour(1, 0)
         self.hydraulic_timestamp = Hour(1, 0)
         self.quality_timestamp = Hour(0, 5)
         self.rule_timestamp = Hour(1, 0)

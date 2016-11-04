@@ -120,6 +120,11 @@ class InpReader:
                 vertxyFinal.append(vertxy)
 
         # Get data of Junctions
+        ndEle = d.getBinNodeJunctionElevations()
+        ndBaseD = d.getBinNodeBaseDemands()
+        ndID = d.getBinNodeNameID()
+        ndPatID = d.getBinNodeDemandPatternID()
+
         junctions_lay = None
         if d.getBinNodeJunctionCount() > 0:
             # Write Junction Shapefile
@@ -129,11 +134,6 @@ class InpReader:
             junctions_lay_dp = junctions_lay.dataProvider()
             junctions_lay_dp.addAttributes(Junction.fields)
             junctions_lay.updateFields()
-
-            ndEle = d.getBinNodeJunctionElevations()
-            ndBaseD = d.getBinNodeBaseDemands()
-            ndID = d.getBinNodeNameID()
-            ndPatID = d.getBinNodeDemandPatternID()
 
         # Get data of Pipes
         # Write shapefile pipe
