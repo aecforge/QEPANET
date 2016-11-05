@@ -160,7 +160,7 @@ class Times:
         self.report_timestamp = Hour(1, 0)
         self.report_start = Hour(0, 0)
         self.clocktime_start = Hour(0, 0)
-        self.statistic = Times.stats_avg
+        self.statistic = Times.stats_none
 
 
 class Hour:
