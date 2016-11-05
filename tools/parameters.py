@@ -12,7 +12,6 @@ from ..model.system_ops import Energy
 from ..model.water_quality import Reactions
 
 
-
 class Parameters(Observable):
 
     plug_in_name = 'QEPANET 0.20'
@@ -27,6 +26,7 @@ class Parameters(Observable):
     regex_number_pos_01 = '^[0-1]\d*$'
     regex_number_pos_int_no_zero = '^[1-9]\d*$'
     regex_time_hh_mm = '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
+    regex_time_hs_ms = '^([0-9]+):[0-5][0-9]$'
 
     def __init__(self):
         super(Parameters, self).__init__()
@@ -338,3 +338,9 @@ class RegExValidators:
         reg_ex = QRegExp(Parameters.regex_time_hh_mm)
         validator = QRegExpValidator(reg_ex)
         return validator
+
+    @staticmethod
+    def get_time_hs_mm():
+
+        reg_ex = QRegExp(Parameters.regex_time_hs_ms)
+        return QRegExpValidator(reg_ex)

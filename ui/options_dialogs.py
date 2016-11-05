@@ -647,8 +647,8 @@ class TimesDialog(QDialog):
         # Validators
         self.txt_duration.setValidator(RegExValidators.get_pos_int())
 
-        self.txt_duration.setInputMask('09:99')
-        self.txt_duration.setValidator(RegExValidators.get_time_hh_mm())
+        self.txt_duration.setInputMask('0009:99')
+        self.txt_duration.setValidator(RegExValidators.get_time_hs_mm())
 
         self.txt_hydraulic_timestamp.setInputMask('09:99')
         self.txt_hydraulic_timestamp.setValidator(RegExValidators.get_time_hh_mm())
@@ -681,7 +681,7 @@ class TimesDialog(QDialog):
         super(TimesDialog, self).show()
 
         self.cbo_units.setCurrentIndex(self.cbo_units.findData(self.params.times.units))
-        self.txt_duration.setText(self.params.times.duration.get_as_text())
+        self.txt_duration.setText(self.params.times.duration.get_as_text(4))
         self.txt_hydraulic_timestamp.setText(self.params.times.hydraulic_timestamp.get_as_text())
         self.txt_quality_timestamp.setText(self.params.times.quality_timestamp.get_as_text())
         self.txt_rule_timestamp.setText(self.params.times.rule_timestamp.get_as_text())

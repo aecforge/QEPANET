@@ -30,7 +30,7 @@ class NodeHandler:
                 new_junct_feat = QgsFeature(params.junctions_vlay.pendingFields())
                 new_junct_feat.setAttribute(Junction.field_name_eid, eid)
                 new_junct_feat.setAttribute(Junction.field_name_elev, elev)
-                # new_junct_feat.setAttribute(Junction.field_name_demand, demand)
+                new_junct_feat.setAttribute(Junction.field_name_demand, demand)
                 new_junct_feat.setAttribute(Junction.field_name_delta_z, depth)
                 new_junct_feat.setAttribute(Junction.field_name_pattern, pattern_id)
 

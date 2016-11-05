@@ -632,7 +632,7 @@ class InpFile:
     def _append_times(params, out):
 
         out.extend(InpFile.build_section_keyword(Times.section_name))
-        out.append(InpFile.pad('DURATION', InpFile.pad_22) + params.times.duration.get_as_text())
+        out.append(InpFile.pad('DURATION', InpFile.pad_22) + params.times.duration.get_as_text(4))
 
         out.append(InpFile.pad('HYDRAULIC TIMESTAMP', InpFile.pad_22) + params.times.hydraulic_timestamp.get_as_text())
         out.append(InpFile.pad('QUALITY TIMESTAMP', InpFile.pad_22) + params.times.quality_timestamp.get_as_text())

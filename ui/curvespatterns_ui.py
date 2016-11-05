@@ -95,7 +95,7 @@ class GraphDialog(QDialog):
         fra_buttons_lay.addWidget(self.btn_save)
 
         self.btn_del = QPushButton('Delete current ' + ele_name)  # TODO: softcode
-        self.btn_del.clicked.connect(self.del_pattern)
+        self.btn_del.clicked.connect(self.del_item)
         fra_buttons_lay.addWidget(self.btn_del)
 
         # ID
@@ -190,9 +190,9 @@ class GraphDialog(QDialog):
 
         if self.lst_list.count() > 0:
             self.lst_list.setCurrentRow(0)
-
-
-        # self.read()
+            self.btn_save.setEnabled(True)
+        else:
+            self.btn_save.setEnabled(False)
 
         self.need_to_update_graph = True
         self.update_graph()
@@ -354,6 +354,8 @@ class GraphDialog(QDialog):
         self.clear_table()
         self.static_canvas.axes.clear()
 
+        self.btn_save.setEnabled(True)
+
     def save(self):
 
         self.need_to_update_graph = False
@@ -376,9 +378,11 @@ class GraphDialog(QDialog):
                     values.append(self.from_item_to_val(item))
 
             pattern = Pattern(self.txt_id.text(), self.txt_desc.text(), values)
-            self.params.patterns[pattern.id] = pattern
 
-            # InpFile.write_patterns(self.params, self.params.patterns_file)
+            old_patterns = self.params.patterns
+            old_patterns[pattern.id] = pattern
+            self.params.patterns = old_patterns
+
             self.lst_list.currentItem().setText(pattern.id)
 
         elif self.edit_type == GraphDialog.edit_curves:
@@ -399,10 +403,10 @@ class GraphDialog(QDialog):
             for v in range(len(xs)):
                 curve.append_xy(xs[v], ys[v])
 
-            # # Update
+            old_curves = self.params.curves
+            old_curves[curve.id] = curve
+            self.params.curves = old_curves
 
-            self.params.curves[curve.id] = curve
-            # InpFile.write_curves(self.params, self.params.curves_file)
             self.lst_list.currentItem().setText(curve.id)
 
             # Update GUI
@@ -439,18 +443,21 @@ class GraphDialog(QDialog):
                         # item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
         self.need_to_update_graph = True
 
-    def del_pattern(self):
+    def del_item(self):
         selected_row = self.lst_list.currentRow()
+        name = self.lst_list.currentItem().text()
         if selected_row < 0:
             return
 
         self.lst_list.takeItem(selected_row)
+        if self.lst_list.count() == 0:
+            self.btn_save.setEnabled(False)
 
         if self.edit_type == GraphDialog.edit_curves:
-            del self.params.curves[self.lst_list.currentItem().text()]
+            del self.params.curves[name]
             # InpFile.write_curves(self.params, self.params.curves_file)
         elif self.edit_type == GraphDialog.edit_patterns:
-            del self.params.patterns[self.lst_list.currentItem().text()]
+            del self.params.patterns[name]
             # InpFile.write_patterns(self.params, self.params.patterns_file)
 
     def data_changed(self):

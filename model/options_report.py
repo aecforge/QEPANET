@@ -171,10 +171,12 @@ class Hour:
 
     @classmethod
     def from_string(cls, hhmm_string):
-        return cls(int(hhmm_string[0:2]), int(hhmm_string[3:5]))
 
-    def get_as_text(self):
-        return str(self.hours).zfill(2) + ':' + str(self.mins).zfill(2)
+        words = hhmm_string.strip().split(':')
+        return cls(int(words[0]), int(words[1]))
+
+    def get_as_text(self, padding=2):
+        return str(self.hours).zfill(padding) + ':' + str(self.mins).zfill(2)
 
     def set_from_string(self, hhmm_string):
         self.hours = int(hhmm_string[0:2])
