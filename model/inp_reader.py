@@ -62,6 +62,7 @@ class InpReader:
         qepanet_junctions_od = self.read_qepanet_junctions()
         qepanet_tanks_od = self.read_qepanet_tanks()
         qepanet_reservoirs_od = self.read_qepanet_reservoirs()
+        qepanet_pipes_od = self.read_qepanet_pipes()
 
         # Create layers and update
         if mixing:
@@ -371,9 +372,13 @@ class InpReader:
                         point2 = QgsPoint(float(x2[i]), float(y2[i]))
                         featPipe.setGeometry(QgsGeometry.fromPolyline([point1, point2]))
 
+                    material = None
+                    if qepanet_pipes_od:
+                        material = qepanet_reservoirs_od[linkID[i]]
+
                     featPipe.setAttributes(
                         [linkID[i], linkLengths[i], linkDiameters[i], stat[i],
-                         linkRough[i], linkMinorloss[i]])
+                         linkRough[i], linkMinorloss[i]], material)
                     pipes_lay_dp.addFeatures([featPipe])
 
             if i < d.getBinNodeTankCount():
@@ -692,6 +697,19 @@ class InpReader:
 
         return tanks_elevcorr_od
 
+    def read_qepanet_pipes(self):
+
+        lines = self.read_section('QEPANET-PIPES')
+        pipes_material_od = OrderedDict()
+        if lines is not None:
+            for line in lines:
+                if line.strip().startswith(';'):
+                    continue
+                words = line.split()
+                if len(words) > 1:
+                    pipes_material_od[words[0].strip()] = words[1].strip()
+
+        return pipes_material_od
 
 # ir = InpReader('D:/temp/5.inp')
 # print ir.read_qepanet_tanks()

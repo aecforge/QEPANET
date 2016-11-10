@@ -190,7 +190,7 @@ class LinkHandler:
         pass
 
     @staticmethod
-    def create_new_pipe(params, eid, diameter, loss, roughness, status, nodes, densify_vertices):
+    def create_new_pipe(params, eid, diameter, loss, roughness, status, material, nodes, densify_vertices):
 
         pipes_caps = params.pipes_vlay.dataProvider().capabilities()
         if pipes_caps and QgsVectorDataProvider.AddFeatures:
@@ -244,6 +244,7 @@ class LinkHandler:
                 new_pipe_ft.setAttribute(Pipe.field_name_minor_loss, loss)
                 new_pipe_ft.setAttribute(Pipe.field_name_roughness, roughness)
                 new_pipe_ft.setAttribute(Pipe.field_name_status, status)
+                new_pipe_ft.setAttribute(Pipe.field_name_material, material)
 
                 new_pipe_ft.setGeometry(geom_3d)
 
@@ -383,6 +384,7 @@ class LinkHandler:
         loss = pipe_ft.attribute(Pipe.field_name_minor_loss)
         roughness = pipe_ft.attribute(Pipe.field_name_roughness)
         status = pipe_ft.attribute(Pipe.field_name_status)
+        material = pipe_ft.attribute(Pipe.field_name_material)
 
         # Create two new linestrings
         pipes_caps = params.pipes_vlay.dataProvider().capabilities()
@@ -424,6 +426,7 @@ class LinkHandler:
                     loss,
                     roughness,
                     status,
+                    material,
                     pl1_pts,
                     False)
 
@@ -441,6 +444,7 @@ class LinkHandler:
                     loss,
                     roughness,
                     status,
+                    material,
                     pl2_pts,
                     False)
 
@@ -639,8 +643,9 @@ class LinkHandler:
         loss = pipe1_ft.attribute(Pipe.field_name_minor_loss)
         roughness = pipe1_ft.attribute(Pipe.field_name_roughness)
         status = pipe1_ft.attribute(Pipe.field_name_status)
+        material = pipe1_ft.attribute(Pipe.field_name_material)
 
-        LinkHandler.create_new_pipe(parameters, eid, diameter, loss, roughness, status, new_geom_pts, False)
+        LinkHandler.create_new_pipe(parameters, eid, diameter, loss, roughness, status, material, new_geom_pts, False)
 
     @staticmethod
     def calc_3d_length(parameters, pipe_geom):

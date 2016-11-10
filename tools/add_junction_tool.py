@@ -28,7 +28,7 @@ class AddJunctionTool(QgsMapTool):
         self.snapped_vertex = None
         self.snapped_vertex_nr = None
         self.vertex_marker = QgsVertexMarker(self.canvas())
-        self.elev = -1
+        self.elev = None
 
     def canvasPressEvent(self, event):
         if event.button() == Qt.RightButton:
@@ -84,14 +84,12 @@ class AddJunctionTool(QgsMapTool):
 
             self.mouse_clicked = False
 
-            if self.elev is None:
-                self.iface.messageBar().pushWarning(
-                    Parameters.plug_in_name,
-                    'The clicked point falls outside of the DEM.')  # TODO: softcode
-                return
-
             # Find first available ID for Junctions
             node_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, 'J') # TODO: softcode
+
+            elev = None
+            if self.elev is not None:
+                elev = self.elev
 
             j_demand = float(self.data_dock.txt_junction_demand.text())
             depth = float(self.data_dock.txt_junction_depth.text())
@@ -108,7 +106,7 @@ class AddJunctionTool(QgsMapTool):
                     self.params,
                     self.mouse_pt,
                     node_eid,
-                    self.elev,
+                    elev,
                     j_demand,
                     depth,
                     pattern_id)

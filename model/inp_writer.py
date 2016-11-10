@@ -741,6 +741,21 @@ class InpFile:
 
             out.append(line)
 
+        # QPIPES
+        out.extend(InpFile.build_section_keyword(QPipe.section_name))
+        out.append(InpFile.build_section_header(QPipe.section_header))
+
+        p_fts = params.pipes_vlay.getFeatures()
+        for p_ft in p_fts:
+            eid = p_ft.attribute(Pipe.field_name_eid)
+            material = p_ft.attribute(Pipe.field_name_material)
+
+            # Line
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad(material)
+
+            out.append(line)
+
         # QOPTIONS
         out.extend(InpFile.build_section_keyword(QOptions.section_name))
 

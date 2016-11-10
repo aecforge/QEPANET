@@ -80,16 +80,14 @@ class AddReservoirTool(QgsMapTool):
 
         if event.button() == Qt.LeftButton:
 
-            if self.elev is None:
-                self.iface.messageBar().pushWarning(
-                    Parameters.plug_in_name,
-                    'The clicked point falls outside of the DEM.')  # TODO: softcode
-                return
-
             self.mouse_clicked = False
 
             # Find first available ID for reservoirs
             eid = NetworkUtils.find_next_id(self.params.reservoirs_vlay, 'R') # TODO: softcode
+
+            elev = None
+            if self.elev is not None:
+                elev = self.elev
 
             head = float(self.data_dock.txt_reservoir_head.text())
             elev_corr = float(self.data_dock.txt_reservoir_elev_corr.text())
@@ -101,7 +99,7 @@ class AddReservoirTool(QgsMapTool):
                     self.params,
                     self.mouse_pt,
                     eid,
-                    self.elev,
+                    elev,
                     elev_corr,
                     head)
 

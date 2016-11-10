@@ -81,12 +81,6 @@ class AddTankTool(QgsMapTool):
 
         if event.button() == Qt.LeftButton:
 
-            if self.elev is None:
-                self.iface.messageBar().pushWarning(
-                    Parameters.plug_in_name,
-                    'The clicked point falls outside of the DEM.')  # TODO: softcode
-                return
-
             self.mouse_clicked = False
 
             # Find first available ID for Tanks
@@ -96,6 +90,10 @@ class AddTankTool(QgsMapTool):
                 tank_curve_id = self.data_dock.cbo_tank_curve.itemData(self.data_dock.cbo_tank_curve.currentIndex()).id
             else:
                 tank_curve_id = None
+
+            elev = None
+            if self.elev is not None:
+                elev = self.elev
 
             diameter = float(self.data_dock.txt_tank_diameter.text())
             elev_corr = float(self.data_dock.txt_tank_elev_corr.text())
@@ -113,7 +111,7 @@ class AddTankTool(QgsMapTool):
                     tank_eid,
                     tank_curve_id,
                     diameter,
-                    self.elev,
+                    elev,
                     elev_corr,
                     level_init,
                     level_min,

@@ -57,28 +57,6 @@ class QJunction:
               QgsField(field_name_delta_z, QVariant.Double)]
 
 
-class QReservoir:
-    section_name = 'QEPANET-RESERVOIRS'
-    section_header = 'ID               	DeltaZ'
-    field_name_eid = 'id'
-    field_name_delta_z = 'delta_z'
-
-    fields = [QgsField(field_name_eid, QVariant.String),
-              QgsField(field_name_delta_z, QVariant.Double)]
-
-
-class QTank:
-    section_name = 'QEPANET-TANKS'
-    section_header = 'ID               	DeltaZ'
-    field_name_eid = 'id'
-    field_name_delta_z = 'delta_z'
-
-    fields = [QgsField(field_name_eid, QVariant.String),
-              QgsField(field_name_delta_z, QVariant.Double)]
-
-class QOptions:
-    section_name = 'QOPTIONS'
-
 class Reservoir:
     section_name = 'RESERVOIRS'
     section_header = 'ID               	Head      	Pattern'
@@ -143,13 +121,15 @@ class Pipe:
     field_name_minor_loss = 'minor_loss'
     field_name_roughness = 'roughness'
     field_name_status = 'status'
+    field_name_material = 'material'
 
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_length, QVariant.Double),
               QgsField(field_name_diameter, QVariant.Double),
               QgsField(field_name_status, QVariant.String),
               QgsField(field_name_roughness, QVariant.Double),
-              QgsField(field_name_minor_loss, QVariant.Double)]
+              QgsField(field_name_minor_loss, QVariant.Double),
+              QgsField(field_name_material, QVariant.String)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -162,6 +142,7 @@ class Pipe:
         self.roughness = -1
         self.start_node = -1
         self.status = 'on'
+        self.material = 'none'
 
 
 class Pump:
@@ -220,6 +201,40 @@ class Valve:
 
     def __init__(self, eid):
         self.eid = eid
+
+
+class QReservoir:
+    section_name = 'QEPANET-RESERVOIRS'
+    section_header = 'ID               	DeltaZ'
+    field_name_eid = 'id'
+    field_name_delta_z = 'delta_z'
+
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_delta_z, QVariant.Double)]
+
+
+class QTank:
+    section_name = 'QEPANET-TANKS'
+    section_header = 'ID               	DeltaZ'
+    field_name_eid = 'id'
+    field_name_delta_z = 'delta_z'
+
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_delta_z, QVariant.Double)]
+
+
+class QPipe:
+    section_name = 'QEPANET-PIPES'
+    section_header = 'ID               	Material'
+    field_name_eid = 'id'
+    field_name_material = 'material'
+
+    fields = [QgsField(field_name_eid, QVariant.String),
+              QgsField(field_name_material, QVariant.String)]
+
+
+class QOptions:
+    section_name = 'QOPTIONS'
 
 
 class Coordinate:

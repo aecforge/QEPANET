@@ -41,7 +41,7 @@ class AddPipeTool(QgsMapTool):
         self.snapped_vertex = None
         self.snapped_vertex_nr = None
         self.vertex_marker = QgsVertexMarker(self.canvas())
-        self.elev = -1
+        self.elev = None
 
         self.diameter_dialog = None
 
@@ -98,12 +98,6 @@ class AddPipeTool(QgsMapTool):
         # if not self.mouse_clicked:
         #     return
         if event.button() == Qt.LeftButton:
-
-            if self.elev is None:
-                self.iface.messageBar().pushWarning(
-                    Parameters.plug_in_name,
-                    'The clicked point falls outside of the DEM.')  # TODO: softcode
-                return
 
             # Update rubber bands
             self.rubber_band.addPoint((self.snapped_vertex if self.snapped_vertex is not None else self.mouse_pt), True)
@@ -183,6 +177,7 @@ class AddPipeTool(QgsMapTool):
                     loss = float(self.data_dock.txt_pipe_loss.text())
                     roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
                     status = self.data_dock.cbo_pipe_status.currentText()
+                    material = self.data_dock.cbo_pipe_roughness.currentText()
                     pipe_eid = NetworkUtils.find_next_id(self.params.pipes_vlay, 'P')  # TODO: softcode
 
                     pipe_ft = LinkHandler.create_new_pipe(
@@ -192,6 +187,7 @@ class AddPipeTool(QgsMapTool):
                         loss,
                         roughness,
                         status,
+                        material,
                         rubberband_pts[junct_nrs[np]:junct_nrs[np+1]+1],
                         True)
                     self.rubber_band.reset()
