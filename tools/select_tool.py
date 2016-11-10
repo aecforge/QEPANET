@@ -106,7 +106,13 @@ class SelectTool(QgsMapTool):
                 rubber_band_rect = self.rubber_band.asGeometry().boundingBox()
 
                 for layer in self.iface.mapCanvas().layers():
-                    layer.selectByRect(rubber_band_rect, False)
+                    if layer.id() == self.params.junctions_vlay.id() or\
+                            layer.id() == self.params.junctions_vlay.id() or\
+                            layer.id() == self.params.junctions_vlay.id() or\
+                            layer.id() == self.params.junctions_vlay.id() or\
+                            layer.id() == self.params.junctions_vlay.id() or\
+                            layer.id() == self.params.junctions_vlay.id():
+                        layer.selectByRect(rubber_band_rect, False)
 
                 self.rubber_band.reset(QGis.Polygon)
 

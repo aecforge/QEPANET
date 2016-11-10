@@ -38,7 +38,7 @@ class LayerUtils:
     def get_lay_id(layer_name):
         layers = QgsMapLayerRegistry.instance().mapLayers()
         for name, layer in layers.iteritems():
-            if layer_name in layer.name():
+            if layer_name in layer.name() and layer.name().startswith(layer_name):
                 return layer.id()
 
     @staticmethod
