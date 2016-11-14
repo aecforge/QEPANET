@@ -31,6 +31,7 @@ from qgis.core import *
 from ..geo_utils import utils
 from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog, ReportDialog
 from output_dialog import OutputAnalyserDialog
+from ..model.options_report import Options
 from curvespatterns_ui import GraphDialog
 from ..model.inp_writer import InpFile
 from ..model.inp_reader import InpReader
@@ -165,14 +166,42 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.txt_pipe_diameter.setValidator(RegExValidators.get_pos_decimals())
         self.txt_pipe_loss.setValidator(RegExValidators.get_pos_decimals())
 
+        # TODO: put everything in txt file QUI
+        roughnesses_od = {
+            'Cast iron':  {
+                'C-M': [0.012, 0.015],
+                'D-W': [0.023, 0.280],
+                'H-W': [130, 140]},
+            'Concrete': {
+                'C-M': [0.012, 0.017],
+                'D-W': [0.3, 3.0],
+                'H-W': [120, 140]},
+            'Galvanized iron': {
+                'C-M': [0.015, 0.017],
+                'D-W': [0.13, 0.17],
+                'H-W': [110, 130]},
+            'Plastic': {
+                'C-M': [0.011, 0.015],
+                'D-W': [0.0013, 0.0016],
+                'H-W': [140, 150]},
+            'Steel': {
+                'C-M': [0.015, 0.017],
+                'D-W': [0.04, 0.05],
+                'H-W': [150, 150]},
+            'Vitrified clay': {
+                'C-M': [0.013, 0.015],
+                'D-W': [0.0, 0.02],
+                'H-W': [100, 120]},
+       }
+
         self.cbo_pipe_roughness.clear()
-        self.cbo_pipe_roughness.addItem('Asphalted cast iron', ['0.015', '0.04']) # TODO: put everything in txt file
-        self.cbo_pipe_roughness.addItem('Cast iron', ['0.03', '0.06'])
-        self.cbo_pipe_roughness.addItem('Commercial steel', ['0.05', '0.15'])
-        self.cbo_pipe_roughness.addItem('Concrete', ['0.3', '3'])
-        self.cbo_pipe_roughness.addItem('Galvanized iron', ['0.015', '0.03'])
-        self.cbo_pipe_roughness.addItem('PVC, glass, drawn', ['0', '0.02'])
-        self.update_roughness_params(self.cbo_pipe_roughness.itemData(self.cbo_pipe_roughness.currentIndex()))
+
+        for key, value in roughnesses_od.iteritems():
+            val_min, val_max = value[Options.headloss_cm]
+            self.cbo_pipe_roughness.addItem(key, value)
+
+        self.update_roughness_params(
+            self.cbo_pipe_roughness.itemData(self.cbo_pipe_roughness.currentIndex())[self.params.options.headloss])
         QtCore.QObject.connect(self.cbo_pipe_roughness, QtCore.SIGNAL('activated(int)'), self.cbo_pipe_roughness_activated)
 
         self.sli_pipe_roughness.valueChanged.connect(self.roughness_slider_changed)
@@ -269,6 +298,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.count_elements()
             else:
                 self.create_empty_layers()
+
+                # Prompt for hydaulic options
+                if self.hydraulics_dialog is None:
+                    self.hydraulics_dialog = HydraulicsDialog(self, self.params)
+                self.hydraulics_dialog.show()
 
     def count_elements(self):
 
@@ -904,16 +938,29 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         return decimals
 
     def update_roughness_params(self, roughness_range):
-        self.decimals = max(self.find_decimals(roughness_range[0]), self.find_decimals(roughness_range[1]))
 
         min_roughness = roughness_range[0]
         max_roughness = roughness_range[1]
+
+        min_roughness_mult = min_roughness * 10 ** self.decimals
+        max_roughness_mult = max_roughness * 10 ** self.decimals
+
+        # If US units and D-W, convert mm to feet*10-3
+        if self.params.options.headloss == Options.headloss_dw and self.params.options.units == Options.unit_sys_us:
+            min_roughness = min_roughness / 304.8 * 1000
+            max_roughness = max_roughness / 304.8 * 1000
+
+        # To string
+        min_roughness = str(min_roughness)
+        max_roughness = str(max_roughness)
+
+        self.decimals = max(self.find_decimals(min_roughness), self.find_decimals(max_roughness))
+
         self.lbl_pipe_roughness_min.setText(min_roughness)
         self.lbl_pipe_roughness_max.setText(max_roughness)
-        self.lbl_pipe_roughness_val_val.setText(roughness_range[0])
+        self.lbl_pipe_roughness_val_val.setText(min_roughness)
 
-        min_roughness_mult = float(roughness_range[0]) * 10 ** self.decimals
-        max_roughness_mult = float(roughness_range[1]) * 10 ** self.decimals
+        # Multipliers
         self.sli_pipe_roughness.setMinimum(min_roughness_mult)
         self.sli_pipe_roughness.setMaximum(max_roughness_mult)
         self.sli_pipe_roughness.setValue(min_roughness_mult)

@@ -304,7 +304,18 @@ class HydraulicsDialog(QDialog):
         # Pipes
         self.parent.lbl_pipe_demand.setText(pre_l('Demand', self.params.options.units_flow[self.params.options.units][0]))  # TODO: softcode
         self.parent.lbl_pipe_diameter.setText(pre_l('Diameter', self.params.options.units_diameter_pipes[self.params.options.units]))  # TODO: softcode
-        self.parent.lbl_pipe_roughness.setText(pre_l('Roughness', self.params.options.units_roughness[self.params.options.units][self.params.options.headloss]))  # TODO: softcode
+        self.parent.lbl_pipe_roughness_val.setText(pre_l('Value', self.params.options.units_roughness[self.params.options.units][self.params.options.headloss]))  # TODO: softcode
+
+        self.params.options.headloss_units = self.cbo_headloss.itemData(self.cbo_headloss.currentIndex())
+
+        self.parent.update_roughness_params(
+            self.parent.cbo_pipe_roughness.itemData(self.parent.cbo_pipe_roughness.currentIndex())[self.params.options.headloss])
+
+        # self.parent.lbl_pipe_roughness.setText(
+        #     pre_l(
+        #         'Roughness',
+        #         self.params.options.units_roughness[self.params.options.units][self.params.options.headloss_units]))
+
 
         # Pumps
         self.parent.lbl_pump_head.setText(pre_l('Head', self.params.options.units_depth[self.params.options.units]))
@@ -331,13 +342,6 @@ class HydraulicsDialog(QDialog):
         units = self.cbo_flow_units.itemData(self.cbo_flow_units.currentIndex())
         self.parent.lbl_junction_demand.setText(pre_l('Demand', units))  # TODO: softcode
         self.parent.lbl_pipe_demand.setText(pre_l('Demand', units))  # TODO: softcode
-
-        # Headloss units
-        self.params.options.headloss_units = self.cbo_headloss.itemData(self.cbo_headloss.currentIndex())
-        self.parent.lbl_pipe_roughness.setText(
-            pre_l(
-                'Roughness',
-                self.params.options.units_roughness[self.params.options.units][self.params.options.headloss_units]))
 
         self.setVisible(False)
 
