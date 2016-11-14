@@ -531,7 +531,7 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
+                <y>-53</y>
                 <width>288</width>
                 <height>194</height>
                </rect>
@@ -643,9 +643,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
+                <y>-111</y>
                 <width>288</width>
-                <height>246</height>
+                <height>252</height>
                </rect>
               </property>
               <attribute name="label">
@@ -711,6 +711,9 @@
                </item>
                <item>
                 <widget class="QLabel" name="lbl_pipe_roughness">
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
                  <property name="text">
                   <string>Roughness [-]:</string>
                  </property>
@@ -884,6 +887,19 @@
                   </item>
                  </layout>
                 </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
                </item>
               </layout>
              </widget>

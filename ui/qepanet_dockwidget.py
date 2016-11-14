@@ -218,6 +218,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Pumps --------------------------------------------------------------------------------------------------------
         self.cbo_pump_param.addItem(Pump.parameters_head)
         self.cbo_pump_param.addItem(Pump.parameters_power)
+        self.cbo_pump_param.setCurrentIndex(1)
+
         self.txt_pump_power.setValidator(RegExValidators.get_pos_decimals())
 
         QtCore.QObject.connect(self.cbo_pump_param, QtCore.SIGNAL('activated(int)'), self.cbo_pump_param_activated)
@@ -651,7 +653,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.params.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
 
     def cbo_pipe_roughness_activated(self):
-        self.update_roughness_params(self.get_combo_current_data(self.cbo_pipe_roughness))
+        self.update_roughness_params(self.get_combo_current_data(self.cbo_pipe_roughness)[self.params.options.headloss])
 
     def snap_tolerance_changed(self):
         self.params.snap_tolerance(float(self.txt_snap_tolerance.text()))

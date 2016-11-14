@@ -300,10 +300,10 @@ class LinkHandler:
             else:
                 # j_demand = float(data_dock.txt_junction_demand.text())
                 depth = float(data_dock.txt_junction_depth.text())
-                if data_dock.cbo_junction_pattern.currentIndex() == -1:
+                if data_dock.cbo_junction_pattern.currentIndex() != -1:
                     pattern_id = data_dock.cbo_junction_pattern.itemData(data_dock.cbo_junction_pattern.currentIndex()).id
                 else:
-                    pattern_id = None
+                    pattern_id = 1
 
             junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, 'J')  # TODO: softcode
             elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_before, 1)

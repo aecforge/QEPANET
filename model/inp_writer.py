@@ -526,7 +526,8 @@ class InpFile:
                 line += InpFile.pad(pump_param + ' ' + '{0:2f}'.format(value), InpFile.pad_19)
             elif pump_param == Pump.parameters_head:
                 value = p_ft.attribute(Pump.field_name_head)
-                line += InpFile.pad(pump_param + ' ' + value, InpFile.pad_19)
+                if value is not None:
+                    line += InpFile.pad(pump_param + ' ' + value, InpFile.pad_19)
 
             speed = p_ft.attribute(Pump.field_name_speed)
             if speed is not None:
