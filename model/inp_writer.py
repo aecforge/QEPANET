@@ -403,7 +403,7 @@ class InpFile:
         out.append(InpFile.pad('VISCOSITY', InpFile.pad_22) + str(params.options.viscosity))
         out.append(InpFile.pad('DIFFUSIVITY', InpFile.pad_22) + str(params.options.diffusivity))
         out.append(InpFile.pad('SPECIFIC GRAVITY', InpFile.pad_22) + str(params.options.spec_gravity))
-        out.append(InpFile.pad('TRIALS', InpFile.pad_22) + str(params.options.trials))
+        out.append(InpFile.pad('TRIALS', InpFile.pad_22) + str(int(params.options.trials)))
         out.append(InpFile.pad('ACCURACY', InpFile.pad_22) + str(params.options.accuracy))
         out.append(InpFile.pad('UNBALANCED', InpFile.pad_22) +
                    params.options.unbalanced.unb_text[params.options.unbalanced.unbalanced] +
@@ -756,9 +756,35 @@ class InpFile:
 
             out.append(line)
 
+        # QVERTICES
+        out.extend(InpFile.build_section_keyword(QVertices.section_name))
+
+        for p_ft in params.pipes_vlay.getFeatures():
+            eid = p_ft.attribute(Pipe.field_name_eid)
+            geom_v2 = p_ft.geometry().geometry()
+
+            if geom_v2.vertexCount() > 2:
+
+                print geom_v2.vertexCount()
+
+                for v in range(1, geom_v2.vertexCount() - 1):
+                    p2_v2 = geom_v2.vertexAt(QgsVertexId(0, 0, v, QgsVertexId.SegmentVertex))
+
+                    line = InpFile.pad(eid, InpFile.pad_19)
+                    line += InpFile.pad('{0:.2f}'.format(p2_v2.z()), InpFile.pad_19)
+
+                    out.append(line)
+            #
+            # # pts = p_ft.geometry().asPolyline()
+            # if len(pts) > 2:
+            #     for pt in pts[1:-1]:
+            #         line = InpFile.pad(eid, InpFile.pad_19)
+            #         line += InpFile.pad('{0:.2f}'.format(pt.z()), InpFile.pad_19)
+            #
+            #         out.append(line)
+
         # QOPTIONS
         out.extend(InpFile.build_section_keyword(QOptions.section_name))
-
 
     @staticmethod
     def split_line(line, n=255):

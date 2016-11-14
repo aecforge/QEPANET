@@ -233,6 +233,11 @@ class QPipe:
               QgsField(field_name_material, QVariant.String)]
 
 
+class QVertices:
+    section_name = 'QEPANET-VERTICES'
+    section_header = ';Link            	Z-Coord'
+
+
 class QOptions:
     section_name = 'QOPTIONS'
 
