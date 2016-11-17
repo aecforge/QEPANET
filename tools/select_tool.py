@@ -98,7 +98,13 @@ class SelectTool(QgsMapTool):
                 snapped_layer = self.snap_results[0].layer
 
                 for layer in self.iface.mapCanvas().layers():
-                    layer.removeSelection()
+                    if layer.id() == self.params.junctions_vlay.id() or \
+                                    layer.id() == self.params.junctions_vlay.id() or \
+                                    layer.id() == self.params.junctions_vlay.id() or \
+                                    layer.id() == self.params.junctions_vlay.id() or \
+                                    layer.id() == self.params.junctions_vlay.id() or \
+                                    layer.id() == self.params.junctions_vlay.id():
+                        layer.removeSelection()
                 snapped_layer.select(snapped_ft.id())
 
             # Not snapped: rectangle

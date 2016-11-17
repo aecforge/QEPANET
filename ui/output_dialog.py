@@ -2,11 +2,13 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import Qt
 # from qgis.gui import QgsMapTool
 from graphs import StaticMplCanvas
+from ..geo_utils.renderer import *
 from ..tools.parameters import Parameters, ConfigFile
 from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve
 from ..model.binary_out_reader import BinaryOutputReader, OutputParamCodes
 from ..model.options_report import Options, Quality
 from ..tools.select_tool import SelectTool
+from ..tools.data_stores import *
 import sys
 
 min_width = 600
@@ -27,6 +29,9 @@ class OutputAnalyserDialog(QDialog):
         self.tool = None
         self.element_ids_nodes = None
         self.element_ids_links = None
+
+        self.nodes_lay = None
+        self.links_lay = None
 
         self.setWindowTitle(Parameters.plug_in_name)
 
@@ -56,7 +61,7 @@ class OutputAnalyserDialog(QDialog):
 
         self.tab_widget = QTabWidget(self)
 
-        # Graphs tab
+        # Graphs tab ---------------------------------------------------------------------------------------------------
         self.tab_graphs = QWidget()
         tab_graphs_lay = QHBoxLayout(self.tab_graphs)
 
@@ -105,9 +110,9 @@ class OutputAnalyserDialog(QDialog):
 
         fra_graphs_left_lay.addWidget(self.grb_links)
 
-        self.btn_draw = QPushButton('Draw')
-        self.btn_draw.pressed.connect(self.draw_graphs)
-        fra_graphs_left_lay.addWidget(self.btn_draw)
+        self.btn_draw_graph = QPushButton('Draw')
+        self.btn_draw_graph.pressed.connect(self.draw_graphs)
+        fra_graphs_left_lay.addWidget(self.btn_draw_graph)
 
         self.spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         fra_graphs_left_lay.addItem(self.spacer)
@@ -116,8 +121,6 @@ class OutputAnalyserDialog(QDialog):
 
         # Right frame
         self.fra_graphs_right = QFrame()
-        # self.fra_graphs_right.setPalette(QPalette(Qt.black))
-        # self.fra_graphs_right.setAutoFillBackground(True)
         fra_graphs_right_lay = QVBoxLayout(self.fra_graphs_right)
         fra_graphs_right_lay.setContentsMargins(0, 0, 0, 0)
 
@@ -129,10 +132,67 @@ class OutputAnalyserDialog(QDialog):
         # lay.addWidget(self.button)
         self.tab_widget.addTab(self.tab_graphs, 'Graphs')
 
-        # Maps tab
+        # Maps tab -----------------------------------------------------------------------------------------------------
         self.tab_maps = QWidget()
-        # lay = QVBoxLayout(self.tab_graphs)
-        # lay.addWidget(self.button)
+        tab_maps_lay = QHBoxLayout(self.tab_maps)
+
+        # Left frame
+        self.fra_maps_left = QFrame()
+        self.fra_maps_left.setMaximumWidth(200)
+        fra_maps_left_lay = QVBoxLayout(self.fra_maps_left)
+
+        self.grb_maps = QGroupBox(u'Variable')
+        grb_maps_lay = QVBoxLayout(self.grb_maps)
+
+        self.rad_maps_node_demand = QRadioButton(u'Node demand')
+        grb_maps_lay.addWidget(self.rad_maps_node_demand)
+
+        self.rad_maps_node_head = QRadioButton(u'Node head')
+        grb_maps_lay.addWidget(self.rad_maps_node_head)
+
+        self.rad_maps_node_pressure = QRadioButton(u'Node pressure')
+        grb_maps_lay.addWidget(self.rad_maps_node_pressure)
+
+        self.rad_maps_node_quality = QRadioButton(u'Node quality')
+        grb_maps_lay.addWidget(self.rad_maps_node_quality)
+
+        self.rad_maps_link_flow = QRadioButton(u'Link flow')
+        grb_maps_lay.addWidget(self.rad_maps_link_flow)
+
+        self.rad_maps_link_velocity = QRadioButton(u'Link velocity')
+        grb_maps_lay.addWidget(self.rad_maps_link_velocity)
+
+        self.rad_maps_link_headloss = QRadioButton(u'Link headloss')
+        grb_maps_lay.addWidget(self.rad_maps_link_headloss)
+
+        self.rad_maps_link_quality = QRadioButton(u'Link quality')
+        grb_maps_lay.addWidget(self.rad_maps_link_quality)
+
+        fra_maps_left_lay.addWidget(self.grb_maps)
+        fra_maps_left_lay.addItem(self.spacer)
+
+        tab_maps_lay.addWidget(self.fra_maps_left)
+
+        # Right maps frame
+        self.fra_maps_right = QFrame()
+        fra_maps_right_lay = QVBoxLayout(self.fra_maps_right)
+
+        self.fra_maps_right_time = QFrame()
+        fra_maps_right_time_lay = QFormLayout(self.fra_maps_right_time)
+
+        self.lbl_map_times = QLabel(u'Period:')
+        self.cbo_map_times = QComboBox()
+        fra_maps_right_time_lay.addRow(self.lbl_map_times, self.cbo_map_times)
+        fra_maps_right_lay.addWidget(self.fra_maps_right_time)
+
+        self.btn_draw_map = QPushButton(u'Draw map')
+        self.btn_draw_map.pressed.connect(self.draw_map)
+        fra_maps_right_lay.addWidget(self.btn_draw_map)
+
+        fra_maps_right_lay.addItem(self.spacer)
+
+        tab_maps_lay.addWidget(self.fra_maps_right)
+
         self.tab_widget.addTab(self.tab_maps, 'Maps')
 
         # # Add to main
@@ -165,10 +225,19 @@ class OutputAnalyserDialog(QDialog):
         self.txt_out_file.setText(out_file)
         self.read_outputs()
 
+        # Fill times combo
+        self.cbo_map_times.clear()
+        for period in self.output_reader.period_results.iterkeys():
+            self.cbo_map_times.addItem(str(period), period)
+
     def initialize(self):
 
+        # Graphs
         self.grb_nodes.setEnabled(False)
         self.grb_links.setEnabled(False)
+
+        # Maps
+        self.rad_maps_node_demand.setChecked(True)
 
     def feature_sel_changed(self):
 
@@ -192,7 +261,9 @@ class OutputAnalyserDialog(QDialog):
 
         # self.output_reader = BinaryOutputReader('D:/Progetti/2015/2015_13_TN_EPANET/04_Implementation/INP_Test/Test_cases/5/5.out')
         try:
-            self.output_reader = BinaryOutputReader(self.txt_out_file.text())
+            self.output_reader = BinaryOutputReader()
+            self.output_reader.read(self.txt_out_file.text())
+
         except:
             self.iface.messageBar().pushWarning(
                 Parameters.plug_in_name,
@@ -318,12 +389,96 @@ class OutputAnalyserDialog(QDialog):
         if ys_d_d:
             self.static_canvas.draw_output_line(xs, ys_d_d, params_count)
 
+    def draw_map(self):
+
+        if self.output_reader is None:
+            self.iface.messageBar().pushWarning(
+                Parameters.plug_in_name,
+                'Please select the simulation out file.')  # TODO: softcode
+            return
+
+        # Draw the map
+        report_time = self.cbo_map_times.itemData(self.cbo_map_times.currentIndex())
+        period_results = self.output_reader.period_results[report_time]
+
+        new_lay = None
+        if self.rad_maps_node_demand.isChecked():  # -------------------------------------------------------------------
+            field_name_var = u'Demand'  # TODO: softcode
+            lay_name = 'Node demand ' + str(report_time)
+            new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
+            variables = period_results.node_demands
+
+        elif self.rad_maps_node_head.isChecked():
+            field_name_var = u'Head'  # TODO: softcode
+            lay_name = 'Node head ' + str(report_time)
+            new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
+            variables = period_results.node_heads
+
+        elif self.rad_maps_node_pressure.isChecked():
+            field_name_var = u'Pressure'  # TODO: softcode
+            lay_name = 'Node pressure ' + str(report_time)
+            new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
+            variables = period_results.node_pressures
+
+        elif self.rad_maps_node_quality.isChecked():
+            field_name_var = u'Quality'  # TODO: softcode
+            lay_name = 'Node quality ' + str(report_time)
+            new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
+            variables = period_results.node_qualities
+
+        elif self.rad_maps_link_flow.isChecked():  # -------------------------------------------------------------------
+            field_name_var = u'Flow'  # TODO: softcode
+            lay_name = 'Link flow ' + str(report_time)
+            new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
+            variables = period_results.link_flows
+
+        elif self.rad_maps_link_velocity.isChecked():
+            field_name_var = u'Velocity'  # TODO: softcode
+            lay_name = 'Link velocity ' + str(report_time)
+            new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
+            variables = period_results.link_velocities
+
+        elif self.rad_maps_link_headloss.isChecked():
+            field_name_var = u'Headloss'  # TODO: softcode
+            lay_name = 'Link headloss ' + str(report_time)
+            new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
+            variables = period_results.link_headlosses
+
+        elif self.rad_maps_link_quality.isChecked():
+            field_name_var = u'Quality'  # TODO: softcode
+            lay_name = 'Link quality ' + str(report_time)
+            new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
+            variables = period_results.link_qualities
+
+        # Add attributes
+        for feat in new_lay.getFeatures():
+            new_lay.startEditing()
+            eid = feat.attribute(Node.field_name_eid)
+
+            if eid not in variables:
+                QMessageBox.critical(
+                    self,
+                    Parameters.plug_in_name,
+                    u'Mismatch between output file and inp file. Cannot create map.',
+                    QMessageBox.Ok)
+                return
+
+            variable = variables[eid]
+            feat.setAttribute(field_name_var, variable)
+            new_lay.updateFeature(feat)
+            new_lay.commitChanges()
+
+        # Set renderer
+        new_lay.setRendererV2(RampRenderer.get_renderer(new_lay, field_name_var))
+
+        # Add layer
+        QgsMapLayerRegistry.instance().addMapLayer(new_lay)
+
     def btn_cancel_pressed(self):
         self.setVisible(False)
 
     def btn_ok_pressed(self):
         pass
-
 
 # class PickTool(QgsMapTool):
 #

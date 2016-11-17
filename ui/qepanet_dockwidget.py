@@ -814,15 +814,16 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         if prev_reservoirs_lay_id is not None:
             self.set_layercombo_index(self.cbo_reservoirs, prev_reservoirs_lay_id)
         if prev_tanks_lay_id is not None:
-            self.params.tanks_vlay = self.set_layercombo_index(self.cbo_tanks, prev_tanks_lay_id)
+            self.set_layercombo_index(self.cbo_tanks, prev_tanks_lay_id)
         if prev_pipes_lay_id is not None:
-            self.params.pipes_vlay = self.set_layercombo_index(self.cbo_pipes, prev_pipes_lay_id)
+            self.set_layercombo_index(self.cbo_pipes, prev_pipes_lay_id)
         if prev_pumps_lay_id is not None:
-            self.params.pumps_vlay = self.set_layercombo_index(self.cbo_pumps, prev_pumps_lay_id)
+            self.set_layercombo_index(self.cbo_pumps, prev_pumps_lay_id)
         if prev_valves_lay_id is not None:
-            self.params.valves_vlay = self.set_layercombo_index(self.cbo_valves, prev_valves_lay_id)
+            self.set_layercombo_index(self.cbo_valves, prev_valves_lay_id)
+            # self.params.valves_vlay = self.set_layercombo_index(self.cbo_valves, prev_valves_lay_id)
 
-        self.params.dem_rlay = self.set_layercombo_index(self.cbo_dem, prev_dem_lay_id)
+        self.set_layercombo_index(self.cbo_dem, prev_dem_lay_id)
 
     def preselect_layers_combos(self):
 

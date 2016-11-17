@@ -4,7 +4,46 @@ import os, struct
 
 class BinaryOutputReader:
 
-    def __init__(self, out_file):
+    def __init__(self):
+
+        self.file_size = None
+        self.magic_nr = None
+        self.version = None
+        self.nodes_nr = None
+        self.tanks_reservs_nr = None
+        self.links_nr = None
+        self.pumps_nr = None
+        self.valves_nr = None
+        self.w_quality_option = None
+        self.source_trace_idx = None
+        self.flow_units = None
+        self.pressure_units = None
+        self.statistics_flag = None
+        self.report_start_time_secs = None
+        self.report_time_step_secs = None
+        self.sim_duration_secs = None
+        self.title_1 = None
+        self.title_2 = None
+        self.title_3 = None
+        self.inp_file_name = None
+        self.rpt_file_name = None
+        self.chem_name = None
+        self.chem_conc_units = None
+        self.node_id_label = None
+        self.link_id_label = None
+        self.pumps = None
+        self.peak_cost = None
+        self.avg_bulk_react_rate = None
+        self.avg_wall_react_rate = None
+        self.avg_tank_react_rate = None
+        self.avg_source_inflow_rate = None
+        self.reporting_periods = None
+        self.warning_flag = None
+        self.magic_nr_2 = None
+        self.report_times = None
+        self.period_results = None
+
+    def read(self, out_file):
 
         with open(out_file, 'rb') as f:
 
@@ -138,19 +177,19 @@ class BinaryOutputReader:
             # Dynamic results-------------------------------------------------------------------------------------------
             self.report_times = []
 
-            self.node_demands_d = {}
-            self.node_heads_d = {}
-            self.node_pressures_d = {}
-            self.node_qualities_d = {}
+            node_demands_d = {}
+            node_heads_d = {}
+            node_pressures_d = {}
+            node_qualities_d = {}
 
-            self.link_flows_d = {}
-            self.link_velocities_d = {}
-            self.link_headlosses_d = {}
-            self.link_qualities_d = {}
-            self.link_status_codes_d = {}
-            self.link_settings_d = {}
-            self.link_reactions_d = {}
-            self.link_frictions_d = {}
+            link_flows_d = {}
+            link_velocities_d = {}
+            link_headlosses_d = {}
+            link_qualities_d = {}
+            link_status_codes_d = {}
+            link_settings_d = {}
+            link_reactions_d = {}
+            link_frictions_d = {}
 
             f.seek(results_pt_pos)
             self.period_results = OrderedDict()
@@ -159,122 +198,122 @@ class BinaryOutputReader:
                 report_time = self.report_time_step_secs * rp
                 self.report_times.append(report_time)
 
-                self.node_demand_d = OrderedDict()
-                self.node_head_d = OrderedDict()
-                self.node_pressure_d = OrderedDict()
-                self.node_quality_d = OrderedDict()
+                node_demand_d = OrderedDict()
+                node_head_d = OrderedDict()
+                node_pressure_d = OrderedDict()
+                node_quality_d = OrderedDict()
 
-                self.link_flow_d = OrderedDict()
-                self.link_velocity_d = OrderedDict()
-                self.link_headloss_d = OrderedDict()
-                self.link_quality_d = OrderedDict()
-                self.link_status_code_d = OrderedDict()
-                self.link_setting_d = OrderedDict()
-                self.link_reaction_d = OrderedDict()
-                self.link_friction_d = OrderedDict()
+                link_flow_d = OrderedDict()
+                link_velocity_d = OrderedDict()
+                link_headloss_d = OrderedDict()
+                link_quality_d = OrderedDict()
+                link_status_code_d = OrderedDict()
+                link_setting_d = OrderedDict()
+                link_reaction_d = OrderedDict()
+                link_friction_d = OrderedDict()
 
                 # Nodes
                 for i in range(self.nodes_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.node_demand_d[nodes_ids[i]] = val
-                    if not nodes_ids[i] in self.node_demands_d:
-                        self.node_demands_d[nodes_ids[i]] = [val]
+                    node_demand_d[nodes_ids[i]] = val
+                    if not nodes_ids[i] in node_demands_d:
+                        node_demands_d[nodes_ids[i]] = [val]
                     else:
-                        self.node_demands_d[nodes_ids[i]].append(val)
+                        node_demands_d[nodes_ids[i]].append(val)
 
                 for i in range(self.nodes_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.node_head_d[nodes_ids[i]] = val
-                    if not nodes_ids[i] in self.node_heads_d:
-                        self.node_heads_d[nodes_ids[i]] = [val]
+                    node_head_d[nodes_ids[i]] = val
+                    if not nodes_ids[i] in node_heads_d:
+                        node_heads_d[nodes_ids[i]] = [val]
                     else:
-                        self.node_heads_d[nodes_ids[i]].append(val)
+                        node_heads_d[nodes_ids[i]].append(val)
 
                 for i in range(self.nodes_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.node_pressure_d[nodes_ids[i]] = val
-                    if not nodes_ids[i] in self.node_pressures_d:
-                        self.node_pressures_d[nodes_ids[i]] = [val]
+                    node_pressure_d[nodes_ids[i]] = val
+                    if not nodes_ids[i] in node_pressures_d:
+                        node_pressures_d[nodes_ids[i]] = [val]
                     else:
-                        self.node_pressures_d[nodes_ids[i]].append(val)
+                        node_pressures_d[nodes_ids[i]].append(val)
 
                 for i in range(self.nodes_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.node_quality_d[nodes_ids[i]] = val
-                    if not nodes_ids[i] in self.node_qualities_d:
-                        self.node_qualities_d[nodes_ids[i]] = [val]
+                    node_quality_d[nodes_ids[i]] = val
+                    if not nodes_ids[i] in node_qualities_d:
+                        node_qualities_d[nodes_ids[i]] = [val]
                     else:
-                        self.node_qualities_d[nodes_ids[i]].append(val)
+                        node_qualities_d[nodes_ids[i]].append(val)
 
                 # Links
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.link_flow_d[links_ids[i]] = val
-                    if not links_ids[i] in self.link_flows_d:
-                        self.link_flows_d[links_ids[i]] = [val]
+                    link_flow_d[links_ids[i]] = val
+                    if not links_ids[i] in link_flows_d:
+                        link_flows_d[links_ids[i]] = [val]
                     else:
-                        self.link_flows_d[links_ids[i]].append(val)
+                        link_flows_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.link_velocity_d[links_ids[i]] = val
-                    if not links_ids[i] in self.link_velocities_d:
-                        self.link_velocities_d[links_ids[i]] = [val]
+                    link_velocity_d[links_ids[i]] = val
+                    if not links_ids[i] in link_velocities_d:
+                        link_velocities_d[links_ids[i]] = [val]
                     else:
-                        self.link_velocities_d[links_ids[i]].append(val)
+                        link_velocities_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.link_headloss_d[links_ids[i]] = val
-                    if not links_ids[i] in self.link_headlosses_d:
-                        self.link_headlosses_d[links_ids[i]] = [val]
+                    link_headloss_d[links_ids[i]] = val
+                    if not links_ids[i] in link_headlosses_d:
+                        link_headlosses_d[links_ids[i]] = [val]
                     else:
-                        self.link_headlosses_d[links_ids[i]].append(val)
+                        link_headlosses_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.link_quality_d[links_ids[i]] = val
-                    if not links_ids[i] in self.link_qualities_d:
-                        self.link_qualities_d[links_ids[i]] = [val]
+                    link_quality_d[links_ids[i]] = val
+                    if not links_ids[i] in link_qualities_d:
+                        link_qualities_d[links_ids[i]] = [val]
                     else:
-                        self.link_qualities_d[links_ids[i]].append(val)
+                        link_qualities_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.link_status_code_d[links_ids[i]] = val
-                    if not links_ids[i] in self.link_status_codes_d:
-                        self.link_status_codes_d[links_ids[i]] = [val]
+                    link_status_code_d[links_ids[i]] = val
+                    if not links_ids[i] in link_status_codes_d:
+                        link_status_codes_d[links_ids[i]] = [val]
                     else:
-                        self.link_status_codes_d[links_ids[i]].append(val)
+                        link_status_codes_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.link_setting_d[links_ids[i]] = val
-                    if not links_ids[i] in self.link_settings_d:
-                        self.link_settings_d[links_ids[i]] = [val]
+                    link_setting_d[links_ids[i]] = val
+                    if not links_ids[i] in link_settings_d:
+                        link_settings_d[links_ids[i]] = [val]
                     else:
-                        self.link_settings_d[links_ids[i]].append(val)
+                        link_settings_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.link_reaction_d[links_ids[i]] = val
-                    if not links_ids[i] in self.link_reactions_d:
-                        self.link_reactions_d[links_ids[i]] = [val]
+                    link_reaction_d[links_ids[i]] = val
+                    if not links_ids[i] in link_reactions_d:
+                        link_reactions_d[links_ids[i]] = [val]
                     else:
-                        self.link_reactions_d[links_ids[i]].append(val)
+                        link_reactions_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
-                    self.link_friction_d[links_ids[i]] = val
-                    if not links_ids[i] in self.link_frictions_d:
-                        self.link_frictions_d[links_ids[i]] = [val]
+                    link_friction_d[links_ids[i]] = val
+                    if not links_ids[i] in link_frictions_d:
+                        link_frictions_d[links_ids[i]] = [val]
                     else:
-                        self.link_frictions_d[links_ids[i]].append(val)
+                        link_frictions_d[links_ids[i]].append(val)
 
                 self.period_results[report_time] = PeriodResult(
-                    self.node_demand_d, self.node_head_d, self.node_pressure_d, self.node_quality_d,
-                    self.link_flow_d, self.link_velocity_d, self.link_headloss_d, self.link_quality_d,
-                    self.link_status_code_d, self.link_setting_d, self.link_reaction_d, self.link_friction_d)
+                    node_demand_d, node_head_d, node_pressure_d, node_quality_d,
+                    link_flow_d, link_velocity_d, link_headloss_d, link_quality_d,
+                    link_status_code_d, link_setting_d, link_reaction_d, link_friction_d)
 
 
 class OutputParamCodes(object):
@@ -323,6 +362,7 @@ class OutputParamCodes(object):
                     LINK_REACTION: 'Link reaction',
                     LINK_FRICTION: 'Link friction'}
 
+
 class OutputPump:
     def __init__(self, idx, util, effic, avg_kw_mg, avg_kw, peak_kw, avg_day_cost):
         self.idx = idx
@@ -337,7 +377,7 @@ class OutputPump:
 class PeriodResult:
 
     def __init__(self, node_demands, node_heads, node_pressures, node_qualities, link_flows, link_velocities,
-                 link_headloss, link_qualities, link_status_codes, link_settings, link_reactions, link_frictions):
+                 link_headlosses, link_qualities, link_status_codes, link_settings, link_reactions, link_frictions):
 
         self.node_demands = node_demands
         self.node_heads = node_heads
@@ -346,7 +386,7 @@ class PeriodResult:
 
         self.link_flows = link_flows
         self.link_velocities = link_velocities
-        self.link_headloss = link_headloss
+        self.link_headloss = link_headlosses
         self.link_qualities = link_qualities
 
         self.link_status_codes = link_status_codes

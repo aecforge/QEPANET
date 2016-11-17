@@ -696,8 +696,6 @@ class TimesDialog(QDialog):
         self.txt_clock_time_start.setText(self.params.times.clocktime_start.get_as_text())
         self.cbo_statistic.setCurrentIndex(self.cbo_statistic.findData(self.params.times.statistic))
 
-        print 'gigio', self.params.times.statistic
-
     def btn_cancel_pressed(self):
         self.setVisible(False)
 

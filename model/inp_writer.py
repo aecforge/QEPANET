@@ -766,8 +766,6 @@ class InpFile:
 
             if geom_v2.vertexCount() > 2:
 
-                print geom_v2.vertexCount()
-
                 for v in range(1, geom_v2.vertexCount() - 1):
                     p2_v2 = geom_v2.vertexAt(QgsVertexId(0, 0, v, QgsVertexId.SegmentVertex))
 

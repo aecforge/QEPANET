@@ -23,6 +23,18 @@ class Title:
         self.title = title
 
 
+class Node:
+
+    field_name_eid = 'id'
+    field_name_var = 'variable'
+
+    fields = [QgsField(field_name_eid,  QVariant.String),
+              QgsField(field_name_var, QVariant.String)]
+
+    def __init__(self, eid):
+        self.eid = eid
+
+
 class Junction:
     section_name = 'JUNCTIONS'
     section_header = 'ID               	Elev      	Demand    	Pattern'
@@ -110,6 +122,17 @@ class Tank:
         self.level_max = 0
         self.level_min = 0
         self.vol_min = 0
+
+
+class Link:
+    field_name_eid = 'id'
+    field_name_var = 'variable'
+
+    fields = [QgsField(field_name_eid),
+              QgsField(field_name_var, QVariant.String)]
+
+    def __init__(self, eid):
+        self.eid = eid
 
 
 class Pipe:

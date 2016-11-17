@@ -4,7 +4,7 @@ from PyQt4.QtCore import QVariant
 from qgis.core import *
 
 from exceptions import ShpExistsExcpetion
-from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve
+from ..model.network import *
 from ..model.network import Tables
 
 
@@ -42,8 +42,8 @@ class MemoryDS:
 
         if geoms is not None:
             for n in range(len(geoms)):
-                node_ft = QgsFeature()
-                node_ft.setGeometry(geoms[n])
+                junctions_ft = QgsFeature()
+                junctions_ft.setGeometry(geoms[n])
                 junction_id = ids[n] if ids is not None else None
                 demand = demands[n] if demands is not None else None
                 elev = elevs[n] if elevs is not None else None
@@ -51,13 +51,12 @@ class MemoryDS:
                 pattern = patterns[n] if patterns is not None else None
                 # emitter = emitters[n] if emitters is not None else None
 
-                node_ft.setAttribute(Junction.field_name_eid, junction_id)
-                # node_ft.setAttribute(Junction.field_name_demand, demand)
-                node_ft.setAttribute(Junction.field_name_elev, elev)
-                node_ft.setAttribute(Junction.field_name_delta_z, elev_corr)
-                node_ft.setAttribute(Junction.field_name_pattern, pattern)
+                junctions_ft.setAttribute(Junction.field_name_eid, junction_id)
+                junctions_ft.setAttribute(Junction.field_name_elev, elev)
+                junctions_ft.setAttribute(Junction.field_name_delta_z, elev_corr)
+                junctions_ft.setAttribute(Junction.field_name_pattern, pattern)
 
-                junctions_lay.addFeature(node_ft)
+                junctions_lay.addFeature(junctions_ft)
 
         return junctions_lay
 
@@ -219,6 +218,76 @@ class MemoryDS:
                 valves_lay.addFeature(valve_ft)
     
         return valves_lay
+
+    @staticmethod
+    def create_nodes_lay(params, field_name_var=u'variable', lay_name=u'Nodes', crs=None):
+
+        nodes_lay = QgsVectorLayer(u'Point', lay_name, u'memory')
+        if crs is not None:
+            nodes_lay.setCrs(crs)
+        nodes_lay_dp = nodes_lay.dataProvider()
+        nodes_lay_dp.addAttributes([
+            QgsField(Node.field_name_eid,  QVariant.String),
+            QgsField(field_name_var, QVariant.Double)])
+        nodes_lay.updateFields()
+
+        new_fts = []
+        for feat in params.junctions_vlay.getFeatures():
+            new_ft = QgsFeature(nodes_lay.pendingFields())
+            new_ft.setGeometry(feat.geometry())
+            new_ft.setAttribute(Node.field_name_eid, feat.attribute(Junction.field_name_eid))
+            new_fts.append(new_ft)
+
+        for feat in params.reservoirs_vlay.getFeatures():
+            new_ft = QgsFeature(nodes_lay.pendingFields())
+            new_ft.setGeometry(feat.geometry())
+            new_ft.setAttribute(Node.field_name_eid, feat.attribute(Reservoir.field_name_eid))
+            new_fts.append(new_ft)
+
+        for feat in params.tanks_vlay.getFeatures():
+            new_ft = QgsFeature(nodes_lay.pendingFields())
+            new_ft.setGeometry(feat.geometry())
+            new_ft.setAttribute(Node.field_name_eid, feat.attribute(Tank.field_name_eid))
+            new_fts.append(new_ft)
+
+        nodes_lay_dp.addFeatures(new_fts)
+
+        return nodes_lay
+
+    @staticmethod
+    def create_links_lay(params, field_name_var=u'variable', lay_name=u'Nodes', crs=None):
+
+        links_lay = QgsVectorLayer(u'LineString', lay_name, u'memory')
+        if crs is not None:
+            links_lay.setCrs(crs)
+        links_lay_dp = links_lay.dataProvider()
+        links_lay_dp.addAttributes([
+            QgsField(Node.field_name_eid,  QVariant.String),
+            QgsField(field_name_var, QVariant.String)])
+        links_lay.updateFields()
+
+        new_fts = []
+        for feat in params.pipes_vlay.getFeatures():
+            new_ft = QgsFeature(links_lay.pendingFields())
+            new_ft.setGeometry(feat.geometry())
+            new_ft.setAttribute(Link.field_name_eid, feat.attribute(Pipe.field_name_eid))
+            new_fts.append(new_ft)
+
+        for feat in params.pumps_vlay.getFeatures():
+            new_ft = QgsFeature(links_lay.pendingFields())
+            new_ft.setGeometry(feat.geometry())
+            new_ft.setAttribute(Link.field_name_eid, feat.attribute(Pump.field_name_eid))
+            new_fts.append(new_ft)
+
+        for feat in params.valves_vlay.getFeatures():
+            new_ft = QgsFeature(links_lay.pendingFields())
+            new_ft.setGeometry(feat.geometry())
+            new_ft.setAttribute(Link.field_name_eid, feat.attribute(Valve.field_name_eid))
+            new_fts.append(new_ft)
+
+        links_lay_dp.addFeatures(new_fts)
+
+        return links_lay
 
 
 class ShapefileDS:
