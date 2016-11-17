@@ -261,8 +261,10 @@ class OutputAnalyserDialog(QDialog):
 
         # self.output_reader = BinaryOutputReader('D:/Progetti/2015/2015_13_TN_EPANET/04_Implementation/INP_Test/Test_cases/5/5.out')
         try:
+            QApplication.setOverrideCursor(Qt.WaitCursor)
             self.output_reader = BinaryOutputReader()
             self.output_reader.read(self.txt_out_file.text())
+            QApplication.setOverrideCursor(Qt.ArrowCursor)
 
         except:
             self.iface.messageBar().pushWarning(
