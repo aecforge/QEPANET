@@ -133,7 +133,7 @@ class AddPumpTool(QgsMapTool):
                     # Power and value
                     elif self.data_dock.cbo_pump_param.itemText(self.data_dock.cbo_pump_param.currentIndex()) == Pump.parameters_power:
                         pump_param = Pump.parameters_power
-                        pump_power = self.data_dock.txt_pump_power.text()
+                        pump_power = float(self.data_dock.txt_pump_power.text())
 
                     LinkHandler.create_new_pumpvalve(
                         self.params,

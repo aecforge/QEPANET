@@ -12,11 +12,13 @@ min_height = 400
 
 
 class HydraulicsDialog(QDialog):
-    def __init__(self, parent, params):
+
+    def __init__(self, parent, params, new_proj=False):
         QDialog.__init__(self, parent)
 
         self.parent = parent
         self.params = params
+        self.new_proj = new_proj
 
         self.setMinimumWidth(min_width)
         # self.setMinimumHeight(min_height)
@@ -221,11 +223,12 @@ class HydraulicsDialog(QDialog):
     def cbo_headloss_activated(self):
 
         # Warning
-        QMessageBox.warning(
-            self,
-            Parameters.plug_in_name,
-            u'Head loss units changed: the head loss values already present might need to be reviewed.',
-            QMessageBox.Ok)
+        if not self.new_proj:
+            QMessageBox.warning(
+                self,
+                Parameters.plug_in_name,
+                u'Head loss units changed: the head loss values already present might need to be reviewed.',
+                QMessageBox.Ok)
 
     def chk_hydraulics_changed(self):
 
@@ -799,7 +802,7 @@ class EnergyDialog(QDialog):
 
         self.params.energy.pump_efficiency =  float(self.txt_pump_efficiency.text())
         self.params.energy.energy_price = float(self.txt_energy_price.text())
-        self.params.energy.price_pattern = int(self.txt_price_pattern.text())
+        self.params.energy.price_pattern = self.txt_price_pattern.text()
         self.params.energy.demand_charge = float(self.txt_demand_charge.text())
 
         self.setVisible(False)

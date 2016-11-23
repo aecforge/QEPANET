@@ -108,7 +108,7 @@ class AddPipeTool(QgsMapTool):
 
         elif event.button() == Qt.RightButton:
 
-            try:
+            # try:
 
                 pipe_band_geom = self.rubber_band.asGeometry()
 
@@ -207,7 +207,7 @@ class AddPipeTool(QgsMapTool):
                     if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
                         pattern_id = self.data_dock.cbo_junction_pattern.itemData(self.data_dock.cbo_junction_pattern.currentIndex()).id
                     else:
-                        pattern_id = 0
+                        pattern_id = None
                     NodeHandler.create_new_junction(self.params, new_start_junction, junction_eid, elev, j_demand, depth, pattern_id)
 
                 (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[len(new_pipes_fts) - 1].geometry())
@@ -221,7 +221,7 @@ class AddPipeTool(QgsMapTool):
                         pattern_id = self.data_dock.cbo_junction_pattern.itemData(
                             self.data_dock.cbo_junction_pattern.currentIndex()).id
                     else:
-                        pattern_id = 0
+                        pattern_id = None
                     NodeHandler.create_new_junction(self.params, new_end_junction, junction_eid, elev, demand, depth, pattern_id)
 
                 # If end or start node intersects a pipe, split it
@@ -237,10 +237,10 @@ class AddPipeTool(QgsMapTool):
                                         pipe_ft.geometry().distance(QgsGeometry.fromPoint(new_end_junction)) < self.params.tolerance:
                             LinkHandler.split_pipe(self.params, pipe_ft, new_end_junction)
 
-            except Exception as e:
-                self.rubber_band.reset()
-                self.iface.messageBar().pushWarning('Cannot add new pipe to ' + self.params.pipes_vlay.name() + ' layer', repr(e))
-                traceback.print_exc(file=sys.stdout)
+            # except Exception as e:
+            #     self.rubber_band.reset()
+            #     self.iface.messageBar().pushWarning('Cannot add new pipe to ' + self.params.pipes_vlay.name() + ' layer', repr(e))
+            #     traceback.print_exc(file=sys.stdout)
 
     def keyReleaseEvent(self, event):
         if event.key() == Qt.Key_Escape:

@@ -24,7 +24,6 @@ class NodeHandler:
 
             # New stand-alone node
             params.junctions_vlay.beginEditCommand("Add junction")
-            new_junct_feat = None
 
             try:
                 new_junct_feat = QgsFeature(params.junctions_vlay.pendingFields())
@@ -42,7 +41,7 @@ class NodeHandler:
                 params.junctions_vlay.destroyEditCommand()
                 raise e
 
-                params.junctions_vlay.endEditCommand()
+            params.junctions_vlay.endEditCommand()
 
             return new_junct_feat
 
@@ -220,6 +219,8 @@ class LinkHandler:
             line_coords = []
             for vertex in pipe_geom_2.asPolyline():
                 z = raster_utils.read_layer_val_from_coord(params.dem_rlay, vertex)
+                if z is None:
+                    z = 0
                 line_coords.append(QgsPointV2(QgsWKBTypes.PointZ, vertex.x(), vertex.y(), z))
 
             linestring = QgsLineStringV2()

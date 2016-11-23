@@ -9,7 +9,7 @@ from ..model.binary_out_reader import BinaryOutputReader, OutputParamCodes
 from ..model.options_report import Options, Quality
 from ..tools.select_tool import SelectTool
 from ..tools.data_stores import *
-import sys
+import codecs
 
 min_width = 600
 min_height = 400
@@ -266,12 +266,55 @@ class OutputAnalyserDialog(QDialog):
             self.output_reader.read(self.txt_out_file.text())
             QApplication.setOverrideCursor(Qt.ArrowCursor)
 
+            # Check if output compatible with loaded project
+            compatible = True
+            out_nodes_nr = self.output_reader.nodes_nr
+            out_tanks_reservs_nr = self.output_reader.tanks_reservs_nr
+            out_juncts_nr = out_nodes_nr - out_tanks_reservs_nr
+
+            out_links_nr = self.output_reader.links_nr
+            out_pumps_nr = self.output_reader.pumps_nr
+            out_valves_nr = self.output_reader.valves_nr
+            out_pipes_nr = out_links_nr - out_pumps_nr - out_valves_nr
+
+            if out_juncts_nr != self.params.junctions_vlay.featureCount():
+                compatible = False
+            if out_tanks_reservs_nr != (self.params.reservoirs_vlay.featureCount() + self.params.tanks_vlay.featureCount()):
+                compatible = False
+            if out_pipes_nr != self.params.pipes_vlay.featureCount():
+                compatible = False
+            if out_valves_nr != self.params.valves_vlay.featureCount():
+                compatible = False
+            if out_pumps_nr != self.params.pumps_vlay.featureCount():
+                compatible = False
+
+            if not compatible:
+                message = 'The out file appears to incompatible with the actual project layers.'
+                QMessageBox.warning(
+                    self,
+                    Parameters.plug_in_name,
+                    message,
+                    QMessageBox.Ok)
+
+                self.output_reader = None
+                self.txt_out_file.setText('')
+
+            else:
+                # Message after reading completed
+                message = 'Out file loaded: ' + str(out_nodes_nr) + ' nodes, ' + str(out_links_nr) + ' links found.'
+                QMessageBox.information(
+                    self,
+                    Parameters.plug_in_name,
+                    message,
+                    QMessageBox.Ok)
+
         except:
             self.iface.messageBar().pushWarning(
                 Parameters.plug_in_name,
                 'Error while reading output file.')  # TODO: softcode
             self.output_reader = None
             self.txt_out_file.setText('')
+            QApplication.setOverrideCursor(Qt.ArrowCursor)
 
     def btn_sel_element_pressed(self):
 
@@ -491,3 +534,40 @@ class OutputAnalyserDialog(QDialog):
 # o = OutputAnalyserDialog(None, None)
 # o.show()
 # sys.exit(app.exec_())
+
+
+class LogDialog(QDialog):
+
+    def __init__(self, parent, rpt_file_path):
+        self.rpt_file_path = rpt_file_path
+
+        QDialog.__init__(self, parent)
+
+        self.setWindowTitle('Log: ' + self.rpt_file_path)
+
+        main_lay = QVBoxLayout(self)
+
+        self.txt_log = QPlainTextEdit(self)
+        self.txt_log.setMinimumWidth(500)
+        self.txt_log.setMinimumHeight(300)
+        main_lay.addWidget(self.txt_log)
+
+        self.btn_close = QPushButton('Close')
+        self.btn_close.pressed.connect(self.close_dialog)
+        main_lay.addWidget(self.btn_close)
+
+        self.fill_txt()
+
+    def close_dialog(self):
+        self.close()
+
+    def fill_txt(self):
+        with codecs.open(self.rpt_file_path, 'r', encoding='UTF-8') as inp_f:
+            lines = inp_f.read().splitlines()
+
+        for line in lines:
+            self.txt_log.appendPlainText(line.replace('\b', ''))
+
+        # Scroll up
+        self.txt_log.moveCursor(QTextCursor.Start)
+        self.txt_log.ensureCursorVisible()

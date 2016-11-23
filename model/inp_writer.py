@@ -363,7 +363,6 @@ class InpFile:
             if delta_z is None:
                 delta_z = 0
 
-
             elev += delta_z
 
             # Line
@@ -470,20 +469,20 @@ class InpFile:
         out.append(InpFile.build_section_header(Pipe.section_header))
         # out.append(InpFile.build_dashline(Pipe.section_header))
 
-        p_fts = params.pipes_vlay.getFeatures()
-        for p_ft in p_fts:
-            eid = p_ft.attribute(Pipe.field_name_eid)
+        pipe_fts = params.pipes_vlay.getFeatures()
+        for pipe_ft in pipe_fts:
+            eid = pipe_ft.attribute(Pipe.field_name_eid)
 
             # Find start/end nodes
-            adj_nodes = NetworkUtils.find_start_end_nodes(params, p_ft.geometry())
+            adj_nodes = NetworkUtils.find_start_end_nodes(params, pipe_ft.geometry())
             start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
             end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
 
-            length = p_ft.attribute(Pipe.field_name_length)
-            diameter = p_ft.attribute(Pipe.field_name_diameter)
-            roughness = p_ft.attribute(Pipe.field_name_roughness)
-            minor_loss = p_ft.attribute(Pipe.field_name_minor_loss)
-            status = p_ft.attribute(Pipe.field_name_status)
+            length = pipe_ft.attribute(Pipe.field_name_length)
+            diameter = pipe_ft.attribute(Pipe.field_name_diameter)
+            roughness = pipe_ft.attribute(Pipe.field_name_roughness)
+            minor_loss = pipe_ft.attribute(Pipe.field_name_minor_loss)
+            status = pipe_ft.attribute(Pipe.field_name_status)
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
@@ -522,12 +521,12 @@ class InpFile:
             line += InpFile.pad(end_node_id, InpFile.pad_19)
 
             if pump_param == Pump.parameters_power:
-                value = p_ft.attribute(Pump.field_name_power)
-                line += InpFile.pad(pump_param + ' ' + '{0:2f}'.format(value), InpFile.pad_19)
+                power = p_ft.attribute(Pump.field_name_power)
+                line += InpFile.pad(pump_param + ' ' + '{0:2f}'.format(power), InpFile.pad_19)
             elif pump_param == Pump.parameters_head:
-                value = p_ft.attribute(Pump.field_name_head)
-                if value is not None:
-                    line += InpFile.pad(pump_param + ' ' + value, InpFile.pad_19)
+                head = p_ft.attribute(Pump.field_name_head)
+                if head is not None:
+                    line += InpFile.pad(pump_param + ' ' + head, InpFile.pad_19)
 
             speed = p_ft.attribute(Pump.field_name_speed)
             if speed is not None:
@@ -750,6 +749,9 @@ class InpFile:
         for p_ft in p_fts:
             eid = p_ft.attribute(Pipe.field_name_eid)
             material = p_ft.attribute(Pipe.field_name_material)
+            print 'material', material, type(material)
+            if material == NULL:
+                material = ''
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)

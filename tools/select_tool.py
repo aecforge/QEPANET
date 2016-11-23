@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QCursor, QColor
+from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
@@ -97,30 +97,49 @@ class SelectTool(QgsMapTool):
                 snapped_ft = vector_utils.get_feats_by_id(self.snap_results[0].layer, self.snap_results[0].snappedAtGeometry)[0]
                 snapped_layer = self.snap_results[0].layer
 
-                for layer in self.iface.mapCanvas().layers():
-                    if layer.id() == self.params.junctions_vlay.id() or \
-                                    layer.id() == self.params.junctions_vlay.id() or \
-                                    layer.id() == self.params.junctions_vlay.id() or \
-                                    layer.id() == self.params.junctions_vlay.id() or \
-                                    layer.id() == self.params.junctions_vlay.id() or \
-                                    layer.id() == self.params.junctions_vlay.id():
-                        layer.removeSelection()
-                snapped_layer.select(snapped_ft.id())
+                modifiers = QApplication.keyboardModifiers()
+                if modifiers == Qt.ShiftModifier:
+                    selected_ft_ids = snapped_layer.selectedFeaturesIds()
+                    selected_ft_ids.append(snapped_ft.id())
+                    snapped_layer.select(selected_ft_ids)
+                else:
+                    for layer in self.iface.mapCanvas().layers():
+                        if layer.id() == self.params.junctions_vlay.id() or \
+                                        layer.id() == self.params.reservoirs_vlay.id() or \
+                                        layer.id() == self.params.tanks_vlay.id() or \
+                                        layer.id() == self.params.pipes_vlay.id() or \
+                                        layer.id() == self.params.pumps_vlay.id() or \
+                                        layer.id() == self.params.valves_vlay.id():
+                            layer.removeSelection()
+                    snapped_layer.select(snapped_ft.id())
 
             # Not snapped: rectangle
             else:
-                rubber_band_rect = self.rubber_band.asGeometry().boundingBox()
+                # There is a rubber band box
+                if self.rubber_band.numberOfVertices() > 1:
+                    rubber_band_rect = self.rubber_band.asGeometry().boundingBox()
 
-                for layer in self.iface.mapCanvas().layers():
-                    if layer.id() == self.params.junctions_vlay.id() or\
-                            layer.id() == self.params.junctions_vlay.id() or\
-                            layer.id() == self.params.junctions_vlay.id() or\
-                            layer.id() == self.params.junctions_vlay.id() or\
-                            layer.id() == self.params.junctions_vlay.id() or\
-                            layer.id() == self.params.junctions_vlay.id():
-                        layer.selectByRect(rubber_band_rect, False)
+                    for layer in self.iface.mapCanvas().layers():
+                        if layer.id() == self.params.junctions_vlay.id() or\
+                                layer.id() == self.params.reservoirs_vlay.id() or\
+                                layer.id() == self.params.tanks_vlay.id() or\
+                                layer.id() == self.params.pipes_vlay.id() or\
+                                layer.id() == self.params.pumps_vlay.id() or\
+                                layer.id() == self.params.valves_vlay.id():
+                            layer.selectByRect(rubber_band_rect, False)
 
-                self.rubber_band.reset(QGis.Polygon)
+                    self.rubber_band.reset(QGis.Polygon)
+
+                # No rubber band: clear selection
+                else:
+
+                    self.params.junctions_vlay.removeSelection()
+                    self.params.reservoirs_vlay.removeSelection()
+                    self.params.tanks_vlay.removeSelection()
+                    self.params.pipes_vlay.removeSelection()
+                    self.params.pumps_vlay.removeSelection()
+                    self.params.valves_vlay.removeSelection()
+                    self.iface.mapCanvas().refresh()
 
 
     def activate(self):

@@ -30,7 +30,7 @@ from qgis.core import *
 
 from ..geo_utils import utils
 from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog, ReportDialog
-from output_dialog import OutputAnalyserDialog
+from output_ui import OutputAnalyserDialog, LogDialog
 from ..model.options_report import Options
 from curvespatterns_ui import GraphDialog
 from ..model.inp_writer import InpFile
@@ -84,8 +84,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.report_dialog = None
         self.output_dialog = None
 
+        self.log_dialog = None
+
         # Inp file
-        self.btn_prj_file.pressed.connect(self.select_inp_file)
+        self.btn_project_new.pressed.connect(self.new_inp_file)
+        self.btn_project_load.pressed.connect(self.load_inp_file)
         self.btn_project_save.pressed.connect(self.save_inp_file)
 
         # Tools buttons
@@ -268,43 +271,26 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.closingPlugin.emit()
         event.accept()
 
-    def select_inp_file(self):
-
-        file_dialog = MyQFileDialog()
-        file_dialog.setWindowTitle('Select an INP file or create a new one') # TODO: Softcode
-        file_dialog.setLabelText(QFileDialog.Accept, 'Select') # TODO: sofcode
-        file_dialog.setFileMode(QFileDialog.AnyFile)
-        file_dialog.setFilter("INP files (*.inp)")
-
-        if file_dialog.exec_():
-            inp_file_path = file_dialog.selectedFiles()[0]
-            if not inp_file_path.lower().endswith('.inp'):
-                inp_file_path += '.inp'
-
-            self.inp_file_path = inp_file_path
-            self.params.last_project_dir = os.path.dirname(inp_file_path)
-            self.update_components()
+    # def select_inp_file(self):
+    #
+    #     file_dialog = MyQFileDialog()
+    #     file_dialog.setWindowTitle('Select an INP file or create a new one') # TODO: Softcode
+    #     file_dialog.setLabelText(QFileDialog.Accept, 'Select') # TODO: sofcode
+    #     file_dialog.setFileMode(QFileDialog.AnyFile)
+    #     file_dialog.setFilter("INP files (*.inp)")
+    #
+    #     if file_dialog.exec_():
+    #         inp_file_path = file_dialog.selectedFiles()[0]
+    #         if not inp_file_path.lower().endswith('.inp'):
+    #             inp_file_path += '.inp'
+    #
+    #         self.inp_file_path = inp_file_path
+    #         self.params.last_project_dir = os.path.dirname(inp_file_path)
+    #         self.update_components()
 
     def update_components(self):
 
         self.txt_prj_file.setText(self.inp_file_path)
-
-        # Read inp file
-        if os.path.isfile(self.inp_file_path):
-            inp_reader = InpReader(self.inp_file_path)
-
-            new_layers_d = inp_reader.read(self.iface, self.params)
-
-            if new_layers_d:
-                self.load_layers(new_layers_d)
-                self.count_elements()
-            else:
-                self.create_empty_layers()
-
-                # Prompt for hydaulic options
-                if self.hydraulics_dialog is None:
-                    self.hydraulics_dialog = HydraulicsDialog(self, self.params)
-                self.hydraulics_dialog.show()
 
     def count_elements(self):
 
@@ -328,6 +314,27 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         msg_box.setIcon(QMessageBox.Information)
         msg_box.setText(text)
         msg_box.exec_()
+
+    def remove_layers(self):
+
+        if self.params.junctions_vlay:
+            QgsMapLayerRegistry.instance().removeMapLayer(self.params.junctions_vlay.id())
+            self.params.junctions_vlay = None
+        if self.params.reservoirs_vlay:
+            QgsMapLayerRegistry.instance().removeMapLayer(self.params.reservoirs_vlay.id())
+            self.params.reservoirs_vlay
+        if self.params.tanks_vlay:
+            QgsMapLayerRegistry.instance().removeMapLayer(self.params.tanks_vlay.id())
+            self.params.tanks_vlay
+        if self.params.pipes_vlay:
+            QgsMapLayerRegistry.instance().removeMapLayer(self.params.pipes_vlay.id())
+            self.params.pipes_vlay
+        if self.params.pumps_vlay:
+            QgsMapLayerRegistry.instance().removeMapLayer(self.params.pumps_vlay.id())
+            self.params.pumps_vlay
+        if self.params.valves_vlay:
+            QgsMapLayerRegistry.instance().removeMapLayer(self.params.valves_vlay.id())
+            self.params.valves_vlay
 
     def load_layers(self, new_layers_d):
 
@@ -386,19 +393,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         else:
             # Check all layers not set
-            if self.cbo_junctions.count() == 0 and self.cbo_reservoirs.count() == 0 and self.cbo_tanks.count() == 0 and\
-                    self.cbo_pipes.count() == 0 and self.cbo_pumps.count() == 0 and self.cbo_valves.count() == 0:
-
-                ret = QtGui.QMessageBox.question(
-                    self.iface.mainWindow(),
-                    Parameters.plug_in_name,
-                    u'It appears that none of the six needed layers have been set. Do you want to create the six needed layers (and relative Shapefiles)?',  # TODO: softcode
-                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-
-                if ret == QtGui.QMessageBox.Yes:
-                    self.create_empty_layers()
-                else:
-                    return
+            if not self.check_all_layers_selected():
+                return
 
             # Check for junctions and pipes layers selected
             if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0:
@@ -419,6 +415,10 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_reservoir.setChecked(True)
 
         else:
+            # Check all layers not set
+            if not self.check_all_layers_selected():
+                return
+
             # Check for reservoirs and pipes layers selected
             if self.cbo_reservoirs.count() == 0 or self.cbo_pipes.count() == 0:
                 self.iface.messageBar().pushWarning(
@@ -438,6 +438,10 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_tank.setChecked(False)
 
         else:
+            # Check all layers not set
+            if not self.check_all_layers_selected():
+                return
+
             # Check for tanks and pipes layers selected
             if self.cbo_tanks.count() == 0 or self.cbo_pipes.count() == 0:
                 self.iface.messageBar().pushWarning(
@@ -457,6 +461,10 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_pipe.setChecked(True)
 
         else:
+            # Check all layers not set
+            if not self.check_all_layers_selected():
+                return
+
             # Check for junctions and pipes layers selected
             if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0:
                 self.iface.messageBar().pushWarning(
@@ -476,6 +484,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_pump.setChecked(True)
 
         else:
+            # Check all layers not set
+            if not self.check_all_layers_selected():
+                return
 
             # Check for junctions, pipes and pumps layers selected
             if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0 or self.cbo_pumps.count() == 0:
@@ -496,6 +507,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_add_valve.setChecked(True)
 
         else:
+            # Check all layers not set
+            if not self.check_all_layers_selected():
+                return
 
             # Check for junctions, pipes and valves layers selected
             if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0 or self.cbo_valves.count() == 0:
@@ -516,6 +530,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_move_element.setChecked(True)
 
         else:
+            # Check all layers not set
+            if not self.check_all_layers_selected():
+                return
 
             # Check for all layers selected
             if self.cbo_junctions.count() == 0 or self.cbo_reservoirs.count() == 0 or self.cbo_tanks.count() == 0 or\
@@ -537,6 +554,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.btn_delete_element.setChecked(True)
 
         else:
+            # Check all layers not set
+            if not self.check_all_layers_selected():
+                return
 
             # Check for all layers selected
             if self.cbo_junctions.count() == 0 or self.cbo_reservoirs.count() == 0 or self.cbo_tanks.count() == 0 or\
@@ -550,6 +570,28 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.tool = DeleteTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
             self.set_cursor(QtCore.Qt.CrossCursor)
+
+    def check_all_layers_selected(self):
+
+        if self.cbo_junctions.count() <= 1 or self.cbo_reservoirs.count() <= 1 or self.cbo_tanks.count() <= 1 or \
+                        self.cbo_pipes.count() <= 1 or self.cbo_pumps.count() <= 1 or self.cbo_valves.count() <= 1:
+
+            ret = QtGui.QMessageBox.question(
+                self.iface.mainWindow(),
+                Parameters.plug_in_name,
+                u'It appears that some of the six needed layers have been set. Do you want to create the six needed layers?',
+                # TODO: softcode
+                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+
+            if ret == QtGui.QMessageBox.Yes:
+                self.create_empty_layers()
+                return True
+            else:
+                return False
+
+        else:
+            return True
+
 
     def cbo_pump_param_activated(self):
         selected_param = self.cbo_pump_param.itemText(self.cbo_pump_param.currentIndex())
@@ -745,6 +787,53 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         curve_dialog = GraphDialog(self, self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_curves)
         curve_dialog.show()
 
+    def new_inp_file(self):
+
+        file_dialog = NewFileDialog()
+        if file_dialog.exec_():
+            inp_file_path = file_dialog.selectedFiles()[0]
+            if not inp_file_path.lower().endswith('.inp'):
+                inp_file_path += '.inp'
+
+            self.inp_file_path = inp_file_path
+            self.params.last_project_dir = os.path.dirname(inp_file_path)
+
+            self.create_empty_layers()
+
+    def load_inp_file(self):
+
+        file_dialog = MyQFileDialog()
+        file_dialog.setWindowTitle('Select an INP file or create a new one') # TODO: Softcode
+        file_dialog.setLabelText(QFileDialog.Accept, 'Select') # TODO: sofcode
+        file_dialog.setFileMode(QFileDialog.AnyFile)
+        file_dialog.setFilter("INP files (*.inp)")
+
+        if file_dialog.exec_():
+            inp_file_path = file_dialog.selectedFiles()[0]
+            if not inp_file_path.lower().endswith('.inp'):
+                inp_file_path += '.inp'
+
+            self.inp_file_path = inp_file_path
+            self.params.last_project_dir = os.path.dirname(inp_file_path)
+
+            # Read inp file
+            if os.path.isfile(self.inp_file_path):
+                inp_reader = InpReader(self.inp_file_path)
+                new_layers_d = inp_reader.read(self.iface, self.params)
+
+                self.remove_layers()
+
+                if new_layers_d:
+                    self.load_layers(new_layers_d)
+                    self.count_elements()
+                else:
+                    self.create_empty_layers()
+
+                    # Prompt for hydaulic options
+                    if self.hydraulics_dialog is None:
+                        self.hydraulics_dialog = HydraulicsDialog(self, self.params, True)
+                    self.hydraulics_dialog.show()
+
     def save_inp_file(self):
 
         InpFile.write_inp_file(self.params, self.inp_file_path, '')
@@ -767,6 +856,18 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
             runner.run(inp_file_path, rpt_file, out_binary_file)
 
+            # Open log
+            if not os.path.isfile(rpt_file):
+                QMessageBox.warning(
+                    self,
+                    Parameters.plug_in_name,
+                    rpt_file + u' not found!',  # TODO: softcode
+                    QMessageBox.Warning)
+                return
+
+            self.log_dialog = LogDialog(self.iface.mainWindow(), rpt_file)
+            self.log_dialog.exec_()
+
     def btn_epanet_output_pressed(self):
         if self.output_dialog is None:
             self.output_dialog = OutputAnalyserDialog(self.iface, self.iface.mainWindow(), self.params)
@@ -784,13 +885,20 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         prev_dem_lay_id = self.cbo_dem.itemData(self.cbo_dem.currentIndex())
 
         self.cbo_junctions.clear()
+        self.cbo_junctions.addItem('', None)
         self.cbo_pipes.clear()
+        self.cbo_pipes.addItem('', None)
         self.cbo_pumps.clear()
+        self.cbo_pumps.addItem('', None)
         self.cbo_reservoirs.clear()
+        self.cbo_reservoirs.addItem('', None)
         self.cbo_tanks.clear()
+        self.cbo_tanks.addItem('', None)
         self.cbo_valves.clear()
+        self.cbo_valves.addItem('', None)
 
         self.cbo_dem.clear()
+        self.cbo_dem.addItem('', None)
 
         layers = self.iface.legendInterface().layers()
         raster_count = 0
@@ -855,7 +963,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.set_layercombo_index(self.cbo_valves, layer_id)
                 self.params.valves_vlay = layer
 
-            if utils.LayerUtils.get_lay_from_id(layer_id).name() == 'dem':
+            names = ['dtm', 'dem']
+            if any([x.lower() in utils.LayerUtils.get_lay_from_id(layer_id).name().lower() for x in names]):
                 self.set_layercombo_index(self.cbo_dem, layer_id)
                 self.params.dem_rlay = layer
 
@@ -972,6 +1081,34 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         cursor = QtGui.QCursor()
         cursor.setShape(cursor_shape)
         self.iface.mapCanvas().setCursor(cursor)
+
+
+class NewFileDialog(QFileDialog):
+    def __init__(self):
+        super(NewFileDialog, self).__init__()
+
+        self.setWindowTitle('Pick a name for your project...')
+        self.setFileMode(QFileDialog.AnyFile)
+        self.setLabelText(QFileDialog.Accept, 'Save');
+
+    def accept(self):
+        try:
+            file_path = self.selectedFiles()[0]
+            if os.path.isfile(file_path):
+                ret = QtGui.QMessageBox.question(
+                    self.iface.mainWindow(),
+                    Parameters.plug_in_name,
+                    u'The file already exists. Overwrite?',
+                    # TODO: softcode
+                    QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+
+                if ret == QtGui.QMessageBox.No:
+                    return
+            QFileDialog.accept(self)
+
+        except Exception as e:
+            print e
+            return
 
 
 class MyQFileDialog(QFileDialog):

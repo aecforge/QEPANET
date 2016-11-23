@@ -191,8 +191,10 @@ class GraphDialog(QDialog):
         if self.lst_list.count() > 0:
             self.lst_list.setCurrentRow(0)
             self.btn_save.setEnabled(True)
+            self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
         else:
             self.btn_save.setEnabled(False)
+            self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.need_to_update_graph = True
         self.update_graph()
@@ -355,6 +357,7 @@ class GraphDialog(QDialog):
         self.static_canvas.axes.clear()
 
         self.btn_save.setEnabled(True)
+        self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
 
     def save(self):
 
@@ -452,6 +455,7 @@ class GraphDialog(QDialog):
         self.lst_list.takeItem(selected_row)
         if self.lst_list.count() == 0:
             self.btn_save.setEnabled(False)
+            self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         if self.edit_type == GraphDialog.edit_curves:
             del self.params.curves[name]
