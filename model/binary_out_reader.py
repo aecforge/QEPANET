@@ -52,6 +52,7 @@ class BinaryOutputReader:
             # Prolog --------------------------------------------------------------------------------------------------
             self.magic_nr = struct.unpack('I', f.read(4))[0]
             self.version = struct.unpack('I', f.read(4))[0]
+
             self.nodes_nr = struct.unpack('I', f.read(4))[0]
             self.tanks_reservs_nr = struct.unpack('I', f.read(4))[0]
             self.links_nr = struct.unpack('I', f.read(4))[0]
@@ -177,19 +178,19 @@ class BinaryOutputReader:
             # Dynamic results-------------------------------------------------------------------------------------------
             self.report_times = []
 
-            node_demands_d = {}
-            node_heads_d = {}
-            node_pressures_d = {}
-            node_qualities_d = {}
+            self.node_demands_d = {}
+            self.node_heads_d = {}
+            self.node_pressures_d = {}
+            self.node_qualities_d = {}
 
-            link_flows_d = {}
-            link_velocities_d = {}
-            link_headlosses_d = {}
-            link_qualities_d = {}
-            link_status_codes_d = {}
-            link_settings_d = {}
-            link_reactions_d = {}
-            link_frictions_d = {}
+            self.link_flows_d = {}
+            self.link_velocities_d = {}
+            self.link_headlosses_d = {}
+            self.link_qualities_d = {}
+            self.link_status_codes_d = {}
+            self.link_settings_d = {}
+            self.link_reactions_d = {}
+            self.link_frictions_d = {}
 
             f.seek(results_pt_pos)
             self.period_results = OrderedDict()
@@ -216,99 +217,99 @@ class BinaryOutputReader:
                 for i in range(self.nodes_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     node_demand_d[nodes_ids[i]] = val
-                    if not nodes_ids[i] in node_demands_d:
-                        node_demands_d[nodes_ids[i]] = [val]
+                    if not nodes_ids[i] in self.node_demands_d:
+                        self.node_demands_d[nodes_ids[i]] = [val]
                     else:
-                        node_demands_d[nodes_ids[i]].append(val)
+                        self.node_demands_d[nodes_ids[i]].append(val)
 
                 for i in range(self.nodes_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     node_head_d[nodes_ids[i]] = val
-                    if not nodes_ids[i] in node_heads_d:
-                        node_heads_d[nodes_ids[i]] = [val]
+                    if not nodes_ids[i] in self.node_heads_d:
+                        self.node_heads_d[nodes_ids[i]] = [val]
                     else:
-                        node_heads_d[nodes_ids[i]].append(val)
+                        self.node_heads_d[nodes_ids[i]].append(val)
 
                 for i in range(self.nodes_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     node_pressure_d[nodes_ids[i]] = val
-                    if not nodes_ids[i] in node_pressures_d:
-                        node_pressures_d[nodes_ids[i]] = [val]
+                    if not nodes_ids[i] in self.node_pressures_d:
+                        self.node_pressures_d[nodes_ids[i]] = [val]
                     else:
-                        node_pressures_d[nodes_ids[i]].append(val)
+                        self.node_pressures_d[nodes_ids[i]].append(val)
 
                 for i in range(self.nodes_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     node_quality_d[nodes_ids[i]] = val
-                    if not nodes_ids[i] in node_qualities_d:
-                        node_qualities_d[nodes_ids[i]] = [val]
+                    if not nodes_ids[i] in self.node_qualities_d:
+                        self.node_qualities_d[nodes_ids[i]] = [val]
                     else:
-                        node_qualities_d[nodes_ids[i]].append(val)
+                        self.node_qualities_d[nodes_ids[i]].append(val)
 
                 # Links
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     link_flow_d[links_ids[i]] = val
-                    if not links_ids[i] in link_flows_d:
-                        link_flows_d[links_ids[i]] = [val]
+                    if not links_ids[i] in self.link_flows_d:
+                        self.link_flows_d[links_ids[i]] = [val]
                     else:
-                        link_flows_d[links_ids[i]].append(val)
+                        self.link_flows_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     link_velocity_d[links_ids[i]] = val
-                    if not links_ids[i] in link_velocities_d:
-                        link_velocities_d[links_ids[i]] = [val]
+                    if not links_ids[i] in self.link_velocities_d:
+                        self.link_velocities_d[links_ids[i]] = [val]
                     else:
-                        link_velocities_d[links_ids[i]].append(val)
+                        self.link_velocities_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     link_headloss_d[links_ids[i]] = val
-                    if not links_ids[i] in link_headlosses_d:
-                        link_headlosses_d[links_ids[i]] = [val]
+                    if not links_ids[i] in self.link_headlosses_d:
+                        self.link_headlosses_d[links_ids[i]] = [val]
                     else:
-                        link_headlosses_d[links_ids[i]].append(val)
+                        self.link_headlosses_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     link_quality_d[links_ids[i]] = val
-                    if not links_ids[i] in link_qualities_d:
-                        link_qualities_d[links_ids[i]] = [val]
+                    if not links_ids[i] in self.link_qualities_d:
+                        self.link_qualities_d[links_ids[i]] = [val]
                     else:
-                        link_qualities_d[links_ids[i]].append(val)
+                        self.link_qualities_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     link_status_code_d[links_ids[i]] = val
-                    if not links_ids[i] in link_status_codes_d:
-                        link_status_codes_d[links_ids[i]] = [val]
+                    if not links_ids[i] in self.link_status_codes_d:
+                        self.link_status_codes_d[links_ids[i]] = [val]
                     else:
-                        link_status_codes_d[links_ids[i]].append(val)
+                        self.link_status_codes_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     link_setting_d[links_ids[i]] = val
-                    if not links_ids[i] in link_settings_d:
-                        link_settings_d[links_ids[i]] = [val]
+                    if not links_ids[i] in self.link_settings_d:
+                        self.link_settings_d[links_ids[i]] = [val]
                     else:
-                        link_settings_d[links_ids[i]].append(val)
+                        self.link_settings_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     link_reaction_d[links_ids[i]] = val
-                    if not links_ids[i] in link_reactions_d:
-                        link_reactions_d[links_ids[i]] = [val]
+                    if not links_ids[i] in self.link_reactions_d:
+                        self.link_reactions_d[links_ids[i]] = [val]
                     else:
-                        link_reactions_d[links_ids[i]].append(val)
+                        self.link_reactions_d[links_ids[i]].append(val)
 
                 for i in range(self.links_nr):
                     val = struct.unpack('f', f.read(4))[0]
                     link_friction_d[links_ids[i]] = val
-                    if not links_ids[i] in link_frictions_d:
-                        link_frictions_d[links_ids[i]] = [val]
+                    if not links_ids[i] in self.link_frictions_d:
+                        self.link_frictions_d[links_ids[i]] = [val]
                     else:
-                        link_frictions_d[links_ids[i]].append(val)
+                        self.link_frictions_d[links_ids[i]].append(val)
 
                 self.period_results[report_time] = PeriodResult(
                     node_demand_d, node_head_d, node_pressure_d, node_quality_d,
@@ -420,5 +421,5 @@ class LinkResult(object):
 
 
 # bor = BinaryOutputReader('D:/Progetti/2015/2015_13_TN_EPANET/04_Implementation/INP_Test/Test_cases/5/q5.out')
-# for id, values in bor.node_heads_d.iteritems():
+# for id, values in bor.self.node_heads_d.iteritems():
 #     print id, values
