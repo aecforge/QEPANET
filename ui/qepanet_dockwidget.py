@@ -259,7 +259,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.btn_epanet_run.setEnabled(True)
 
-        self.update_components()
+        self.txt_prj_file.setText(self.inp_file_path)
+
+        self.read_inp_file()
 
     # This method needed by Observable
     def update(self, observable):
@@ -288,10 +290,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     #         self.params.last_project_dir = os.path.dirname(inp_file_path)
     #         self.update_components()
 
-    def update_components(self):
-
-        self.txt_prj_file.setText(self.inp_file_path)
-
     def count_elements(self):
 
         jun_count = self.params.junctions_vlay.featureCount()
@@ -318,23 +316,30 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def remove_layers(self):
 
         if self.params.junctions_vlay:
-            QgsMapLayerRegistry.instance().removeMapLayer(self.params.junctions_vlay.id())
+            self.remove_layer(self.params.junctions_vlay)
             self.params.junctions_vlay = None
         if self.params.reservoirs_vlay:
-            QgsMapLayerRegistry.instance().removeMapLayer(self.params.reservoirs_vlay.id())
+            self.remove_layer(self.params.reservoirs_vlay)
             self.params.reservoirs_vlay
         if self.params.tanks_vlay:
-            QgsMapLayerRegistry.instance().removeMapLayer(self.params.tanks_vlay.id())
+            self.remove_layer(self.params.tanks_vlay)
             self.params.tanks_vlay
         if self.params.pipes_vlay:
-            QgsMapLayerRegistry.instance().removeMapLayer(self.params.pipes_vlay.id())
+            self.remove_layer(self.params.pipes_vlay)
             self.params.pipes_vlay
         if self.params.pumps_vlay:
-            QgsMapLayerRegistry.instance().removeMapLayer(self.params.pumps_vlay.id())
+            self.remove_layer(self.params.pumps_vlay)
             self.params.pumps_vlay
         if self.params.valves_vlay:
-            QgsMapLayerRegistry.instance().removeMapLayer(self.params.valves_vlay.id())
+            self.remove_layer(self.params.valves_vlay)
             self.params.valves_vlay
+
+    def remove_layer(self, layer):
+
+        try:
+            QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
+        except:
+            pass
 
     def load_layers(self, new_layers_d):
 
@@ -798,7 +803,15 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.inp_file_path = inp_file_path
             self.params.last_project_dir = os.path.dirname(inp_file_path)
 
+            self.remove_layers()
             self.create_empty_layers()
+
+            self.txt_prj_file.setText(self.inp_file_path)
+
+            # Prompt for hydaulic options
+            if self.hydraulics_dialog is None:
+                self.hydraulics_dialog = HydraulicsDialog(self, self.params, True)
+            self.hydraulics_dialog.show()
 
     def load_inp_file(self):
 
@@ -816,19 +829,24 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.inp_file_path = inp_file_path
             self.params.last_project_dir = os.path.dirname(inp_file_path)
 
-            # Read inp file
-            if os.path.isfile(self.inp_file_path):
-                inp_reader = InpReader(self.inp_file_path)
-                new_layers_d = inp_reader.read(self.iface, self.params)
+            self.read_inp_file(False)
 
-                self.remove_layers()
+    def read_inp_file(self, hydraulics_dialog = True):
 
-                if new_layers_d:
-                    self.load_layers(new_layers_d)
-                    self.count_elements()
-                else:
-                    self.create_empty_layers()
+        # Read inp file
+        if os.path.isfile(self.inp_file_path):
+            inp_reader = InpReader(self.inp_file_path)
+            new_layers_d = inp_reader.read(self.iface, self.params)
 
+            self.remove_layers()
+
+            if new_layers_d:
+                self.load_layers(new_layers_d)
+                self.count_elements()
+            else:
+                self.create_empty_layers()
+
+                if hydraulics_dialog:
                     # Prompt for hydaulic options
                     if self.hydraulics_dialog is None:
                         self.hydraulics_dialog = HydraulicsDialog(self, self.params, True)
@@ -1089,7 +1107,7 @@ class NewFileDialog(QFileDialog):
 
         self.setWindowTitle('Pick a name for your project...')
         self.setFileMode(QFileDialog.AnyFile)
-        self.setLabelText(QFileDialog.Accept, 'Save');
+        self.setLabelText(QFileDialog.Accept, 'OK')
 
     def accept(self):
         try:

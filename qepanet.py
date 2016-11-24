@@ -237,7 +237,6 @@ class QEpanet:
         # if curves_file_path is not None and os.path.isfile(curves_file_path):
         #     InpFile.read_curves(self.params)
 
-        # Select inp file
         file_dialog = MyQFileDialog()
         file_dialog.setWindowTitle('Select an INP file or create a new one')  # TODO: Softcode
         file_dialog.setLabelText(QFileDialog.Accept, 'Select')  # TODO: sofcode
@@ -272,5 +271,6 @@ class QEpanet:
 
             # Show the dockwidget
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
-            self.dockwidget.show()
+
+        self.dockwidget.show()
 

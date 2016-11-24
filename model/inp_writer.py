@@ -360,7 +360,10 @@ class InpFile:
             if pattern == NULL:
                 pattern = ''
 
-            if delta_z is None:
+            if elev is None or elev == NULL:
+                elev = 0
+
+            if delta_z is None or delta_z == NULL:
                 delta_z = 0
 
             elev += delta_z
@@ -609,7 +612,10 @@ class InpFile:
             level_min = t_ft.attribute(Tank.field_name_level_min)
             vol_min = t_ft.attribute(Tank.field_name_vol_min)
 
-            if elev_corr is None:
+            if elev is None or elev == NULL:
+                elev = 0
+
+            if elev_corr is None or elev_corr == NULL:
                 elev_corr = 0
 
             elev += elev_corr

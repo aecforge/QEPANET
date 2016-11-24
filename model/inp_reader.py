@@ -364,17 +364,20 @@ class InpReader:
                     start_node_elev = 0
                     end_node_elev = 0
                     for j in range(d.getBinNodeJunctionCount()):
+
+                        delta_z = 0
+                        if qepanet_junctions_od and ndID[j] in qepanet_junctions_od:
+                            delta_z = qepanet_junctions_od[ndID[j]]
+                        if qepanet_reservoirs_od and ndID[j] in qepanet_reservoirs_od:
+                            delta_z = qepanet_reservoirs_od[ndID[j]]
+                        if qepanet_tanks_od and ndID[j] in qepanet_tanks_od:
+                            delta_z = qepanet_tanks_od[ndID[j]]
+
                         if ndID[j] == start_node_id:
-                            start_node_elev = ndEle[j]
-                            if qepanet_junctions_od:
-                                delta_z = qepanet_junctions_od[ndID[i]]
-                                start_node_elev += delta_z
+                            start_node_elev = ndEle[j] + delta_z
 
                         if ndID[j] == end_node_id:
-                            end_node_elev = ndEle[j]
-                            if qepanet_junctions_od:
-                                delta_z = qepanet_junctions_od[ndID[i]]
-                                end_node_elev += delta_z
+                            end_node_elev = ndEle[j] + delta_z
 
                     point1 = QgsPointV2(QgsWKBTypes.PointZ, float(x1[i]), float(y1[i]), start_node_elev)
                     point2 = QgsPointV2(QgsWKBTypes.PointZ, float(x2[i]), float(y2[i]), end_node_elev)
