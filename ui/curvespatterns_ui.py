@@ -82,13 +82,13 @@ class GraphDialog(QDialog):
             ele_name = 'curve'
 
         # Buttons
-        self.btn_import = QPushButton('Import ' + ele_name + 's')  # TODO: softcode
-        self.btn_import.clicked.connect(self.import_file)
-        fra_buttons_lay.addWidget(self.btn_import)
-
         self.btn_new = QPushButton('New ' + ele_name)  # TODO: softcode
         self.btn_new.clicked.connect(self.new)
         fra_buttons_lay.addWidget(self.btn_new)
+
+        self.btn_import = QPushButton('Import ' + ele_name + 's')  # TODO: softcode
+        self.btn_import.clicked.connect(self.import_file)
+        fra_buttons_lay.addWidget(self.btn_import)
 
         self.btn_save = QPushButton('Save current ' + ele_name)  # TODO: softcode
         self.btn_save.clicked.connect(self.save)
@@ -191,9 +191,11 @@ class GraphDialog(QDialog):
         if self.lst_list.count() > 0:
             self.lst_list.setCurrentRow(0)
             self.btn_save.setEnabled(True)
+            self.btn_del.setEnabled(True)
             self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
         else:
             self.btn_save.setEnabled(False)
+            self.btn_del.setEnabled(False)
             self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.need_to_update_graph = True
@@ -357,6 +359,7 @@ class GraphDialog(QDialog):
         self.static_canvas.axes.clear()
 
         self.btn_save.setEnabled(True)
+        self.btn_del.setEnabled(True)
         self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
 
     def save(self):
@@ -455,6 +458,7 @@ class GraphDialog(QDialog):
         self.lst_list.takeItem(selected_row)
         if self.lst_list.count() == 0:
             self.btn_save.setEnabled(False)
+            self.btn_del.setEnabled(False)
             self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         if self.edit_type == GraphDialog.edit_curves:

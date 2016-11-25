@@ -827,6 +827,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 inp_file_path += '.inp'
 
             self.inp_file_path = inp_file_path
+
+            self.txt_prj_file.setText(self.inp_file_path)
+
             self.params.last_project_dir = os.path.dirname(inp_file_path)
 
             self.read_inp_file(False)

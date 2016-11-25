@@ -8,7 +8,7 @@ from PyQt4.QtGui import QColor, QMenu
 from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsProject, QgsTolerance
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
-from ..model.network import Pipe
+from ..model.network import Pipe, Junction
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
 from parameters import Parameters
 from ..geo_utils import raster_utils, vector_utils
@@ -178,7 +178,7 @@ class AddPipeTool(QgsMapTool):
                     roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
                     status = self.data_dock.cbo_pipe_status.currentText()
                     material = self.data_dock.cbo_pipe_roughness.currentText()
-                    pipe_eid = NetworkUtils.find_next_id(self.params.pipes_vlay, 'P')  # TODO: softcode
+                    pipe_eid = NetworkUtils.find_next_id(self.params.pipes_vlay, Pipe.prefix)  # TODO: softcode
 
                     pipe_ft = LinkHandler.create_new_pipe(
                         self.params,
@@ -200,7 +200,7 @@ class AddPipeTool(QgsMapTool):
                 new_start_junction = None
                 if not start_junction:
                     new_start_junction = rubberband_pts[0]
-                    junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, 'J') # TODO: sofcode
+                    junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
                     elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_start_junction, 1)
                     depth = float(self.data_dock.txt_junction_depth.text())
                     j_demand = float(self.data_dock.txt_junction_demand.text())
@@ -214,7 +214,7 @@ class AddPipeTool(QgsMapTool):
                 new_end_junction = None
                 if not end_junction:
                     new_end_junction = rubberband_pts[len(rubberband_pts) - 1]
-                    junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, 'J')  # TODO: sofcode
+                    junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
                     elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_end_junction, 1)
                     depth = float(self.data_dock.txt_junction_depth.text())
                     if self.data_dock.cbo_junction_pattern.currentIndex() != -1:

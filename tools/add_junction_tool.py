@@ -6,6 +6,7 @@ from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsPr
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
+from ..model.network import Junction
 from parameters import Parameters
 from ..geo_utils import raster_utils
 
@@ -85,7 +86,7 @@ class AddJunctionTool(QgsMapTool):
             self.mouse_clicked = False
 
             # Find first available ID for Junctions
-            node_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, 'J') # TODO: softcode
+            node_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix) # TODO: softcode
 
             elev = None
             if self.elev is not None:

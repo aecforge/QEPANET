@@ -6,6 +6,7 @@ from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsPr
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
+from ..model.network import Tank
 from parameters import Parameters
 from ..geo_utils import raster_utils
 
@@ -84,7 +85,7 @@ class AddTankTool(QgsMapTool):
             self.mouse_clicked = False
 
             # Find first available ID for Tanks
-            tank_eid = NetworkUtils.find_next_id(self.params.tanks_vlay, 'T') # TODO: softcode
+            tank_eid = NetworkUtils.find_next_id(self.params.tanks_vlay, Tank.prefix) # TODO: softcode
 
             if self.data_dock.cbo_tank_curve.currentIndex() != -1:
                 tank_curve_id = self.data_dock.cbo_tank_curve.itemData(self.data_dock.cbo_tank_curve.currentIndex()).id

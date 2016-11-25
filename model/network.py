@@ -44,6 +44,8 @@ class Junction:
     field_name_delta_z = 'delta_z'
     field_name_pattern = 'pattern'
 
+    prefix = 'J'
+
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_elev, QVariant.Double),
               QgsField(field_name_delta_z, QVariant.Double),
@@ -77,6 +79,8 @@ class Reservoir:
     field_name_delta_z = 'delta_z'
     field_name_pattern = 'pattern'
 
+    prefix = 'R'
+
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_elev, QVariant.Double),
               QgsField(field_name_delta_z, QVariant.Double)]
@@ -101,6 +105,8 @@ class Tank:
     field_name_level_max = 'max_level'
     field_name_level_min = 'min_level'
     field_name_vol_min = 'min_vol'
+
+    prefix = 'T'
 
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_elev, QVariant.Double),
@@ -146,6 +152,8 @@ class Pipe:
     field_name_status = 'status'
     field_name_material = 'material'
 
+    prefix = 'L'  # L to distinguish it from Pumps
+
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_length, QVariant.Double),
               QgsField(field_name_diameter, QVariant.Double),
@@ -177,6 +185,8 @@ class Pump:
     field_name_power = 'power'
     field_name_speed = 'speed'
 
+    prefix = 'P'
+
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_param, QVariant.String),
               QgsField(field_name_head, QVariant.String),
@@ -200,6 +210,8 @@ class Valve:
     field_name_minor_loss = 'minor_loss'
     field_name_setting = 'setting'
     field_name_type = 'type'
+
+    prefix = 'V'
 
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_diameter, QVariant.Double),

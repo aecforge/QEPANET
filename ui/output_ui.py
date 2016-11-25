@@ -10,6 +10,7 @@ from ..model.options_report import Options, Quality
 from ..tools.select_tool import SelectTool
 from ..tools.data_stores import *
 import codecs
+import math
 
 min_width = 600
 min_height = 400
@@ -180,7 +181,7 @@ class OutputAnalyserDialog(QDialog):
         self.fra_maps_right_time = QFrame()
         fra_maps_right_time_lay = QFormLayout(self.fra_maps_right_time)
 
-        self.lbl_map_times = QLabel(u'Period:')
+        self.lbl_map_times = QLabel(u'Period [h]:')
         self.cbo_map_times = QComboBox()
         fra_maps_right_time_lay.addRow(self.lbl_map_times, self.cbo_map_times)
         fra_maps_right_lay.addWidget(self.fra_maps_right_time)
@@ -227,8 +228,20 @@ class OutputAnalyserDialog(QDialog):
 
         # Fill times combo
         self.cbo_map_times.clear()
-        for period in self.output_reader.period_results.iterkeys():
-            self.cbo_map_times.addItem(str(period), period)
+        for period_s in self.output_reader.period_results.iterkeys():
+
+            # Convert seconds to hours
+            period_h = period_s / 3600
+
+            # String for combo
+            text = str(period_h)
+
+            day = int(math.floor(period_h / 24))
+            hour = period_h - day * 24
+
+            text += ' (d' + str(day) + ' H' + str(hour) +')'
+
+            self.cbo_map_times.addItem(text, period_s)
 
     def initialize(self):
 

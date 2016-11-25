@@ -6,6 +6,7 @@ from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsPr
 from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
+from ..model.network import Reservoir
 from parameters import Parameters
 from ..geo_utils import raster_utils
 
@@ -83,7 +84,7 @@ class AddReservoirTool(QgsMapTool):
             self.mouse_clicked = False
 
             # Find first available ID for reservoirs
-            eid = NetworkUtils.find_next_id(self.params.reservoirs_vlay, 'R') # TODO: softcode
+            eid = NetworkUtils.find_next_id(self.params.reservoirs_vlay, Reservoir.prefix) # TODO: softcode
 
             elev = None
             if self.elev is not None:
