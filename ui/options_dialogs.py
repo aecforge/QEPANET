@@ -289,25 +289,25 @@ class HydraulicsDialog(QDialog):
         self.params.options.tolerance = float(self.txt_tolerance.text())
 
         # Junctions
-        self.parent.lbl_junction_demand.setText(pre_l('Demand', self.params.options.units_flow[self.params.options.units][0]))  # TODO: softcode
-        self.parent.lbl_junction_depth.setText(pre_l('Delta Z', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_junction_demand.setText(pre_l('Demand', Options.units_flow[self.params.options.units][0]))  # TODO: softcode
+        self.parent.lbl_junction_depth.setText(pre_l('Delta Z', Options.units_depth[self.params.options.units]))  # TODO: softcode
 
         # Reservoirs
-        self.parent.lbl_reservoir_head.setText(pre_l('Head', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-        self.parent.lbl_reservoir_elev_corr.setText(pre_l('Delta Z', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_reservoir_head.setText(pre_l('Head', Options.units_depth[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_reservoir_elev_corr.setText(pre_l('Delta Z', Options.units_depth[self.params.options.units]))  # TODO: softcode
 
         # Tanks
-        self.parent.lbl_tank_elev_corr.setText(pre_l('Delta Z', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-        self.parent.lbl_tank_level_init.setText(pre_l('Level init.', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-        self.parent.lbl_tank_level_min.setText(pre_l('Level min', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-        self.parent.lbl_tank_level_max.setText(pre_l('Level max', self.params.options.units_depth[self.params.options.units]))  # TODO: softcode
-        self.parent.lbl_tank_diameter.setText(pre_l('Diameter', self.params.options.units_diameter_tanks[self.params.options.units]))  # TODO: softcode
-        self.parent.lbl_tank_vol_min.setText(pre_l('Volume min', self.params.options.units_volume[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_tank_elev_corr.setText(pre_l('Delta Z', Options.units_depth[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_tank_level_init.setText(pre_l('Level init.', Options.units_depth[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_tank_level_min.setText(pre_l('Level min', Options.units_depth[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_tank_level_max.setText(pre_l('Level max', Options.units_depth[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_tank_diameter.setText(pre_l('Diameter', Options.units_diameter_tanks[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_tank_vol_min.setText(pre_l('Volume min', Options.units_volume[self.params.options.units]))  # TODO: softcode
 
         # Pipes
-        self.parent.lbl_pipe_demand.setText(pre_l('Demand', self.params.options.units_flow[self.params.options.units][0]))  # TODO: softcode
-        self.parent.lbl_pipe_diameter.setText(pre_l('Diameter', self.params.options.units_diameter_pipes[self.params.options.units]))  # TODO: softcode
-        self.parent.lbl_pipe_roughness_val.setText(pre_l('Value', self.params.options.units_roughness[self.params.options.units][self.params.options.headloss]))  # TODO: softcode
+        self.parent.lbl_pipe_demand.setText(pre_l('Demand', Options.units_flow[self.params.options.units][0]))  # TODO: softcode
+        self.parent.lbl_pipe_diameter.setText(pre_l('Diameter', Options.units_diameter_pipes[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_pipe_roughness_val.setText(pre_l('Value', Options.units_roughness[self.params.options.units][self.params.options.headloss]))  # TODO: softcode
 
         self.params.options.headloss_units = self.cbo_headloss.itemData(self.cbo_headloss.currentIndex())
 

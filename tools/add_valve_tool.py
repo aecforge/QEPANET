@@ -159,10 +159,9 @@ class AddValveTool(QgsMapTool):
 
                 for valve_ft in adj_links['valves']:
 
-                    # valve_ft = vector_utils.get_feats_by_id(self.params.valves_vlay, self.snapped_pipe_id)[0]
-
                     if action == diameter_action:
-                        self.diameter_dialog = DiameterDialog(self.iface.mainWindow(), self.params)
+                        old_diam = valve_ft.attribute(Valve.field_name_diameter)
+                        self.diameter_dialog = DiameterDialog(self.iface.mainWindow(), self.params, old_diam)
                         self.diameter_dialog.exec_()  # Exec creates modal dialog
                         new_diameter = self.diameter_dialog.get_diameter()
                         if new_diameter is None:

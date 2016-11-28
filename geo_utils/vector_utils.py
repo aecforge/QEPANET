@@ -54,6 +54,8 @@ def find_closest_vertex_on_geometry(coord, geom):
 
 
 def get_feats_by_id(vlay, ft_id):
+    if ft_id is None:
+        return None
     request = QgsFeatureRequest().setFilterFid(ft_id)
     feats = list(vlay.getFeatures(request))
     return feats
@@ -63,11 +65,9 @@ def update_attribute(layer, feat, attribute_name, new_val, edit_command_name='Up
 
     layer.beginEditCommand(edit_command_name)
 
-    feat.setAttribute(attribute_name, None)
     layer.changeAttributeValue(
         feat.id(),
         feat.fieldNameIndex(attribute_name),
-        None,
         new_val)
 
     layer.endEditCommand()

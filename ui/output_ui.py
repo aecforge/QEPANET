@@ -431,7 +431,7 @@ class OutputAnalyserDialog(QDialog):
                 ys_d = {}
                 for element_id in self.element_ids_links:
                     ys_d[element_id] = [
-                        self.output_reader.link_headloss_d[element_id],
+                        self.output_reader.link_headlosses_d[element_id],
                         Options.units_diameter_tanks[self.params.options.units]]
                 ys_d_d[OutputParamCodes.LINK_HEADLOSS] = ys_d
 
@@ -456,55 +456,56 @@ class OutputAnalyserDialog(QDialog):
             return
 
         # Draw the map
-        report_time = self.cbo_map_times.itemData(self.cbo_map_times.currentIndex())
-        period_results = self.output_reader.period_results[report_time]
+        report_time_s = self.cbo_map_times.itemData(self.cbo_map_times.currentIndex())
+        report_time_label = self.cbo_map_times.itemText(self.cbo_map_times.currentIndex())
+        period_results = self.output_reader.period_results[report_time_s]
 
         new_lay = None
         if self.rad_maps_node_demand.isChecked():  # -------------------------------------------------------------------
             field_name_var = u'Demand'  # TODO: softcode
-            lay_name = 'Node demand ' + str(report_time)
+            lay_name = 'Node demand ' + report_time_label
             new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
             variables = period_results.node_demands
 
         elif self.rad_maps_node_head.isChecked():
             field_name_var = u'Head'  # TODO: softcode
-            lay_name = 'Node head ' + str(report_time)
+            lay_name = 'Node head ' + report_time_label
             new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
             variables = period_results.node_heads
 
         elif self.rad_maps_node_pressure.isChecked():
             field_name_var = u'Pressure'  # TODO: softcode
-            lay_name = 'Node pressure ' + str(report_time)
+            lay_name = 'Node pressure ' + report_time_label
             new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
             variables = period_results.node_pressures
 
         elif self.rad_maps_node_quality.isChecked():
             field_name_var = u'Quality'  # TODO: softcode
-            lay_name = 'Node quality ' + str(report_time)
+            lay_name = 'Node quality ' + report_time_label
             new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
             variables = period_results.node_qualities
 
         elif self.rad_maps_link_flow.isChecked():  # -------------------------------------------------------------------
             field_name_var = u'Flow'  # TODO: softcode
-            lay_name = 'Link flow ' + str(report_time)
+            lay_name = 'Link flow ' + report_time_label
             new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
             variables = period_results.link_flows
 
         elif self.rad_maps_link_velocity.isChecked():
             field_name_var = u'Velocity'  # TODO: softcode
-            lay_name = 'Link velocity ' + str(report_time)
+            lay_name = 'Link velocity ' + report_time_label
             new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
             variables = period_results.link_velocities
 
         elif self.rad_maps_link_headloss.isChecked():
             field_name_var = u'Headloss'  # TODO: softcode
-            lay_name = 'Link headloss ' + str(report_time)
+            lay_name = 'Link headloss ' + report_time_label
             new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
             variables = period_results.link_headlosses
 
         elif self.rad_maps_link_quality.isChecked():
             field_name_var = u'Quality'  # TODO: softcode
-            lay_name = 'Link quality ' + str(report_time)
+            lay_name = 'Link quality ' + report_time_label
             new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
             variables = period_results.link_qualities
 

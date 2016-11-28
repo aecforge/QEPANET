@@ -4,7 +4,7 @@ from ..tools.parameters import Parameters, RegExValidators
 
 class DiameterDialog(QDialog):
 
-    def __init__(self, parent, params):
+    def __init__(self, parent, params, old_diam=None):
 
         QDialog.__init__(self, parent)
         self.params = params
@@ -15,10 +15,21 @@ class DiameterDialog(QDialog):
 
         main_lay = QVBoxLayout(self)
 
-        # Form
+        # Frame form
         self.fra_form = QFrame(self)
         fra_form_lay = QFormLayout(self.fra_form)
 
+        # Old diameter
+        self.lbl_diam_old = QLabel('Current diameter:')  # TODO: softcode
+        self.txt_diam_old = QLineEdit()
+        self.txt_diam_old.setEnabled(False)
+        if old_diam is None:
+            old_diam = '-'
+        self.txt_diam_old.setText(str(old_diam))
+        # self.txt_diam_old.setReadOnly(True)
+        fra_form_lay.addRow(self.lbl_diam_old, self.txt_diam_old)
+
+        # New diameter
         self.lbl_diameter = QLabel('New diameter:')  # TODO: softcode
         self.txt_diameter = QLineEdit()
         self.txt_diameter.setValidator(RegExValidators.get_pos_decimals())
@@ -38,8 +49,8 @@ class DiameterDialog(QDialog):
         self.btn_cancel.pressed.connect(self.btn_cancel_pressed)
         self.btn_ok.pressed.connect(self.btn_ok_pressed)
 
-        buttons_form_lay.addWidget(self.btn_cancel)
         buttons_form_lay.addWidget(self.btn_ok)
+        buttons_form_lay.addWidget(self.btn_cancel)
 
         main_lay.addWidget(self.fra_form)
         main_lay.addWidget(self.buttons_form)

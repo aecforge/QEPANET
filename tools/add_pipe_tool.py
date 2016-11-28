@@ -112,8 +112,8 @@ class AddPipeTool(QgsMapTool):
 
                 pipe_band_geom = self.rubber_band.asGeometry()
 
-                # No rubber band geometry: pop the context menu
-                if pipe_band_geom is None:
+                # No rubber band geometry and feature snapped: pop the context menu
+                if pipe_band_geom is None and self.snapped_feat_id is not None:
                     menu = QMenu()
                     section_action = menu.addAction('Section...')  # TODO: softcode
                     diameter_action = menu.addAction('Change diameter...')  # TODO: softcode
@@ -129,7 +129,9 @@ class AddPipeTool(QgsMapTool):
                         pattern_dialog.exec_()
 
                     elif action == diameter_action:
-                        self.diameter_dialog = DiameterDialog(self.iface.mainWindow(), self.params)
+
+                        old_diam = pipe_ft.attribute(Pipe.field_name_diameter)
+                        self.diameter_dialog = DiameterDialog(self.iface.mainWindow(), self.params, old_diam)
                         self.diameter_dialog.exec_()  # Exec creates modal dialog
                         new_diameter = self.diameter_dialog.get_diameter()
                         if new_diameter is None:
@@ -149,93 +151,95 @@ class AddPipeTool(QgsMapTool):
 
                     return
 
-                # Finalize line
-                rubberband_pts = pipe_band_geom.asPolyline()[:-1]
-                rubberband_pts = self.remove_duplicated_point(rubberband_pts)
+                # There's a rubber band: create new pipe
+                if pipe_band_geom is not None:
+                    # Finalize line
+                    rubberband_pts = pipe_band_geom.asPolyline()[:-1]
+                    rubberband_pts = self.remove_duplicated_point(rubberband_pts)
 
-                if len(rubberband_pts) < 2:
-                    return
+                    if len(rubberband_pts) < 2:
+                        return
 
-                # Check whether the pipe points are located on existing nodes
-                junct_nrs = [0]
-                for p in range(1, len(rubberband_pts) - 1):
-                    overlapping_nodes = NetworkUtils.find_overlapping_nodes(self.params, rubberband_pts[p])
-                    if overlapping_nodes['junctions'] or overlapping_nodes['reservoirs'] or overlapping_nodes['tanks']:
-                        junct_nrs.append(p)
+                    # Check whether the pipe points are located on existing nodes
+                    junct_nrs = [0]
+                    for p in range(1, len(rubberband_pts) - 1):
+                        overlapping_nodes = NetworkUtils.find_overlapping_nodes(self.params, rubberband_pts[p])
+                        if overlapping_nodes['junctions'] or overlapping_nodes['reservoirs'] or overlapping_nodes['tanks']:
+                            junct_nrs.append(p)
 
-                junct_nrs.append(len(rubberband_pts) - 1)
+                    junct_nrs.append(len(rubberband_pts) - 1)
 
-                new_pipes_nr = len(junct_nrs) - 1
+                    new_pipes_nr = len(junct_nrs) - 1
 
-                new_pipes_fts = []
-                new_pipes_eids = []
+                    new_pipes_fts = []
+                    new_pipes_eids = []
 
-                for np in range(new_pipes_nr):
+                    for np in range(new_pipes_nr):
 
-                    demand = float(self.data_dock.txt_pipe_demand.text())
-                    diameter = float(self.data_dock.txt_pipe_diameter.text())
-                    loss = float(self.data_dock.txt_pipe_loss.text())
-                    roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
-                    status = self.data_dock.cbo_pipe_status.currentText()
-                    material = self.data_dock.cbo_pipe_roughness.currentText()
-                    pipe_eid = NetworkUtils.find_next_id(self.params.pipes_vlay, Pipe.prefix)  # TODO: softcode
+                        demand = float(self.data_dock.txt_pipe_demand.text())
+                        diameter = float(self.data_dock.txt_pipe_diameter.text())
+                        loss = float(self.data_dock.txt_pipe_loss.text())
+                        roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
+                        status = self.data_dock.cbo_pipe_status.currentText()
+                        material = self.data_dock.cbo_pipe_roughness.currentText()
+                        pipe_eid = NetworkUtils.find_next_id(self.params.pipes_vlay, Pipe.prefix)  # TODO: softcode
 
-                    pipe_ft = LinkHandler.create_new_pipe(
-                        self.params,
-                        pipe_eid,
-                        diameter,
-                        loss,
-                        roughness,
-                        status,
-                        material,
-                        rubberband_pts[junct_nrs[np]:junct_nrs[np+1]+1],
-                        True)
-                    self.rubber_band.reset()
+                        pipe_ft = LinkHandler.create_new_pipe(
+                            self.params,
+                            pipe_eid,
+                            diameter,
+                            loss,
+                            roughness,
+                            status,
+                            material,
+                            rubberband_pts[junct_nrs[np]:junct_nrs[np+1]+1],
+                            True)
+                        self.rubber_band.reset()
 
-                    new_pipes_fts.append(pipe_ft)
-                    new_pipes_eids.append(pipe_eid)
+                        new_pipes_fts.append(pipe_ft)
+                        new_pipes_eids.append(pipe_eid)
 
-                # Create start and end node, if they don't exist
-                (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[0].geometry())
-                new_start_junction = None
-                if not start_junction:
-                    new_start_junction = rubberband_pts[0]
-                    junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
-                    elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_start_junction, 1)
-                    depth = float(self.data_dock.txt_junction_depth.text())
-                    j_demand = float(self.data_dock.txt_junction_demand.text())
-                    if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
-                        pattern_id = self.data_dock.cbo_junction_pattern.itemData(self.data_dock.cbo_junction_pattern.currentIndex()).id
-                    else:
-                        pattern_id = None
-                    NodeHandler.create_new_junction(self.params, new_start_junction, junction_eid, elev, j_demand, depth, pattern_id)
+                    # Create start and end node, if they don't exist
+                    (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[0].geometry())
+                    new_start_junction = None
+                    if not start_junction:
+                        new_start_junction = rubberband_pts[0]
+                        junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
+                        elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_start_junction, 1)
+                        depth = float(self.data_dock.txt_junction_depth.text())
+                        j_demand = float(self.data_dock.txt_junction_demand.text())
+                        if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
+                            pattern_id = self.data_dock.cbo_junction_pattern.itemData(self.data_dock.cbo_junction_pattern.currentIndex()).id
+                        else:
+                            pattern_id = None
+                        NodeHandler.create_new_junction(self.params, new_start_junction, junction_eid, elev, j_demand, depth, pattern_id)
 
-                (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[len(new_pipes_fts) - 1].geometry())
-                new_end_junction = None
-                if not end_junction:
-                    new_end_junction = rubberband_pts[len(rubberband_pts) - 1]
-                    junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
-                    elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_end_junction, 1)
-                    depth = float(self.data_dock.txt_junction_depth.text())
-                    if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
-                        pattern_id = self.data_dock.cbo_junction_pattern.itemData(
-                            self.data_dock.cbo_junction_pattern.currentIndex()).id
-                    else:
-                        pattern_id = None
-                    NodeHandler.create_new_junction(self.params, new_end_junction, junction_eid, elev, demand, depth, pattern_id)
+                    (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[len(new_pipes_fts) - 1].geometry())
+                    new_end_junction = None
+                    if not end_junction:
+                        new_end_junction = rubberband_pts[len(rubberband_pts) - 1]
+                        junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
+                        elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_end_junction, 1)
+                        depth = float(self.data_dock.txt_junction_depth.text())
+                        if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
+                            pattern_id = self.data_dock.cbo_junction_pattern.itemData(
+                                self.data_dock.cbo_junction_pattern.currentIndex()).id
+                        else:
+                            pattern_id = None
+                        NodeHandler.create_new_junction(self.params, new_end_junction, junction_eid, elev, demand, depth, pattern_id)
 
-                # If end or start node intersects a pipe, split it
-                if new_start_junction:
-                    for pipe_ft in self.params.pipes_vlay.getFeatures():
-                        if pipe_ft.attribute(Pipe.field_name_eid) != new_pipes_eids[0] and\
-                                        pipe_ft.geometry().distance(QgsGeometry.fromPoint(new_start_junction)) < self.params.tolerance:
-                            LinkHandler.split_pipe(self.params, pipe_ft, new_start_junction)
+                    # If end or start node intersects a pipe, split it
+                    if new_start_junction:
+                        for pipe_ft in self.params.pipes_vlay.getFeatures():
+                            if pipe_ft.attribute(Pipe.field_name_eid) != new_pipes_eids[0] and\
+                                            pipe_ft.geometry().distance(QgsGeometry.fromPoint(new_start_junction)) < self.params.tolerance:
+                                LinkHandler.split_pipe(self.params, pipe_ft, new_start_junction)
 
-                if new_end_junction:
-                    for pipe_ft in self.params.pipes_vlay.getFeatures():
-                        if pipe_ft.attribute(Pipe.field_name_eid) != new_pipes_eids[-1] and\
-                                        pipe_ft.geometry().distance(QgsGeometry.fromPoint(new_end_junction)) < self.params.tolerance:
-                            LinkHandler.split_pipe(self.params, pipe_ft, new_end_junction)
+                    if new_end_junction:
+                        for pipe_ft in self.params.pipes_vlay.getFeatures():
+                            if pipe_ft.attribute(Pipe.field_name_eid) != new_pipes_eids[-1] and\
+                                            pipe_ft.geometry().distance(QgsGeometry.fromPoint(new_end_junction)) < self.params.tolerance:
+                                LinkHandler.split_pipe(self.params, pipe_ft, new_end_junction)
 
             # except Exception as e:
             #     self.rubber_band.reset()
