@@ -219,7 +219,7 @@ class OutputAnalyserDialog(QDialog):
             config_file.get_last_out_file(),
             'Out files (*.out)')
 
-        if out_file is None:
+        if out_file is None or out_file == '':
             return
 
         config_file.set_last_out_file(out_file)

@@ -761,7 +761,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.params.patterns_file = patterns_file_path
 
         pattern_dialog = GraphDialog(self, self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_patterns)
-        pattern_dialog.show()
+        pattern_dialog.exec_()
 
     def curve_editor(self):
 
@@ -790,7 +790,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.params.curves_file = curves_file_path
 
         curve_dialog = GraphDialog(self, self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_curves)
-        curve_dialog.show()
+        curve_dialog.exec_()
 
     def new_inp_file(self):
 
@@ -993,7 +993,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if self.params.junctions_vlay is not None:
             ns = symbology.NodeSymbology()
-            renderer = ns.make_simple_node_sym_renderer(0.5)
+            renderer = ns.make_simple_node_sym_renderer(2)
             self.params.junctions_vlay.setRendererV2(renderer)
 
         if self.params.reservoirs_vlay is not None:

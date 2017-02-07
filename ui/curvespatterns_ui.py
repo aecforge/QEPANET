@@ -83,7 +83,7 @@ class GraphDialog(QDialog):
 
         # Buttons
         self.btn_new = QPushButton('New ' + ele_name)  # TODO: softcode
-        self.btn_new.clicked.connect(self.new)
+        self.btn_new.clicked.connect(self.new_element)
         fra_buttons_lay.addWidget(self.btn_new)
 
         self.btn_import = QPushButton('Import ' + ele_name + 's')  # TODO: softcode
@@ -322,7 +322,7 @@ class GraphDialog(QDialog):
         if self.lst_list.count() > 0:
             self.lst_list.setCurrentRow(0)
 
-    def new(self):
+    def new_element(self):
 
         old_ids = []
         if self.edit_type == self.edit_patterns:
@@ -331,7 +331,6 @@ class GraphDialog(QDialog):
         elif self.edit_type == self.edit_curves:
             for curve in self.params.curves.itervalues():
                 old_ids.append(curve.id)
-
         self.new_dialog = NewIdDialog(self, old_ids)
         self.new_dialog.exec_()
 
@@ -562,6 +561,8 @@ class NewIdDialog(QDialog):
 
     def __init__(self, parent, old_ids):
 
+        print 21
+
         QDialog.__init__(self, parent)
 
         self.old_ids = old_ids
@@ -588,6 +589,8 @@ class NewIdDialog(QDialog):
         main_lay.addWidget(self.fra_buttons)
 
         self.new_id = None
+
+        print 22
 
     def btn_ok_pressed(self):
         if not self.check():

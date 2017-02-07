@@ -755,7 +755,7 @@ class InpFile:
         for p_ft in p_fts:
             eid = p_ft.attribute(Pipe.field_name_eid)
             material = p_ft.attribute(Pipe.field_name_material)
-            print 'material', material, type(material)
+            # print 'material', material, type(material)
             if material == NULL:
                 material = ''
 
