@@ -814,7 +814,21 @@ class NetworkUtils:
         max_eid = -1
         for feat in features:
             eid = feat.attribute(Junction.field_name_eid)
-            eid_val = int(eid[len(prefix):len(eid)])
+
+            # Check whether there's an eid using the prefix-number format
+            format_used = False
+            if eid.startswith(prefix):
+                number = eid[len(prefix):len(eid)]
+                try:
+                    int(number)
+                    format_used = True
+                except ValueError:
+                    pass
+
+            if format_used:
+                eid_val = int(eid[len(prefix):len(eid)])
+            else:
+                eid_val = 0
             max_eid = max(max_eid, eid_val)
 
         max_eid += 1

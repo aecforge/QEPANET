@@ -33,9 +33,11 @@ class MemoryDS:
     @staticmethod
     def create_junctions_lay(geoms=None, ids=None, demands=None, elevs=None, elev_corrs=None, patterns=None, crs=None):
 
-        junctions_lay = QgsVectorLayer('Point', 'Junctions', 'memory')
+        url = 'Point'
         if crs is not None:
-            junctions_lay.setCrs(crs)
+            url += '?crs=' + crs.authid()
+
+        junctions_lay = QgsVectorLayer(url, 'Junctions', 'memory')
         junctions_lay_dp = junctions_lay.dataProvider()
         junctions_lay_dp.addAttributes(Junction.fields)
         junctions_lay.updateFields()
@@ -63,9 +65,11 @@ class MemoryDS:
     @staticmethod
     def create_reservoirs_lay(geoms=None, ids=None, elevs=None, elevs_corr=None, crs=None):
 
-        reservoirs_lay = QgsVectorLayer('Point', 'Reservoirs', 'memory')
+        url = 'Point'
         if crs is not None:
-            reservoirs_lay.setCrs(crs)
+            url += '?crs=' + crs.authid()
+
+        reservoirs_lay = QgsVectorLayer(url, 'Reservoirs', 'memory')
         reservoirs_lay_dp = reservoirs_lay.dataProvider()
         reservoirs_lay_dp.addAttributes(Reservoir.fields)
         reservoirs_lay.updateFields()
@@ -90,9 +94,11 @@ class MemoryDS:
     def create_tanks_lay(geoms=None, ids=None, curves=None, diameters=None, elevs=None, elevs_corr=None,
                          levels_init=None, levels_max=None, levels_min=None, vols_min=None, crs=None):
 
-        tanks_lay = QgsVectorLayer('Point', 'Tanks', 'memory')
+        url = 'Point'
         if crs is not None:
-            tanks_lay.setCrs(crs)
+            url += '?crs=' + crs.authid()
+
+        tanks_lay = QgsVectorLayer(url, 'Tanks', 'memory')
         tanks_lay_dp = tanks_lay.dataProvider()
         tanks_lay_dp.addAttributes(Tank.fields)
         tanks_lay.updateFields()
@@ -129,9 +135,11 @@ class MemoryDS:
     def create_pipes_lay(geoms=None, ids=None, demands=None, diameters=None, lengths=None, roughnesses=None,
                          statuses=None, minor_losses=None, crs=None):
 
-        pipes_lay = QgsVectorLayer('LineString', 'Pipes', 'memory')
+        url = 'LineString'
         if crs is not None:
-            pipes_lay.setCrs(crs)
+            url += '?crs=' + crs.authid()
+
+        pipes_lay = QgsVectorLayer(url, 'Pipes', 'memory')
         pipes_lay_dp = pipes_lay.dataProvider()
         pipes_lay_dp.addAttributes(Pipe.fields)
         pipes_lay.updateFields()
@@ -161,10 +169,12 @@ class MemoryDS:
 
     @staticmethod
     def create_pumps_lay(geoms=None, ids=None, head_curve_ids=None, powers=None, speeds=None, patterns=None, crs=None):
-        
-        pumps_lay = QgsVectorLayer('LineString', 'Pumps', 'memory')
+
+        url = 'LineString'
         if crs is not None:
-            pumps_lay.setCrs(crs)
+            url += '?crs=' + crs.authid()
+
+        pumps_lay = QgsVectorLayer(url, 'Pumps', 'memory')
         pumps_lay_dp = pumps_lay.dataProvider()
         pumps_lay_dp.addAttributes(Pump.fields)
         pumps_lay.updateFields()
@@ -191,10 +201,11 @@ class MemoryDS:
 
     @staticmethod
     def create_valves_lay(geoms=None, ids=None, diameters=None, minor_losses=None, settings=None, types=None, crs=None):
-        
-        valves_lay = QgsVectorLayer('LineString', 'Valves', 'memory')
+
+        url = 'LineString'
         if crs is not None:
-            valves_lay.setCrs(crs)
+            url += '?crs=' + crs.authid()
+        valves_lay = QgsVectorLayer(url, 'Valves', 'memory')
         valves_lay_dp = valves_lay.dataProvider()
         valves_lay_dp.addAttributes(Valve.fields)
         valves_lay.updateFields()
@@ -222,9 +233,10 @@ class MemoryDS:
     @staticmethod
     def create_nodes_lay(params, field_name_var=u'variable', lay_name=u'Nodes', crs=None):
 
-        nodes_lay = QgsVectorLayer(u'Point', lay_name, u'memory')
+        url = 'Point'
         if crs is not None:
-            nodes_lay.setCrs(crs)
+            url += '?crs=' + crs.authid()
+        nodes_lay = QgsVectorLayer(url, lay_name, u'memory')
         nodes_lay_dp = nodes_lay.dataProvider()
         nodes_lay_dp.addAttributes([
             QgsField(Node.field_name_eid,  QVariant.String),
@@ -257,9 +269,10 @@ class MemoryDS:
     @staticmethod
     def create_links_lay(params, field_name_var=u'variable', lay_name=u'Nodes', crs=None):
 
-        links_lay = QgsVectorLayer(u'LineString', lay_name, u'memory')
+        url = 'LineString'
         if crs is not None:
-            links_lay.setCrs(crs)
+            url += '?crs=' + crs.authid()
+        links_lay = QgsVectorLayer(url, lay_name, u'memory')
         links_lay_dp = links_lay.dataProvider()
         links_lay_dp.addAttributes([
             QgsField(Node.field_name_eid,  QVariant.String),

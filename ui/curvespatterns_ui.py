@@ -561,8 +561,6 @@ class NewIdDialog(QDialog):
 
     def __init__(self, parent, old_ids):
 
-        print 21
-
         QDialog.__init__(self, parent)
 
         self.old_ids = old_ids
@@ -589,8 +587,6 @@ class NewIdDialog(QDialog):
         main_lay.addWidget(self.fra_buttons)
 
         self.new_id = None
-
-        print 22
 
     def btn_ok_pressed(self):
         if not self.check():

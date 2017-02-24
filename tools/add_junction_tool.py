@@ -192,12 +192,13 @@ class AddJunctionTool(QgsMapTool):
 
     def deactivate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
-                                                      True,
-                                                      QgsSnapper.SnapToSegment,
-                                                      0,
-                                                      self.params.snap_tolerance,
-                                                      True)
+        if self.params.pipes_vlay is not None:
+            QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
+                                                          True,
+                                                          QgsSnapper.SnapToSegment,
+                                                          0,
+                                                          self.params.snap_tolerance,
+                                                          True)
 
         self.data_dock.btn_add_junction.setChecked(False)
 

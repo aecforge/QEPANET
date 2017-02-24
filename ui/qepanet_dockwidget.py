@@ -27,6 +27,7 @@ from PyQt4 import QtCore, uic, QtGui
 from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui import QFileDialog, QMessageBox
 from qgis.core import *
+from qgis.gui import QgsGenericProjectionSelector
 
 from ..geo_utils import utils
 from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog, ReportDialog
@@ -346,32 +347,32 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         if new_layers_d[Junction.section_name] is not None:
             self.params.junctions_vlay = new_layers_d[Junction.section_name]
         else:
-            self.params.junctions_vlay = MemoryDS.create_junctions_lay(crs=None)
+            self.params.junctions_vlay = MemoryDS.create_junctions_lay(crs=crs)
 
         if new_layers_d[Reservoir.section_name] is not None:
             self.params.reservoirs_vlay = new_layers_d[Reservoir.section_name]
         else:
-            self.params.reservoirs_vlay = MemoryDS.create_reservoirs_lay(crs=None)
+            self.params.reservoirs_vlay = MemoryDS.create_reservoirs_lay(crs=crs)
 
         if new_layers_d[Tank.section_name] is not None:
             self.params.tanks_vlay = new_layers_d[Tank.section_name]
         else:
-            self.params.tanks_vlay = MemoryDS.create_tanks_lay(crs=None)
+            self.params.tanks_vlay = MemoryDS.create_tanks_lay(crs=crs)
 
         if new_layers_d[Pipe.section_name] is not None:
             self.params.pipes_vlay = new_layers_d[Pipe.section_name]
         else:
-            self.params.pipes_vlay = MemoryDS.create_pipes_lay(crs=None)
+            self.params.pipes_vlay = MemoryDS.create_pipes_lay(crs=crs)
 
         if new_layers_d[Pump.section_name] is not None:
             self.params.pumps_vlay = new_layers_d[Pump.section_name]
         else:
-            self.params.pumps_vlay = MemoryDS.create_pumps_lay(crs=None)
+            self.params.pumps_vlay = MemoryDS.create_pumps_lay(crs=crs)
 
         if new_layers_d[Valve.section_name] is not None:
             self.params.valves_vlay = new_layers_d[Valve.section_name]
         else:
-            self.params.valves_vlay = MemoryDS.create_valves_lay(crs=None)
+            self.params.valves_vlay = MemoryDS.create_valves_lay(crs=crs)
 
         QgsMapLayerRegistry.instance().addMapLayers([self.params.junctions_vlay,
                                                     self.params.reservoirs_vlay,
@@ -584,7 +585,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             ret = QtGui.QMessageBox.question(
                 self.iface.mainWindow(),
                 Parameters.plug_in_name,
-                u'It appears that some of the six needed layers have been set. Do you want to create the six needed layers?',
+                u'It appears that some of the six layers needed by QEPANET are not present. Do you want to create the layers?',
                 # TODO: softcode
                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
 
@@ -660,7 +661,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def create_empty_layers(self):
 
         try:
-            crs = self.iface.mapCanvas().mapRenderer().destinationCrs()
+
+            # Request CRS for layers
+            proj_selector = QgsGenericProjectionSelector()
+            proj_selector.exec_()
+            proj_id = proj_selector.selectedAuthId()
+            crs = QgsCoordinateReferenceSystem(proj_id)
+
             new_layers = MemoryDS.create_empty_memory_layers(crs)
             self.load_layers(new_layers)
 
@@ -703,7 +710,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.update_roughness_params(self.get_combo_current_data(self.cbo_pipe_roughness)[self.params.options.headloss])
 
     def snap_tolerance_changed(self):
-        self.params.snap_tolerance(float(self.txt_snap_tolerance.text()))
+        self.params.snap_tolerance = (float(self.txt_snap_tolerance.text()))
 
         QgsProject.instance().setSnapSettingsForLayer(self.params.junctions_vlay.id(),
                                                       True,
@@ -834,7 +841,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
             self.read_inp_file(False)
 
-    def read_inp_file(self, hydraulics_dialog = True):
+    def read_inp_file(self, hydraulics_dialog=True):
 
         # Read inp file
         if os.path.isfile(self.inp_file_path):

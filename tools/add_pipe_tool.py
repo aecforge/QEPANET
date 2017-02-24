@@ -144,7 +144,7 @@ class AddPipeTool(QgsMapTool):
                         adj_valves = NetworkUtils.find_links_adjacent_to_link(
                             self.params, self.params.pipes_vlay, pipe_ft, True, True, False)
 
-                        if adj_valves:
+                        if adj_valves['valves']:
                             self.iface.messageBar().pushWarning(
                                 Parameters.plug_in_name,
                                 'Valves detected on the pipe: need to update their diameters too!')  # TODO: softcode
