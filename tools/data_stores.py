@@ -13,22 +13,22 @@ class MemoryDS:
     def __init__(self):
         pass
 
-    @staticmethod
-    def create_empty_memory_layers(crs):
-
-        junctions_lay = MemoryDS.create_junctions_lay(crs=crs)
-        reservoirs_lay = MemoryDS.create_reservoirs_lay(crs=crs)
-        tanks_lay = MemoryDS.create_tanks_lay(crs=crs)
-        pipes_lay = MemoryDS.create_pipes_lay(crs=crs)
-        pumps_lay = MemoryDS.create_pumps_lay(crs=crs)
-        valves_lay = MemoryDS.create_valves_lay(crs=crs)
-
-        return {Junction.section_name: junctions_lay,
-                Reservoir.section_name: reservoirs_lay,
-                Tank.section_name: tanks_lay,
-                Pipe.section_name: pipes_lay,
-                Pump.section_name: pumps_lay,
-                Valve.section_name: valves_lay}
+    # @staticmethod
+    # def create_empty_memory_layers(crs):
+    #
+    #     junctions_lay = MemoryDS.create_junctions_lay(crs=crs)
+    #     reservoirs_lay = MemoryDS.create_reservoirs_lay(crs=crs)
+    #     tanks_lay = MemoryDS.create_tanks_lay(crs=crs)
+    #     pipes_lay = MemoryDS.create_pipes_lay(crs=crs)
+    #     pumps_lay = MemoryDS.create_pumps_lay(crs=crs)
+    #     valves_lay = MemoryDS.create_valves_lay(crs=crs)
+    #
+    #     return {Junction.section_name: junctions_lay,
+    #             Reservoir.section_name: reservoirs_lay,
+    #             Tank.section_name: tanks_lay,
+    #             Pipe.section_name: pipes_lay,
+    #             Pump.section_name: pumps_lay,
+    #             Valve.section_name: valves_lay}
 
     @staticmethod
     def create_junctions_lay(geoms=None, ids=None, demands=None, elevs=None, elev_corrs=None, patterns=None, crs=None):

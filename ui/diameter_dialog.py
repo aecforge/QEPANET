@@ -46,8 +46,8 @@ class DiameterDialog(QDialog):
         self.btn_ok = QPushButton('OK')
         self.btn_cancel = QPushButton('Cancel')
 
-        self.btn_cancel.pressed.connect(self.btn_cancel_pressed)
-        self.btn_ok.pressed.connect(self.btn_ok_pressed)
+        self.btn_cancel.clicked.connect(self.btn_cancel_clicked)
+        self.btn_ok.clicked.connect(self.btn_ok_clicked)
 
         buttons_form_lay.addWidget(self.btn_ok)
         buttons_form_lay.addWidget(self.btn_cancel)
@@ -55,11 +55,11 @@ class DiameterDialog(QDialog):
         main_lay.addWidget(self.fra_form)
         main_lay.addWidget(self.buttons_form)
 
-    def btn_cancel_pressed(self):
+    def btn_cancel_clicked(self):
         self.new_diameter = None
         self.setVisible(False)
 
-    def btn_ok_pressed(self):
+    def btn_ok_clicked(self):
         if self.txt_diameter.text() is not None and self.txt_diameter.text() != '':
             self.new_diameter = float(self.txt_diameter.text())
             self.params.new_diameter = self.new_diameter

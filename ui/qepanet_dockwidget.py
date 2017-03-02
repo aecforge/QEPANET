@@ -88,12 +88,20 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.log_dialog = None
 
         # Inp file
-        self.btn_project_new.pressed.connect(self.new_inp_file)
-        self.btn_project_load.pressed.connect(self.load_inp_file)
-        self.btn_project_save.pressed.connect(self.save_inp_file)
+        self.btn_project_new.clicked.connect(self.project_new_clicked)
+        self.btn_project_load.clicked.connect(self.project_load_clicked)
+        self.btn_project_save.clicked.connect(self.project_save_clicked)
+        self.btn_project_saveas.clicked.connect(self.project_saveas_clicked)
+
+        curr_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # Project buttons
+        set_up_button(self.btn_project_new, os.path.join(curr_dir, 'i_new.png',), tooltip_text='New project')
+        set_up_button(self.btn_project_load, os.path.join(curr_dir, 'i_load.png'), tooltip_text='Open project')
+        set_up_button(self.btn_project_save, os.path.join(curr_dir, 'i_save.png'), tooltip_text='Save project')
+        set_up_button(self.btn_project_saveas, os.path.join(curr_dir, 'i_saveas.png'), tooltip_text='Save project as')
 
         # Tools buttons
-        curr_dir = os.path.dirname(os.path.abspath(__file__))
         set_up_button(self.btn_add_junction, os.path.join(curr_dir, 'i_junction.png'), 12, 12,
                            'Create junction')  # TODO: softcode
         set_up_button(self.btn_add_reservoir, os.path.join(curr_dir, 'i_reservoir.png'), 14, 14,
@@ -111,19 +119,22 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         set_up_button(self.btn_delete_element, os.path.join(curr_dir, 'i_delete2.png'), 13, 15,
                            'Delete element(s)')  # TODO: softcode
 
+        # EPANET button
+        set_up_button(self.btn_epanet_run, os.path.join(curr_dir, 'i_run.png'), tooltip_text='Run')
+
         self.btn_move_element.setCheckable(True)
         self.btn_delete_element.setCheckable(True)
 
-        self.btn_add_junction.pressed.connect(self.add_junction)
-        self.btn_add_reservoir.pressed.connect(self.add_reservoir)
-        self.btn_add_tank.pressed.connect(self.add_tank)
+        self.btn_add_junction.clicked.connect(self.add_junction)
+        self.btn_add_reservoir.clicked.connect(self.add_reservoir)
+        self.btn_add_tank.clicked.connect(self.add_tank)
 
-        self.btn_add_pipe.pressed.connect(self.add_pipe)
-        self.btn_add_pump.pressed.connect(self.add_pump)
-        self.btn_add_valve.pressed.connect(self.add_valve)
+        self.btn_add_pipe.clicked.connect(self.add_pipe)
+        self.btn_add_pump.clicked.connect(self.add_pump)
+        self.btn_add_valve.clicked.connect(self.add_valve)
 
-        self.btn_move_element.pressed.connect(self.move_element)
-        self.btn_delete_element.pressed.connect(self.delete_element)
+        self.btn_move_element.clicked.connect(self.move_element)
+        self.btn_delete_element.clicked.connect(self.delete_element)
 
         # Layers
         self.cbo_junctions.activated.connect(self.cbo_junctions_activated)
@@ -139,7 +150,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.update_layers_combos()
         self.preselect_layers_combos()
 
-        QtCore.QObject.connect(self.btn_symbology, QtCore.SIGNAL('pressed()'), self.apply_symbologies)
+        self.btn_symbology.clicked.connect(self.apply_symbologies)
 
         # Junctions ----------------------------------------------------------------------------------------------------
         self.lbl_junction_demand.setText(pre_l('Demand', self.params.options.flow_units))  # TODO: softcode
@@ -236,27 +247,27 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QtCore.QObject.connect(self.cbo_valve_type, QtCore.SIGNAL('activated(int)'), self.cbo_valve_type_activated)
 
         # Options ------------------------------------------------------------------------------------------------------
-        self.btn_options_hydraulics.pressed.connect(self.btn_hydraulics_pressed)
-        self.btn_options_quality.pressed.connect(self.btn_quality_pressed)
-        self.btn_options_reactions.pressed.connect(self.btn_reactions_pressed)
-        self.btn_options_times.pressed.connect(self.btn_times_pressed)
-        self.btn_options_energy.pressed.connect(self.btn_energy_pressed)
-        self.btn_options_report.pressed.connect(self.btn_report_pressed)
+        self.btn_options_hydraulics.clicked.connect(self.btn_hydraulics_clicked)
+        self.btn_options_quality.clicked.connect(self.btn_quality_clicked)
+        self.btn_options_reactions.clicked.connect(self.btn_reactions_clicked)
+        self.btn_options_times.clicked.connect(self.btn_times_clicked)
+        self.btn_options_energy.clicked.connect(self.btn_energy_clicked)
+        self.btn_options_report.clicked.connect(self.btn_report_clicked)
 
         # Tools
-        self.btn_create_layers.pressed.connect(self.create_empty_layers)
+        self.btn_create_layers.clicked.connect(self.create_layers)
 
         self.txt_snap_tolerance.setText(str(params.snap_tolerance))
         self.txt_snap_tolerance.setValidator(RegExValidators.get_pos_decimals())
         QtCore.QObject.connect(self.txt_snap_tolerance, QtCore.SIGNAL('editingFinished()'), self.snap_tolerance_changed)
 
-        self.btn_pattern_editor.pressed.connect(self.pattern_editor)
-        self.btn_curve_editor.pressed.connect(self.curve_editor)
+        self.btn_pattern_editor.clicked.connect(self.pattern_editor)
+        self.btn_curve_editor.clicked.connect(self.curve_editor)
 
         # EPANET
-        self.btn_epanet_run.pressed.connect(self.btn_epanet_run_pressed)
+        self.btn_epanet_run.clicked.connect(self.btn_epanet_run_clicked)
 
-        self.btn_epanet_output.pressed.connect(self.btn_epanet_output_pressed)
+        self.btn_epanet_output.clicked.connect(self.btn_epanet_output_clicked)
 
         self.btn_epanet_run.setEnabled(True)
 
@@ -301,12 +312,12 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         val_count = self.params.valves_vlay.featureCount()
 
         text = 'Load OK. ' +\
-               str(jun_count) + ' junctions, ' + \
-               str(res_count) + ' reservoirs, ' + \
-               str(tan_count) + ' tanks, ' + \
-               str(pip_count) + ' pipes, ' + \
-               str(pum_count) + ' pumps and ' + \
-               str(val_count) + ' valvesl were loaded.'
+               str(jun_count) + ' junction(s), ' + \
+               str(res_count) + ' reservoir(s), ' + \
+               str(tan_count) + ' tank(s), ' + \
+               str(pip_count) + ' pipe(s), ' + \
+               str(pum_count) + ' pump(s) and ' + \
+               str(val_count) + ' valve(s) were loaded.'
 
         msg_box = QMessageBox(self)
         msg_box.setWindowTitle(Parameters.plug_in_name)
@@ -342,34 +353,34 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         except:
             pass
 
-    def load_layers(self, new_layers_d):
+    def create_layers(self, new_layers_d, crs):
 
-        if new_layers_d[Junction.section_name] is not None:
+        if new_layers_d is not None and new_layers_d[Junction.section_name] is not None:
             self.params.junctions_vlay = new_layers_d[Junction.section_name]
         else:
             self.params.junctions_vlay = MemoryDS.create_junctions_lay(crs=crs)
 
-        if new_layers_d[Reservoir.section_name] is not None:
+        if new_layers_d is not None and new_layers_d[Reservoir.section_name] is not None:
             self.params.reservoirs_vlay = new_layers_d[Reservoir.section_name]
         else:
             self.params.reservoirs_vlay = MemoryDS.create_reservoirs_lay(crs=crs)
 
-        if new_layers_d[Tank.section_name] is not None:
+        if new_layers_d is not None and new_layers_d[Tank.section_name] is not None:
             self.params.tanks_vlay = new_layers_d[Tank.section_name]
         else:
             self.params.tanks_vlay = MemoryDS.create_tanks_lay(crs=crs)
 
-        if new_layers_d[Pipe.section_name] is not None:
+        if new_layers_d is not None and new_layers_d[Pipe.section_name] is not None:
             self.params.pipes_vlay = new_layers_d[Pipe.section_name]
         else:
             self.params.pipes_vlay = MemoryDS.create_pipes_lay(crs=crs)
 
-        if new_layers_d[Pump.section_name] is not None:
+        if new_layers_d is not None and new_layers_d[Pump.section_name] is not None:
             self.params.pumps_vlay = new_layers_d[Pump.section_name]
         else:
             self.params.pumps_vlay = MemoryDS.create_pumps_lay(crs=crs)
 
-        if new_layers_d[Valve.section_name] is not None:
+        if new_layers_d is not None and new_layers_d[Valve.section_name] is not None:
             self.params.valves_vlay = new_layers_d[Valve.section_name]
         else:
             self.params.valves_vlay = MemoryDS.create_valves_lay(crs=crs)
@@ -590,14 +601,16 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
 
             if ret == QtGui.QMessageBox.Yes:
-                self.create_empty_layers()
+
+                # Request CRS for layers
+                self.crs_selector()
+                self.create_layers(None, self.params.crs)
                 return True
             else:
                 return False
 
         else:
             return True
-
 
     def cbo_pump_param_activated(self):
         selected_param = self.cbo_pump_param.itemText(self.cbo_pump_param.currentIndex())
@@ -628,51 +641,35 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         if setting_on:
             self.lbl_valve_setting.setText(setting_label)
 
-    def btn_hydraulics_pressed(self):
+    def btn_hydraulics_clicked(self):
         if self.hydraulics_dialog is None:
             self.hydraulics_dialog = HydraulicsDialog(self, self.params)
         self.hydraulics_dialog.show()
 
-    def btn_quality_pressed(self):
+    def btn_quality_clicked(self):
         if self.quality_dialog is None:
             self.quality_dialog = QualityDialog(self, self.params)
         self.quality_dialog.show()
 
-    def btn_reactions_pressed(self):
+    def btn_reactions_clicked(self):
         if self.reactions_dialog is None:
             self.reactions_dialog = ReactionsDialog(self, self.params)
         self.reactions_dialog.show()
 
-    def btn_times_pressed(self):
+    def btn_times_clicked(self):
         if self.times_dialog is None:
             self.times_dialog = TimesDialog(self, self.params)
         self.times_dialog.show()
 
-    def btn_energy_pressed(self):
+    def btn_energy_clicked(self):
         if self.energy_dialog is None:
             self.energy_dialog = EnergyDialog(self, self.params)
         self.energy_dialog.show()
 
-    def btn_report_pressed(self):
+    def btn_report_clicked(self):
         if self.report_dialog is None:
             self.report_dialog = ReportDialog(self, self.params)
         self.report_dialog.show()
-
-    def create_empty_layers(self):
-
-        try:
-
-            # Request CRS for layers
-            proj_selector = QgsGenericProjectionSelector()
-            proj_selector.exec_()
-            proj_id = proj_selector.selectedAuthId()
-            crs = QgsCoordinateReferenceSystem(proj_id)
-
-            new_layers = MemoryDS.create_empty_memory_layers(crs)
-            self.load_layers(new_layers)
-
-        except Exception as e:
-            self.iface.messageBar().pushInfo(Parameters.plug_in_name, e.message)
 
     def roughness_slider_changed(self):
         self.lbl_pipe_roughness_val_val.setText(str(self.sli_pipe_roughness.value() / float(10**self.decimals)))
@@ -799,10 +796,16 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         curve_dialog = GraphDialog(self, self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_curves)
         curve_dialog.exec_()
 
-    def new_inp_file(self):
+    def project_new_clicked(self):
 
-        file_dialog = NewFileDialog()
+        self.btn_project_new.setChecked(False)
+
+        file_dialog = QFileDialog()
+        file_dialog.setWindowTitle('New project')
+        file_dialog.setLabelText(QFileDialog.Accept, 'Create')
+        file_dialog.setNameFilter('Inp files (*.inp)');
         if file_dialog.exec_():
+
             inp_file_path = file_dialog.selectedFiles()[0]
             if not inp_file_path.lower().endswith('.inp'):
                 inp_file_path += '.inp'
@@ -811,7 +814,10 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.params.last_project_dir = os.path.dirname(inp_file_path)
 
             self.remove_layers()
-            self.create_empty_layers()
+
+            # Request CRS for layers
+            self.crs_selector()
+            self.create_layers(None, self.params.crs)
 
             self.txt_prj_file.setText(self.inp_file_path)
 
@@ -820,28 +826,23 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.hydraulics_dialog = HydraulicsDialog(self, self.params, True)
             self.hydraulics_dialog.show()
 
-    def load_inp_file(self):
+    def project_load_clicked(self):
 
-        file_dialog = MyQFileDialog()
-        file_dialog.setWindowTitle('Select an INP file or create a new one') # TODO: Softcode
-        file_dialog.setLabelText(QFileDialog.Accept, 'Select') # TODO: sofcode
-        file_dialog.setFileMode(QFileDialog.AnyFile)
-        file_dialog.setFilter("INP files (*.inp)")
+        self.btn_project_load.setChecked(False)
 
-        if file_dialog.exec_():
-            inp_file_path = file_dialog.selectedFiles()[0]
-            if not inp_file_path.lower().endswith('.inp'):
-                inp_file_path += '.inp'
+        inp_file_path = QFileDialog.getOpenFileName(self, 'Open inp file', self.params.last_project_dir, 'Inp files (*.inp)')
 
+        if inp_file_path is not None:
             self.inp_file_path = inp_file_path
 
             self.txt_prj_file.setText(self.inp_file_path)
-
             self.params.last_project_dir = os.path.dirname(inp_file_path)
-
             self.read_inp_file(False)
 
     def read_inp_file(self, hydraulics_dialog=True):
+
+        # Request CRS for layers
+        self.crs_selector()
 
         # Read inp file
         if os.path.isfile(self.inp_file_path):
@@ -849,31 +850,42 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             new_layers_d = inp_reader.read(self.iface, self.params)
 
             self.remove_layers()
+            self.create_layers(new_layers_d, self.params.crs)
+            self.count_elements()
 
-            if new_layers_d:
-                self.load_layers(new_layers_d)
-                self.count_elements()
-            else:
-                self.create_empty_layers()
-
+            if not new_layers_d:
                 if hydraulics_dialog:
                     # Prompt for hydaulic options
                     if self.hydraulics_dialog is None:
                         self.hydraulics_dialog = HydraulicsDialog(self, self.params, True)
                     self.hydraulics_dialog.show()
 
-    def save_inp_file(self):
+    def project_save_clicked(self):
 
+        self.btn_project_save.setChecked(False)
         InpFile.write_inp_file(self.params, self.inp_file_path, '')
 
-    def btn_epanet_run_pressed(self):
+    def project_saveas_clicked(self):
+
+        self.btn_project_saveas.setChecked(False)
+
+        inp_file_path = QFileDialog.getSaveFileName(
+            self, 'Save project as...', self.params.last_project_dir, 'INP files (*.inp)')
+
+        if inp_file_path is not None:
+            self.inp_file_path = inp_file_path
+            self.txt_prj_file.setText(self.inp_file_path)
+
+            InpFile.write_inp_file(self.params, self.inp_file_path, '')
+
+    def btn_epanet_run_clicked(self):
 
         config_file = ConfigFile(Parameters.config_file_path)
         inp_file_path = QFileDialog.getOpenFileName(
             self,
             'Select INP file',
             config_file.get_last_inp_file(),
-            'Files (*.inp)')
+            'INP files (*.inp)')
 
         if inp_file_path is not None and inp_file_path != '':
             config_file.set_last_inp_file(inp_file_path)
@@ -896,7 +908,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.log_dialog = LogDialog(self.iface.mainWindow(), rpt_file)
             self.log_dialog.exec_()
 
-    def btn_epanet_output_pressed(self):
+    def btn_epanet_output_clicked(self):
         if self.output_dialog is None:
             self.output_dialog = OutputAnalyserDialog(self.iface, self.iface.mainWindow(), self.params)
         self.output_dialog.setVisible(True)
@@ -1110,6 +1122,14 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         cursor.setShape(cursor_shape)
         self.iface.mapCanvas().setCursor(cursor)
 
+    def crs_selector(self):
+
+        # Request CRS for layers
+        proj_selector = QgsGenericProjectionSelector()
+        proj_selector.exec_()
+        proj_id = proj_selector.selectedAuthId()
+        crs = QgsCoordinateReferenceSystem(proj_id)
+        self.params.crs = crs
 
 class NewFileDialog(QFileDialog):
     def __init__(self):

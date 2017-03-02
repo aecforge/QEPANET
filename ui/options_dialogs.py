@@ -134,7 +134,7 @@ class HydraulicsDialog(QDialog):
         self.cbo_headloss.activated.connect(self.cbo_headloss_activated)
 
         self.chk_hydraulics.stateChanged.connect(self.chk_hydraulics_changed)
-        self.btn_hydraulics_file.pressed.connect(self.btn_hydraulics_pressed)
+        self.btn_hydraulics_file.clicked.connect(self.btn_hydraulics_clicked)
         self.cbo_hydraulics.addItem(
             self.params.options.hydraulics.action_names[self.params.options.hydraulics.action_use],
             self.params.options.hydraulics.action_use)
@@ -157,8 +157,8 @@ class HydraulicsDialog(QDialog):
             self.cbo_pattern.addItem(pattern_id, pattern)
 
         # Buttons
-        self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
-        self.btn_Ok.pressed.connect(self.btn_ok_pressed)
+        self.btn_Cancel.clicked.connect(self.btn_cancel_clicked)
+        self.btn_Ok.clicked.connect(self.btn_ok_clicked)
 
         # Validators
         self.txt_viscosity.setValidator(RegExValidators.get_pos_decimals())
@@ -236,7 +236,7 @@ class HydraulicsDialog(QDialog):
         self.cbo_hydraulics.setEnabled(self.chk_hydraulics.isChecked())
         self.txt_hydraulics_file.setEnabled(self.chk_hydraulics.isChecked())
 
-    def btn_hydraulics_pressed(self):
+    def btn_hydraulics_clicked(self):
         file_dialog = QFileDialog(self, 'Select hydraulics file')
         file_dialog.setLabelText(QFileDialog.Accept, 'Select')
         file_dialog.setLabelText(QFileDialog.Reject, 'Cancel')
@@ -256,10 +256,10 @@ class HydraulicsDialog(QDialog):
             self.cbo_unbalanced.itemData(
                 self.cbo_unbalanced.currentIndex()) == self.params.options.unbalanced.unb_continue)
 
-    def btn_cancel_pressed(self):
+    def btn_cancel_clicked(self):
         self.setVisible(False)
 
-    def btn_ok_pressed(self):
+    def btn_ok_clicked(self):
 
         if not self.check_params():
             return
@@ -426,8 +426,8 @@ class QualityDialog(QDialog):
             self.cbo_mass_units.addItem(value, key)
 
         # Buttons
-        self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
-        self.btn_Ok.pressed.connect(self.btn_ok_pressed)
+        self.btn_Cancel.clicked.connect(self.btn_cancel_clicked)
+        self.btn_Ok.clicked.connect(self.btn_ok_clicked)
 
         # Validators
         self.txt_rel_diff.setValidator(RegExValidators.get_pos_decimals())
@@ -442,10 +442,10 @@ class QualityDialog(QDialog):
         self.txt_trace_node.setText(str(self.params.options.quality.trace_junction_id))
         self.txt_quality_tol.setText(str(self.params.options.quality.quality_tol))
 
-    def btn_cancel_pressed(self):
+    def btn_cancel_clicked(self):
         self.setVisible(False)
 
-    def btn_ok_pressed(self):
+    def btn_ok_clicked(self):
 
         # Update parameters and options
         self.params.options.quality.parameter = self.cbo_parameter.itemData(self.cbo_parameter.currentIndex())
@@ -524,8 +524,8 @@ class ReactionsDialog(QDialog):
     def setup(self):
 
         # Buttons
-        self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
-        self.btn_Ok.pressed.connect(self.btn_ok_pressed)
+        self.btn_Cancel.clicked.connect(self.btn_cancel_clicked)
+        self.btn_Ok.clicked.connect(self.btn_ok_clicked)
 
         self.txt_bulk_reaction_order.setValidator(RegExValidators.get_pos_01())
         self.txt_wall_reaction_order.setValidator(RegExValidators.get_pos_01())
@@ -546,10 +546,10 @@ class ReactionsDialog(QDialog):
         self.txt_limiting_conc.setText(str(self.params.reactions.limiting_potential))
         self.txt_wall_coeff_corr.setText(str(self.params.reactions.roughness_corr))
 
-    def btn_cancel_pressed(self):
+    def btn_cancel_clicked(self):
         self.setVisible(False)
 
-    def btn_ok_pressed(self):
+    def btn_ok_clicked(self):
 
         # Update parameters and options
         self.params.reactions.order_bulk = int(self.txt_bulk_reaction_order.text())
@@ -648,8 +648,8 @@ class TimesDialog(QDialog):
             self.cbo_units.addItem(text, key)
 
         # Buttons
-        self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
-        self.btn_Ok.pressed.connect(self.btn_ok_pressed)
+        self.btn_Cancel.clicked.connect(self.btn_cancel_clicked)
+        self.btn_Ok.clicked.connect(self.btn_ok_clicked)
 
         # Validators
         self.txt_duration.setValidator(RegExValidators.get_pos_int())
@@ -699,10 +699,10 @@ class TimesDialog(QDialog):
         self.txt_clock_time_start.setText(self.params.times.clocktime_start.get_as_text())
         self.cbo_statistic.setCurrentIndex(self.cbo_statistic.findData(self.params.times.statistic))
 
-    def btn_cancel_pressed(self):
+    def btn_cancel_clicked(self):
         self.setVisible(False)
 
-    def btn_ok_pressed(self):
+    def btn_ok_clicked(self):
 
         # Update parameters and options
         self.params.times.units = self.cbo_units.itemData(self.cbo_units.currentIndex())
@@ -775,8 +775,8 @@ class EnergyDialog(QDialog):
     def setup(self):
 
         # Buttons
-        self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
-        self.btn_Ok.pressed.connect(self.btn_ok_pressed)
+        self.btn_Cancel.clicked.connect(self.btn_cancel_clicked)
+        self.btn_Ok.clicked.connect(self.btn_ok_clicked)
 
         # Validators
         self.txt_pump_efficiency.setValidator(RegExValidators.get_pos_decimals())
@@ -795,10 +795,10 @@ class EnergyDialog(QDialog):
 
         self.txt_demand_charge.setText(str(self.params.energy.demand_charge))
 
-    def btn_cancel_pressed(self):
+    def btn_cancel_clicked(self):
         self.setVisible(False)
 
-    def btn_ok_pressed(self):
+    def btn_ok_clicked(self):
 
         self.params.energy.pump_efficiency =  float(self.txt_pump_efficiency.text())
         self.params.energy.energy_price = float(self.txt_energy_price.text())
@@ -883,8 +883,8 @@ class ReportDialog(QDialog):
             self.cbo_links.addItem(value, key)
 
         # Buttons
-        self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
-        self.btn_Ok.pressed.connect(self.btn_ok_pressed)
+        self.btn_Cancel.clicked.connect(self.btn_cancel_clicked)
+        self.btn_Ok.clicked.connect(self.btn_ok_clicked)
 
     def show(self):
         super(ReportDialog, self).show()
@@ -894,10 +894,10 @@ class ReportDialog(QDialog):
         self.cbo_nodes.setCurrentIndex(self.cbo_nodes.findData(self.params.report.nodes))
         self.cbo_links.setCurrentIndex(self.cbo_links.findData(self.params.report.links))
 
-    def btn_cancel_pressed(self):
+    def btn_cancel_clicked(self):
         self.setVisible(False)
 
-    def btn_ok_pressed(self):
+    def btn_ok_clicked(self):
 
         self.params.report.status = self.cbo_status.itemData(self.cbo_status.currentIndex())
         self.params.report.summary = self.cbo_summary.itemData(self.cbo_summary.currentIndex())

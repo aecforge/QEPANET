@@ -37,10 +37,11 @@ def prepare_label(label, units):
         return label
 
 
-def set_up_button(button, icon_path, w, h, tooltip_text=None):
+def set_up_button(button, icon_path, w=None, h=None, tooltip_text=None):
     button.setText('')
     button.setIcon(QIcon(icon_path))
-    button.setIconSize(QSize(w, h))
+    if w is not None and h is not None:
+        button.setIconSize(QSize(w, h))
     button.setCheckable(True)
     if tooltip_text is not None:
         button.setToolTip(tooltip_text)

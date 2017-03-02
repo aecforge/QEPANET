@@ -577,9 +577,9 @@ class NewIdDialog(QDialog):
         fra_buttons_lay = QHBoxLayout(self.fra_buttons)
 
         self.btn_ok = QPushButton('OK')
-        self.btn_ok.pressed.connect(self.btn_ok_pressed)
+        self.btn_ok.clicked.connect(self.btn_ok_clicked)
         self.btn_cancel = QPushButton('Cancel')
-        self.btn_cancel.pressed.connect(self.btn_cancel_pressed)
+        self.btn_cancel.clicked.connect(self.btn_cancel_clicked)
         fra_buttons_lay.addWidget(self.btn_ok)
         fra_buttons_lay.addWidget(self.btn_cancel)
 
@@ -588,13 +588,13 @@ class NewIdDialog(QDialog):
 
         self.new_id = None
 
-    def btn_ok_pressed(self):
+    def btn_ok_clicked(self):
         if not self.check():
             return
         self.new_id = self.txt_id.text()
         self.setVisible(False)
 
-    def btn_cancel_pressed(self):
+    def btn_cancel_clicked(self):
         self.new_id = None
         self.setVisible(False)
 

@@ -257,10 +257,6 @@ class QEpanet:
         if not self.pluginIsActive:
             self.pluginIsActive = True
 
-            # dockwidget may not exist if:
-            #    first run of plugin
-            #    removed on close (see self.onClosePlugin method)
-
             if self.dockwidget is None:
                 # Create the dockwidget (after translation) and keep reference
                 self.dockwidget = QEpanetDockWidget(self.iface, self.params, inp_file_path)

@@ -7,7 +7,7 @@ from network import *
 import readEpanetFile as d
 import os
 from inp_writer import InpFile
-from ..tools.parameters import Parameters
+from ..tools.data_stores import MemoryDS
 from .options_report import Options, Unbalanced, Quality, Report, Hour, Times
 import codecs
 
@@ -36,9 +36,6 @@ class InpReader:
         d.LoadFile(self.inp_path)
         d.BinUpdateClass()
         links_count = d.getBinLinkCount()
-
-        # Map CRS
-        crs = self.iface.mapCanvas().mapRenderer().destinationCrs()
 
         # Get all Sections
         mixing = d.getMixingSection()
@@ -129,13 +126,9 @@ class InpReader:
 
         junctions_lay = None
         if d.getBinNodeJunctionCount() > 0:
-            # Write Junction Shapefile
-            junctions_lay = QgsVectorLayer('Point', 'Junctions', 'memory')
-            junctions_lay.setCrs(crs)
 
+            junctions_lay = MemoryDS.create_junctions_lay(params.crs)
             junctions_lay_dp = junctions_lay.dataProvider()
-            junctions_lay_dp.addAttributes(Junction.fields)
-            junctions_lay.updateFields()
 
         # Get data of Pipes
         # Write shapefile pipe
@@ -146,25 +139,16 @@ class InpReader:
         if links_count > 0:
 
             # Pipes
-            pipes_lay = QgsVectorLayer('LineString', 'Pipes', 'memory')
-            pipes_lay.setCrs(crs)
+            pipes_lay = MemoryDS.create_pipes_lay(params.crs)
             pipes_lay_dp = pipes_lay.dataProvider()
-            pipes_lay_dp.addAttributes(Pipe.fields)
-            pipes_lay.updateFields()
 
             # Pumps
-            pumps_lay = QgsVectorLayer('LineString', 'Pumps', 'memory')
-            pumps_lay.setCrs(crs)
+            pumps_lay = MemoryDS.create_pumps_lay(params.crs)
             pumps_lay_dp = pumps_lay.dataProvider()
-            pumps_lay_dp.addAttributes(Pump.fields)
-            pumps_lay.updateFields()
 
             # Valves
-            valves_lay = QgsVectorLayer('LineString', 'Valves', 'memory')
-            valves_lay.setCrs(crs)
+            valves_lay = MemoryDS.create_valves_lay(params.crs)
             valves_lay_dp = valves_lay.dataProvider()
-            valves_lay_dp.addAttributes(Valve.fields)
-            valves_lay.updateFields()
 
             pump_index = d.getBinLinkPumpIndex()
             valve_index = d.getBinLinkValveIndex()
@@ -186,14 +170,8 @@ class InpReader:
         # Write Tank Shapefile and get tank data
         tanks_lay = None
         if d.getBinNodeTankCount() > 0:
-            tanks_lay = QgsVectorLayer('Point', 'Tanks', 'memory')
-            tanks_lay.setCrs(crs)
+            tanks_lay = MemoryDS.create_tanks_lay(params.crs)
             tanks_lay_dp = tanks_lay.dataProvider()
-            tanks_lay_dp.addAttributes(Tank.fields)
-
-            tanks_lay.updateFields()
-
-            # posTank.startEditing()
 
             ndTankelevation = d.getBinNodeTankElevations()
             initiallev = d.getBinNodeTankInitialLevel()
@@ -207,11 +185,8 @@ class InpReader:
         # Write Reservoir Shapefile
         reservoirs_lay = None
         if d.getBinNodeReservoirCount() > 0:
-            reservoirs_lay = QgsVectorLayer('Point', 'Reservoirs', 'memory')
-            reservoirs_lay.setCrs(crs)
+            reservoirs_lay = MemoryDS.create_reservoirs_lay(params.crs)
             reservoirs_lay_dp = reservoirs_lay.dataProvider()
-            reservoirs_lay_dp.addAttributes(Reservoir.fields)
-            reservoirs_lay.updateFields()
 
             reservoirs_elev = d.getBinNodeReservoirElevations()
             # posReservoirs.startEditing()

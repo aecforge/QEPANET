@@ -95,8 +95,8 @@ class PipeSectionDialog(QDialog):
     def setup(self):
 
         # Buttons
-        self.btn_Cancel.pressed.connect(self.btn_cancel_pressed)
-        self.btn_Ok.pressed.connect(self.btn_ok_pressed)
+        self.btn_Cancel.clicked.connect(self.btn_cancel_clicked)
+        self.btn_Ok.clicked.connect(self.btn_ok_clicked)
 
     def initialize(self):
 
@@ -126,10 +126,10 @@ class PipeSectionDialog(QDialog):
         elif self.toolbar._active == "ZOOM":
             self.toolbar.zoom()
 
-    def btn_cancel_pressed(self):
+    def btn_cancel_clicked(self):
         self.setVisible(False)
 
-    def btn_ok_pressed(self):
+    def btn_ok_clicked(self):
         new_zs = self.static_canvas.pipe_line.get_ydata()
         pipe_geom_v2 = self.pipe_ft.geometry().geometry()
         for p in range(pipe_geom_v2.vertexCount(0, 0)):

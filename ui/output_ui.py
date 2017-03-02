@@ -55,7 +55,7 @@ class OutputAnalyserDialog(QDialog):
         self.txt_out_file.setReadOnly(True)
         self.btn_out_file = QToolButton()
         self.btn_out_file.setText('...')
-        self.btn_out_file.pressed.connect(self.btn_out_file_pressed)
+        self.btn_out_file.clicked.connect(self.btn_out_file_clicked)
         fra_out_file_lay.addWidget(self.lbl_out_file)
         fra_out_file_lay.addWidget(self.txt_out_file)
         fra_out_file_lay.addWidget(self.btn_out_file)
@@ -72,7 +72,7 @@ class OutputAnalyserDialog(QDialog):
         fra_graphs_left_lay = QVBoxLayout(self.fra_graphs_left)
 
         self.btn_sel_element = QPushButton('Pick')
-        self.btn_sel_element.pressed.connect(self.btn_sel_element_pressed)
+        self.btn_sel_element.clicked.connect(self.btn_sel_element_clicked)
         fra_graphs_left_lay.addWidget(self.btn_sel_element)
 
         # Nodes
@@ -112,7 +112,7 @@ class OutputAnalyserDialog(QDialog):
         fra_graphs_left_lay.addWidget(self.grb_links)
 
         self.btn_draw_graph = QPushButton('Draw')
-        self.btn_draw_graph.pressed.connect(self.draw_graphs)
+        self.btn_draw_graph.clicked.connect(self.draw_graphs)
         fra_graphs_left_lay.addWidget(self.btn_draw_graph)
 
         self.spacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -187,7 +187,7 @@ class OutputAnalyserDialog(QDialog):
         fra_maps_right_lay.addWidget(self.fra_maps_right_time)
 
         self.btn_draw_map = QPushButton(u'Draw map')
-        self.btn_draw_map.pressed.connect(self.draw_map)
+        self.btn_draw_map.clicked.connect(self.draw_map)
         fra_maps_right_lay.addWidget(self.btn_draw_map)
 
         fra_maps_right_lay.addItem(self.spacer)
@@ -211,7 +211,7 @@ class OutputAnalyserDialog(QDialog):
     def setup(self):
         pass
 
-    def btn_out_file_pressed(self):
+    def btn_out_file_clicked(self):
         config_file = ConfigFile(Parameters.config_file_path)
         out_file = QFileDialog.getOpenFileName(
             self,
@@ -329,7 +329,7 @@ class OutputAnalyserDialog(QDialog):
             self.txt_out_file.setText('')
             QApplication.setOverrideCursor(Qt.ArrowCursor)
 
-    def btn_sel_element_pressed(self):
+    def btn_sel_element_clicked(self):
 
         if self.output_reader is None:
             self.iface.messageBar().pushWarning(
@@ -533,10 +533,10 @@ class OutputAnalyserDialog(QDialog):
         # Add layer
         QgsMapLayerRegistry.instance().addMapLayer(new_lay)
 
-    def btn_cancel_pressed(self):
+    def btn_cancel_clicked(self):
         self.setVisible(False)
 
-    def btn_ok_pressed(self):
+    def btn_ok_clicked(self):
         pass
 
 # class PickTool(QgsMapTool):
@@ -567,7 +567,7 @@ class LogDialog(QDialog):
         main_lay.addWidget(self.txt_log)
 
         self.btn_close = QPushButton('Close')
-        self.btn_close.pressed.connect(self.close_dialog)
+        self.btn_close.clicked.connect(self.close_dialog)
         main_lay.addWidget(self.btn_close)
 
         self.fill_txt()

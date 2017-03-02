@@ -14,7 +14,7 @@ from ..model.water_quality import Reactions
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.28'
+    plug_in_name = 'QEPANET 0.29'
     config_file_name = 'config.ini'
 
     path = os.path.dirname(os.path.realpath(__file__))
@@ -49,6 +49,8 @@ class Parameters(Observable):
         self._min_dist = 1  # TODO: check: 1 m? Why?
 
         self._vertex_dist = 0
+
+        self.crs = None
 
         self.options = Options()
         self.reactions = Reactions()
