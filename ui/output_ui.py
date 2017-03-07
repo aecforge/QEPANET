@@ -278,7 +278,7 @@ class OutputAnalyserDialog(QDialog):
             QApplication.setOverrideCursor(Qt.WaitCursor)
             self.output_reader = BinaryOutputReader()
             self.output_reader.read(self.txt_out_file.text())
-            QApplication.setOverrideCursor(Qt.ArrowCursor)
+            QApplication.restoreOverrideCursor()
 
             # Check if output compatible with loaded project
             compatible = True
@@ -339,7 +339,7 @@ class OutputAnalyserDialog(QDialog):
                 'Error while reading output file.')  # TODO: softcode
             self.output_reader = None
             self.txt_out_file.setText('')
-            QApplication.setOverrideCursor(Qt.ArrowCursor)
+            QApplication.restoreOverrideCursor()
 
     def btn_sel_element_clicked(self):
 

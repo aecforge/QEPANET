@@ -234,6 +234,10 @@ class AddValveTool(QgsMapTool):
         self.snapper = NetworkUtils.set_up_snapper([snap_layer_pipes], self.iface.mapCanvas())
 
         # Editing
+        if not self.params.junctions_vlay.isEditable():
+            self.params.junctions_vlay.startEditing()
+        if not self.params.pipes_vlay.isEditable():
+            self.params.pipes_vlay.startEditing()
         if not self.params.valves_vlay.isEditable():
             self.params.valves_vlay.startEditing()
 

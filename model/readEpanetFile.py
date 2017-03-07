@@ -770,7 +770,11 @@ def getBinInfo():
                         if mm[3] == 'HEAD':
                             BinLinkPumpCurveNameID.append(mm[4])
                         elif mm[3] == 'POWER':
-                            BinLinkPumpPower.append(float(mm[4]))
+                            if mm[4].strip() == ';':
+                                power = 0
+                            else:
+                                power = float(mm[4].replace(';', ''))
+                            BinLinkPumpPower.append(power)
                             BinLinkPumpNameIDPower.append(mm[0])
                     if len(mm) > 6:
                         if mm[5][0] != ';':
@@ -914,8 +918,8 @@ def getBinInfo():
                     pass
                 else:
                     if "RULE" in mm[0].upper():
-                        if (rules != [] or ch == 0):
-                            rulesSection.append(rules);
+                        if rules != [] or ch == 0:
+                            rulesSection.append(rules)
                             ch = 0
                             rules = []
                             rules.append([s1, mm])

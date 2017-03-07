@@ -24,10 +24,10 @@
 import os
 
 from PyQt4 import QtCore, uic, QtGui
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui import QFileDialog, QMessageBox
+from PyQt4.QtCore import Qt, pyqtSignal
+from PyQt4.QtGui import QFileDialog, QMessageBox, QApplication
 from qgis.core import *
-from qgis.gui import QgsGenericProjectionSelector
+from qgis.gui import QgsGenericProjectionSelector, QgsMessageBar
 
 from ..geo_utils import utils
 from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog, ReportDialog
@@ -863,7 +863,18 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def project_save_clicked(self):
 
         self.btn_project_save.setChecked(False)
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+
         InpFile.write_inp_file(self.params, self.inp_file_path, '')
+        QApplication.restoreOverrideCursor()
+
+
+        self.iface.messageBar().pushMessage(
+            Parameters.plug_in_name,
+            'Project saved.',
+            QgsMessageBar.INFO,
+            5)  # TODO: softcode
 
     def project_saveas_clicked(self):
 
@@ -876,7 +887,15 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.inp_file_path = inp_file_path
             self.txt_prj_file.setText(self.inp_file_path)
 
+            QApplication.setOverrideCursor(Qt.WaitCursor)
             InpFile.write_inp_file(self.params, self.inp_file_path, '')
+            QApplication.restoreOverrideCursor()
+
+            self.iface.messageBar().pushMessage(
+                Parameters.plug_in_name,
+                'Project saved.',
+                QgsMessageBar.INFO,
+                5)  # TODO: softcode
 
     def btn_epanet_run_clicked(self):
 
