@@ -121,12 +121,17 @@ class AddPipeTool(QgsMapTool):
 
                     pipe_ft = vector_utils.get_feats_by_id(self.params.pipes_vlay, self.snapped_feat_id)[0]
                     if action == section_action:
-                        pattern_dialog = PipeSectionDialog(
-                            self.iface.mainWindow(),
-                            self.iface,
-                            self.params,
-                            pipe_ft)
-                        pattern_dialog.exec_()
+                        if self.params.dem_rlay is None:
+                            self.iface.messageBar().pushWarning(
+                                Parameters.plug_in_name,
+                                'No DEM selected. Cannot edit section!')  # TODO: softcode
+                        else:
+                            pipe_dialog = PipeSectionDialog(
+                                self.iface.mainWindow(),
+                                self.iface,
+                                self.params,
+                                pipe_ft)
+                            pipe_dialog.exec_()
 
                     elif action == diameter_action:
 
