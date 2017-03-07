@@ -127,7 +127,7 @@ class InpReader:
         junctions_lay = None
         if d.getBinNodeJunctionCount() > 0:
 
-            junctions_lay = MemoryDS.create_junctions_lay(params.crs)
+            junctions_lay = MemoryDS.create_junctions_lay(crs=params.crs)
             junctions_lay_dp = junctions_lay.dataProvider()
 
         # Get data of Pipes
@@ -139,15 +139,15 @@ class InpReader:
         if links_count > 0:
 
             # Pipes
-            pipes_lay = MemoryDS.create_pipes_lay(params.crs)
+            pipes_lay = MemoryDS.create_pipes_lay(crs=params.crs)
             pipes_lay_dp = pipes_lay.dataProvider()
 
             # Pumps
-            pumps_lay = MemoryDS.create_pumps_lay(params.crs)
+            pumps_lay = MemoryDS.create_pumps_lay(crs=params.crs)
             pumps_lay_dp = pumps_lay.dataProvider()
 
             # Valves
-            valves_lay = MemoryDS.create_valves_lay(params.crs)
+            valves_lay = MemoryDS.create_valves_lay(crs=params.crs)
             valves_lay_dp = valves_lay.dataProvider()
 
             pump_index = d.getBinLinkPumpIndex()
@@ -170,7 +170,7 @@ class InpReader:
         # Write Tank Shapefile and get tank data
         tanks_lay = None
         if d.getBinNodeTankCount() > 0:
-            tanks_lay = MemoryDS.create_tanks_lay(params.crs)
+            tanks_lay = MemoryDS.create_tanks_lay(crs=params.crs)
             tanks_lay_dp = tanks_lay.dataProvider()
 
             ndTankelevation = d.getBinNodeTankElevations()
@@ -185,7 +185,7 @@ class InpReader:
         # Write Reservoir Shapefile
         reservoirs_lay = None
         if d.getBinNodeReservoirCount() > 0:
-            reservoirs_lay = MemoryDS.create_reservoirs_lay(params.crs)
+            reservoirs_lay = MemoryDS.create_reservoirs_lay(crs=params.crs)
             reservoirs_lay_dp = reservoirs_lay.dataProvider()
 
             reservoirs_elev = d.getBinNodeReservoirElevations()

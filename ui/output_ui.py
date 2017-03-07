@@ -3,6 +3,7 @@ from PyQt4.QtCore import Qt
 # from qgis.gui import QgsMapTool
 from graphs import StaticMplCanvas
 from ..geo_utils.renderer import *
+from ..geo_utils.utils import *
 from ..tools.parameters import Parameters, ConfigFile
 from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve
 from ..model.binary_out_reader import BinaryOutputReader, OutputParamCodes
@@ -187,7 +188,7 @@ class OutputAnalyserDialog(QDialog):
         fra_maps_right_lay.addWidget(self.fra_maps_right_time)
 
         self.btn_draw_map = QPushButton(u'Draw map')
-        self.btn_draw_map.clicked.connect(self.draw_map)
+        self.btn_draw_map.clicked.connect(self.draw_maps)
         fra_maps_right_lay.addWidget(self.btn_draw_map)
 
         fra_maps_right_lay.addItem(self.spacer)
@@ -239,7 +240,7 @@ class OutputAnalyserDialog(QDialog):
             day = int(math.floor(period_h / 24))
             hour = period_h - day * 24
 
-            text += ' (d' + str(day) + ' H' + str(hour) +')'
+            text += ' (d' + str(day) + ' H' + str(hour) + ')'
 
             self.cbo_map_times.addItem(text, period_s)
 
@@ -315,6 +316,17 @@ class OutputAnalyserDialog(QDialog):
             else:
                 # Message after reading completed
                 message = 'Out file loaded: ' + str(out_nodes_nr) + ' nodes, ' + str(out_links_nr) + ' links found.'
+
+                # Clear refs to output layer
+                self.params.out_lay_node_demand = None
+                self.params.out_lay_node_head = None
+                self.params.out_lay_node_pressure = None
+                self.params.out_lay_node_quality = None
+                self.params.out_lay_link_flow = None
+                self.params.out_lay_link_velocity = None
+                self.params.out_lay_link_headloss = None
+                self.params.out_lay_link_quality = None
+
                 QMessageBox.information(
                     self,
                     Parameters.plug_in_name,
@@ -447,91 +459,172 @@ class OutputAnalyserDialog(QDialog):
         if ys_d_d:
             self.static_canvas.draw_output_line(xs, ys_d_d, params_count)
 
-    def draw_map(self):
+    # def draw_map(self):
+    #
+    #     if self.output_reader is None:
+    #         self.iface.messageBar().pushWarning(
+    #             Parameters.plug_in_name,
+    #             'Please select the simulation out file.')  # TODO: softcode
+    #         return
+    #
+    #     # Draw the map
+    #     report_time_s = self.cbo_map_times.itemData(self.cbo_map_times.currentIndex())
+    #     report_time_label = self.cbo_map_times.itemText(self.cbo_map_times.currentIndex())
+    #     period_results = self.output_reader.period_results[report_time_s]
+    #
+    #     new_lay = None
+    #     if self.rad_maps_node_demand.isChecked():  # -------------------------------------------------------------------
+    #         field_name_var = u'Demand'  # TODO: softcode
+    #         lay_name = 'Node demand ' + report_time_label
+    #         new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
+    #         variables = period_results.node_demands
+    #
+    #     elif self.rad_maps_node_head.isChecked():
+    #         field_name_var = u'Head'  # TODO: softcode
+    #         lay_name = 'Node head ' + report_time_label
+    #         new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
+    #         variables = period_results.node_heads
+    #
+    #     elif self.rad_maps_node_pressure.isChecked():
+    #         field_name_var = u'Pressure'  # TODO: softcode
+    #         lay_name = 'Node pressure ' + report_time_label
+    #         new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
+    #         variables = period_results.node_pressures
+    #
+    #     elif self.rad_maps_node_quality.isChecked():
+    #         field_name_var = u'Quality'  # TODO: softcode
+    #         lay_name = 'Node quality ' + report_time_label
+    #         new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
+    #         variables = period_results.node_qualities
+    #
+    #     elif self.rad_maps_link_flow.isChecked():  # -------------------------------------------------------------------
+    #         field_name_var = u'Flow'  # TODO: softcode
+    #         lay_name = 'Link flow ' + report_time_label
+    #         new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
+    #         variables = period_results.link_flows
+    #
+    #     elif self.rad_maps_link_velocity.isChecked():
+    #         field_name_var = u'Velocity'  # TODO: softcode
+    #         lay_name = 'Link velocity ' + report_time_label
+    #         new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
+    #         variables = period_results.link_velocities
+    #
+    #     elif self.rad_maps_link_headloss.isChecked():
+    #         field_name_var = u'Headloss'  # TODO: softcode
+    #         lay_name = 'Link headloss ' + report_time_label
+    #         new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
+    #         variables = period_results.link_headlosses
+    #
+    #     elif self.rad_maps_link_quality.isChecked():
+    #         field_name_var = u'Quality'  # TODO: softcode
+    #         lay_name = 'Link quality ' + report_time_label
+    #         new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
+    #         variables = period_results.link_qualities
+    #
+    #     # Add attributes
+    #     for feat in new_lay.getFeatures():
+    #         new_lay.startEditing()
+    #         eid = feat.attribute(Node.field_name_eid)
+    #
+    #         if eid not in variables:
+    #             QMessageBox.critical(
+    #                 self,
+    #                 Parameters.plug_in_name,
+    #                 u'Mismatch between output file and inp file. Cannot create map.',
+    #                 QMessageBox.Ok)
+    #             return
+    #
+    #         variable = variables[eid]
+    #         feat.setAttribute(field_name_var, variable)
+    #         new_lay.updateFeature(feat)
+    #         new_lay.commitChanges()
+    #
+    #     # Set renderer
+    #     new_lay.setRendererV2(RampRenderer.get_renderer(new_lay, field_name_var))
+    #
+    #     # Add layer
+    #     QgsMapLayerRegistry.instance().addMapLayer(new_lay)
 
-        if self.output_reader is None:
-            self.iface.messageBar().pushWarning(
-                Parameters.plug_in_name,
-                'Please select the simulation out file.')  # TODO: softcode
-            return
+    def draw_maps(self):
+        """
+        Draws layers with all the attributes
+        :return:
+        """
 
-        # Draw the map
         report_time_s = self.cbo_map_times.itemData(self.cbo_map_times.currentIndex())
-        report_time_label = self.cbo_map_times.itemText(self.cbo_map_times.currentIndex())
-        period_results = self.output_reader.period_results[report_time_s]
 
-        new_lay = None
         if self.rad_maps_node_demand.isChecked():  # -------------------------------------------------------------------
-            field_name_var = u'Demand'  # TODO: softcode
-            lay_name = 'Node demand ' + report_time_label
-            new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
-            variables = period_results.node_demands
+            lay_name = 'Node demand'
+            lay_id = self.draw_map(self.params.out_lay_node_demand_id, lay_name,
+                                   self.output_reader.node_demands_d, report_time_s)
+            self.params.out_lay_node_demand_id = lay_id
 
         elif self.rad_maps_node_head.isChecked():
-            field_name_var = u'Head'  # TODO: softcode
-            lay_name = 'Node head ' + report_time_label
-            new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
-            variables = period_results.node_heads
+            lay_name = 'Node head'
+            lay_id = self.draw_map(self.params.out_lay_node_head_id, lay_name,
+                                   self.output_reader.node_heads_d, report_time_s)
+            self.params.out_lay_node_head_id = lay_id
 
         elif self.rad_maps_node_pressure.isChecked():
-            field_name_var = u'Pressure'  # TODO: softcode
-            lay_name = 'Node pressure ' + report_time_label
-            new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
-            variables = period_results.node_pressures
+            lay_name = 'Node pressure'
+            lay_id = self.draw_map(self.params.out_lay_node_pressure_id, lay_name,
+                                   self.output_reader.node_pressures_d, report_time_s)
+            self.params.out_lay_node_pressure_id = lay_id
 
         elif self.rad_maps_node_quality.isChecked():
-            field_name_var = u'Quality'  # TODO: softcode
-            lay_name = 'Node quality ' + report_time_label
-            new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
-            variables = period_results.node_qualities
+            lay_name = 'Node quality'
+            lay_id = self.draw_map(self.params.out_lay_node_quality_id, lay_name,
+                                   self.output_reader.node_qualities_d, report_time_s)
+            self.params.out_lay_node_quality_id = lay_id
 
         elif self.rad_maps_link_flow.isChecked():  # -------------------------------------------------------------------
-            field_name_var = u'Flow'  # TODO: softcode
-            lay_name = 'Link flow ' + report_time_label
-            new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
-            variables = period_results.link_flows
+            lay_name = 'Link flow'
+            lay_id = self.draw_map(self.params.out_lay_link_flow_id, lay_name,
+                                   self.output_reader.link_flows_d, report_time_s)
+            self.params.out_lay_link_flow_id = lay_id
 
         elif self.rad_maps_link_velocity.isChecked():
-            field_name_var = u'Velocity'  # TODO: softcode
-            lay_name = 'Link velocity ' + report_time_label
-            new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
-            variables = period_results.link_velocities
+            lay_name = 'Link velocity'
+            lay_id = self.draw_map(self.params.out_lay_link_velocity_id, lay_name,
+                                   self.output_reader.link_velocities_d, report_time_s)
+            self.params.out_lay_link_velocity_id = lay_id
 
         elif self.rad_maps_link_headloss.isChecked():
-            field_name_var = u'Headloss'  # TODO: softcode
-            lay_name = 'Link headloss ' + report_time_label
-            new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
-            variables = period_results.link_headlosses
+            lay_name = 'Link headloss'
+            lay_id = self.draw_map(self.params.out_lay_link_headloss_id, lay_name,
+                                   self.output_reader.link_headlosses_d, report_time_s)
+            self.params.out_lay_link_headloss_id = lay_id
 
         elif self.rad_maps_link_quality.isChecked():
-            field_name_var = u'Quality'  # TODO: softcode
-            lay_name = 'Link quality ' + report_time_label
-            new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
-            variables = period_results.link_qualities
+            lay_name = 'Link quality'
+            lay_id = self.draw_map(self.params.out_lay_link_quality_id, lay_name,
+                                   self.output_reader.link_qualities_d, report_time_s)
+            self.params.out_lay_link_quality_id = lay_id
 
-        # Add attributes
-        for feat in new_lay.getFeatures():
-            new_lay.startEditing()
-            eid = feat.attribute(Node.field_name_eid)
+    def draw_map(self, lay_id, lay_name, dataset, report_time_s):
 
-            if eid not in variables:
-                QMessageBox.critical(
-                    self,
-                    Parameters.plug_in_name,
-                    u'Mismatch between output file and inp file. Cannot create map.',
-                    QMessageBox.Ok)
-                return
+        cursor = QCursor()
+        cursor.setShape(Qt.WaitCursor)
+        self.iface.mapCanvas().setCursor(cursor)
 
-            variable = variables[eid]
-            feat.setAttribute(field_name_var, variable)
-            new_lay.updateFeature(feat)
-            new_lay.commitChanges()
+        report_time_h = report_time_s / 3600
+        lay_name += ' ' + str(report_time_h)
 
-        # Set renderer
-        new_lay.setRendererV2(RampRenderer.get_renderer(new_lay, field_name_var))
+        lay = LayerUtils.get_lay_from_id(lay_id)
+        if lay is None:
+            lay = self.create_out_node_layer(lay_name, dataset)
+            lay_id = lay.id()
+            QgsMapLayerRegistry.instance().addMapLayer(lay)
+        else:
+            lay.setLayerName(lay_name)
 
-        # Add layer
-        QgsMapLayerRegistry.instance().addMapLayer(new_lay)
+        lay.setRendererV2(RampRenderer.get_renderer(lay, str(report_time_s)))
+        lay.triggerRepaint()
+
+        cursor.setShape(Qt.ArrowCursor)
+        self.iface.mapCanvas().setCursor(cursor)
+
+        return lay_id
 
     def btn_cancel_clicked(self):
         self.setVisible(False)
@@ -539,15 +632,45 @@ class OutputAnalyserDialog(QDialog):
     def btn_ok_clicked(self):
         pass
 
-# class PickTool(QgsMapTool):
-#
-#     def __init__(self, data_dock, params):
-#         QgsMapTool.__init__(self, data_dock.iface.mapCanvas())
+    def create_out_node_layer(self, lay_name, values_d):
+        return self.create_out_layer(lay_name, values_d, LayerType.NODE)
 
-# app = QApplication(sys.argv)
-# o = OutputAnalyserDialog(None, None)
-# o.show()
-# sys.exit(app.exec_())
+    def create_out_link_layer(self, lay_name, values_d):
+        return self.create_out_layer(lay_name, values_d, LayerType.LINK)
+
+    def create_out_layer(self, lay_name, values_d, lay_type):
+        field_name_vars = []
+        periods = self.output_reader.period_results.keys()
+        for period_s in periods:
+            text = str(period_s)
+            field_name_vars.append(text)
+
+        if lay_type == LayerType.NODE:
+            new_lay = MemoryDS.create_nodes_lay(self.params, field_name_vars, lay_name, self.params.crs)
+        elif lay_type == LayerType.LINK:
+            new_lay = MemoryDS.create_links_lay(self.params, field_name_vars, lay_name, self.params.crs)
+
+        # Add attributes
+        for feat in new_lay.getFeatures():
+            new_lay.startEditing()
+            eid = feat.attribute(Node.field_name_eid)
+            values = values_d[eid]
+
+            for p in range(len(periods)):
+                feat.setAttribute(str(periods[p]), values[p])
+                new_lay.updateFeature(feat)
+
+            new_lay.commitChanges()
+
+        return new_lay
+
+
+class LayerType:
+    def __init__(self):
+        pass
+
+    NODE = 0
+    LINK = 1
 
 
 class LogDialog(QDialog):

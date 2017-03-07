@@ -231,16 +231,19 @@ class MemoryDS:
         return valves_lay
 
     @staticmethod
-    def create_nodes_lay(params, field_name_var=u'variable', lay_name=u'Nodes', crs=None):
+    def create_nodes_lay(params, field_name_vars=[u'variable'], lay_name=u'Nodes', crs=None):
 
         url = 'Point'
         if crs is not None:
             url += '?crs=' + crs.authid()
         nodes_lay = QgsVectorLayer(url, lay_name, u'memory')
         nodes_lay_dp = nodes_lay.dataProvider()
-        nodes_lay_dp.addAttributes([
-            QgsField(Node.field_name_eid,  QVariant.String),
-            QgsField(field_name_var, QVariant.Double)])
+
+        fields = []
+        fields.append(QgsField(Node.field_name_eid, QVariant.String))
+        for field_name_var in field_name_vars:
+            fields.append(QgsField(field_name_var, QVariant.Double))
+        nodes_lay_dp.addAttributes(fields)
         nodes_lay.updateFields()
 
         new_fts = []

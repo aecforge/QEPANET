@@ -14,7 +14,7 @@ from ..model.water_quality import Reactions
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.29'
+    plug_in_name = 'QEPANET 0.30'
     config_file_name = 'config.ini'
 
     path = os.path.dirname(os.path.realpath(__file__))
@@ -64,6 +64,16 @@ class Parameters(Observable):
         self.last_project_dir = None
         self.last_curves_dir = None
         self.last_patterns_dir = None
+
+        # Output layers
+        self.out_lay_node_demand_id = None
+        self.out_lay_node_head_id = None
+        self.out_lay_node_pressure_id = None
+        self.out_lay_node_quality_id = None
+        self.out_lay_link_flow_id = None
+        self.out_lay_link_velocity_id = None
+        self.out_lay_link_headloss_id = None
+        self.out_lay_link_quality_id = None
 
     # Layers
     @property
