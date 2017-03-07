@@ -262,14 +262,14 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>4</number>
+              <number>1</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>150</width>
                 <height>231</height>
                </rect>
               </property>
@@ -410,7 +410,7 @@
                </rect>
               </property>
               <attribute name="label">
-               <string>Junctions properties</string>
+               <string>Junction properties</string>
               </attribute>
               <layout class="QGridLayout" name="gridLayout_4">
                <item row="2" column="2">
@@ -485,8 +485,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>322</width>
-                <height>155</height>
+                <width>148</width>
+                <height>64</height>
                </rect>
               </property>
               <attribute name="label">
@@ -531,7 +531,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>174</width>
                 <height>194</height>
                </rect>
               </property>
@@ -907,8 +907,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>322</width>
-                <height>155</height>
+                <width>153</width>
+                <height>90</height>
                </rect>
               </property>
               <attribute name="label">
@@ -965,8 +965,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>322</width>
-                <height>155</height>
+                <width>173</width>
+                <height>116</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1046,7 +1046,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>99</width>
                 <height>186</height>
                </rect>
               </property>
@@ -1109,8 +1109,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>322</width>
-                <height>155</height>
+                <width>193</width>
+                <height>151</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1187,8 +1187,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>322</width>
-                <height>155</height>
+                <width>104</width>
+                <height>147</height>
                </rect>
               </property>
               <attribute name="label">
