@@ -116,7 +116,7 @@ class Tank:
               QgsField(field_name_level_max, QVariant.Double),
               QgsField(field_name_diameter, QVariant.Double),
               QgsField(field_name_vol_min, QVariant.Double),
-              QgsField(field_name_curve, QVariant.Double)]
+              QgsField(field_name_curve, QVariant.String)]
 
     def __init__(self, eid):
         self.eid = eid

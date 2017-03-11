@@ -232,7 +232,7 @@ class OutputAnalyserDialog(QDialog):
         for period_s in self.output_reader.period_results.iterkeys():
 
             # Convert seconds to hours
-            period_h = period_s / 3600
+            period_h = period_s / 3600.
 
             # String for combo
             text = str(period_h)
@@ -240,7 +240,7 @@ class OutputAnalyserDialog(QDialog):
             day = int(math.floor(period_h / 24))
             hour = period_h - day * 24
 
-            text += ' (d' + str(day) + ' H' + str(hour) + ')'
+            text += ' (d' + str(day) + ' H' + "{0:.2f}".format(hour) + ')'
 
             self.cbo_map_times.addItem(text, period_s)
 
