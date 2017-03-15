@@ -301,8 +301,9 @@ class LinkHandler:
             else:
                 # j_demand = float(data_dock.txt_junction_demand.text())
                 depth = float(data_dock.txt_junction_depth.text())
-                if data_dock.cbo_junction_pattern.currentIndex() != -1:
-                    pattern_id = data_dock.cbo_junction_pattern.itemData(data_dock.cbo_junction_pattern.currentIndex()).id
+                pattern = data_dock.cbo_junction_pattern.itemData(data_dock.cbo_junction_pattern.currentIndex())
+                if pattern is not None:
+                    pattern_id = pattern.id
                 else:
                     pattern_id = None
 

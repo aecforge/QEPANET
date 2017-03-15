@@ -10,7 +10,7 @@
 name=QEPANET
 qgisMinimumVersion=2.0
 description=This plugin links QGIS and EPANET.
-version=0.31
+version=0.32
 author=DICAM - UNITN
 email=albertodeluca3@gmail.com
 

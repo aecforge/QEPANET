@@ -213,8 +213,11 @@ class AddPipeTool(QgsMapTool):
                         elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_start_junction, 1)
                         depth = float(self.data_dock.txt_junction_depth.text())
                         j_demand = float(self.data_dock.txt_junction_demand.text())
-                        if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
-                            pattern_id = self.data_dock.cbo_junction_pattern.itemData(self.data_dock.cbo_junction_pattern.currentIndex()).id
+
+                        pattern = self.data_dock.cbo_junction_pattern.itemData(
+                            self.data_dock.cbo_junction_pattern.currentIndex())
+                        if pattern is not None:
+                            pattern_id = pattern.id
                         else:
                             pattern_id = None
                         NodeHandler.create_new_junction(self.params, new_start_junction, junction_eid, elev, j_demand, depth, pattern_id)
@@ -226,9 +229,11 @@ class AddPipeTool(QgsMapTool):
                         junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
                         elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_end_junction, 1)
                         depth = float(self.data_dock.txt_junction_depth.text())
-                        if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
-                            pattern_id = self.data_dock.cbo_junction_pattern.itemData(
-                                self.data_dock.cbo_junction_pattern.currentIndex()).id
+
+                        pattern = self.data_dock.cbo_junction_pattern.itemData(
+                            self.data_dock.cbo_junction_pattern.currentIndex())
+                        if pattern is not None:
+                            pattern_id = pattern.id
                         else:
                             pattern_id = None
                         NodeHandler.create_new_junction(self.params, new_end_junction, junction_eid, elev, demand, depth, pattern_id)

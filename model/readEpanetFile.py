@@ -803,7 +803,7 @@ def getBinInfo():
                     BinLinkToNode.append(mm[2])
                     BinLinkValveDiameters.append(float(mm[3]))
                     BinLinkValveType.append(mm[4])
-                    BinLinkValveSetting.append(float(mm[5]))
+                    BinLinkValveSetting.append((mm[5]))
                     if len(mm) > 6:
                         if mm[6][0] != ';':
                             BinLinkValveMinorLoss.append(float(mm[6]))

@@ -87,8 +87,9 @@ class AddTankTool(QgsMapTool):
             # Find first available ID for Tanks
             tank_eid = NetworkUtils.find_next_id(self.params.tanks_vlay, Tank.prefix) # TODO: softcode
 
-            if self.data_dock.cbo_tank_curve.currentIndex() != -1:
-                tank_curve_id = self.data_dock.cbo_tank_curve.itemData(self.data_dock.cbo_tank_curve.currentIndex()).id
+            curve = self.data_dock.cbo_tank_curve.itemData(self.data_dock.cbo_tank_curve.currentIndex())
+            if curve is not None:
+                tank_curve_id = curve.id
             else:
                 tank_curve_id = None
 

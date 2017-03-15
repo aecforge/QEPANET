@@ -95,9 +95,10 @@ class AddJunctionTool(QgsMapTool):
             j_demand = float(self.data_dock.txt_junction_demand.text())
             depth = float(self.data_dock.txt_junction_depth.text())
 
-            if self.data_dock.cbo_junction_pattern.currentIndex() != -1:
-                pattern_id = self.data_dock.cbo_junction_pattern.itemData(
-                    self.data_dock.cbo_junction_pattern.currentIndex()).id
+            pattern = self.data_dock.cbo_junction_pattern.itemData(
+                    self.data_dock.cbo_junction_pattern.currentIndex())
+            if pattern is not None:
+                pattern_id = pattern.id
             else:
                 pattern_id = None
 
