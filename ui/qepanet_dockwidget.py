@@ -38,6 +38,7 @@ from ..model.inp_writer import InpFile
 from ..model.inp_reader import InpReader
 from ..model.network import *
 from ..model.runner import ModelRunner
+from ..model.system_ops import Curve
 from ..rendering import symbology
 from ..tools.add_junction_tool import AddJunctionTool
 from ..tools.add_pipe_tool import AddPipeTool
@@ -1069,6 +1070,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def update_patterns_combo(self):
 
         self.cbo_junction_pattern.clear()
+        self.cbo_junction_pattern.addItem(None, None)
         if self.params.junctions_vlay is not None:
             for pattern_id, pattern in self.params.patterns.iteritems():
                 self.cbo_junction_pattern.addItem(pattern_id, pattern)
@@ -1078,10 +1080,14 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.cbo_pump_head.clear()
         self.cbo_valve_curve.clear()
         if self.params.curves is not None:
-            for value in self.params.curves.itervalues():
-                self.cbo_tank_curve.addItem(value.id, value)
-                self.cbo_pump_head.addItem(value.id, value)
-                self.cbo_valve_curve.addItem(value.id, value)
+            for curve in self.params.curves.itervalues():
+
+                if curve.type == Curve.type_efficiency or curve.type == Curve.type_pump:
+                    self.cbo_pump_head.addItem(curve.id, curve)
+                elif curve.type == Curve.type_headloss:
+                    self.cbo_valve_curve.addItem(curve.id, curve)
+                elif curve.type == Curve.type_volume:
+                    self.cbo_tank_curve.addItem(curve.id, curve)
 
     def get_combo_current_data(self, combo):
         index = self.cbo_pipe_roughness.currentIndex()

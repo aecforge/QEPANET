@@ -126,7 +126,7 @@ class AddValveTool(QgsMapTool):
                     if selected_type != Valve.type_gpv:
                         setting = self.data_dock.txt_valve_setting.text()
                     else:
-                        setting = self.data_dock.cbo_valve_curve.itemData(self.data_dock.cbo_valve_curve.currentIndex())
+                        setting = self.data_dock.cbo_valve_curve.itemData(self.data_dock.cbo_valve_curve.currentIndex()).id
 
                     LinkHandler.create_new_pumpvalve(
                         self.params,

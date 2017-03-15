@@ -68,7 +68,6 @@ class GraphDialog(QDialog):
         self.fra_form = QFrame()
         fra_form1_lay = QFormLayout(self.fra_form)
         fra_form1_lay.setContentsMargins(0, 0, 0, 0)
-        # fra_form1_lay.addRow(self.lbl_file, self.fra_file)
         fra_form1_lay.addRow(self.lbl_list, self.lst_list)
 
         # Buttons
@@ -81,7 +80,6 @@ class GraphDialog(QDialog):
         elif self.edit_type == self.edit_curves:
             ele_name = 'curve'
 
-        # Buttons
         self.btn_new = QPushButton('New ' + ele_name)  # TODO: softcode
         self.btn_new.clicked.connect(self.new_element)
         fra_buttons_lay.addWidget(self.btn_new)
@@ -119,11 +117,6 @@ class GraphDialog(QDialog):
         self.table.setRowCount(self.rows_nr)
         self.table.setColumnCount(self.cols_nr)
         self.table.verticalHeader().setVisible(False)
-
-        # row_height = self.table.rowHeight(0)
-        # table_height = (rows_nr * row_height) + self.table.horizontalHeader().height() + 2 * self.table.frameWidth()
-        # self.table.setMinimumHeight(table_height + 10)
-        # self.table.setMaximumHeight(table_height + 10)
 
         # Initialize empty table
         self.clear_table()
@@ -171,9 +164,6 @@ class GraphDialog(QDialog):
         fra_bottom_lay.addWidget(self.fra_table)
         fra_bottom_lay.addWidget(self.fra_graph)
 
-        self.xs = []
-        self.ys = []
-
         # Main
         main_lay.addWidget(self.fra_top)
         main_lay.addWidget(self.fra_bottom)
@@ -202,19 +192,13 @@ class GraphDialog(QDialog):
         self.update_graph()
 
     def cbo_pump_type_activated(self):
+        self.update_table_headers()
         self.update_graph()
 
     def setVisible(self, bool):
         QDialog.setVisible(self, bool)
 
-        if self.edit_type == self.edit_patterns:
-            self.x_label = 'Time period'
-            self.y_label = 'Multiplier'
-        elif self.edit_type == self.edit_curves:
-            self.x_label = 'Flow ' + '[' + self.params.options.flow_units + ']'
-            self.y_label = 'Head ' + '[' + self.params.options.units_depth[self.params.options.units] + ']'
-
-        self.table.setHorizontalHeaderLabels([self.x_label, self.y_label])  # TODO: softcode
+        self.update_table_headers()
 
     def list_item_changed(self):
 
@@ -390,6 +374,9 @@ class GraphDialog(QDialog):
 
             self.lst_list.currentItem().setText(pattern.id)
 
+            # Update GUI
+            self.dockwidget.update_patterns_combo()
+
         elif self.edit_type == GraphDialog.edit_curves:
 
             # Check for ID unique
@@ -462,23 +449,47 @@ class GraphDialog(QDialog):
 
         if self.edit_type == GraphDialog.edit_curves:
             del self.params.curves[name]
-            # InpFile.write_curves(self.params, self.params.curves_file)
+            # Update GUI
+            self.dockwidget.update_curves_combo()
         elif self.edit_type == GraphDialog.edit_patterns:
             del self.params.patterns[name]
-            # InpFile.write_patterns(self.params, self.params.patterns_file)
+            # Update GUI
+            self.dockwidget.update_patterns_combo()
 
     def data_changed(self):
 
         if self.need_to_update_graph:
             self.update_graph()
 
+    def update_table_headers(self):
+        if self.edit_type == self.edit_patterns:
+            self.x_label = 'Time period'
+            self.y_label = 'Multiplier'
+        elif self.edit_type == self.edit_curves:
+            cbo_data = self.cbo_pump_type.itemData(self.cbo_pump_type.currentIndex())
+            if cbo_data == Curve.type_efficiency:
+                self.x_label = 'Flow ' + '[' + self.params.options.flow_units + ']'
+                self.y_label = 'Efficiency ' + '[' + self.params.options.units_depth[self.params.options.units] + ']'
+            if cbo_data == Curve.type_headloss:
+                self.x_label = 'Flow ' + '[' + self.params.options.flow_units + ']'
+                self.y_label = 'Headloss ' + '[' + self.params.options.units_depth[self.params.options.units] + ']'
+            if cbo_data == Curve.type_pump:
+                self.x_label = 'Flow ' + '[' + self.params.options.flow_units + ']'
+                self.y_label = 'Head ' + '[' + self.params.options.units_depth[self.params.options.units] + ']'
+            if cbo_data == Curve.type_volume:
+                self.x_label = 'Height ' + '[' + self.params.options.flow_units + ']'
+                self.y_label = 'Volume ' + '[' + self.params.options.units_depth[self.params.options.units] + ']'
+
+        self.table.setHorizontalHeaderLabels([self.x_label, self.y_label])  # TODO: softcode
+
     def update_graph(self):
 
         if not self.need_to_update_graph:
             return
 
-        self.xs = []
-        self.ys = []
+        xs = []
+        ys = []
+
         for row in range(self.table.rowCount()):
             item = self.table.item(row, 0)
             x = self.from_item_to_val(item)
@@ -486,27 +497,34 @@ class GraphDialog(QDialog):
             y = self.from_item_to_val(item)
 
             if x is not None:
-                self.xs.append(float(x))
+                xs.append(float(x))
             if y is not None:
-                self.ys.append(float(y))
+                ys.append(float(y))
 
-        if len(self.xs) == 0 or len(self.ys) == 0:
+        if len(xs) == 0 or len(ys) == 0:
             self.static_canvas.clear()
             return
 
+        xys_t = zip(xs, ys)
+        xys_t.sort()
+
+        xys = zip(*xys_t)
+        xs = xys[0]
+        ys = xys[1]
+
         if self.edit_type == self.edit_patterns:
-            y_axis_label = 'Mult. avg.: ' + '{0:.2f}'.format((numpy.average(self.ys)))
-            self.static_canvas.draw_bars_graph(self.ys, y_axes_label=y_axis_label)
+            y_axis_label = 'Mult. avg.: ' + '{0:.2f}'.format((numpy.average(ys)))
+            self.static_canvas.draw_bars_graph(ys, y_axes_label=y_axis_label)
 
         elif self.edit_type == self.edit_curves:
 
             # Account for different types of curves
             cbo_data = self.cbo_pump_type.itemData(self.cbo_pump_type.currentIndex())
 
-            series_length = min(len(self.xs), len(self.ys))
+            series_length = min(len(xs), len(ys))
 
             if cbo_data == Curve.type_efficiency or cbo_data == Curve.type_headloss or cbo_data == Curve.type_volume:
-                self.static_canvas.draw_line_graph(self.xs[:series_length], self.ys[:series_length],
+                self.static_canvas.draw_line_graph(xs[:series_length], ys[:series_length],
                                                    self.x_label, self.y_label)
 
             elif cbo_data == Curve.type_pump:
@@ -514,14 +532,14 @@ class GraphDialog(QDialog):
                 if series_length == 1 or series_length == 3:
                     if series_length == 1:
                         # 3 curve points
-                        curve_xs = [0, self.xs[0], self.xs[0] * 2]
-                        curve_ys = [self.ys[0] * 1.33, self.ys[0], 0]
+                        curve_xs = [0, xs[0], xs[0] * 2]
+                        curve_ys = [ys[0] * 1.33, ys[0], 0]
                         # y = a * x^2 + b * x + c
 
                     elif series_length == 3:
                         # 3 curve points
-                        curve_xs = [self.xs[0], self.xs[1], self.xs[2]]
-                        curve_ys = [self.ys[0], self.ys[1], self.ys[2]]
+                        curve_xs = [xs[0], xs[1], xs[2]]
+                        curve_ys = [ys[0], ys[1], ys[2]]
 
                     (a, b, c) = numpy.polyfit(curve_xs, curve_ys, 2)
 
@@ -538,7 +556,7 @@ class GraphDialog(QDialog):
                     self.static_canvas.draw_line_graph(interp_xs, interp_ys, self.x_label, self.y_label)
 
                 else:
-                    self.static_canvas.draw_line_graph(self.xs[:series_length], self.ys[:series_length],
+                    self.static_canvas.draw_line_graph(xs[:series_length], ys[:series_length],
                                                        self.x_label, self.y_label)
 
     def from_item_to_val(self, item):

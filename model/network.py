@@ -216,7 +216,7 @@ class Valve:
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_diameter, QVariant.Double),
               QgsField(field_name_type, QVariant.String),
-              QgsField(field_name_setting, QVariant.Double),
+              QgsField(field_name_setting, QVariant.String),
               QgsField(field_name_minor_loss, QVariant.Double)]
 
     type_prv = 'PRV'
