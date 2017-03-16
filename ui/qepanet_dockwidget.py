@@ -884,7 +884,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         inp_file_path = QFileDialog.getSaveFileName(
             self, 'Save project as...', self.params.last_project_dir, 'INP files (*.inp)')
 
-        if inp_file_path is not None:
+        if inp_file_path is not None and inp_file_path:
             self.inp_file_path = inp_file_path
             self.txt_prj_file.setText(self.inp_file_path)
 
