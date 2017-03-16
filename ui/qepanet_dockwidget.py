@@ -1106,7 +1106,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 return None
 
     def pipe_vertex_dist_changed(self, vertex_dist):
-        self.params.vertex_dist = float(vertex_dist)
+        if vertex_dist is not None and vertex_dist:
+            self.params.vertex_dist = float(vertex_dist)
 
     def find_decimals(self, float_string):
         float_string.replace(',', '.')
