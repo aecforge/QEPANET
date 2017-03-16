@@ -270,16 +270,19 @@ class MemoryDS:
         return nodes_lay
 
     @staticmethod
-    def create_links_lay(params, field_name_var=u'variable', lay_name=u'Nodes', crs=None):
+    def create_links_lay(params, field_name_vars=[u'variable'], lay_name=u'Nodes', crs=None):
 
         url = 'LineString'
         if crs is not None:
             url += '?crs=' + crs.authid()
         links_lay = QgsVectorLayer(url, lay_name, u'memory')
         links_lay_dp = links_lay.dataProvider()
-        links_lay_dp.addAttributes([
-            QgsField(Node.field_name_eid,  QVariant.String),
-            QgsField(field_name_var, QVariant.String)])
+
+        fields = []
+        fields.append(QgsField(Link.field_name_eid, QVariant.String))
+        for field_name_var in field_name_vars:
+            fields.append(QgsField(field_name_var, QVariant.Double))
+        links_lay_dp.addAttributes(fields)
         links_lay.updateFields()
 
         new_fts = []

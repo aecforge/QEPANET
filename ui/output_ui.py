@@ -226,6 +226,8 @@ class OutputAnalyserDialog(QDialog):
         config_file.set_last_out_file(out_file)
         self.txt_out_file.setText(out_file)
         self.read_outputs()
+        if self.output_reader is None:
+            return
 
         # Fill times combo
         self.cbo_map_times.clear()
@@ -555,53 +557,53 @@ class OutputAnalyserDialog(QDialog):
 
         if self.rad_maps_node_demand.isChecked():  # -------------------------------------------------------------------
             lay_name = 'Node demand'
-            lay_id = self.draw_map(self.params.out_lay_node_demand_id, lay_name,
+            lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_demand_id, lay_name,
                                    self.output_reader.node_demands_d, report_time_s)
             self.params.out_lay_node_demand_id = lay_id
 
         elif self.rad_maps_node_head.isChecked():
             lay_name = 'Node head'
-            lay_id = self.draw_map(self.params.out_lay_node_head_id, lay_name,
+            lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_head_id, lay_name,
                                    self.output_reader.node_heads_d, report_time_s)
             self.params.out_lay_node_head_id = lay_id
 
         elif self.rad_maps_node_pressure.isChecked():
             lay_name = 'Node pressure'
-            lay_id = self.draw_map(self.params.out_lay_node_pressure_id, lay_name,
+            lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_pressure_id, lay_name,
                                    self.output_reader.node_pressures_d, report_time_s)
             self.params.out_lay_node_pressure_id = lay_id
 
         elif self.rad_maps_node_quality.isChecked():
             lay_name = 'Node quality'
-            lay_id = self.draw_map(self.params.out_lay_node_quality_id, lay_name,
+            lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_quality_id, lay_name,
                                    self.output_reader.node_qualities_d, report_time_s)
             self.params.out_lay_node_quality_id = lay_id
 
         elif self.rad_maps_link_flow.isChecked():  # -------------------------------------------------------------------
             lay_name = 'Link flow'
-            lay_id = self.draw_map(self.params.out_lay_link_flow_id, lay_name,
+            lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_flow_id, lay_name,
                                    self.output_reader.link_flows_d, report_time_s)
             self.params.out_lay_link_flow_id = lay_id
 
         elif self.rad_maps_link_velocity.isChecked():
             lay_name = 'Link velocity'
-            lay_id = self.draw_map(self.params.out_lay_link_velocity_id, lay_name,
+            lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_velocity_id, lay_name,
                                    self.output_reader.link_velocities_d, report_time_s)
             self.params.out_lay_link_velocity_id = lay_id
 
         elif self.rad_maps_link_headloss.isChecked():
             lay_name = 'Link headloss'
-            lay_id = self.draw_map(self.params.out_lay_link_headloss_id, lay_name,
+            lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_headloss_id, lay_name,
                                    self.output_reader.link_headlosses_d, report_time_s)
             self.params.out_lay_link_headloss_id = lay_id
 
         elif self.rad_maps_link_quality.isChecked():
             lay_name = 'Link quality'
-            lay_id = self.draw_map(self.params.out_lay_link_quality_id, lay_name,
+            lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_quality_id, lay_name,
                                    self.output_reader.link_qualities_d, report_time_s)
             self.params.out_lay_link_quality_id = lay_id
 
-    def draw_map(self, lay_id, lay_name, dataset, report_time_s):
+    def draw_map(self, lay_type, lay_id, lay_name, dataset, report_time_s):
 
         cursor = QCursor()
         cursor.setShape(Qt.WaitCursor)
@@ -612,7 +614,10 @@ class OutputAnalyserDialog(QDialog):
 
         lay = LayerUtils.get_lay_from_id(lay_id)
         if lay is None:
-            lay = self.create_out_node_layer(lay_name, dataset)
+            if lay_type == LayerType.NODE:
+                lay = self.create_out_node_layer(lay_name, dataset)
+            elif lay_type == LayerType.LINK:
+                lay = self.create_out_link_layer(lay_name, dataset)
             lay_id = lay.id()
             QgsMapLayerRegistry.instance().addMapLayer(lay)
         else:

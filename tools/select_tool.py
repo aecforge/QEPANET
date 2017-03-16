@@ -126,7 +126,13 @@ class SelectTool(QgsMapTool):
                                 layer.id() == self.params.pipes_vlay.id() or\
                                 layer.id() == self.params.pumps_vlay.id() or\
                                 layer.id() == self.params.valves_vlay.id():
-                            layer.selectByRect(rubber_band_rect, False)
+
+                            if QGis.QGIS_VERSION_INT < 21600:
+                                index = QgsSpatialIndex(layer.getFeatures())
+                                intersecting_ids = index.intersects(rubber_band_rect)
+                                layer.select(intersecting_ids)
+                            else:
+                                layer.selectByRect(rubber_band_rect, False)
 
                     self.rubber_band.reset(QGis.Polygon)
 

@@ -355,7 +355,7 @@ class OutputParamCodes(object):
                     NODE_PRESSURE: 'Node pressure',
                     NODE_QUALITY: 'Node quality',
                     LINK_FLOW: 'Link flow',
-                    LINK_VELOCITY: 'Link vel.',
+                    LINK_VELOCITY: 'Link velocity',
                     LINK_HEADLOSS: 'Link headloss',
                     LINK_QUALITY: 'Link quality',
                     LINK_STATUS_CODE: 'Link status',
