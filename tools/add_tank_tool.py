@@ -98,7 +98,7 @@ class AddTankTool(QgsMapTool):
                 elev = self.elev
 
             diameter = float(self.data_dock.txt_tank_diameter.text())
-            elev_corr = float(self.data_dock.txt_tank_elev_corr.text())
+            deltaz = float(self.data_dock.txt_tank_deltaz.text())
             level_init = float(self.data_dock.txt_tank_level_init.text())
             level_min = float(self.data_dock.txt_tank_level_min.text())
             level_max = float(self.data_dock.txt_tank_level_max.text())
@@ -114,7 +114,7 @@ class AddTankTool(QgsMapTool):
                     tank_curve_id,
                     diameter,
                     elev,
-                    elev_corr,
+                    deltaz,
                     level_init,
                     level_min,
                     level_max,
@@ -151,7 +151,7 @@ class AddTankTool(QgsMapTool):
                             tank_curve_id,
                             diameter,
                             self.elev,
-                            elev_corr,
+                            deltaz,
                             level_init,
                             level_min,
                             level_max,
@@ -170,7 +170,7 @@ class AddTankTool(QgsMapTool):
                             tank_curve_id,
                             diameter,
                             self.elev,
-                            elev_corr,
+                            deltaz,
                             level_init,
                             level_min,
                             level_max,
@@ -189,7 +189,7 @@ class AddTankTool(QgsMapTool):
                             tank_curve_id,
                             diameter,
                             self.elev,
-                            elev_corr,
+                            deltaz,
                             level_init,
                             level_min,
                             level_max,

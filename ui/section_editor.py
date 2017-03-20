@@ -3,7 +3,7 @@ from PyQt4 import QtCore
 from PyQt4.QtGui import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QPushButton, QIcon
 from graphs import MyMplCanvas
 from ..geo_utils import bresenham, raster_utils
-from ..model.network_handling import LinkHandler
+from ..model.network_handling import LinkHandler, NetworkUtils, Junction
 from matplotlib.lines import Line2D
 from matplotlib.path import Path
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
@@ -145,14 +145,24 @@ class PipeSectionDialog(QDialog):
     def find_line_distz(self):
 
         pipe_geom_v2 = self.pipe_ft.geometry().geometry()
+
+        # Find start and end nodes (needed to know delta z)
+        (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(self.params, self.pipe_ft.geometry())
+        start_node_deltaz = start_node_ft.attribute(Junction.field_name_delta_z)
+        end_node_deltaz = end_node_ft.attribute(Junction.field_name_delta_z)
+
         total_dist = 0
         dist_z = OrderedDict()
-        dist_z[total_dist] = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, 0, QgsVertexId.SegmentVertex)).z()
+        dist_z[total_dist] = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, 0, QgsVertexId.SegmentVertex)).z() + start_node_deltaz
+
         for p in range(1, pipe_geom_v2.vertexCount(0, 0)):
             vertex = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p, QgsVertexId.SegmentVertex))
             vertex_prev = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p-1, QgsVertexId.SegmentVertex))
             total_dist += math.sqrt((vertex.x() - vertex_prev.x())**2 + (vertex.y() - vertex_prev.y())**2)
-            dist_z[total_dist] = vertex.z()
+
+            # Interpolate delta z for vertex using distance from nodes and delta z of nodes
+            delta_z = (total_dist / self.pipe_ft.geometry().length() * (end_node_deltaz - start_node_deltaz)) + start_node_deltaz
+            dist_z[total_dist] = vertex.z() + delta_z
 
         return dist_z
 

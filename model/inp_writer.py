@@ -575,16 +575,16 @@ class InpFile:
         for r_ft in r_fts:
             eid = r_ft.attribute(Reservoir.field_name_eid)
             elev = r_ft.attribute(Reservoir.field_name_elev)
-            elev_corr = r_ft.attribute(Reservoir.field_name_delta_z)
+            deltaz = r_ft.attribute(Reservoir.field_name_delta_z)
             # head = r_ft.attribute(Reservoir.field_name_head)
             # pattern = r_ft.attribute(Reservoir.field_name_pattern) # TODO: add support for pattern
 
             if elev is None or elev == NULL:
                 elev = 0
-            if elev_corr is None or elev_corr == NULL:
-                elev_corr = 0
+            if deltaz is None or deltaz == NULL:
+                deltaz = 0
 
-            head = elev + elev_corr
+            head = elev + deltaz
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
@@ -606,7 +606,7 @@ class InpFile:
             curve = t_ft.attribute(Tank.field_name_curve)
             diameter = t_ft.attribute(Tank.field_name_diameter)
             elev = t_ft.attribute(Tank.field_name_elev)
-            elev_corr = t_ft.attribute(Tank.field_name_delta_z)
+            deltaz = t_ft.attribute(Tank.field_name_delta_z)
             level_init = t_ft.attribute(Tank.field_name_level_init)
             level_max = t_ft.attribute(Tank.field_name_level_max)
             level_min = t_ft.attribute(Tank.field_name_level_min)
@@ -615,10 +615,10 @@ class InpFile:
             if elev is None or elev == NULL:
                 elev = 0
 
-            if elev_corr is None or elev_corr == NULL:
-                elev_corr = 0
+            if deltaz is None or deltaz == NULL:
+                deltaz = 0
 
-            elev += elev_corr
+            elev += deltaz
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)

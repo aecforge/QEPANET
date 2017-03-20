@@ -290,14 +290,14 @@ class HydraulicsDialog(QDialog):
 
         # Junctions
         self.parent.lbl_junction_demand.setText(pre_l('Demand', Options.units_flow[self.params.options.units][0]))  # TODO: softcode
-        self.parent.lbl_junction_depth.setText(pre_l('Delta Z', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_junction_deltaz.setText(pre_l('Delta Z', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
 
         # Reservoirs
         self.parent.lbl_reservoir_head.setText(pre_l('Head', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
-        self.parent.lbl_reservoir_elev_corr.setText(pre_l('Delta Z', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_reservoir_deltaz.setText(pre_l('Delta Z', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
 
         # Tanks
-        self.parent.lbl_tank_elev_corr.setText(pre_l('Delta Z', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_tank_deltaz.setText(pre_l('Delta Z', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
         self.parent.lbl_tank_level_init.setText(pre_l('Level init.', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
         self.parent.lbl_tank_level_min.setText(pre_l('Level min', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
         self.parent.lbl_tank_level_max.setText(pre_l('Level max', Options.units_deltaz[self.params.options.units]))  # TODO: softcode

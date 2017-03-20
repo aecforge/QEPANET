@@ -31,7 +31,7 @@ class MemoryDS:
     #             Valve.section_name: valves_lay}
 
     @staticmethod
-    def create_junctions_lay(geoms=None, ids=None, demands=None, elevs=None, elev_corrs=None, patterns=None, crs=None):
+    def create_junctions_lay(geoms=None, ids=None, demands=None, elevs=None, deltazs=None, patterns=None, crs=None):
 
         url = 'Point'
         if crs is not None:
@@ -49,13 +49,13 @@ class MemoryDS:
                 junction_id = ids[n] if ids is not None else None
                 demand = demands[n] if demands is not None else None
                 elev = elevs[n] if elevs is not None else None
-                elev_corr = elev_corrs[n] if elev_corrs is not None else None
+                deltaz = deltazs[n] if deltazs is not None else None
                 pattern = patterns[n] if patterns is not None else None
                 # emitter = emitters[n] if emitters is not None else None
 
                 junctions_ft.setAttribute(Junction.field_name_eid, junction_id)
                 junctions_ft.setAttribute(Junction.field_name_elev, elev)
-                junctions_ft.setAttribute(Junction.field_name_delta_z, elev_corr)
+                junctions_ft.setAttribute(Junction.field_name_delta_z, deltaz)
                 junctions_ft.setAttribute(Junction.field_name_pattern, pattern)
 
                 junctions_lay.addFeature(junctions_ft)
@@ -81,11 +81,11 @@ class MemoryDS:
 
                 reservoir_id = ids[n] if ids is not None else None
                 elev = elevs[n] if elevs is not None else None
-                elev_corr = elevs_corr[n] if elevs_corr is not None else None
+                deltaz = elevs_corr[n] if elevs_corr is not None else None
 
                 reservoir_ft.setAttribute(Reservoir.field_name_eid, reservoir_id)
                 reservoir_ft.setAttribute(Reservoir.field_name_elev, elev)
-                reservoir_ft.setAttribute(Reservoir.field_name_delta_z, elev_corr)
+                reservoir_ft.setAttribute(Reservoir.field_name_delta_z, deltaz)
                 reservoirs_lay.addFeature(reservoir_ft)
 
         return reservoirs_lay
@@ -112,7 +112,7 @@ class MemoryDS:
                 curve = curves[n] if curves is not None else None
                 diameter = diameters[n] if diameters is not None else None
                 elev = elevs[n] if elevs is not None else None
-                elev_corr = elevs_corr[n] if elevs_corr is not None else None
+                deltaz = elevs_corr[n] if elevs_corr is not None else None
                 level_init = levels_init[n] if levels_init is not None else None
                 level_max = levels_max[n] if levels_max is not None else None
                 level_min = levels_min[n] if levels_min is not None else None
@@ -122,7 +122,7 @@ class MemoryDS:
                 tanks_ft.setAttribute(Tank.field_name_curve, curve)
                 tanks_ft.setAttribute(Tank.field_name_diameter, diameter)
                 tanks_ft.setAttribute(Tank.field_name_elev, elev)
-                tanks_ft.setAttribute(Tank.field_name_delta_z, elev_corr)
+                tanks_ft.setAttribute(Tank.field_name_delta_z, deltaz)
                 tanks_ft.setAttribute(Tank.field_name_level_init, level_init)
                 tanks_ft.setAttribute(Tank.field_name_level_max, level_max)
                 tanks_ft.setAttribute(Tank.field_name_level_min, level_min)

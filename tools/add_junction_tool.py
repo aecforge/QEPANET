@@ -93,7 +93,7 @@ class AddJunctionTool(QgsMapTool):
                 elev = self.elev
 
             j_demand = float(self.data_dock.txt_junction_demand.text())
-            depth = float(self.data_dock.txt_junction_depth.text())
+            deltaz = float(self.data_dock.txt_junction_deltaz.text())
 
             pattern = self.data_dock.cbo_junction_pattern.itemData(
                     self.data_dock.cbo_junction_pattern.currentIndex())
@@ -111,7 +111,7 @@ class AddJunctionTool(QgsMapTool):
                     node_eid,
                     elev,
                     j_demand,
-                    depth,
+                    deltaz,
                     pattern_id)
 
             # A link has been snapped
@@ -135,7 +135,7 @@ class AddJunctionTool(QgsMapTool):
                             node_eid,
                             self.elev,
                             j_demand,
-                            depth,
+                            deltaz,
                             pattern_id)
 
                     else:
@@ -159,7 +159,7 @@ class AddJunctionTool(QgsMapTool):
                                 node_eid,
                                 self.elev,
                                 j_demand,
-                                depth,
+                                deltaz,
                                 pattern_id)
 
                             LinkHandler.split_pipe(

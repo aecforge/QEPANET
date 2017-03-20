@@ -211,7 +211,7 @@ class AddPipeTool(QgsMapTool):
                         new_start_junction = rubberband_pts[0]
                         junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
                         elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_start_junction, 1)
-                        depth = float(self.data_dock.txt_junction_depth.text())
+                        deltaz = float(self.data_dock.txt_junction_deltaz.text())
                         j_demand = float(self.data_dock.txt_junction_demand.text())
 
                         pattern = self.data_dock.cbo_junction_pattern.itemData(
@@ -220,7 +220,7 @@ class AddPipeTool(QgsMapTool):
                             pattern_id = pattern.id
                         else:
                             pattern_id = None
-                        NodeHandler.create_new_junction(self.params, new_start_junction, junction_eid, elev, j_demand, depth, pattern_id)
+                        NodeHandler.create_new_junction(self.params, new_start_junction, junction_eid, elev, j_demand, deltaz, pattern_id)
 
                     (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[len(new_pipes_fts) - 1].geometry())
                     new_end_junction = None
@@ -228,7 +228,7 @@ class AddPipeTool(QgsMapTool):
                         new_end_junction = rubberband_pts[len(rubberband_pts) - 1]
                         junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
                         elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_end_junction, 1)
-                        depth = float(self.data_dock.txt_junction_depth.text())
+                        deltaz = float(self.data_dock.txt_junction_deltaz.text())
 
                         pattern = self.data_dock.cbo_junction_pattern.itemData(
                             self.data_dock.cbo_junction_pattern.currentIndex())
@@ -236,7 +236,7 @@ class AddPipeTool(QgsMapTool):
                             pattern_id = pattern.id
                         else:
                             pattern_id = None
-                        NodeHandler.create_new_junction(self.params, new_end_junction, junction_eid, elev, demand, depth, pattern_id)
+                        NodeHandler.create_new_junction(self.params, new_end_junction, junction_eid, elev, demand, deltaz, pattern_id)
 
                     # If end or start node intersects a pipe, split it
                     if new_start_junction:

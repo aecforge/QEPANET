@@ -56,7 +56,7 @@ class Junction:
         self.eid = eid
         self.demand = 0
         self.elevation = -1
-        self.elev_corr = 0
+        self.deltaz = 0
         self.pattern = None
         self.emitter_coeff = 0
 

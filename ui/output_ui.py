@@ -513,7 +513,7 @@ class OutputAnalyserDialog(QDialog):
 
         cursor = QCursor()
         cursor.setShape(Qt.WaitCursor)
-        self.iface.mapCanvas().setCursor(cursor)
+        QApplication.setOverrideCursor(Qt.WaitCursor)
 
         report_time_h = report_time_s / 3600
         lay_name += ' ' + str(report_time_h)
@@ -537,8 +537,7 @@ class OutputAnalyserDialog(QDialog):
         lay.setRendererV2(RampRenderer.get_renderer(lay, text))
         lay.triggerRepaint()
 
-        cursor.setShape(Qt.ArrowCursor)
-        self.iface.mapCanvas().setCursor(cursor)
+        QApplication.restoreOverrideCursor()
 
         return lay_id
 

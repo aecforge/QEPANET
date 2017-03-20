@@ -26,7 +26,6 @@ import os
 from PyQt4 import QtCore, uic, QtGui
 from PyQt4.QtCore import Qt, pyqtSignal
 from PyQt4.QtGui import QFileDialog, QMessageBox, QApplication
-from qgis.core import *
 from qgis.gui import QgsGenericProjectionSelector, QgsMessageBar
 
 from ..geo_utils import utils
@@ -679,31 +678,31 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     # TODO: update snappers in all the tools that use snapping
     def cbo_junctions_activated(self, index):
         layer_id = self.cbo_junctions.itemData(index)
-        self.params.junctions_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.params.junctions_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
     def cbo_reservoirs_activated(self, index):
         layer_id = self.cbo_reservoirs.itemData(index)
-        self.params.reservoirs_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.params.reservoirs_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
     def cbo_tanks_activated(self, index):
         layer_id = self.cbo_tanks.itemData(index)
-        self.params.tanks_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.params.tanks_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
     def cbo_pipes_activated(self, index):
         layer_id = self.cbo_pipes.itemData(index)
-        self.params.pipes_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.params.pipes_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
     def cbo_pumps_activated(self, index):
         layer_id = self.cbo_pumps.itemData(index)
-        self.params.pumps_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.params.pumps_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
     def cbo_valves_activated(self, index):
         layer_id = self.cbo_valves.itemData(index)
-        self.params.valves_vlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.params.valves_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
     def cbo_dem_activated(self, index):
         layer_id = self.cbo_dem.itemData(index)
-        self.params.dem_rlay = utils.LayerUtils.get_lay_from_id(layer_id)
+        self.params.dem_rlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
     def cbo_pipe_roughness_activated(self):
         self.update_roughness_params(self.get_combo_current_data(self.cbo_pipe_roughness)[self.params.options.headloss])
@@ -998,34 +997,34 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         for layer_id in QgsMapLayerRegistry.instance().mapLayers():
 
-            layer = utils.LayerUtils.get_lay_from_id(layer_id)
+            layer = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
-            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.junctions_table_name:
+            if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.junctions_table_name:
                 self.set_layercombo_index(self.cbo_junctions, layer_id)
                 self.params.junctions_vlay = layer
 
-            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.pipes_table_name:
+            if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.pipes_table_name:
                 self.set_layercombo_index(self.cbo_pipes, layer_id)
                 self.params.pipes_vlay = layer
 
-            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.pumps_table_name:
+            if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.pumps_table_name:
                 self.set_layercombo_index(self.cbo_pumps, layer_id)
                 self.params.pumps_vlay = layer
 
-            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.reservoirs_table_name:
+            if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.reservoirs_table_name:
                 self.set_layercombo_index(self.cbo_reservoirs, layer_id)
                 self.params.reservoirs_vlay = layer
 
-            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.tanks_table_name:
+            if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.tanks_table_name:
                 self.set_layercombo_index(self.cbo_tanks, layer_id)
                 self.params.tanks_vlay = layer
 
-            if utils.LayerUtils.get_lay_from_id(layer_id).name() == Tables.valves_table_name:
+            if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.valves_table_name:
                 self.set_layercombo_index(self.cbo_valves, layer_id)
                 self.params.valves_vlay = layer
 
             names = ['dtm', 'dem']
-            if any([x.lower() in utils.LayerUtils.get_lay_from_id(layer_id).name().lower() for x in names]):
+            if any([x.lower() in QgsMapLayerRegistry.instance().mapLayer(layer_id).name().lower() for x in names]):
                 self.set_layercombo_index(self.cbo_dem, layer_id)
                 self.params.dem_rlay = layer
 
@@ -1098,11 +1097,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         index = combo.findData(prev_layer_id)
         if index >= 0:
             combo.setCurrentIndex(index)
-            return utils.LayerUtils.get_lay_from_id(self.get_combo_current_data(combo))
+            return QgsMapLayerRegistry.instance().mapLayer(self.get_combo_current_data(combo))
         else:
             if combo.count() > 0:
                 combo.setCurrentIndex(0)
-                return utils.LayerUtils.get_lay_from_id(combo.itemData(0))
+                return QgsMapLayerRegistry.instance().mapLayer(combo.itemData(0))
             else:
                 return None
 

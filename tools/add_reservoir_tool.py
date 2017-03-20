@@ -91,7 +91,7 @@ class AddReservoirTool(QgsMapTool):
                 elev = self.elev
 
             head = float(self.data_dock.txt_reservoir_head.text())
-            elev_corr = float(self.data_dock.txt_reservoir_elev_corr.text())
+            deltaz = float(self.data_dock.txt_reservoir_deltaz.text())
 
             # No links snapped: create a new stand-alone node
             if self.snapped_feat_id is None:
@@ -101,7 +101,7 @@ class AddReservoirTool(QgsMapTool):
                     self.mouse_pt,
                     eid,
                     elev,
-                    elev_corr,
+                    deltaz,
                     head)
 
             # A link has been snapped
@@ -133,7 +133,7 @@ class AddReservoirTool(QgsMapTool):
                             self.snapped_vertex,
                             eid,
                             self.elev,
-                            elev_corr,
+                            deltaz,
                             head)
 
                     elif NetworkUtils.find_node_layer(self.params, start_node_ft.geometry()) == self.params.junctions_vlay:
@@ -147,7 +147,7 @@ class AddReservoirTool(QgsMapTool):
                             self.snapped_vertex,
                             eid,
                             self.elev,
-                            elev_corr,
+                            deltaz,
                             head)
 
                     elif NetworkUtils.find_node_layer(self.params, end_node_ft.geometry()) == self.params.junctions_vlay:
@@ -161,7 +161,7 @@ class AddReservoirTool(QgsMapTool):
                             self.snapped_vertex,
                             eid,
                             self.elev,
-                            elev_corr,
+                            deltaz,
                             head)
 
                     else:

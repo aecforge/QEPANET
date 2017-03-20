@@ -17,7 +17,7 @@ class NodeHandler:
         pass
 
     @staticmethod
-    def create_new_junction(params, point, eid, elev, demand, depth, pattern_id):
+    def create_new_junction(params, point, eid, elev, demand, deltaz, pattern_id):
 
         junctions_caps = params.junctions_vlay.dataProvider().capabilities()
         if junctions_caps and QgsVectorDataProvider.AddFeatures:
@@ -30,7 +30,7 @@ class NodeHandler:
                 new_junct_feat.setAttribute(Junction.field_name_eid, eid)
                 new_junct_feat.setAttribute(Junction.field_name_elev, elev)
                 new_junct_feat.setAttribute(Junction.field_name_demand, demand)
-                new_junct_feat.setAttribute(Junction.field_name_delta_z, depth)
+                new_junct_feat.setAttribute(Junction.field_name_delta_z, deltaz)
                 new_junct_feat.setAttribute(Junction.field_name_pattern, pattern_id)
 
                 new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
@@ -46,7 +46,7 @@ class NodeHandler:
             return new_junct_feat
 
     @staticmethod
-    def create_new_reservoir(params, point, eid, elev, elev_corr, head):
+    def create_new_reservoir(params, point, eid, elev, deltaz, head):
 
         reservoirs_caps = params.reservoirs_vlay.dataProvider().capabilities()
         if reservoirs_caps and QgsVectorDataProvider.AddFeatures:
@@ -59,7 +59,7 @@ class NodeHandler:
                 new_reservoir_feat = QgsFeature(params.reservoirs_vlay.pendingFields())
                 new_reservoir_feat.setAttribute(Reservoir.field_name_eid, eid)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_elev, elev)
-                new_reservoir_feat.setAttribute(Reservoir.field_name_delta_z, elev_corr)
+                new_reservoir_feat.setAttribute(Reservoir.field_name_delta_z, deltaz)
                 # new_reservoir_feat.setAttribute(Reservoir.field_name_head, head)
 
                 new_reservoir_feat.setGeometry(QgsGeometry.fromPoint(point))
@@ -75,7 +75,7 @@ class NodeHandler:
             return new_reservoir_feat
 
     @staticmethod
-    def create_new_tank(params, point, eid, tank_curve_id, diameter, elev, elev_corr, level_init, level_min, level_max, vol_min):
+    def create_new_tank(params, point, eid, tank_curve_id, diameter, elev, deltaz, level_init, level_min, level_max, vol_min):
         tanks_caps = params.tanks_vlay.dataProvider().capabilities()
         if tanks_caps and QgsVectorDataProvider.AddFeatures:
 
@@ -88,7 +88,7 @@ class NodeHandler:
                 new_tank_feat.setAttribute(Tank.field_name_curve, tank_curve_id)
                 new_tank_feat.setAttribute(Tank.field_name_diameter, diameter)
                 new_tank_feat.setAttribute(Tank.field_name_elev, elev)
-                new_tank_feat.setAttribute(Tank.field_name_delta_z, elev_corr)
+                new_tank_feat.setAttribute(Tank.field_name_delta_z, deltaz)
                 new_tank_feat.setAttribute(Tank.field_name_level_init, level_init)
                 new_tank_feat.setAttribute(Tank.field_name_level_min, level_min)
                 new_tank_feat.setAttribute(Tank.field_name_level_max, level_max)
@@ -296,11 +296,11 @@ class LinkHandler:
         if junctions_caps:
             if closest_junction_ft is not None:
                 # j_demand = closest_junction_ft.attribute(Junction.field_name_demand)
-                depth = closest_junction_ft.attribute(Junction.field_name_delta_z)
+                deltaz = closest_junction_ft.attribute(Junction.field_name_delta_z)
                 pattern_id = closest_junction_ft.attribute(Junction.field_name_pattern)
             else:
                 # j_demand = float(data_dock.txt_junction_demand.text())
-                depth = float(data_dock.txt_junction_depth.text())
+                deltaz = float(data_dock.txt_junction_deltaz.text())
                 pattern = data_dock.cbo_junction_pattern.itemData(data_dock.cbo_junction_pattern.currentIndex())
                 if pattern is not None:
                     pattern_id = pattern.id
@@ -309,11 +309,11 @@ class LinkHandler:
 
             junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, Junction.prefix)  # TODO: softcode
             elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_before, 1)
-            NodeHandler.create_new_junction(params, node_before, junction_eid, elev, 0, depth, pattern_id)
+            NodeHandler.create_new_junction(params, node_before, junction_eid, elev, 0, deltaz, pattern_id)
 
             junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, Junction.prefix)  # TODO: softcode
             elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_after, 1)
-            NodeHandler.create_new_junction(params, node_after, junction_eid, elev, 0, depth, pattern_id)
+            NodeHandler.create_new_junction(params, node_after, junction_eid, elev, 0, deltaz, pattern_id)
 
         # Split the pipe and create gap
         if pipes_caps:
@@ -666,9 +666,9 @@ class LinkHandler:
                 if start_node_elev is None:
                     start_node_elev = 0
 
-            start_node_depth = start_node_ft.attribute(Junction.field_name_delta_z)
-            if start_node_depth is None or type(start_node_depth) is QPyNullVariant:
-                start_node_depth = 0
+            start_node_deltaz = start_node_ft.attribute(Junction.field_name_delta_z)
+            if start_node_deltaz is None or type(start_node_deltaz) is QPyNullVariant:
+                start_node_deltaz = 0
             start_add = 1
 
         # End node
@@ -679,16 +679,16 @@ class LinkHandler:
                 end_node_elev = raster_utils.read_layer_val_from_coord(parameters.dem_rlay, end_node_ft.geometry().asPoint(), 0)
                 if end_node_elev is None:
                     end_node_elev = 0
-            end_node_depth = end_node_ft.attribute(Junction.field_name_delta_z)
-            if end_node_depth is None or type(end_node_depth) is QPyNullVariant:
-                end_node_depth = 0
+            end_node_deltaz = end_node_ft.attribute(Junction.field_name_delta_z)
+            if end_node_deltaz is None or type(end_node_deltaz) is QPyNullVariant:
+                end_node_deltaz = 0
             end_remove = 1
 
         # point_gen = PointsAlongLineGenerator(pipe_geom)
         # dists_and_points = point_gen.get_points_coords(vertex_dist, False)
 
         if start_node_ft is not None:
-            distance_elev_od[0] = start_node_elev - start_node_depth
+            distance_elev_od[0] = start_node_elev - start_node_deltaz
 
         vertices = pipe_geom.asPolyline()
 
@@ -703,7 +703,7 @@ class LinkHandler:
             distance_elev_od[distances[p]] = elev
 
         if end_node_ft is not None:
-            distance_elev_od[pipe_geom.length()] = end_node_elev - end_node_depth
+            distance_elev_od[pipe_geom.length()] = end_node_elev - end_node_deltaz
 
         # Calculate 3D length
         length_3d = 0
