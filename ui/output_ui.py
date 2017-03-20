@@ -233,17 +233,10 @@ class OutputAnalyserDialog(QDialog):
         self.cbo_map_times.clear()
         for period_s in self.output_reader.period_results.iterkeys():
 
-            # Convert seconds to hours
-            period_h = period_s / 3600.
-
-            # String for combo
-            text = str(period_h)
-
-            day = int(math.floor(period_h / 24))
-            hour = period_h - day * 24
-
-            text += ' (d' + str(day) + ' H' + "{0:.2f}".format(hour) + ')'
-
+            text = self.seconds_to_string(
+                period_s,
+                self.output_reader.sim_duration_secs,
+                self.output_reader.report_time_step_secs)
             self.cbo_map_times.addItem(text, period_s)
 
     def initialize(self):
@@ -275,7 +268,6 @@ class OutputAnalyserDialog(QDialog):
 
     def read_outputs(self):
 
-        # self.output_reader = BinaryOutputReader('D:/Progetti/2015/2015_13_TN_EPANET/04_Implementation/INP_Test/Test_cases/5/5.out')
         try:
             QApplication.setOverrideCursor(Qt.WaitCursor)
             self.output_reader = BinaryOutputReader()
@@ -461,92 +453,6 @@ class OutputAnalyserDialog(QDialog):
         if ys_d_d:
             self.static_canvas.draw_output_line(xs, ys_d_d, params_count)
 
-    # def draw_map(self):
-    #
-    #     if self.output_reader is None:
-    #         self.iface.messageBar().pushWarning(
-    #             Parameters.plug_in_name,
-    #             'Please select the simulation out file.')  # TODO: softcode
-    #         return
-    #
-    #     # Draw the map
-    #     report_time_s = self.cbo_map_times.itemData(self.cbo_map_times.currentIndex())
-    #     report_time_label = self.cbo_map_times.itemText(self.cbo_map_times.currentIndex())
-    #     period_results = self.output_reader.period_results[report_time_s]
-    #
-    #     new_lay = None
-    #     if self.rad_maps_node_demand.isChecked():  # -------------------------------------------------------------------
-    #         field_name_var = u'Demand'  # TODO: softcode
-    #         lay_name = 'Node demand ' + report_time_label
-    #         new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
-    #         variables = period_results.node_demands
-    #
-    #     elif self.rad_maps_node_head.isChecked():
-    #         field_name_var = u'Head'  # TODO: softcode
-    #         lay_name = 'Node head ' + report_time_label
-    #         new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
-    #         variables = period_results.node_heads
-    #
-    #     elif self.rad_maps_node_pressure.isChecked():
-    #         field_name_var = u'Pressure'  # TODO: softcode
-    #         lay_name = 'Node pressure ' + report_time_label
-    #         new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
-    #         variables = period_results.node_pressures
-    #
-    #     elif self.rad_maps_node_quality.isChecked():
-    #         field_name_var = u'Quality'  # TODO: softcode
-    #         lay_name = 'Node quality ' + report_time_label
-    #         new_lay = MemoryDS.create_nodes_lay(self.params, field_name_var, lay_name=lay_name)
-    #         variables = period_results.node_qualities
-    #
-    #     elif self.rad_maps_link_flow.isChecked():  # -------------------------------------------------------------------
-    #         field_name_var = u'Flow'  # TODO: softcode
-    #         lay_name = 'Link flow ' + report_time_label
-    #         new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
-    #         variables = period_results.link_flows
-    #
-    #     elif self.rad_maps_link_velocity.isChecked():
-    #         field_name_var = u'Velocity'  # TODO: softcode
-    #         lay_name = 'Link velocity ' + report_time_label
-    #         new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
-    #         variables = period_results.link_velocities
-    #
-    #     elif self.rad_maps_link_headloss.isChecked():
-    #         field_name_var = u'Headloss'  # TODO: softcode
-    #         lay_name = 'Link headloss ' + report_time_label
-    #         new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
-    #         variables = period_results.link_headlosses
-    #
-    #     elif self.rad_maps_link_quality.isChecked():
-    #         field_name_var = u'Quality'  # TODO: softcode
-    #         lay_name = 'Link quality ' + report_time_label
-    #         new_lay = MemoryDS.create_links_lay(self.params, field_name_var, lay_name=lay_name)
-    #         variables = period_results.link_qualities
-    #
-    #     # Add attributes
-    #     for feat in new_lay.getFeatures():
-    #         new_lay.startEditing()
-    #         eid = feat.attribute(Node.field_name_eid)
-    #
-    #         if eid not in variables:
-    #             QMessageBox.critical(
-    #                 self,
-    #                 Parameters.plug_in_name,
-    #                 u'Mismatch between output file and inp file. Cannot create map.',
-    #                 QMessageBox.Ok)
-    #             return
-    #
-    #         variable = variables[eid]
-    #         feat.setAttribute(field_name_var, variable)
-    #         new_lay.updateFeature(feat)
-    #         new_lay.commitChanges()
-    #
-    #     # Set renderer
-    #     new_lay.setRendererV2(RampRenderer.get_renderer(new_lay, field_name_var))
-    #
-    #     # Add layer
-    #     QgsMapLayerRegistry.instance().addMapLayer(new_lay)
-
     def draw_maps(self):
         """
         Draws layers with all the attributes
@@ -623,7 +529,12 @@ class OutputAnalyserDialog(QDialog):
         else:
             lay.setLayerName(lay_name)
 
-        lay.setRendererV2(RampRenderer.get_renderer(lay, str(report_time_s)))
+        text = self.seconds_to_string(
+            report_time_s,
+            self.output_reader.sim_duration_secs,
+            self.output_reader.report_time_step_secs)
+
+        lay.setRendererV2(RampRenderer.get_renderer(lay, text))
         lay.triggerRepaint()
 
         cursor.setShape(Qt.ArrowCursor)
@@ -647,7 +558,10 @@ class OutputAnalyserDialog(QDialog):
         field_name_vars = []
         periods = self.output_reader.period_results.keys()
         for period_s in periods:
-            text = str(period_s)
+            text = self.seconds_to_string(
+                period_s,
+                self.output_reader.sim_duration_secs,
+                self.output_reader.report_time_step_secs)
             field_name_vars.append(text)
 
         if lay_type == LayerType.NODE:
@@ -662,12 +576,33 @@ class OutputAnalyserDialog(QDialog):
             values = values_d[eid]
 
             for p in range(len(periods)):
-                feat.setAttribute(str(periods[p]), values[p])
+                text = self.seconds_to_string(
+                    periods[p],
+                    self.output_reader.sim_duration_secs,
+                    self.output_reader.report_time_step_secs)
+                feat.setAttribute(text, values[p])
                 new_lay.updateFeature(feat)
 
             new_lay.commitChanges()
 
         return new_lay
+
+    def seconds_to_string(self, period_s, duration_s, interval_s):
+
+        day = int(math.floor(period_s / 86400))
+        hour = period_s / 3600 - day * 24
+        second = period_s - hour * 3600 - day * 86400
+        text = ''
+        if duration_s > 86400:
+            # We need days
+            text += str(day) + 'd'
+
+        text += '{:02}'.format(hour) + 'H'
+
+        if interval_s < 60:
+            text += '{:02}'.format(second) + 's'
+
+        return text
 
 
 class LayerType:

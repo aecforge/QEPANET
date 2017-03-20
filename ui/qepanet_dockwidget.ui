@@ -262,14 +262,14 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>1</number>
+              <number>7</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>150</width>
+                <width>305</width>
                 <height>231</height>
                </rect>
               </property>
@@ -445,7 +445,7 @@
                 </widget>
                </item>
                <item row="1" column="2">
-                <widget class="QLineEdit" name="txt_junction_depth">
+                <widget class="QLineEdit" name="txt_junction_deltaz">
                  <property name="text">
                   <string>0</string>
                  </property>
@@ -459,7 +459,7 @@
                 </widget>
                </item>
                <item row="1" column="0">
-                <widget class="QLabel" name="lbl_junction_depth">
+                <widget class="QLabel" name="lbl_junction_deltaz">
                  <property name="text">
                   <string>Depth [m]:</string>
                  </property>
@@ -485,8 +485,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>148</width>
-                <height>64</height>
+                <width>322</width>
+                <height>155</height>
                </rect>
               </property>
               <attribute name="label">
@@ -497,14 +497,14 @@
                 <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
                </property>
                <item row="1" column="0">
-                <widget class="QLabel" name="lbl_reservoir_elev_corr">
+                <widget class="QLabel" name="lbl_reservoir_deltaz">
                  <property name="text">
                   <string>Elev. corr. [m]:</string>
                  </property>
                 </widget>
                </item>
                <item row="1" column="1">
-                <widget class="QLineEdit" name="txt_reservoir_elev_corr">
+                <widget class="QLineEdit" name="txt_reservoir_deltaz">
                  <property name="text">
                   <string>0</string>
                  </property>
@@ -531,7 +531,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>174</width>
+                <width>305</width>
                 <height>194</height>
                </rect>
               </property>
@@ -543,14 +543,14 @@
                 <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
                </property>
                <item row="0" column="0">
-                <widget class="QLabel" name="lbl_tank_elev_corr">
+                <widget class="QLabel" name="lbl_tank_deltaz">
                  <property name="text">
                   <string>Elev. corr [m]:</string>
                  </property>
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLineEdit" name="txt_tank_elev_corr">
+                <widget class="QLineEdit" name="txt_tank_deltaz">
                  <property name="text">
                   <string>0</string>
                  </property>
@@ -907,8 +907,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>153</width>
-                <height>90</height>
+                <width>322</width>
+                <height>155</height>
                </rect>
               </property>
               <attribute name="label">
@@ -965,8 +965,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>173</width>
-                <height>116</height>
+                <width>322</width>
+                <height>155</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1046,7 +1046,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>99</width>
+                <width>305</width>
                 <height>186</height>
                </rect>
               </property>
@@ -1109,8 +1109,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>193</width>
-                <height>151</height>
+                <width>322</width>
+                <height>155</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1187,8 +1187,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>104</width>
-                <height>147</height>
+                <width>322</width>
+                <height>155</height>
                </rect>
               </property>
               <attribute name="label">

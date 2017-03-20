@@ -469,16 +469,16 @@ class GraphDialog(QDialog):
             cbo_data = self.cbo_pump_type.itemData(self.cbo_pump_type.currentIndex())
             if cbo_data == Curve.type_efficiency:
                 self.x_label = 'Flow ' + '[' + self.params.options.flow_units + ']'
-                self.y_label = 'Efficiency ' + '[' + self.params.options.units_depth[self.params.options.units] + ']'
+                self.y_label = 'Efficiency ' + '[' + self.params.options.units_deltaz[self.params.options.units] + ']'
             if cbo_data == Curve.type_headloss:
                 self.x_label = 'Flow ' + '[' + self.params.options.flow_units + ']'
-                self.y_label = 'Headloss ' + '[' + self.params.options.units_depth[self.params.options.units] + ']'
+                self.y_label = 'Headloss ' + '[' + self.params.options.units_deltaz[self.params.options.units] + ']'
             if cbo_data == Curve.type_pump:
                 self.x_label = 'Flow ' + '[' + self.params.options.flow_units + ']'
-                self.y_label = 'Head ' + '[' + self.params.options.units_depth[self.params.options.units] + ']'
+                self.y_label = 'Head ' + '[' + self.params.options.units_deltaz[self.params.options.units] + ']'
             if cbo_data == Curve.type_volume:
                 self.x_label = 'Height ' + '[' + self.params.options.flow_units + ']'
-                self.y_label = 'Volume ' + '[' + self.params.options.units_depth[self.params.options.units] + ']'
+                self.y_label = 'Volume ' + '[' + self.params.options.units_deltaz[self.params.options.units] + ']'
 
         self.table.setHorizontalHeaderLabels([self.x_label, self.y_label])  # TODO: softcode
 

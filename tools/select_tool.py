@@ -127,10 +127,9 @@ class SelectTool(QgsMapTool):
                                 layer.id() == self.params.pumps_vlay.id() or\
                                 layer.id() == self.params.valves_vlay.id():
 
+                            layer.setSelectedFeatures([])
                             if QGis.QGIS_VERSION_INT < 21600:
-                                index = QgsSpatialIndex(layer.getFeatures())
-                                intersecting_ids = index.intersects(rubber_band_rect)
-                                layer.select(intersecting_ids)
+                                layer.select(rubber_band_rect, False)
                             else:
                                 layer.selectByRect(rubber_band_rect, False)
 
@@ -146,7 +145,6 @@ class SelectTool(QgsMapTool):
                     self.params.pumps_vlay.removeSelection()
                     self.params.valves_vlay.removeSelection()
                     self.iface.mapCanvas().refresh()
-
 
     def activate(self):
 

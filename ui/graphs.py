@@ -145,8 +145,11 @@ class StaticMplCanvas(MyMplCanvas):
             axes.set_xlim(x_min, x_max)
             y_span = y_max - y_min
             axes.set_ylim(y_min - y_span * 0.1, y_max + y_span * 0.1)
-
             axes.set_ylabel(ys[1], size='x-small')
+
+            # Format y axis label
+            axes.yaxis.get_major_formatter().set_useOffset(False)
+            axes.yaxis.get_major_formatter().set_scientific(False)
 
             # Plot lines
             lines = axes.plot(*plot_args)

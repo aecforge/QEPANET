@@ -155,22 +155,23 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         # Junctions ----------------------------------------------------------------------------------------------------
         self.lbl_junction_demand.setText(pre_l('Demand', self.params.options.flow_units))  # TODO: softcode
-        self.lbl_junction_depth.setText(pre_l('Delta Z', self.params.options.units_depth[self.params.options.units]))
+        self.lbl_junction_deltaz.setText(pre_l('Delta Z', self.params.options.units_deltaz[self.params.options.units]))
         self.txt_junction_demand.setValidator(RegExValidators.get_pos_decimals())
-        self.txt_junction_depth.setValidator(RegExValidators.get_pos_decimals())
+        self.txt_junction_deltaz.setValidator(RegExValidators.get_pos_neg_decimals())
         self.txt_junction_emit_coeff.setValidator(RegExValidators.get_pos_decimals())
 
         self.update_patterns_combo()
 
         # Reservoirs ---------------------------------------------------------------------------------------------------
         self.txt_reservoir_head.setValidator(RegExValidators.get_pos_decimals())
-        self.lbl_reservoir_elev_corr.setText(pre_l('Delta Z', self.params.options.units_depth[self.params.options.units]))
-        self.txt_reservoir_elev_corr.setValidator(RegExValidators.get_pos_neg_decimals())
+        self.lbl_reservoir_deltaz.setText(pre_l('Delta Z', self.params.options.units_deltaz[self.params.options.units]))
+        self.txt_reservoir_deltaz.setValidator(RegExValidators.get_pos_neg_decimals())
 
         self.update_curves_combo()
 
         # Tanks --------------------------------------------------------------------------------------------------------
-        self.lbl_tank_elev_corr.setText(pre_l('Delta Z', self.params.options.units_depth[self.params.options.units]))
+        self.lbl_tank_deltaz.setText(pre_l('Delta Z', self.params.options.units_deltaz[self.params.options.units]))
+        self.txt_tank_deltaz.setValidator(RegExValidators.get_pos_neg_decimals())
 
         # Pipes --------------------------------------------------------------------------------------------------------
         self.lbl_pipe_demand.setText(pre_l('Demand', self.params.options.flow_units))  # TODO: softcode
@@ -626,7 +627,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         setting_on = True
         setting_label = '-'
         if selected_type == Valve.type_pbv or selected_type == Valve.type_prv or selected_type == Valve.type_psv:
-            setting_label = 'Pressure' + ' [' + self.params.options.units_depth[self.params.options.units] + ']' # TODO: softcode
+            setting_label = 'Pressure' + ' [' + self.params.options.units_deltaz[self.params.options.units] + ']' # TODO: softcode
         elif selected_type == Valve.type_fcv:
             setting_label = 'Flow:' + ' [' + self.params.options.flow_units + ']' # TODO: softcode
         elif selected_type == Valve.type_tcv:

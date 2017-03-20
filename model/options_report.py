@@ -30,7 +30,7 @@ class Options:
                        'IMGD': 'IMGD - Imperial MGD',
                        'AFS': 'AFD - acre-feet per day'}  # TODO: sofcode
 
-    units_depth = {unit_sys_si: 'm',
+    units_deltaz = {unit_sys_si: 'm',
                    unit_sys_us: 'ft'}
 
     units_velocity = {unit_sys_si: 'm/s',
