@@ -40,9 +40,10 @@ class Junction:
     section_header = 'ID               	Elev      	Demand    	Pattern'
     field_name_eid = 'id'
     field_name_demand = 'demand'
-    field_name_elev = 'elev'
+    field_name_elev = 'elev_dem'
     field_name_delta_z = 'delta_z'
     field_name_pattern = 'pattern'
+    field_name_emitter_coeff = 'emit_coeff'
 
     prefix = 'J'
 
@@ -50,7 +51,8 @@ class Junction:
               QgsField(field_name_elev, QVariant.Double),
               QgsField(field_name_delta_z, QVariant.Double),
               QgsField(field_name_pattern, QVariant.String),
-              QgsField(field_name_demand, QVariant.Double)]
+              QgsField(field_name_demand, QVariant.Double),
+              QgsField(field_name_emitter_coeff, QVariant.Double)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -75,7 +77,7 @@ class Reservoir:
     section_name = 'RESERVOIRS'
     section_header = 'ID               	Head      	Pattern'
     field_name_eid = 'id'
-    field_name_elev = 'elev'
+    field_name_elev = 'elev_dem'
     field_name_delta_z = 'delta_z'
     field_name_pattern = 'pattern'
 
@@ -99,7 +101,7 @@ class Tank:
     field_name_eid = 'id'
     field_name_curve = 'curve'
     field_name_diameter = 'diameter'
-    field_name_elev = 'elev'
+    field_name_elev = 'elev_dem'
     field_name_delta_z = 'delta_z'
     field_name_level_init = 'init_level'
     field_name_level_max = 'max_level'
@@ -295,6 +297,7 @@ class Vertex:
 
 class Emitter:
     section_name = 'EMITTERS'
+    section_header = 'Junction        	Coefficient'
 
     def __init__(self):
         pass

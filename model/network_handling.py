@@ -17,7 +17,7 @@ class NodeHandler:
         pass
 
     @staticmethod
-    def create_new_junction(params, point, eid, elev, demand, deltaz, pattern_id):
+    def create_new_junction(params, point, eid, elev, demand, deltaz, pattern_id, emitter_coeff):
 
         junctions_caps = params.junctions_vlay.dataProvider().capabilities()
         if junctions_caps and QgsVectorDataProvider.AddFeatures:
@@ -32,6 +32,7 @@ class NodeHandler:
                 new_junct_feat.setAttribute(Junction.field_name_demand, demand)
                 new_junct_feat.setAttribute(Junction.field_name_delta_z, deltaz)
                 new_junct_feat.setAttribute(Junction.field_name_pattern, pattern_id)
+                new_junct_feat.setAttribute(Junction.field_name_emitter_coeff, emitter_coeff)
 
                 new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
 

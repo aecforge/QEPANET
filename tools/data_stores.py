@@ -13,25 +13,8 @@ class MemoryDS:
     def __init__(self):
         pass
 
-    # @staticmethod
-    # def create_empty_memory_layers(crs):
-    #
-    #     junctions_lay = MemoryDS.create_junctions_lay(crs=crs)
-    #     reservoirs_lay = MemoryDS.create_reservoirs_lay(crs=crs)
-    #     tanks_lay = MemoryDS.create_tanks_lay(crs=crs)
-    #     pipes_lay = MemoryDS.create_pipes_lay(crs=crs)
-    #     pumps_lay = MemoryDS.create_pumps_lay(crs=crs)
-    #     valves_lay = MemoryDS.create_valves_lay(crs=crs)
-    #
-    #     return {Junction.section_name: junctions_lay,
-    #             Reservoir.section_name: reservoirs_lay,
-    #             Tank.section_name: tanks_lay,
-    #             Pipe.section_name: pipes_lay,
-    #             Pump.section_name: pumps_lay,
-    #             Valve.section_name: valves_lay}
-
     @staticmethod
-    def create_junctions_lay(geoms=None, ids=None, demands=None, elevs=None, deltazs=None, patterns=None, crs=None):
+    def create_junctions_lay(geoms=None, ids=None, demands=None, elevs=None, deltazs=None, patterns=None, emitters=None, crs=None):
 
         url = 'Point'
         if crs is not None:
@@ -51,12 +34,13 @@ class MemoryDS:
                 elev = elevs[n] if elevs is not None else None
                 deltaz = deltazs[n] if deltazs is not None else None
                 pattern = patterns[n] if patterns is not None else None
-                # emitter = emitters[n] if emitters is not None else None
+                emitter = emitters[n] if emitters is not None else None
 
                 junctions_ft.setAttribute(Junction.field_name_eid, junction_id)
                 junctions_ft.setAttribute(Junction.field_name_elev, elev)
                 junctions_ft.setAttribute(Junction.field_name_delta_z, deltaz)
                 junctions_ft.setAttribute(Junction.field_name_pattern, pattern)
+                junctions_ft.setAttribute(Junction.field_name_emitter_coeff, emitter)
 
                 junctions_lay.addFeature(junctions_ft)
 

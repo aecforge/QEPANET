@@ -15,16 +15,14 @@ import codecs
 class InpReader:
 
     def __init__(self, inp_path):
-        self.iface = None
         self.params = None
         self.inp_path = inp_path
 
         with codecs.open(self.inp_path, 'r', encoding='UTF-8') as inp_f:
             self.lines = inp_f.read().splitlines()
 
-    def read(self, iface, params):
+    def read(self, params):
 
-        self.iface = iface
         self.inp_path = self.inp_path
         self.params = params
 
@@ -47,6 +45,10 @@ class InpReader:
         patterns = d.getPatternsSection()
         controls = d.getControlsSection()
         emitters = d.getEmittersSection()
+        emitters_d = {}
+        for emitter in emitters:
+            emitters_d[emitter[0]] = emitter[1]
+
         status = d.getStatusSection()
         demands = d.getDemandsSection()
         energy = d.getEnergySection()
@@ -79,8 +81,6 @@ class InpReader:
             self.update_patterns()
         if controls:
             self.update_controls(controls)
-        if emitters:
-            self.update_emitters(emitters)
         if status:
             self.update_status(status)
         if demands:
@@ -214,7 +214,13 @@ class InpReader:
                     delta_z = qepanet_junctions_od[ndID[i]]
 
                 featJ.setGeometry(QgsGeometry.fromPoint(point))
-                featJ.setAttributes([ndID[i], ndEle[i] - delta_z, delta_z, ndPatID[i], ndBaseD[i]])
+
+                # Emitter
+                emitter_coeff = NULL
+                if ndID[i] in emitters_d:
+                    emitter_coeff = emitters_d[ndID[i]]
+
+                featJ.setAttributes([ndID[i], ndEle[i] - delta_z, delta_z, ndPatID[i], ndBaseD[i], emitter_coeff])
                 junctions_lay_dp.addFeatures([featJ])
 
             if i < links_count:
@@ -242,7 +248,7 @@ class InpReader:
 
                     Head = []
                     Flow = []
-                    Curve = []
+                    curve = []
                     power = []
                     pattern = []
                     pumpNameIDPower = d.getBinLinkPumpNameIDPower()
@@ -277,7 +283,7 @@ class InpReader:
                             if curvesID[uu] == cheadpump[pPos]:
                                 Head.append(str(curveXY[uu][0]))
                                 Flow.append(str(curveXY[uu][1]))
-                        Curve = d.getBinLinkPumpCurveNameID()[pPos]
+                        curve = d.getBinLinkPumpCurveNameID()[pPos]
 
                     if pumpID[pPos] in d.getBinLinkPumpSpeedID():
                         speed = d.getBinLinkPumpSpeed()[pPosSpeed]
@@ -461,10 +467,6 @@ class InpReader:
         InpFile.read_patterns(self.params, self.inp_path)
 
     def update_controls(self, controls):
-        # TODO
-        pass
-
-    def update_emitters(self, emitters):
         # TODO
         pass
 

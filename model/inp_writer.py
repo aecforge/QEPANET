@@ -218,7 +218,7 @@ class InpFile:
             InpFile._append_energy(params, out)
 
             # Emitters
-            # TODO
+            InpFile._append_emitters(params, out)
 
             # WATER QUALITY
             # Quality
@@ -344,11 +344,24 @@ class InpFile:
         out.append(InpFile.pad('DEMAND CHARGE', InpFile.pad_19) + str(params.energy.demand_charge))
 
     @staticmethod
+    def _append_emitters(params, out):
+        out.extend(InpFile.build_section_keyword(Emitter.section_name))
+        out.append(InpFile.build_section_header(Emitter.section_header))
+
+        j_fts = params.junctions_vlay.getFeatures()
+        for j_ft in j_fts:
+            eid = j_ft.attribute(Junction.field_name_eid)
+            emitter_coeff = j_ft.attribute(Junction.field_name_emitter_coeff)
+            if emitter_coeff != NULL:
+                line = InpFile.pad(eid, InpFile.pad_19)
+                line += InpFile.pad('{0:.2f}'.format(emitter_coeff))
+                out.append(line)
+
+    @staticmethod
     def _append_junctions(params, out):
 
         out.extend(InpFile.build_section_keyword(Junction.section_name))
         out.append(InpFile.build_section_header(Junction.section_header))
-        # out.append(InpFile.build_dashline(Junction.section_header))
 
         j_fts = params.junctions_vlay.getFeatures()
         for j_ft in j_fts:

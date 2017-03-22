@@ -848,7 +848,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Read inp file
         if os.path.isfile(self.inp_file_path):
             inp_reader = InpReader(self.inp_file_path)
-            new_layers_d = inp_reader.read(self.iface, self.params)
+            new_layers_d = inp_reader.read(self.params)
 
             self.remove_layers()
             self.create_layers(new_layers_d, self.params.crs)
