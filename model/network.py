@@ -79,20 +79,23 @@ class Reservoir:
     field_name_eid = 'id'
     field_name_elev = 'elev_dem'
     field_name_delta_z = 'delta_z'
+    field_name_pressure_head = 'press_head'
     field_name_pattern = 'pattern'
 
     prefix = 'R'
 
     fields = [QgsField(field_name_eid, QVariant.String),
               QgsField(field_name_elev, QVariant.Double),
-              QgsField(field_name_delta_z, QVariant.Double)]
+              QgsField(field_name_delta_z, QVariant.Double),
+              QgsField(field_name_pressure_head, QVariant.Double),
+              QgsField(field_name_pattern, QVariant.String)]
 
     def __init__(self, eid):
         self.eid = eid
         self.elevation = -1
         self.elevation_corr = 0
-        self.head = 0
-        self.pattern = 0
+        self.field_name_pressure_head = 0
+        self.pattern = None
 
 
 class Tank:
@@ -242,12 +245,14 @@ class Valve:
 
 class QReservoir:
     section_name = 'QEPANET-RESERVOIRS'
-    section_header = 'ID               	DeltaZ'
+    section_header = 'ID               	DeltaZ             PressureHead'
     field_name_eid = 'id'
     field_name_delta_z = 'delta_z'
+    field_name_pressure_head = 'press_head'
 
     fields = [QgsField(field_name_eid, QVariant.String),
-              QgsField(field_name_delta_z, QVariant.Double)]
+              QgsField(field_name_delta_z, QVariant.Double),
+              QgsField(field_name_pressure_head, QVariant.Double)]
 
 
 class QTank:

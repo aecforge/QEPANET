@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
-from PyQt4.QtGui import QAction, QIcon, QMessageBox, QFileDialog
+from PyQt4.QtGui import QAction, QIcon, QMessageBox, QFileDialog, QApplication
 
 from tools.parameters import Parameters, ConfigFile
 
@@ -210,6 +210,9 @@ class QEpanet:
 
     def run(self):
         """Run method that loads and starts the plugin"""
+
+        # Restore cursor
+        QApplication.setOverrideCursor(Qt.ArrowCursor)
 
         # Check for config file existance
         if not os.path.exists(Parameters.config_file_path):

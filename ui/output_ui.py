@@ -511,8 +511,6 @@ class OutputAnalyserDialog(QDialog):
 
     def draw_map(self, lay_type, lay_id, lay_name, dataset, report_time_s):
 
-        cursor = QCursor()
-        cursor.setShape(Qt.WaitCursor)
         QApplication.setOverrideCursor(Qt.WaitCursor)
 
         report_time_h = report_time_s / 3600

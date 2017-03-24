@@ -60,7 +60,7 @@ class InpReader:
         # Check for QEPANET section in inp file. If it's there, update layer attributes
         qepanet_junctions_od = self.read_qepanet_junctions()
         qepanet_tanks_od = self.read_qepanet_tanks()
-        qepanet_reservoirs_od = self.read_qepanet_reservoirs()
+        (qepanet_reservoirs_deltaz_od, qepanet_reservoirs_press_head_od) = self.read_qepanet_reservoirs()
         qepanet_pipes_od = self.read_qepanet_pipes()
         qepanet_vertices_od = self.read_qepanet_vertices()
 
@@ -182,7 +182,6 @@ class InpReader:
             volumecurv = d.getBinNodeTankVolumeCurveID()
             ndTankID = d.getBinNodeTankNameID()
 
-        # Write Reservoir Shapefile
         reservoirs_lay = None
         if d.getBinNodeReservoirCount() > 0:
             reservoirs_lay = MemoryDS.create_reservoirs_lay(crs=params.crs)
@@ -349,8 +348,8 @@ class InpReader:
                         delta_z = 0
                         if qepanet_junctions_od and ndID[j] in qepanet_junctions_od:
                             delta_z = qepanet_junctions_od[ndID[j]]
-                        if qepanet_reservoirs_od and ndID[j] in qepanet_reservoirs_od:
-                            delta_z = qepanet_reservoirs_od[ndID[j]]
+                        if qepanet_reservoirs_deltaz_od and ndID[j] in qepanet_reservoirs_deltaz_od:
+                            delta_z = qepanet_reservoirs_deltaz_od[ndID[j]]
                         if qepanet_tanks_od and ndID[j] in qepanet_tanks_od:
                             delta_z = qepanet_tanks_od[ndID[j]]
 
@@ -427,10 +426,15 @@ class InpReader:
                 feature.setGeometry(QgsGeometry.fromPoint(point))
 
                 delta_z = 0
-                if ndID[p] in qepanet_reservoirs_od:
-                    delta_z = qepanet_reservoirs_od[ndID[p]]
+                if ndID[p] in qepanet_reservoirs_deltaz_od:
+                    delta_z = qepanet_reservoirs_deltaz_od[ndID[p]]
 
-                feature.setAttributes([ndID[p], reservoirs_elev[i] - delta_z, delta_z])
+                pressure_head = 0
+                if ndID[p] in qepanet_reservoirs_press_head_od:
+                    pressure_head = qepanet_reservoirs_press_head_od[ndID[p]]
+
+                feature.setAttributes(
+                    [ndID[p], reservoirs_elev[i] - delta_z - pressure_head, delta_z, pressure_head, ndPatID[p]])
                 reservoirs_lay_dp.addFeatures([feature])
 
         return {Junction.section_name: junctions_lay,
@@ -692,6 +696,7 @@ class InpReader:
 
         lines = self.read_section(QReservoir.section_name)
         reservoirs_elevcorr_od = OrderedDict()
+        reservoirs_press_heads_od = OrderedDict()
         if lines is not None:
             for line in lines:
                 if line.strip().startswith(';'):
@@ -699,8 +704,10 @@ class InpReader:
                 words = line.split()
                 if len(words) > 1:
                     reservoirs_elevcorr_od[words[0].strip()] = float(words[1].strip())
+                if len(words) > 2:
+                    reservoirs_press_heads_od[words[0].strip()] = float(words[2].strip())
 
-        return reservoirs_elevcorr_od
+        return reservoirs_elevcorr_od, reservoirs_press_heads_od
 
     def read_qepanet_tanks(self):
 

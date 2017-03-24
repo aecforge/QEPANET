@@ -162,9 +162,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.update_patterns_combo()
 
         # Reservoirs ---------------------------------------------------------------------------------------------------
-        self.txt_reservoir_head.setValidator(RegExValidators.get_pos_decimals())
+        self.txt_reservoir_deltaz.setValidator(RegExValidators.get_pos_decimals())
         self.lbl_reservoir_deltaz.setText(pre_l('Delta Z', self.params.options.units_deltaz[self.params.options.units]))
         self.txt_reservoir_deltaz.setValidator(RegExValidators.get_pos_neg_decimals())
+        self.lbl_reservoir_pressure_head.setText(pre_l('Pressure head', self.params.options.units_deltaz[self.params.options.units]))
+        self.txt_reservoir_pressure_head.setValidator(RegExValidators.get_pos_neg_decimals())
 
         self.update_curves_combo()
 
@@ -1070,10 +1072,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def update_patterns_combo(self):
 
         self.cbo_junction_pattern.clear()
+        self.cbo_reservoir_pattern.clear()
         self.cbo_junction_pattern.addItem(None, None)
+        self.cbo_reservoir_pattern.addItem(None, None)
         if self.params.junctions_vlay is not None:
             for pattern_id, pattern in self.params.patterns.iteritems():
                 self.cbo_junction_pattern.addItem(pattern_id, pattern)
+                self.cbo_reservoir_pattern.addItem(pattern_id, pattern)
 
     def update_curves_combo(self):
         self.cbo_tank_curve.clear()

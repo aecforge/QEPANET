@@ -262,7 +262,7 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>7</number>
+              <number>2</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -510,19 +510,29 @@
                  </property>
                 </widget>
                </item>
-               <item row="0" column="1">
-                <widget class="QLineEdit" name="txt_reservoir_head">
+               <item row="2" column="0">
+                <widget class="QLabel" name="lbl_reservoir_pressure_head">
+                 <property name="text">
+                  <string>Pressure head [m]:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="txt_reservoir_pressure_head">
                  <property name="text">
                   <string>0</string>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="0">
-                <widget class="QLabel" name="lbl_reservoir_head">
+               <item row="3" column="0">
+                <widget class="QLabel" name="lbl_reservoir_pattern">
                  <property name="text">
-                  <string>Head [m]:</string>
+                  <string>Pattern:</string>
                  </property>
                 </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QComboBox" name="cbo_reservoir_pattern"/>
                </item>
               </layout>
              </widget>

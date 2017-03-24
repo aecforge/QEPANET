@@ -293,8 +293,10 @@ class HydraulicsDialog(QDialog):
         self.parent.lbl_junction_deltaz.setText(pre_l('Delta Z', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
 
         # Reservoirs
-        self.parent.lbl_reservoir_head.setText(pre_l('Head', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
-        self.parent.lbl_reservoir_deltaz.setText(pre_l('Delta Z', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_reservoir_deltaz.setText(
+            pre_l('Delta Z', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
+        self.parent.lbl_reservoir_pressure_head.setText(
+            pre_l('Pressure heade', Options.units_deltaz[self.params.options.units]))  # TODO: softcode
 
         # Tanks
         self.parent.lbl_tank_deltaz.setText(pre_l('Delta Z', Options.units_deltaz[self.params.options.units]))  # TODO: softcode

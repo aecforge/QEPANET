@@ -47,21 +47,21 @@ class NodeHandler:
             return new_junct_feat
 
     @staticmethod
-    def create_new_reservoir(params, point, eid, elev, deltaz, head):
+    def create_new_reservoir(params, point, eid, elev, deltaz, pressure_head, pattern_id):
 
         reservoirs_caps = params.reservoirs_vlay.dataProvider().capabilities()
         if reservoirs_caps and QgsVectorDataProvider.AddFeatures:
 
             # New stand-alone node
             params.reservoirs_vlay.beginEditCommand("Add reservoir")
-            new_reservoir_feat = None
 
             try:
                 new_reservoir_feat = QgsFeature(params.reservoirs_vlay.pendingFields())
                 new_reservoir_feat.setAttribute(Reservoir.field_name_eid, eid)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_elev, elev)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_delta_z, deltaz)
-                # new_reservoir_feat.setAttribute(Reservoir.field_name_head, head)
+                new_reservoir_feat.setAttribute(Reservoir.field_name_pressure_head, pressure_head)
+                new_reservoir_feat.setAttribute(Reservoir.field_name_pattern, pattern_id)
 
                 new_reservoir_feat.setGeometry(QgsGeometry.fromPoint(point))
 

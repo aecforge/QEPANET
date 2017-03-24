@@ -90,8 +90,14 @@ class AddReservoirTool(QgsMapTool):
             if self.elev is not None:
                 elev = self.elev
 
-            head = float(self.data_dock.txt_reservoir_head.text())
             deltaz = float(self.data_dock.txt_reservoir_deltaz.text())
+            pressure_head = float(self.data_dock.txt_reservoir_pressure_head.text())
+
+            pattern = self.data_dock.cbo_reservoir_pattern.itemData(self.data_dock.cbo_reservoir_pattern.currentIndex())
+            if pattern is not None:
+                pattern_id = pattern.id
+            else:
+                pattern_id = None
 
             # No links snapped: create a new stand-alone node
             if self.snapped_feat_id is None:
@@ -102,7 +108,8 @@ class AddReservoirTool(QgsMapTool):
                     eid,
                     elev,
                     deltaz,
-                    head)
+                    pressure_head,
+                    pattern_id)
 
             # A link has been snapped
             else:

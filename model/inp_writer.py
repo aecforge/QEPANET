@@ -589,20 +589,24 @@ class InpFile:
             eid = r_ft.attribute(Reservoir.field_name_eid)
             elev = r_ft.attribute(Reservoir.field_name_elev)
             deltaz = r_ft.attribute(Reservoir.field_name_delta_z)
-            # head = r_ft.attribute(Reservoir.field_name_head)
-            # pattern = r_ft.attribute(Reservoir.field_name_pattern) # TODO: add support for pattern
+            pressure_head = r_ft.attribute(Reservoir.field_name_pressure_head)
+            pattern = r_ft.attribute(Reservoir.field_name_pattern)
 
             if elev is None or elev == NULL:
                 elev = 0
             if deltaz is None or deltaz == NULL:
                 deltaz = 0
+            if pressure_head is None or pressure_head == NULL:
+                pressure_head = 0
 
-            head = elev + deltaz
+            head = elev + deltaz + pressure_head
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
             line += InpFile.pad('{0:.2f}'.format(head))
-            # line += InpFile.pad(pattern)
+
+            if pattern != NULL:
+                line += InpFile.pad(pattern)
 
             out.append(line)
 
@@ -738,10 +742,12 @@ class InpFile:
         for j_ft in j_fts:
             eid = j_ft.attribute(Reservoir.field_name_eid)
             delta_z = j_ft.attribute(Reservoir.field_name_delta_z)
+            pressure_head = j_ft.attribute(Reservoir.field_name_pressure_head)
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
             line += InpFile.pad('{0:.2f}'.format(delta_z))
+            line += InpFile.pad('{0:.2f}'.format(pressure_head))
 
             out.append(line)
 
