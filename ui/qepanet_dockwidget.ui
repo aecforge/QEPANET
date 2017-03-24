@@ -262,7 +262,7 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>2</number>
+              <number>5</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -967,6 +967,30 @@
                </item>
                <item row="1" column="1">
                 <widget class="QComboBox" name="cbo_pump_head"/>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="lbl_pump_speed">
+                 <property name="text">
+                  <string>Speed:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="txt_pump_speed">
+                 <property name="text">
+                  <string>1</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="lbl_pump_speed_pattern">
+                 <property name="text">
+                  <string>Speed pattern:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QComboBox" name="cbo_pump_speed_pattern"/>
                </item>
               </layout>
              </widget>

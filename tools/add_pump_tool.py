@@ -120,8 +120,9 @@ class AddPumpTool(QgsMapTool):
                     pump_head = None
                     pump_power = None
                     pump_speed = 0
+                    pump_speed_pattern = 0
 
-                    # Head and pattern
+                    # Head and curve
                     if self.data_dock.cbo_pump_param.itemText(self.data_dock.cbo_pump_param.currentIndex()) == Pump.parameters_head:
                         pump_param = Pump.parameters_head
                         curve = self.data_dock.cbo_pump_head.itemData(self.data_dock.cbo_pump_head.currentIndex())
@@ -135,6 +136,16 @@ class AddPumpTool(QgsMapTool):
                         pump_param = Pump.parameters_power
                         pump_power = float(self.data_dock.txt_pump_power.text())
 
+                    # Speed
+                    pump_speed_s = self.data_dock.txt_pump_speed.text()
+                    if pump_speed_s is None or pump_speed_s == '':
+                        pump_speed = 0
+                    else:
+                        pump_speed = float(pump_speed_s)
+
+                    # Speed pattern
+                    pump_speed_pattern = self.data_dock.cbo_pump_speed_pattern.itemText(self.data_dock.cbo_pump_speed_pattern.currentIndex())
+
                     LinkHandler.create_new_pumpvalve(
                         self.params,
                         self.data_dock,
@@ -142,9 +153,9 @@ class AddPumpTool(QgsMapTool):
                         closest_junction_ft,
                         self.snapped_vertex,
                         self.params.pumps_vlay,
-                        [pump_param, pump_head, pump_power, pump_speed])
+                        [pump_param, pump_head, pump_power, pump_speed, pump_speed_pattern])
 
-                    if pump_param == Pump.parameters_head and pump_head == None:
+                    if pump_param == Pump.parameters_head and pump_head is None:
                         self.iface.messageBar().pushInfo(Parameters.plug_in_name,
                                                          'The pump was added, but with a NULL value.')
 

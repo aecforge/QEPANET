@@ -204,6 +204,12 @@ class AddPipeTool(QgsMapTool):
                         new_pipes_fts.append(pipe_ft)
                         new_pipes_eids.append(pipe_eid)
 
+                    emitter_coeff_s = self.data_dock.txt_junction_emit_coeff.text()
+                    if emitter_coeff_s is None or emitter_coeff_s == '':
+                        emitter_coeff = 0
+                    else:
+                        emitter_coeff = float(self.data_dock.txt_junction_emit_coeff.text())
+
                     # Create start and end node, if they don't exist
                     (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[0].geometry())
                     new_start_junction = None
@@ -220,7 +226,8 @@ class AddPipeTool(QgsMapTool):
                             pattern_id = pattern.id
                         else:
                             pattern_id = None
-                        NodeHandler.create_new_junction(self.params, new_start_junction, junction_eid, elev, j_demand, deltaz, pattern_id)
+                        NodeHandler.create_new_junction(
+                            self.params, new_start_junction, junction_eid, elev, j_demand, deltaz, pattern_id, emitter_coeff)
 
                     (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[len(new_pipes_fts) - 1].geometry())
                     new_end_junction = None
@@ -236,7 +243,8 @@ class AddPipeTool(QgsMapTool):
                             pattern_id = pattern.id
                         else:
                             pattern_id = None
-                        NodeHandler.create_new_junction(self.params, new_end_junction, junction_eid, elev, demand, deltaz, pattern_id)
+                        NodeHandler.create_new_junction(
+                            self.params, new_end_junction, junction_eid, elev, demand, deltaz, pattern_id, emitter_coeff)
 
                     # If end or start node intersects a pipe, split it
                     if new_start_junction:

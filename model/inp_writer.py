@@ -352,7 +352,7 @@ class InpFile:
         for j_ft in j_fts:
             eid = j_ft.attribute(Junction.field_name_eid)
             emitter_coeff = j_ft.attribute(Junction.field_name_emitter_coeff)
-            if emitter_coeff != NULL:
+            if emitter_coeff is not None and emitter_coeff != NULL and emitter_coeff != '':
                 line = InpFile.pad(eid, InpFile.pad_19)
                 line += InpFile.pad('{0:.2f}'.format(emitter_coeff))
                 out.append(line)
@@ -546,7 +546,11 @@ class InpFile:
 
             speed = p_ft.attribute(Pump.field_name_speed)
             if speed is not None:
-                line += ' ' + str(speed)
+                line += ' SPEED ' + str(speed)
+
+            speed_pattern = p_ft.attribute(Pump.field_name_speed_pattern)
+            if speed_pattern is not None:
+                line += ' PATTERN ' + speed_pattern
 
             out.append(line)
 

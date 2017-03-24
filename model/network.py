@@ -189,6 +189,7 @@ class Pump:
     field_name_head = 'head'
     field_name_power = 'power'
     field_name_speed = 'speed'
+    field_name_speed_pattern = 'speed_patt'
 
     prefix = 'P'
 
@@ -196,7 +197,8 @@ class Pump:
               QgsField(field_name_param, QVariant.String),
               QgsField(field_name_head, QVariant.String),
               QgsField(field_name_power, QVariant.Double),
-              QgsField(field_name_speed, QVariant.Double)]
+              QgsField(field_name_speed, QVariant.Double),
+              QgsField(field_name_speed_pattern, QVariant.String)]
 
     parameters_power = 'POWER'
     parameters_head = 'HEAD'

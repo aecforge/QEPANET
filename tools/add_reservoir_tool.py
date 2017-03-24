@@ -141,7 +141,8 @@ class AddReservoirTool(QgsMapTool):
                             eid,
                             self.elev,
                             deltaz,
-                            head)
+                            pressure_head,
+                            pattern_id)
 
                     elif NetworkUtils.find_node_layer(self.params, start_node_ft.geometry()) == self.params.junctions_vlay:
 
@@ -155,7 +156,8 @@ class AddReservoirTool(QgsMapTool):
                             eid,
                             self.elev,
                             deltaz,
-                            head)
+                            pressure_head,
+                            pattern_id)
 
                     elif NetworkUtils.find_node_layer(self.params, end_node_ft.geometry()) == self.params.junctions_vlay:
 

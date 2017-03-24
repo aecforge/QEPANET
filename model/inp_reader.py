@@ -198,6 +198,7 @@ class InpReader:
         pPosPower = 0
         pPosHead = 0
         pPosSpeed = 0
+        pPosSpeedPattern = 0
 
         for i in range(ss):
             if i == ss / vvLink and vvLink > -1:
@@ -253,7 +254,7 @@ class InpReader:
                     pumpNameIDPower = d.getBinLinkPumpNameIDPower()
 
                     param = None
-                    reservoirs_elev = None
+                    head = None
                     power = None
                     speed = 0
 
@@ -263,8 +264,8 @@ class InpReader:
                         pPosPower += 1
                     else:
                         param = 'HEAD'
-                        reservoirs_elev = cheadpump[pPosHead]
-                        pPosHead +=1
+                        head = cheadpump[pPosHead]
+                        pPosHead += 1
 
                     if len(pumpNameIDPower) > 0:
                         for uu in range(0, len(pumpNameIDPower)):
@@ -288,23 +289,14 @@ class InpReader:
                         speed = d.getBinLinkPumpSpeed()[pPosSpeed]
                         pPosSpeed += 1
 
+                    if ppatt[pPos] in d.getBinLinkPumpPatternsPumpID():
+                        pattern = d.getBinLinkPumpPatterns()[pPosSpeedPattern]
+                        pPosSpeedPattern += 1
+
                     featPump = QgsFeature()
                     featPump.setGeometry(QgsGeometry.fromPolyline([point1, point2]))
 
-                    Head = ' '.join(Head)
-                    Flow = ' '.join(Flow)
-                    # if Head:
-                    #     Head = 'NULL'
-                    # if Flow:
-                    #     Flow = 'NULL'
-                    # if Curve:
-                    #     Curve = 'NULL'
-                    # if power:
-                    #     power = 'NULL'
-                    # if pattern:
-                    #     pattern = 'NULL'
-
-                    featPump.setAttributes([linkID[i], param, reservoirs_elev, power, speed])
+                    featPump.setAttributes([linkID[i], param, head, power, speed,pattern])
                     pumps_lay_dp.addFeatures([featPump])
 
                     pPos += 1

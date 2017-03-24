@@ -242,6 +242,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         QtCore.QObject.connect(self.cbo_pump_param, QtCore.SIGNAL('activated(int)'), self.cbo_pump_param_activated)
 
+        self.txt_pump_speed.setValidator(RegExValidators.get_pos_0_1())
+
         # Valves -------------------------------------------------------------------------------------------------------
         self.cbo_valve_type.clear()
         for key, value in Valve.types.iteritems():
@@ -1073,12 +1075,15 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.cbo_junction_pattern.clear()
         self.cbo_reservoir_pattern.clear()
+        self.cbo_pump_speed_pattern.clear()
         self.cbo_junction_pattern.addItem(None, None)
         self.cbo_reservoir_pattern.addItem(None, None)
+        self.cbo_pump_speed_pattern.addItem(None, None)
         if self.params.junctions_vlay is not None:
             for pattern_id, pattern in self.params.patterns.iteritems():
                 self.cbo_junction_pattern.addItem(pattern_id, pattern)
                 self.cbo_reservoir_pattern.addItem(pattern_id, pattern)
+                self.cbo_pump_speed_pattern.addItem(pattern_id, pattern)
 
     def update_curves_combo(self):
         self.cbo_tank_curve.clear()

@@ -308,13 +308,19 @@ class LinkHandler:
                 else:
                     pattern_id = None
 
-            junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, Junction.prefix)  # TODO: softcode
-            elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_before, 1)
-            NodeHandler.create_new_junction(params, node_before, junction_eid, elev, 0, deltaz, pattern_id)
+            emitter_coeff_s = data_dock.txt_junction_emit_coeff.text()
+            if emitter_coeff_s is None or emitter_coeff_s == '':
+                emitter_coeff = 0
+            else:
+                emitter_coeff = float(data_dock.txt_junction_emit_coeff.text())
 
-            junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, Junction.prefix)  # TODO: softcode
+            junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, Junction.prefix)
+            elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_before, 1)
+            NodeHandler.create_new_junction(params, node_before, junction_eid, elev, 0, deltaz, pattern_id, emitter_coeff)
+
+            junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, Junction.prefix)
             elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_after, 1)
-            NodeHandler.create_new_junction(params, node_after, junction_eid, elev, 0, deltaz, pattern_id)
+            NodeHandler.create_new_junction(params, node_after, junction_eid, elev, 0, deltaz, pattern_id, emitter_coeff)
 
         # Split the pipe and create gap
         if pipes_caps:
@@ -349,6 +355,8 @@ class LinkHandler:
                     new_ft.setAttribute(Pump.field_name_power, power)
                     speed = attributes[3]
                     new_ft.setAttribute(Pump.field_name_speed, speed)
+                    speed_pattern = attributes[4]
+                    new_ft.setAttribute(Pump.field_name_speed_pattern, speed_pattern)
 
                 elif layer == params.valves_vlay:
                     new_ft.setAttribute(Valve.field_name_eid, eid)

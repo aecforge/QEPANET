@@ -24,6 +24,7 @@ class Parameters(Observable):
     regex_number_pos_neg_decimals = '^-?[0-9]\d*(\.\d+)?$'
     regex_number_pos_int = '^[0-9]\d*$'
     regex_number_pos_01 = '^[0-1]\d*$'
+    regex_number_pos_0_1 = '^(0(\.\d+)?|1(\.0+)?)$'
     regex_number_pos_int_no_zero = '^[1-9]\d*$'
     regex_time_hh_mm = '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
     regex_time_hs_ms = '^([0-9]+):[0-5][0-9]$'
@@ -334,6 +335,12 @@ class RegExValidators:
     @staticmethod
     def get_pos_01():
         reg_ex = QRegExp(Parameters.regex_number_pos_01)
+        validator = QRegExpValidator(reg_ex)
+        return validator
+
+    @staticmethod
+    def get_pos_0_1():
+        reg_ex = QRegExp(Parameters.regex_number_pos_0_1)
         validator = QRegExpValidator(reg_ex)
         return validator
 
