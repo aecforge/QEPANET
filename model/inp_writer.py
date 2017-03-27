@@ -272,7 +272,6 @@ class InpFile:
     def _append_coordinates(params, out):
         out.extend(InpFile.build_section_keyword(Coordinate.section_name))
         out.append(InpFile.build_section_header(Coordinate.section_header))
-        out.append(InpFile.build_dashline(Coordinate.section_header))
 
         for j_ft in params.junctions_vlay.getFeatures():
             eid = j_ft.attribute(Junction.field_name_eid)
@@ -307,6 +306,7 @@ class InpFile:
     @staticmethod
     def _append_curves(params, out):
         out.extend(InpFile.build_section_keyword(Curve.section_name))
+        out.append(InpFile.build_section_header(Curve.section_header))
 
         for curve in params.curves.itervalues():
 
@@ -469,6 +469,7 @@ class InpFile:
     @staticmethod
     def _append_patterns(params, out):
         out.extend(InpFile.build_section_keyword(Pattern.section_name))
+        out.append(InpFile.build_section_header(Pattern.section_header))
 
         for pattern in params.patterns.itervalues():
             if pattern.desc is not None:

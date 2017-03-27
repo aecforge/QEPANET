@@ -216,7 +216,7 @@ class InpReader:
                 # Emitter
                 emitter_coeff = NULL
                 if ndID[i] in emitters_d:
-                    emitter_coeff = emitters_d[ndID[i]]
+                    emitter_coeff = float(emitters_d[ndID[i]])
 
                 featJ.setAttributes([ndID[i], ndEle[i] - delta_z, delta_z, ndPatID[i], ndBaseD[i], emitter_coeff])
                 junctions_lay_dp.addFeatures([featJ])

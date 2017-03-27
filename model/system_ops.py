@@ -1,5 +1,6 @@
 class Curve:
     section_name = 'CURVES'
+    section_header = 'ID              	X-Value                 Y-Value'
 
     type_volume = 0
     type_pump = 1
