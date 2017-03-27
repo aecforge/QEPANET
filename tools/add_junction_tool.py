@@ -104,7 +104,7 @@ class AddJunctionTool(QgsMapTool):
 
             emitter_coeff_s = self.data_dock.txt_junction_emit_coeff.text()
             if emitter_coeff_s is None or emitter_coeff_s == '':
-                emitter_coeff = 0
+                emitter_coeff = float(0)
             else:
                 emitter_coeff = float(self.data_dock.txt_junction_emit_coeff.text())
 
