@@ -144,7 +144,12 @@ class AddPumpTool(QgsMapTool):
                         pump_speed = float(pump_speed_s)
 
                     # Speed pattern
-                    pump_speed_pattern = self.data_dock.cbo_pump_speed_pattern.itemText(self.data_dock.cbo_pump_speed_pattern.currentIndex())
+                    pump_speed_pattern = self.data_dock.cbo_pump_speed_pattern.itemText(
+                        self.data_dock.cbo_pump_speed_pattern.currentIndex())
+
+                    # Pump status
+                    pump_status = self.data_dock.cbo_pump_status.itemData(
+                        self.data_dock.cbo_pump_status.currentIndex())
 
                     LinkHandler.create_new_pumpvalve(
                         self.params,
@@ -153,7 +158,7 @@ class AddPumpTool(QgsMapTool):
                         closest_junction_ft,
                         self.snapped_vertex,
                         self.params.pumps_vlay,
-                        [pump_param, pump_head, pump_power, pump_speed, pump_speed_pattern])
+                        [pump_param, pump_head, pump_power, pump_speed, pump_speed_pattern, pump_status])
 
                     if pump_param == Pump.parameters_head and pump_head is None:
                         self.iface.messageBar().pushInfo(Parameters.plug_in_name,

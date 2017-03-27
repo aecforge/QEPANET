@@ -190,6 +190,7 @@ class Pump:
     field_name_power = 'power'
     field_name_speed = 'speed'
     field_name_speed_pattern = 'speed_patt'
+    field_name_status = 'status'
 
     prefix = 'P'
 
@@ -198,10 +199,14 @@ class Pump:
               QgsField(field_name_head, QVariant.String),
               QgsField(field_name_power, QVariant.Double),
               QgsField(field_name_speed, QVariant.Double),
-              QgsField(field_name_speed_pattern, QVariant.String)]
+              QgsField(field_name_speed_pattern, QVariant.String),
+              QgsField(field_name_status, QVariant.String)]
 
     parameters_power = 'POWER'
     parameters_head = 'HEAD'
+
+    status_closed = 'CLOSED'
+    status_open = 'OPEN'
 
     def __init__(self, eid):
         self.eid = eid
@@ -217,6 +222,7 @@ class Valve:
     field_name_minor_loss = 'minor_loss'
     field_name_setting = 'setting'
     field_name_type = 'type'
+    field_name_status = 'status'
 
     prefix = 'V'
 
@@ -224,7 +230,8 @@ class Valve:
               QgsField(field_name_diameter, QVariant.Double),
               QgsField(field_name_type, QVariant.String),
               QgsField(field_name_setting, QVariant.String),
-              QgsField(field_name_minor_loss, QVariant.Double)]
+              QgsField(field_name_minor_loss, QVariant.Double),
+              QgsField(field_name_status, QVariant.String)]
 
     type_prv = 'PRV'
     type_psv = 'PSV'

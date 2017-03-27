@@ -545,11 +545,11 @@ class InpFile:
                     line += InpFile.pad(pump_param + ' ' + head, InpFile.pad_19)
 
             speed = p_ft.attribute(Pump.field_name_speed)
-            if speed is not None:
+            if speed is not None and speed != NULL:
                 line += ' SPEED ' + str(speed)
 
             speed_pattern = p_ft.attribute(Pump.field_name_speed_pattern)
-            if speed_pattern is not None:
+            if speed_pattern is not None and speed_pattern != NULL:
                 line += ' PATTERN ' + speed_pattern
 
             out.append(line)
@@ -579,7 +579,16 @@ class InpFile:
     def _append_status(params, out):
         out.extend(InpFile.build_section_keyword(Status.section_name))
         out.append(InpFile.build_section_header(Status.section_header))
-        # TODO
+
+        # Pumps
+        p_fts = params.pumps_vlay.getFeatures()
+        for p_ft in p_fts:
+            eid = p_ft.attribute(Pump.field_name_eid)
+            status = p_ft.attribute(Pump.field_name_status)
+
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad(status.upper(), InpFile.pad_19)
+            out.append(line)
 
     @staticmethod
     def _append_reservoirs(params, out):

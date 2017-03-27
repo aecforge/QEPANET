@@ -81,8 +81,6 @@ class InpReader:
             self.update_patterns()
         if controls:
             self.update_controls(controls)
-        if status:
-            self.update_status(status)
         if demands:
             self.update_demands(demands)
         if energy:
@@ -235,6 +233,7 @@ class InpReader:
                 y2.append(y[ndID.index(d.getBinLinkToNode()[i])])
 
                 if i in pump_index:
+
                     # Pump
                     point1 = QgsPoint(float(x1[i]), float(y1[i]))
                     point2 = QgsPoint(float(x2[i]), float(y2[i]))
@@ -289,14 +288,21 @@ class InpReader:
                         speed = d.getBinLinkPumpSpeed()[pPosSpeed]
                         pPosSpeed += 1
 
-                    if ppatt[pPos] in d.getBinLinkPumpPatternsPumpID():
-                        pattern = d.getBinLinkPumpPatterns()[pPosSpeedPattern]
+                    pump_pattern = None
+                    if pumpID[pPos] in ppatt:
+                        pump_pattern = d.getBinLinkPumpPatterns()[pPosSpeedPattern]
                         pPosSpeedPattern += 1
+
+                    pump_status = Pump.status_open
+                    for statuss in status:
+                        if statuss[0] == linkID[i]:
+                            pump_status = statuss[1]
+                            break
 
                     featPump = QgsFeature()
                     featPump.setGeometry(QgsGeometry.fromPolyline([point1, point2]))
 
-                    featPump.setAttributes([linkID[i], param, head, power, speed,pattern])
+                    featPump.setAttributes([linkID[i], param, head, power, speed, pump_pattern, pump_status])
                     pumps_lay_dp.addFeatures([featPump])
 
                     pPos += 1
@@ -463,10 +469,6 @@ class InpReader:
         InpFile.read_patterns(self.params, self.inp_path)
 
     def update_controls(self, controls):
-        # TODO
-        pass
-
-    def update_status(self, status):
         # TODO
         pass
 

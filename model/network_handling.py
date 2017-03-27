@@ -357,6 +357,8 @@ class LinkHandler:
                     new_ft.setAttribute(Pump.field_name_speed, speed)
                     speed_pattern = attributes[4]
                     new_ft.setAttribute(Pump.field_name_speed_pattern, speed_pattern)
+                    pump_status = attributes[5]
+                    new_ft.setAttribute(Pump.field_name_status, pump_status)
 
                 elif layer == params.valves_vlay:
                     new_ft.setAttribute(Valve.field_name_eid, eid)

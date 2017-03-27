@@ -242,7 +242,12 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         QtCore.QObject.connect(self.cbo_pump_param, QtCore.SIGNAL('activated(int)'), self.cbo_pump_param_activated)
 
-        self.txt_pump_speed.setValidator(RegExValidators.get_pos_0_1())
+        self.txt_pump_speed.setValidator(RegExValidators.get_pos_decimals())
+
+        self.cbo_pump_status.clear()
+        self.cbo_pump_status.addItem('Closed', Pump.status_closed)  # TODO: softcode
+        self.cbo_pump_status.addItem('Open', Pump.status_open)  # TODO: softcode
+        self.cbo_pump_status.setCurrentIndex(self.cbo_pump_status.findData(Pump.status_open))
 
         # Valves -------------------------------------------------------------------------------------------------------
         self.cbo_valve_type.clear()
