@@ -584,10 +584,20 @@ class InpFile:
         p_fts = params.pumps_vlay.getFeatures()
         for p_ft in p_fts:
             eid = p_ft.attribute(Pump.field_name_eid)
-            status = p_ft.attribute(Pump.field_name_status)
+            valve_status = p_ft.attribute(Pump.field_name_status)
 
             line = InpFile.pad(eid, InpFile.pad_19)
-            line += InpFile.pad(status.upper(), InpFile.pad_19)
+            line += InpFile.pad(valve_status.upper(), InpFile.pad_19)
+            out.append(line)
+
+        # Valves
+        v_fts = params.valves_vlay.getFeatures()
+        for v_ft in v_fts:
+            eid = v_ft.attribute(Valve.field_name_eid)
+            pump_status = v_ft.attribute(Valve.field_name_status)
+
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad(pump_status.upper(), InpFile.pad_19)
             out.append(line)
 
     @staticmethod

@@ -248,6 +248,10 @@ class Valve:
     types['TCV'] = 'TCV (throttle control)'
     types['GPV'] = 'GPV (general purpose)'
 
+    status_none = 'NONE'
+    status_open = 'OPEN'
+    status_closed = 'CLOSED'
+
     def __init__(self, eid):
         self.eid = eid
 

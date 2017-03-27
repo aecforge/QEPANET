@@ -256,6 +256,12 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         QtCore.QObject.connect(self.cbo_valve_type, QtCore.SIGNAL('activated(int)'), self.cbo_valve_type_activated)
 
+        self.cbo_valve_status.clear()
+        self.cbo_valve_status.addItem('Closed', Valve.status_closed)  # TODO: softcode
+        self.cbo_valve_status.addItem('Open', Valve.status_open)  # TODO: softcode
+        self.cbo_valve_status.addItem('None', Valve.status_none)  # TODO: softcode
+        self.cbo_valve_status.setCurrentIndex(self.cbo_valve_status.findData(Valve.status_open))
+
         # Options ------------------------------------------------------------------------------------------------------
         self.btn_options_hydraulics.clicked.connect(self.btn_hydraulics_clicked)
         self.btn_options_quality.clicked.connect(self.btn_quality_clicked)

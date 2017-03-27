@@ -262,14 +262,14 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>5</number>
+              <number>6</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>150</width>
+                <width>305</width>
                 <height>231</height>
                </rect>
               </property>
@@ -405,8 +405,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>162</width>
-                <height>122</height>
+                <width>322</width>
+                <height>155</height>
                </rect>
               </property>
               <attribute name="label">
@@ -485,8 +485,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>185</width>
-                <height>96</height>
+                <width>322</width>
+                <height>155</height>
                </rect>
               </property>
               <attribute name="label">
@@ -541,7 +541,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>174</width>
+                <width>305</width>
                 <height>194</height>
                </rect>
               </property>
@@ -653,7 +653,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>154</width>
+                <width>305</width>
                 <height>252</height>
                </rect>
               </property>
@@ -1009,8 +1009,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>173</width>
-                <height>116</height>
+                <width>322</width>
+                <height>155</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1075,6 +1075,16 @@
                  </property>
                 </widget>
                </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="lbl_valve_status">
+                 <property name="text">
+                  <string>Status:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QComboBox" name="cbo_valve_status"/>
+               </item>
               </layout>
               <zorder>lbl_valve_type</zorder>
               <zorder>cbo_valve_type</zorder>
@@ -1084,13 +1094,15 @@
               <zorder>lbl_valve_minor_loss</zorder>
               <zorder>lbl_valve_curve</zorder>
               <zorder>cbo_valve_curve</zorder>
+              <zorder>lbl_valve_status</zorder>
+              <zorder>cbo_valve_status</zorder>
              </widget>
              <widget class="QWidget" name="wgt_options">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>99</width>
+                <width>305</width>
                 <height>186</height>
                </rect>
               </property>
@@ -1153,8 +1165,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>193</width>
-                <height>151</height>
+                <width>322</width>
+                <height>155</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1231,8 +1243,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>104</width>
-                <height>147</height>
+                <width>322</width>
+                <height>155</height>
                </rect>
               </property>
               <attribute name="label">

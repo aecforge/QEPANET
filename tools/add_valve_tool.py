@@ -132,6 +132,10 @@ class AddValveTool(QgsMapTool):
                         else:
                             setting = None
 
+                    # Pump status
+                    valve_status = self.data_dock.cbo_valve_status.itemData(
+                        self.data_dock.cbo_valve_status.currentIndex())
+
                     LinkHandler.create_new_pumpvalve(
                         self.params,
                         self.data_dock,
@@ -139,7 +143,7 @@ class AddValveTool(QgsMapTool):
                         closest_junction_ft,
                         self.snapped_vertex,
                         self.params.valves_vlay,
-                        [diameter, minor_loss, setting, selected_type])
+                        [diameter, minor_loss, setting, selected_type, valve_status])
 
         elif event.button() == Qt.RightButton:
 

@@ -295,7 +295,7 @@ class InpReader:
 
                     pump_status = Pump.status_open
                     for statuss in status:
-                        if statuss[0] == linkID[i]:
+                        if statuss[0] == linkID[pPos]:
                             pump_status = statuss[1]
                             break
 
@@ -325,8 +325,14 @@ class InpReader:
                     linkInitSett = d.getBinLinkValveSetting()
                     linkMinorloss = d.getBinLinkValveMinorLoss()
 
+                    valve_status = Valve.status_open
+                    for statuss in status:
+                        if statuss[0] == linkID[vPos]:
+                            valve_status = statuss[1]
+                            break
+
                     featValve.setAttributes(
-                         [linkID[vPos], linkDiameter[vPos], linkType[vPos], linkInitSett[vPos], linkMinorloss[vPos]])
+                         [linkID[vPos], linkDiameter[vPos], linkType[vPos], linkInitSett[vPos], linkMinorloss[vPos], valve_status])
                     valves_lay_dp.addFeatures([featValve])
 
                     vPos += 1

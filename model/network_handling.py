@@ -366,6 +366,7 @@ class LinkHandler:
                     new_ft.setAttribute(Valve.field_name_minor_loss, attributes[1])
                     new_ft.setAttribute(Valve.field_name_setting, attributes[2])
                     new_ft.setAttribute(Valve.field_name_type, attributes[3])
+                    new_ft.setAttribute(Valve.field_name_status, attributes[4])
 
                 new_ft.setGeometry(geom)
 
