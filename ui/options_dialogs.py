@@ -592,29 +592,29 @@ class TimesDialog(QDialog):
         self.txt_duration = QLineEdit()
         fra_form_lay.addRow(self.lbl_duration, self.txt_duration)
 
-        self.lbl_hydraulic_timestamp = QLabel('Hydraulic timestamp:')  # TODO: softocode
-        self.txt_hydraulic_timestamp = QLineEdit()
-        fra_form_lay.addRow(self.lbl_hydraulic_timestamp, self.txt_hydraulic_timestamp)
+        self.lbl_hydraulic_timestep = QLabel('Hydraulic timestep:')  # TODO: softocode
+        self.txt_hydraulic_timestep = QLineEdit()
+        fra_form_lay.addRow(self.lbl_hydraulic_timestep, self.txt_hydraulic_timestep)
 
-        self.lbl_quality_timestamp = QLabel('Quality timestamp:')  # TODO: softocode
-        self.txt_quality_timestamp = QLineEdit()
-        fra_form_lay.addRow(self.lbl_quality_timestamp, self.txt_quality_timestamp)
+        self.lbl_quality_timestep = QLabel('Quality timestep:')  # TODO: softocode
+        self.txt_quality_timestep = QLineEdit()
+        fra_form_lay.addRow(self.lbl_quality_timestep, self.txt_quality_timestep)
 
-        self.lbl_rule_timestamp = QLabel('Rule timestamp:')  # TODO: softocode
-        self.txt_rule_timestamp = QLineEdit()
-        fra_form_lay.addRow(self.lbl_rule_timestamp, self.txt_rule_timestamp)
+        self.lbl_rule_timestep = QLabel('Rule timestep:')  # TODO: softocode
+        self.txt_rule_timestep = QLineEdit()
+        fra_form_lay.addRow(self.lbl_rule_timestep, self.txt_rule_timestep)
 
-        self.lbl_pattern_timestamp = QLabel('Pattern timestamp:')  # TODO: softocode
-        self.txt_pattern_timestamp = QLineEdit()
-        fra_form_lay.addRow(self.lbl_pattern_timestamp, self.txt_pattern_timestamp)
+        self.lbl_pattern_timestep = QLabel('Pattern timestep:')  # TODO: softocode
+        self.txt_pattern_timestep = QLineEdit()
+        fra_form_lay.addRow(self.lbl_pattern_timestep, self.txt_pattern_timestep)
 
         self.lbl_pattern_start = QLabel('Pattern start:')  # TODO: softocode
         self.txt_pattern_start = QLineEdit()
         fra_form_lay.addRow(self.lbl_pattern_start, self.txt_pattern_start)
 
-        self.lbl_report_timestamp = QLabel('Report timestamp:')  # TODO: softocode
-        self.txt_report_timestamp = QLineEdit()
-        fra_form_lay.addRow(self.lbl_report_timestamp, self.txt_report_timestamp)
+        self.lbl_report_timestep = QLabel('Report timestep:')  # TODO: softocode
+        self.txt_report_timestep = QLineEdit()
+        fra_form_lay.addRow(self.lbl_report_timestep, self.txt_report_timestep)
 
         self.lbl_report_start = QLabel('Report start:')  # TODO: softocode
         self.txt_report_start = QLineEdit()
@@ -659,23 +659,23 @@ class TimesDialog(QDialog):
         self.txt_duration.setInputMask('0009:99')
         self.txt_duration.setValidator(RegExValidators.get_time_hs_mm())
 
-        self.txt_hydraulic_timestamp.setInputMask('09:99')
-        self.txt_hydraulic_timestamp.setValidator(RegExValidators.get_time_hh_mm())
+        self.txt_hydraulic_timestep.setInputMask('09:99')
+        self.txt_hydraulic_timestep.setValidator(RegExValidators.get_time_hh_mm())
 
-        self.txt_quality_timestamp.setInputMask('09:99')
-        self.txt_quality_timestamp.setValidator(RegExValidators.get_time_hh_mm())
+        self.txt_quality_timestep.setInputMask('09:99')
+        self.txt_quality_timestep.setValidator(RegExValidators.get_time_hh_mm())
 
-        self.txt_rule_timestamp.setInputMask('09:99')
-        self.txt_rule_timestamp.setValidator(RegExValidators.get_time_hh_mm())
+        self.txt_rule_timestep.setInputMask('09:99')
+        self.txt_rule_timestep.setValidator(RegExValidators.get_time_hh_mm())
 
-        self.txt_pattern_timestamp.setInputMask('09:99')
-        self.txt_pattern_timestamp.setValidator(RegExValidators.get_time_hh_mm())
+        self.txt_pattern_timestep.setInputMask('09:99')
+        self.txt_pattern_timestep.setValidator(RegExValidators.get_time_hh_mm())
 
         self.txt_pattern_start.setInputMask('09:99')
         self.txt_pattern_start.setValidator(RegExValidators.get_time_hh_mm())
 
-        self.txt_report_timestamp.setInputMask('09:99')
-        self.txt_report_timestamp.setValidator(RegExValidators.get_time_hh_mm())
+        self.txt_report_timestep.setInputMask('09:99')
+        self.txt_report_timestep.setValidator(RegExValidators.get_time_hh_mm())
 
         self.txt_report_start.setInputMask('09:99')
         self.txt_report_start.setValidator(RegExValidators.get_time_hh_mm())
@@ -691,12 +691,12 @@ class TimesDialog(QDialog):
 
         self.cbo_units.setCurrentIndex(self.cbo_units.findData(self.params.times.units))
         self.txt_duration.setText(self.params.times.duration.get_as_text(4))
-        self.txt_hydraulic_timestamp.setText(self.params.times.hydraulic_timestamp.get_as_text())
-        self.txt_quality_timestamp.setText(self.params.times.quality_timestamp.get_as_text())
-        self.txt_rule_timestamp.setText(self.params.times.rule_timestamp.get_as_text())
-        self.txt_pattern_timestamp.setText(self.params.times.pattern_timestamp.get_as_text())
+        self.txt_hydraulic_timestep.setText(self.params.times.hydraulic_timestep.get_as_text())
+        self.txt_quality_timestep.setText(self.params.times.quality_timestep.get_as_text())
+        self.txt_rule_timestep.setText(self.params.times.rule_timestep.get_as_text())
+        self.txt_pattern_timestep.setText(self.params.times.pattern_timestep.get_as_text())
         self.txt_pattern_start.setText(self.params.times.pattern_start.get_as_text())
-        self.txt_report_timestamp.setText(self.params.times.report_timestamp.get_as_text())
+        self.txt_report_timestep.setText(self.params.times.report_timestep.get_as_text())
         self.txt_report_start.setText(self.params.times.report_start.get_as_text())
         self.txt_clock_time_start.setText(self.params.times.clocktime_start.get_as_text())
         self.cbo_statistic.setCurrentIndex(self.cbo_statistic.findData(self.params.times.statistic))
@@ -709,12 +709,12 @@ class TimesDialog(QDialog):
         # Update parameters and options
         self.params.times.units = self.cbo_units.itemData(self.cbo_units.currentIndex())
         self.params.times.duration = Hour.from_string(self.txt_duration.text())
-        self.params.times.hydraulic_timestamp = Hour.from_string(self.txt_hydraulic_timestamp.text())
-        self.params.times.quality_timestamp = Hour.from_string(self.txt_quality_timestamp.text())
-        self.params.times.rule_timestamp = Hour.from_string(self.txt_rule_timestamp.text())
-        self.params.times.pattern_timestamp = Hour.from_string(self.txt_pattern_timestamp.text())
+        self.params.times.hydraulic_timestep = Hour.from_string(self.txt_hydraulic_timestep.text())
+        self.params.times.quality_timestep = Hour.from_string(self.txt_quality_timestep.text())
+        self.params.times.rule_timestep = Hour.from_string(self.txt_rule_timestep.text())
+        self.params.times.pattern_timestep = Hour.from_string(self.txt_pattern_timestep.text())
         self.params.times.pattern_start = Hour.from_string(self.txt_pattern_start.text())
-        self.params.times.report_timestamp = Hour.from_string(self.txt_report_timestamp.text())
+        self.params.times.report_timestep = Hour.from_string(self.txt_report_timestep.text())
         self.params.times.report_start= Hour.from_string(self.txt_report_start.text())
         self.params.times.clocktime_start = Hour.from_string(self.txt_clock_time_start.text())
         self.params.times.statistics = Times.stats_text[self.cbo_statistic.itemData(self.cbo_statistic.currentIndex())]

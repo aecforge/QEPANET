@@ -447,7 +447,7 @@ class OutputAnalyserDialog(QDialog):
                 for element_id in self.element_ids_links:
                     ys_d[element_id] = [
                         self.output_reader.link_qualities_d[element_id],
-                        '?']
+                        Quality.quality_units_text[self.params.options.quality.mass_units]]
                 ys_d_d[OutputParamCodes.LINK_QUALITY] = ys_d
 
         if ys_d_d:
@@ -588,15 +588,21 @@ class OutputAnalyserDialog(QDialog):
 
         day = int(math.floor(period_s / 86400))
         hour = period_s / 3600 - day * 24
-        second = period_s - hour * 3600 - day * 86400
+        minute = period_s / 60 - day * 24 * 60 - hour * 60
+        second = period_s - day * 86400 - hour * 3600 - minute * 60
+
         text = ''
-        if duration_s > 86400:
+        if duration_s >= 86400:
             # We need days
             text += str(day) + 'd'
 
-        text += '{:02}'.format(hour) + 'H'
+        if duration_s >= 3600:
+            # We need hours
+            text += '{:02}'.format(hour) + 'H'
 
-        if interval_s < 60:
+        text += '{:02}'.format(minute) + 'm'
+
+        if second > 0:
             text += '{:02}'.format(second) + 's'
 
         return text

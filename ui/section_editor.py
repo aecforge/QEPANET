@@ -1,8 +1,8 @@
-from qgis.core import QgsPoint, QgsGeometry, QgsPointV2, QgsLineStringV2, QgsWKBTypes, QgsVertexId
+from qgis.core import QgsPoint, QgsGeometry, QgsPointV2, QgsLineStringV2, QgsWKBTypes, QgsVertexId, QgsFeature
 from PyQt4 import QtCore
 from PyQt4.QtGui import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QPushButton, QIcon
 from graphs import MyMplCanvas
-from ..geo_utils import bresenham, raster_utils
+from ..geo_utils import bresenham, raster_utils, vector_utils
 from ..model.network_handling import LinkHandler, NetworkUtils, Junction
 from matplotlib.lines import Line2D
 from matplotlib.path import Path
@@ -140,6 +140,24 @@ class PipeSectionDialog(QDialog):
 
             LinkHandler.move_pipe_vertex(self.params, self.pipe_ft, new_pos_pt, p)
 
+        # Update delta z for nodes
+        (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(self.params, self.pipe_ft.geometry())
+        start_node_elev = start_node_ft.attribute(Junction.field_name_elev)
+        # end_node_deltaz = end_node_ft.attribute(Junction.field_name_delta_z)
+        end_node_elev = end_node_ft.attribute(Junction.field_name_elev)
+
+        start_node_new_deltaz = new_zs[0] - start_node_elev
+        end_node_new_deltaz = new_zs[-1] - end_node_elev
+
+        start_node_ft.setAttribute(start_node_ft.fieldNameIndex(Junction.field_name_delta_z), start_node_new_deltaz)
+        end_node_ft.setAttribute(end_node_ft.fieldNameIndex(Junction.field_name_delta_z), end_node_new_deltaz)
+
+        start_node_lay = NetworkUtils.find_node_layer(self.params, start_node_ft.geometry())
+        vector_utils.update_attribute(start_node_lay, start_node_ft, Junction.field_name_delta_z, float(start_node_new_deltaz))
+
+        end_node_lay = NetworkUtils.find_node_layer(self.params, end_node_ft.geometry())
+        vector_utils.update_attribute(end_node_lay, end_node_ft, Junction.field_name_delta_z, float(end_node_new_deltaz))
+
         self.setVisible(False)
 
     def find_line_distz(self):
@@ -153,7 +171,7 @@ class PipeSectionDialog(QDialog):
 
         total_dist = 0
         dist_z = OrderedDict()
-        dist_z[total_dist] = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, 0, QgsVertexId.SegmentVertex)).z() + start_node_deltaz
+        dist_z[0] = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, 0, QgsVertexId.SegmentVertex)).z() #+ start_node_deltaz
 
         for p in range(1, pipe_geom_v2.vertexCount(0, 0)):
             vertex = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p, QgsVertexId.SegmentVertex))
@@ -162,7 +180,7 @@ class PipeSectionDialog(QDialog):
 
             # Interpolate delta z for vertex using distance from nodes and delta z of nodes
             delta_z = (total_dist / self.pipe_ft.geometry().length() * (end_node_deltaz - start_node_deltaz)) + start_node_deltaz
-            dist_z[total_dist] = vertex.z() + delta_z
+            dist_z[total_dist] = vertex.z() #+ delta_z
 
         return dist_z
 

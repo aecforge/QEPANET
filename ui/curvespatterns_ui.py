@@ -112,7 +112,7 @@ class GraphDialog(QDialog):
 
         # Table form
         self.table = QTableWidget(self)
-        self.rows_nr = 24
+        self.rows_nr = 48
         self.cols_nr = 2
         self.table.setRowCount(self.rows_nr)
         self.table.setColumnCount(self.cols_nr)
@@ -189,7 +189,6 @@ class GraphDialog(QDialog):
             self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.need_to_update_graph = True
-        self.update_graph()
 
     def cbo_pump_type_activated(self):
         self.update_table_headers()
@@ -199,6 +198,7 @@ class GraphDialog(QDialog):
         QDialog.setVisible(self, bool)
 
         self.update_table_headers()
+        self.update_graph()
 
     def list_item_changed(self):
 
@@ -290,14 +290,14 @@ class GraphDialog(QDialog):
         self.lst_list.clear()
 
         if self.edit_type == self.edit_patterns:
-            # InpFile.read_patterns(self.params, file_path)
+            InpFile.read_patterns(self.params, file_path)
             for pattern_id, pattern in self.params.patterns.iteritems():
                 # desc = ' (' + pattern.desc + ')' if pattern.desc is not None else ''
                 self.lst_list.addItem(pattern.id)
                 self.params.patterns[pattern.id] = pattern
 
         elif self.edit_type == self.edit_curves:
-            # InpFile.read_curves(self.params, file_path)
+            InpFile.read_curves(self.params, file_path)
             for curve_id, curve in self.params.curves.iteritems():
                 # desc = ' (' + curve.desc + ')' if curve.desc is not None else ''
                 self.lst_list.addItem(curve.id)
@@ -426,12 +426,12 @@ class GraphDialog(QDialog):
                     #     self.table.setItem(row, col, item)
                     #     item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
 
-                elif self.edit_type == self.edit_curves:
-                    if row == 0:
-                        item = QTableWidgetItem(str(0))
-                        self.table.setItem(row, 0, item)
-                        item = QTableWidgetItem(str(1))
-                        self.table.setItem(row, 1, item)
+                # elif self.edit_type == self.edit_curves:
+                    # if row == 0:
+                        # item = QTableWidgetItem(str(0))
+                        # self.table.setItem(row, 0, item)
+                        # item = QTableWidgetItem(str(1))
+                        # self.table.setItem(row, 1, item)
                         # item.setFlags(QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled)
         self.need_to_update_graph = True
 

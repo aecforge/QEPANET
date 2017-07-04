@@ -515,16 +515,16 @@ class InpReader:
         for t in times:
             if t[0].upper() == 'DURATION':
                 self.params.times.duration = self.hour_from_text(t[1])
-            elif t[0].upper() == 'HYDRAULIC' and t[1].upper() == 'TIMESTAMP':
-                self.params.times.hydraulic_timestamp = self.hour_from_text(t[2])
-            elif t[0].upper() == 'QUALITY' and t[1].upper() == 'TIMESTAMP':
-                self.params.times.quality_timestamp = self.hour_from_text(t[2])
-            elif t[0].upper() == 'PATTERN' and t[1].upper() == 'TIMESTAMP':
-                self.params.times.pattern_timestamp = self.hour_from_text(t[2])
+            elif t[0].upper() == 'HYDRAULIC' and t[1].upper() == 'TIMESTEP':
+                self.params.times.hydraulic_timestep = self.hour_from_text(t[2])
+            elif t[0].upper() == 'QUALITY' and t[1].upper() == 'TIMESTEP':
+                self.params.times.quality_timestep = self.hour_from_text(t[2])
+            elif t[0].upper() == 'PATTERN' and t[1].upper() == 'TIMESTEP':
+                self.params.times.pattern_timestep = self.hour_from_text(t[2])
             elif t[0].upper() == 'PATTERN' and t[1].upper() == 'START':
                 self.params.times.pattern_start = self.hour_from_text(t[2])
-            elif t[0].upper() == 'REPORT' and t[1].upper() == 'TIMESTAMP':
-                self.params.times.report_timestamp = self.hour_from_text(t[2])
+            elif t[0].upper() == 'REPORT' and t[1].upper() == 'TIMESTEP':
+                self.params.times.report_timestep = self.hour_from_text(t[2])
             elif t[0].upper() == 'REPORT' and t[1].upper() == 'START':
                 self.params.times.report_start = self.hour_from_text(t[2])
             elif t[0].upper() == 'START' and t[1].upper() == 'CLOCKTIME':

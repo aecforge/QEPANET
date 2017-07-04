@@ -542,7 +542,8 @@ class InpFile:
                 line += InpFile.pad(pump_param + ' ' + '{0:2f}'.format(power), InpFile.pad_19)
             elif pump_param == Pump.parameters_head:
                 head = p_ft.attribute(Pump.field_name_head)
-                if head is not None:
+                print 'head', head
+                if head is not None and head != NULL:
                     line += InpFile.pad(pump_param + ' ' + head, InpFile.pad_19)
 
             speed = p_ft.attribute(Pump.field_name_speed)
@@ -681,12 +682,12 @@ class InpFile:
         out.extend(InpFile.build_section_keyword(Times.section_name))
         out.append(InpFile.pad('DURATION', InpFile.pad_22) + params.times.duration.get_as_text(4))
 
-        out.append(InpFile.pad('HYDRAULIC TIMESTAMP', InpFile.pad_22) + params.times.hydraulic_timestamp.get_as_text())
-        out.append(InpFile.pad('QUALITY TIMESTAMP', InpFile.pad_22) + params.times.quality_timestamp.get_as_text())
-        out.append(InpFile.pad('RULE TIMESTAMP', InpFile.pad_22) + params.times.rule_timestamp.get_as_text())
-        out.append(InpFile.pad('PATTERN TIMESTAMP', InpFile.pad_22) + params.times.pattern_timestamp.get_as_text())
+        out.append(InpFile.pad('HYDRAULIC TIMESTEP', InpFile.pad_22) + params.times.hydraulic_timestep.get_as_text())
+        out.append(InpFile.pad('QUALITY TIMESTEP', InpFile.pad_22) + params.times.quality_timestep.get_as_text())
+        out.append(InpFile.pad('RULE TIMESTEP', InpFile.pad_22) + params.times.rule_timestep.get_as_text())
+        out.append(InpFile.pad('PATTERN TIMESTEP', InpFile.pad_22) + params.times.pattern_timestep.get_as_text())
         out.append(InpFile.pad('PATTERN START', InpFile.pad_22) + params.times.pattern_start.get_as_text())
-        out.append(InpFile.pad('REPORT TIMESTAMP', InpFile.pad_22) + params.times.report_timestamp.get_as_text())
+        out.append(InpFile.pad('REPORT TIMESTEP', InpFile.pad_22) + params.times.report_timestep.get_as_text())
         out.append(InpFile.pad('REPORT START', InpFile.pad_22) + params.times.report_start.get_as_text())
         out.append(InpFile.pad('START CLOCKTIME', InpFile.pad_22) + params.times.clocktime_start.get_as_text())
         out.append(InpFile.pad('STATISTIC', InpFile.pad_22) + Times.stats_text[params.times.statistic])
@@ -862,6 +863,9 @@ class InpFile:
 
         if len(values) < vals_per_line:
             vals_per_line = len(values)
+
+        if not svalues:
+            return []
 
         lines_nr = int(math.ceil(len(svalues) / float(vals_per_line)))
 

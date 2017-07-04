@@ -152,12 +152,12 @@ class Times:
     def __init__(self):
         self.units = Times.unit_hr
         self.duration = Hour(1, 0)
-        self.hydraulic_timestamp = Hour(1, 0)
-        self.quality_timestamp = Hour(0, 5)
-        self.rule_timestamp = Hour(1, 0)
-        self.pattern_timestamp = Hour(1, 0)
+        self.hydraulic_timestep = Hour(1, 0)
+        self.quality_timestep = Hour(0, 5)
+        self.rule_timestep = Hour(1, 0)
+        self.pattern_timestep = Hour(1, 0)
         self.pattern_start = Hour(0, 0)
-        self.report_timestamp = Hour(1, 0)
+        self.report_timestep = Hour(1, 0)
         self.report_start = Hour(0, 0)
         self.clocktime_start = Hour(0, 0)
         self.statistic = Times.stats_none

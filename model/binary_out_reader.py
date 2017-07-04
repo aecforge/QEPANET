@@ -316,7 +316,6 @@ class BinaryOutputReader:
                     link_flow_d, link_velocity_d, link_headloss_d, link_quality_d,
                     link_status_code_d, link_setting_d, link_reaction_d, link_friction_d)
 
-
 class OutputParamCodes(object):
 
     NODE_DEMAND = 0
@@ -420,6 +419,7 @@ class LinkResult(object):
         self.friction = friction
 
 
-# bor = BinaryOutputReader('D:/Progetti/2015/2015_13_TN_EPANET/04_Implementation/INP_Test/Test_cases/5/q5.out')
-# for id, values in bor.self.node_heads_d.iteritems():
+# bor = BinaryOutputReader()
+# bor.read('D:/Progetti/2015/2015_13_TN_EPANET/04_Implementation/INP_Test/Test_cases/1/1.out')
+# for id, values in bor.node_heads_d.iteritems():
 #     print id, values
