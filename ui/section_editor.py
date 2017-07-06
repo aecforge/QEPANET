@@ -38,12 +38,12 @@ class PipeSectionDialog(QDialog):
         fra_toolbar_lay = QHBoxLayout(self.fra_toolbar)
         self.btn_zoom = QPushButton('Zoom')
         self.btn_zoom.clicked.connect(self.btn_zoom_clicked)
-        set_up_button(self.btn_zoom, os.path.join(curr_dir, 'i_zoom.png'), 13, 13,
+        set_up_button(self.btn_zoom, os.path.join(curr_dir, 'i_zoom.png'), True, 13, 13,
                       'Zoom')  # TODO: softcode
 
         self.btn_pan = QPushButton('Pan')
         self.btn_pan.clicked.connect(self.btn_pan_clicked)
-        set_up_button(self.btn_pan, os.path.join(curr_dir, 'i_pan.png'), 15, 15,
+        set_up_button(self.btn_pan, os.path.join(curr_dir, 'i_pan.png'), True, 15, 15,
                       'Pan')  # TODO: softcode
 
         self.btn_home = QPushButton('Full extent')
@@ -51,13 +51,11 @@ class PipeSectionDialog(QDialog):
 
         self.btn_back = QPushButton('Back')
         self.btn_back.clicked.connect(self.btn_back_clicked)
-        set_up_button(self.btn_back, os.path.join(curr_dir, 'i_back.png'), 7, 13,
-                      'Back')  # TODO: softcode
+        set_up_button(self.btn_back, os.path.join(curr_dir, 'i_back.png'), False, 7, 13, 'Back')  # TODO: softcode
 
         self.btn_forth = QPushButton('Forth')
         self.btn_forth.clicked.connect(self.btn_forth_clicked)
-        set_up_button(self.btn_forth, os.path.join(curr_dir, 'i_forth.png'), 7, 13,
-                      'Forward')  # TODO: softcode
+        set_up_button(self.btn_forth, os.path.join(curr_dir, 'i_forth.png'), False, 7, 13, 'Forward')  # TODO: softcode
 
         self.btn_edit = QPushButton('Edit')
         self.btn_edit.clicked.connect(self.btn_edit_clicked)

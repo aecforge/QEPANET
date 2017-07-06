@@ -102,21 +102,21 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         set_up_button(self.btn_project_saveas, os.path.join(curr_dir, 'i_saveas.png'), tooltip_text='Save project as')
 
         # Tools buttons
-        set_up_button(self.btn_add_junction, os.path.join(curr_dir, 'i_junction.png'), 12, 12,
+        set_up_button(self.btn_add_junction, os.path.join(curr_dir, 'i_junction.png'), True, 12, 12,
                            'Create junction')  # TODO: softcode
-        set_up_button(self.btn_add_reservoir, os.path.join(curr_dir, 'i_reservoir.png'), 14, 14,
+        set_up_button(self.btn_add_reservoir, os.path.join(curr_dir, 'i_reservoir.png'), True, 14, 14,
                            'Create reservoir')  # TODO: softcode
-        set_up_button(self.btn_add_tank, os.path.join(curr_dir, 'i_tank.png'), 14, 12,
+        set_up_button(self.btn_add_tank, os.path.join(curr_dir, 'i_tank.png'), True, 14, 12,
                            'Create tank')  # TODO: softcode
-        set_up_button(self.btn_add_pipe, os.path.join(curr_dir, 'i_pipe.png'), 13, 5,
+        set_up_button(self.btn_add_pipe, os.path.join(curr_dir, 'i_pipe.png'), True, 13, 5,
                            'Create/edit pipe')  # TODO: softcode
-        set_up_button(self.btn_add_pump, os.path.join(curr_dir, 'i_pump.png'), 15, 11,
+        set_up_button(self.btn_add_pump, os.path.join(curr_dir, 'i_pump.png'), True, 15, 11,
                            'Create pump')  # TODO: softcode
-        set_up_button(self.btn_add_valve, os.path.join(curr_dir, 'i_valve.png'), 13, 14,
+        set_up_button(self.btn_add_valve, os.path.join(curr_dir, 'i_valve.png'), True, 13, 14,
                            'Create valve')  # TODO: softcode
-        set_up_button(self.btn_move_element, os.path.join(curr_dir, 'i_move.png'), 15, 15,
+        set_up_button(self.btn_move_element, os.path.join(curr_dir, 'i_move.png'), True, 15, 15,
                            'Move element')  # TODO: softcode
-        set_up_button(self.btn_delete_element, os.path.join(curr_dir, 'i_delete2.png'), 13, 15,
+        set_up_button(self.btn_delete_element, os.path.join(curr_dir, 'i_delete2.png'), True, 13, 15,
                            'Delete element(s)')  # TODO: softcode
 
         # EPANET button
@@ -422,7 +422,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if type(self.iface.mapCanvas().mapTool()) is AddJunctionTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            self.btn_add_junction.setChecked(True)
+            # self.btn_add_junction.setChecked(True)
 
         else:
             # Check all layers not set
@@ -434,7 +434,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.iface.messageBar().pushWarning(
                     Parameters.plug_in_name,
                     'Please selecte the junctions and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-                self.btn_add_junction.setChecked(True)
+                # self.btn_add_junction.setChecked(True)
                 return
 
             self.tool = AddJunctionTool(self, self.params)
@@ -445,7 +445,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if type(self.iface.mapCanvas().mapTool()) is AddReservoirTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            self.btn_add_reservoir.setChecked(True)
+            # self.btn_add_reservoir.setChecked(True)
 
         else:
             # Check all layers not set
@@ -457,7 +457,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.iface.messageBar().pushWarning(
                     Parameters.plug_in_name,
                     'Please selecte the reservoirs and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-                self.btn_add_reservoir.setChecked(True)
+                # self.btn_add_reservoir.setChecked(True)
                 return
 
             self.tool = AddReservoirTool(self, self.params)
@@ -468,7 +468,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if type(self.iface.mapCanvas().mapTool()) is AddTankTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            self.btn_add_tank.setChecked(False)
+            # self.btn_add_tank.setChecked(False)
 
         else:
             # Check all layers not set
@@ -480,7 +480,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.iface.messageBar().pushWarning(
                     Parameters.plug_in_name,
                     'Please selecte the tanks and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-                self.btn_add_tank.setChecked(True)
+                # self.btn_add_tank.setChecked(True)
                 return
 
             tool = AddTankTool(self, self.params)
@@ -491,7 +491,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if type(self.iface.mapCanvas().mapTool()) is AddPipeTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            self.btn_add_pipe.setChecked(True)
+            # self.btn_add_pipe.setChecked(True)
 
         else:
             # Check all layers not set
@@ -503,7 +503,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.iface.messageBar().pushWarning(
                     Parameters.plug_in_name,
                     'Please selecte the junctions and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-                self.btn_add_pipe.setChecked(True)
+                # self.btn_add_pipe.setChecked(True)
                 return
 
             self.tool = AddPipeTool(self, self.params)
@@ -514,7 +514,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if type(self.iface.mapCanvas().mapTool()) is AddPumpTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            self.btn_add_pump.setChecked(True)
+            # self.btn_add_pump.setChecked(True)
 
         else:
             # Check all layers not set
@@ -526,7 +526,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.iface.messageBar().pushWarning(
                     Parameters.plug_in_name,
                     'Please selecte the junctions, pipes and pumps layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-                self.btn_add_pump.setChecked(True)
+                # self.btn_add_pump.setChecked(True)
                 return
 
             self.tool = AddPumpTool(self, self.params)
@@ -537,7 +537,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if type(self.iface.mapCanvas().mapTool()) is AddValveTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            self.btn_add_valve.setChecked(True)
+            # self.btn_add_valve.setChecked(True)
 
         else:
             # Check all layers not set
@@ -549,7 +549,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.iface.messageBar().pushWarning(
                     Parameters.plug_in_name,
                     'Please selecte the junctions, pipes and valves layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-                self.btn_add_valve.setChecked(True)
+                # self.btn_add_valve.setChecked(True)
                 return
 
             self.tool = AddValveTool(self, self.params)
@@ -560,7 +560,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if type(self.iface.mapCanvas().mapTool()) is MoveTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            self.btn_move_element.setChecked(True)
+            # self.btn_move_element.setChecked(True)
 
         else:
             # Check all layers not set
@@ -573,7 +573,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.iface.messageBar().pushWarning(
                     Parameters.plug_in_name,
                     'Please selecte all the vector layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-                self.btn_move_element.setChecked(True)
+                # self.btn_move_element.setChecked(True)
                 return
 
             self.tool = MoveTool(self, self.params)
@@ -584,7 +584,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if type(self.iface.mapCanvas().mapTool()) is DeleteTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            self.btn_delete_element.setChecked(True)
+            # self.btn_delete_element.setChecked(True)
 
         else:
             # Check all layers not set
@@ -597,7 +597,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.iface.messageBar().pushWarning(
                     Parameters.plug_in_name,
                     'Please selecte all the vector layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-                self.btn_delete_element.setChecked(True)
+                # self.btn_delete_element.setChecked(True)
                 return
 
             self.tool = DeleteTool(self, self.params)

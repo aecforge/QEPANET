@@ -1,5 +1,7 @@
 # From https://plugins.qgis.org/plugins/ImportEpanetInpFiles/
 
+import re
+
 def LoadFile(inp):
     global inpname, mm
     mm = []
@@ -846,8 +848,13 @@ def getBinInfo():
                     demandsSection.append(mm)
 
         if sec[9] == 1:  # CURVES
+
             if "[" in s1:
                 continue
+
+            # Clean excessive 'PUMP:'
+            s1 = s1.strip().replace('PUMP: ', '')
+
             mm = s1.split()
 
             if len(mm) > 0:

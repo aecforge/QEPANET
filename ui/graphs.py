@@ -4,6 +4,7 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import FormatStrFormatter
 import numpy
 from ..model.binary_out_reader import OutputParamCodes
+from ..model.options_report import Hour
 
 
 class MyMplCanvas(FigureCanvas):
@@ -41,14 +42,23 @@ class StaticMplCanvas(MyMplCanvas):
             self.axes2.clear()
         self.draw()
 
-    def draw_bars_graph(self, values, time_period=1, y_axes_label='Multiplier'):
+    def draw_bars_graph(self, values, time_period=Hour(1, 0), y_axes_label='Multiplier'):
 
-        width = 0.8
+        width = 1.0
         lefts = []
+        left_ticks_labels = []
+        left_ticks = []
         max_val = -1
+
+        multiplier_h = time_period.get_as_hours()
         for l in range(len(values)):
-            lefts.append(l * 1)
+            lefts.append(l + 0.5)
+            left_ticks.append(l)
+            left_ticks_labels.append(l * multiplier_h)
             max_val = max(values[l], max_val)
+
+        left_ticks.append(len(values))
+        left_ticks_labels.append(len(values) * multiplier_h)
 
         if max_val == 0:
             max_val = 1
@@ -64,13 +74,14 @@ class StaticMplCanvas(MyMplCanvas):
         self.axes2.set_ylim(0, max_val)
         self.axes2.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 
-        self.axes.bar(lefts, values, width, color=(0, 0.5, 1))
+        self.axes.bar(lefts, values, width, color=(0, 0.5, 1), edgecolor=(0, 0, 0))
         self.axes.set_xlim(0, lefts[-1] + width)
         self.axes.set_ylim(0, max_val)
-        # self.axes.set_xticks(lefts)
+        self.axes.set_xticks(left_ticks)
+        self.axes.set_xticklabels(left_ticks_labels)
         self.axes.yaxis.set_major_formatter(FormatStrFormatter('%.1f'))
 
-        self.axes.set_xlabel('Time (Time period = ' + str(time_period) + ')')  # TODO: softcode
+        self.axes.set_xlabel('Time (Time period = ' + time_period.get_as_text() + ')')  # TODO: softcode
         self.axes.set_ylabel(y_axes_label)  # TODO: softcode
         self.axes.tick_params(axis=u'both', which=u'both', bottom=u'off', top=u'off', left=u'off', right=u'off')
 

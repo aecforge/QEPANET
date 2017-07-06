@@ -112,7 +112,7 @@ class GraphDialog(QDialog):
 
         # Table form
         self.table = QTableWidget(self)
-        self.rows_nr = 48
+        self.rows_nr = 24
         self.cols_nr = 2
         self.table.setRowCount(self.rows_nr)
         self.table.setColumnCount(self.cols_nr)
@@ -144,6 +144,9 @@ class GraphDialog(QDialog):
             self.cbo_pump_type.activated.connect(self.cbo_pump_type_activated)
 
         fra_table_lay.addWidget(self.table)
+        self.btn_add_row = QPushButton('Add row')
+        self.btn_add_row.clicked.connect(self.add_row)
+        fra_table_lay.addWidget(self.btn_add_row)
 
         # Graph canvas
         self.fra_graph = QFrame()
@@ -188,11 +191,20 @@ class GraphDialog(QDialog):
             self.btn_del.setEnabled(False)
             self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
+        self.new_dialog = None
         self.need_to_update_graph = True
 
     def cbo_pump_type_activated(self):
         self.update_table_headers()
         self.update_graph()
+
+    def add_row(self):
+        row_pos = self.table.rowCount()
+        self.table.insertRow(row_pos)
+        col = 0
+        item = QTableWidgetItem(str(row_pos))
+        self.table.setItem(row_pos, col, item)
+        item.setFlags(QtCore.Qt.ItemIsSelectable)
 
     def setVisible(self, bool):
         QDialog.setVisible(self, bool)
@@ -251,6 +263,8 @@ class GraphDialog(QDialog):
 
             self.need_to_update_graph = True
             self.update_graph()
+
+        self.update_table_headers()
 
     def import_file(self):
 
@@ -319,23 +333,24 @@ class GraphDialog(QDialog):
         self.new_dialog.exec_()
 
         new_id = self.new_dialog.get_newid()
-        if new_id is None:
+        description = self.new_dialog.get_description()
+        if new_id is None or description is None:
             return
 
         if self.edit_type == self.edit_patterns:
-            new_pattern = Pattern(new_id)
+            new_pattern = Pattern(new_id, description)
             self.params.patterns[new_pattern.id] = new_pattern
             self.lst_list.addItem(new_pattern.id)
         elif self.edit_type == self.edit_curves:
             curve_type = self.cbo_pump_type.itemData(self.cbo_pump_type.currentIndex())
-            new_curve = Curve(new_id, curve_type)
+            new_curve = Curve(new_id, curve_type, desc=description)
             self.params.curves[new_curve.id] = new_curve
             self.lst_list.addItem(new_curve.id)
 
         self.lst_list.setCurrentRow(self.lst_list.count() - 1)
 
         self.txt_id.setText(new_id)
-        self.txt_desc.setText('')
+        self.txt_desc.setText(description)
 
         # Clear table
         self.clear_table()
@@ -358,8 +373,16 @@ class GraphDialog(QDialog):
                     QMessageBox.Ok)
             return
 
-        if self.edit_type == GraphDialog.edit_patterns:
+        # Check for description
+        if not self.txt_desc.text():
+            QMessageBox.warning(
+                self,
+                Parameters.plug_in_name,
+                u'Please specify the description.',  # TODO: softcode
+                QMessageBox.Ok)
+            return
 
+        if self.edit_type == GraphDialog.edit_patterns:
             values = []
             for row in range(self.table.rowCount()):
                 item = self.table.item(row, 1)
@@ -514,7 +537,7 @@ class GraphDialog(QDialog):
 
         if self.edit_type == self.edit_patterns:
             y_axis_label = 'Mult. avg.: ' + '{0:.2f}'.format((numpy.average(ys)))
-            self.static_canvas.draw_bars_graph(ys, y_axes_label=y_axis_label)
+            self.static_canvas.draw_bars_graph(ys, time_period=self.params.times.pattern_timestep, y_axes_label=y_axis_label)
 
         elif self.edit_type == self.edit_curves:
 
@@ -591,6 +614,10 @@ class NewIdDialog(QDialog):
         self.txt_id = QLineEdit('')
         fra_id_lay.addRow(self.lbl_id, self.txt_id)
 
+        self.lbl_desc = QLabel('Description:')
+        self.txt_desc = QLineEdit('')
+        fra_id_lay.addRow(self.lbl_desc, self.txt_desc)
+
         self.fra_buttons = QFrame()
         fra_buttons_lay = QHBoxLayout(self.fra_buttons)
 
@@ -605,19 +632,25 @@ class NewIdDialog(QDialog):
         main_lay.addWidget(self.fra_buttons)
 
         self.new_id = None
+        self.description = None
 
     def btn_ok_clicked(self):
         if not self.check():
             return
         self.new_id = self.txt_id.text()
+        self.description = self.txt_desc.text()
         self.setVisible(False)
 
     def btn_cancel_clicked(self):
         self.new_id = None
+        self.description = None
         self.setVisible(False)
 
     def get_newid(self):
         return self.new_id
+
+    def get_description(self):
+        return self.description
 
     def check(self):
         if self.txt_id.text() == '':
@@ -637,5 +670,12 @@ class NewIdDialog(QDialog):
                     QMessageBox.Ok)
                 return False
 
-        return True
+        if self.txt_desc.text() == '':
+            QMessageBox.warning(
+                self,
+                Parameters.plug_in_name,
+                u'Please specify the description.',  # TODO: softcode
+                QMessageBox.Ok)
+            return False
 
+        return True

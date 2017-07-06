@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from PyQt4.QtCore import QPyNullVariant
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance, QgsPoint,\
-    QgsVectorLayerEditUtils, QgsFeatureRequest, QgsLineStringV2, QgsPointV2, QgsWKBTypes
+    QgsVectorLayerEditUtils, QgsFeatureRequest, QgsLineStringV2, QgsPointV2, QgsWKBTypes, QgsVertexId
 
 from network import Junction, Reservoir, Tank, Pipe, Pump, Valve
 from ..tools.parameters import Parameters
@@ -218,11 +218,38 @@ class LinkHandler:
             pipe_geom_2 = QgsGeometry.fromPolyline(dists_and_points.values())
 
             line_coords = []
-            for vertex in pipe_geom_2.asPolyline():
-                z = raster_utils.read_layer_val_from_coord(params.dem_rlay, vertex)
+            total_dist = 0
+
+            # for vertex in pipe_geom_2.asPolyline():
+            (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(params, pipe_geom_2)
+            if start_node_ft is None:
+                start_node_deltaz = 0
+            else:
+                start_node_deltaz = start_node_ft.attribute(Junction.field_name_delta_z)
+
+            if end_node_ft is None:
+                end_node_deltaz = 0
+            else:
+                end_node_deltaz = end_node_ft.attribute(Junction.field_name_delta_z)
+
+            for p in range(0, pipe_geom_2.geometry().vertexCount(0, 0)):
+
+                vertex = pipe_geom_2.geometry().vertexAt(QgsVertexId(0, 0, p, QgsVertexId.SegmentVertex))
+                if p > 0:
+                    vertex_prev = pipe_geom_2.geometry().vertexAt(QgsVertexId(0, 0, p - 1, QgsVertexId.SegmentVertex))
+
+                z = raster_utils.read_layer_val_from_coord(params.dem_rlay, QgsPoint(vertex.x(), vertex.y()))
                 if z is None:
                     z = 0
-                line_coords.append(QgsPointV2(QgsWKBTypes.PointZ, vertex.x(), vertex.y(), z))
+
+                # Add deltaz
+                if p == 0:
+                    delta_z = start_node_deltaz
+                else:
+                    total_dist += math.sqrt((vertex.x() - vertex_prev.x()) ** 2 + (vertex.y() - vertex_prev.y()) ** 2)
+                    delta_z = (total_dist / pipe_geom_2.length() * (end_node_deltaz - start_node_deltaz)) + start_node_deltaz
+
+                line_coords.append(QgsPointV2(QgsWKBTypes.PointZ, vertex.x(), vertex.y(), z + delta_z))
 
             linestring = QgsLineStringV2()
             linestring.setPoints(line_coords)

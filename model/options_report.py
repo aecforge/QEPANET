@@ -178,6 +178,12 @@ class Hour:
     def get_as_text(self, padding=2):
         return str(self.hours).zfill(padding) + ':' + str(self.mins).zfill(2)
 
+    def get_as_hours(self):
+        return self.hours + self.mins / 60.
+
+    def get_as_mins(self):
+        return self.hours * 60 + self.mins
+
     def set_from_string(self, hhmm_string):
         self.hours = int(hhmm_string[0:2])
         self.mins = int(hhmm_string[3:5])

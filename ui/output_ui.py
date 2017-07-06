@@ -459,62 +459,61 @@ class OutputAnalyserDialog(QDialog):
         :return:
         """
 
-        report_time_s = self.cbo_map_times.itemData(self.cbo_map_times.currentIndex())
+        report_time = self.cbo_map_times.itemText(self.cbo_map_times.currentIndex())
 
         if self.rad_maps_node_demand.isChecked():  # -------------------------------------------------------------------
             lay_name = 'Node demand'
             lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_demand_id, lay_name,
-                                   self.output_reader.node_demands_d, report_time_s)
+                                   self.output_reader.node_demands_d, report_time)
             self.params.out_lay_node_demand_id = lay_id
 
         elif self.rad_maps_node_head.isChecked():
             lay_name = 'Node head'
             lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_head_id, lay_name,
-                                   self.output_reader.node_heads_d, report_time_s)
+                                   self.output_reader.node_heads_d, report_time)
             self.params.out_lay_node_head_id = lay_id
 
         elif self.rad_maps_node_pressure.isChecked():
             lay_name = 'Node pressure'
             lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_pressure_id, lay_name,
-                                   self.output_reader.node_pressures_d, report_time_s)
+                                   self.output_reader.node_pressures_d, report_time)
             self.params.out_lay_node_pressure_id = lay_id
 
         elif self.rad_maps_node_quality.isChecked():
             lay_name = 'Node quality'
             lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_quality_id, lay_name,
-                                   self.output_reader.node_qualities_d, report_time_s)
+                                   self.output_reader.node_qualities_d, report_time)
             self.params.out_lay_node_quality_id = lay_id
 
         elif self.rad_maps_link_flow.isChecked():  # -------------------------------------------------------------------
             lay_name = 'Link flow'
             lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_flow_id, lay_name,
-                                   self.output_reader.link_flows_d, report_time_s)
+                                   self.output_reader.link_flows_d, report_time)
             self.params.out_lay_link_flow_id = lay_id
 
         elif self.rad_maps_link_velocity.isChecked():
             lay_name = 'Link velocity'
             lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_velocity_id, lay_name,
-                                   self.output_reader.link_velocities_d, report_time_s)
+                                   self.output_reader.link_velocities_d, report_time)
             self.params.out_lay_link_velocity_id = lay_id
 
         elif self.rad_maps_link_headloss.isChecked():
             lay_name = 'Link headloss'
             lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_headloss_id, lay_name,
-                                   self.output_reader.link_headlosses_d, report_time_s)
+                                   self.output_reader.link_headlosses_d, report_time)
             self.params.out_lay_link_headloss_id = lay_id
 
         elif self.rad_maps_link_quality.isChecked():
             lay_name = 'Link quality'
             lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_quality_id, lay_name,
-                                   self.output_reader.link_qualities_d, report_time_s)
+                                   self.output_reader.link_qualities_d, report_time)
             self.params.out_lay_link_quality_id = lay_id
 
-    def draw_map(self, lay_type, lay_id, lay_name, dataset, report_time_s):
+    def draw_map(self, lay_type, lay_id, lay_name, dataset, report_time):
 
         QApplication.setOverrideCursor(Qt.WaitCursor)
 
-        report_time_h = report_time_s / 3600
-        lay_name += ' ' + str(report_time_h)
+        lay_name += ' ' + report_time
 
         lay = LayerUtils.get_lay_from_id(lay_id)
         if lay is None:
@@ -527,12 +526,12 @@ class OutputAnalyserDialog(QDialog):
         else:
             lay.setLayerName(lay_name)
 
-        text = self.seconds_to_string(
-            report_time_s,
-            self.output_reader.sim_duration_secs,
-            self.output_reader.report_time_step_secs)
+        # text = self.seconds_to_string(
+        #     report_time,
+        #     self.output_reader.sim_duration_secs,
+        #     self.output_reader.report_time_step_secs)
 
-        lay.setRendererV2(RampRenderer.get_renderer(lay, text))
+        lay.setRendererV2(RampRenderer.get_renderer(lay, report_time))
         lay.triggerRepaint()
 
         QApplication.restoreOverrideCursor()

@@ -4,7 +4,7 @@
 
 from network import *
 
-import readEpanetFile as d
+import readEpanetFile as ref
 import os
 from inp_writer import InpFile
 from ..tools.data_stores import MemoryDS
@@ -31,31 +31,31 @@ class InpReader:
         if file_size == 0:
             return None
 
-        d.LoadFile(self.inp_path)
-        d.BinUpdateClass()
-        links_count = d.getBinLinkCount()
+        ref.LoadFile(self.inp_path)
+        ref.BinUpdateClass()
+        links_count = ref.getBinLinkCount()
 
         # Get all Sections
-        mixing = d.getMixingSection()
-        reactions = d.getReactionsSection()
-        sources = d.getSourcesSection()
-        rules = d.getRulesSection()
-        quality = d.getQualitySection()
-        curves = d.getCurvesSection()
-        patterns = d.getPatternsSection()
-        controls = d.getControlsSection()
-        emitters = d.getEmittersSection()
+        mixing = ref.getMixingSection()
+        reactions = ref.getReactionsSection()
+        sources = ref.getSourcesSection()
+        rules = ref.getRulesSection()
+        quality = ref.getQualitySection()
+        curves = ref.getCurvesSection()
+        patterns = ref.getPatternsSection()
+        controls = ref.getControlsSection()
+        emitters = ref.getEmittersSection()
         emitters_d = {}
         for emitter in emitters:
             emitters_d[emitter[0]] = emitter[1]
 
-        status = d.getStatusSection()
-        demands = d.getDemandsSection()
-        energy = d.getEnergySection()
-        opt_reactions = d.getReactionsOptionsSection()
-        times = d.getTimesSection()
-        report = d.getReportSection()
-        options = d.getOptionsSection()
+        status = ref.getStatusSection()
+        demands = ref.getDemandsSection()
+        energy = ref.getEnergySection()
+        opt_reactions = ref.getReactionsOptionsSection()
+        times = ref.getTimesSection()
+        report = ref.getReportSection()
+        options = ref.getOptionsSection()
 
         # Check for QEPANET section in inp file. If it's there, update layer attributes
         qepanet_junctions_od = self.read_qepanet_junctions()
@@ -96,13 +96,13 @@ class InpReader:
 
         # Get all Section lengths
         all_sections = [len(energy), len(opt_reactions), len(demands), len(status), len(emitters), len(controls),
-                       len(patterns),
-                       len(curves[0]), len(quality), len(rules), len(sources), len(reactions), len(mixing), len(times),
-                       len(report),
-                       len(options), d.getBinNodeCount(), d.getBinLinkCount()]
+                        len(patterns),
+                        len(curves[0]), len(quality), len(rules), len(sources), len(reactions), len(mixing), len(times),
+                        len(report),
+                        len(options), ref.getBinNodeCount(), ref.getBinLinkCount()]
         ss = max(all_sections)
 
-        xy = d.getBinNodeCoordinates()
+        xy = ref.getBinNodeCoordinates()
 
         x = xy[0]
         y = xy[1]
@@ -117,13 +117,13 @@ class InpReader:
                 vertxyFinal.append(vertxy)
 
         # Get data of Junctions
-        ndEle = d.getBinNodeJunctionElevations()
-        ndBaseD = d.getBinNodeBaseDemands()
-        ndID = d.getBinNodeNameID()
-        ndPatID = d.getBinNodeDemandPatternID()
+        ndEle = ref.getBinNodeJunctionElevations()
+        ndBaseD = ref.getBinNodeBaseDemands()
+        ndID = ref.getBinNodeNameID()
+        ndPatID = ref.getBinNodeDemandPatternID()
 
         junctions_lay = None
-        if d.getBinNodeJunctionCount() > 0:
+        if ref.getBinNodeJunctionCount() > 0:
 
             junctions_lay = MemoryDS.create_junctions_lay(crs=params.crs)
             junctions_lay_dp = junctions_lay.dataProvider()
@@ -148,44 +148,44 @@ class InpReader:
             valves_lay = MemoryDS.create_valves_lay(crs=params.crs)
             valves_lay_dp = valves_lay.dataProvider()
 
-            pump_index = d.getBinLinkPumpIndex()
-            valve_index = d.getBinLinkValveIndex()
-            ndlConn = d.getBinNodesConnectingLinksID()
+            pump_index = ref.getBinLinkPumpIndex()
+            valve_index = ref.getBinLinkValveIndex()
+            ndlConn = ref.getBinNodesConnectingLinksID()
             x1 = []
             x2 = []
             y1 = []
             y2 = []
-            stat = d.getBinLinkInitialStatus()
+            stat = ref.getBinLinkInitialStatus()
 
             kk = 0
             ch = 0
-            linkID = d.getBinLinkNameID()
-            linkLengths = d.getBinLinkLength()
-            linkDiameters = d.getBinLinkDiameter()
-            linkRough = d.getBinLinkRoughnessCoeff()
-            linkMinorloss = d.getBinLinkMinorLossCoeff()
+            linkID = ref.getBinLinkNameID()
+            linkLengths = ref.getBinLinkLength()
+            linkDiameters = ref.getBinLinkDiameter()
+            linkRough = ref.getBinLinkRoughnessCoeff()
+            linkMinorloss = ref.getBinLinkMinorLossCoeff()
 
         # Write Tank Shapefile and get tank data
         tanks_lay = None
-        if d.getBinNodeTankCount() > 0:
+        if ref.getBinNodeTankCount() > 0:
             tanks_lay = MemoryDS.create_tanks_lay(crs=params.crs)
             tanks_lay_dp = tanks_lay.dataProvider()
 
-            ndTankelevation = d.getBinNodeTankElevations()
-            initiallev = d.getBinNodeTankInitialLevel()
-            minimumlev = d.getBinNodeTankMinimumWaterLevel()
-            maximumlev = d.getBinNodeTankMaximumWaterLevel()
-            diameter = d.getBinNodeTankDiameter()
-            minimumvol = d.getBinNodeTankMinimumWaterVolume()
-            volumecurv = d.getBinNodeTankVolumeCurveID()
-            ndTankID = d.getBinNodeTankNameID()
+            ndTankelevation = ref.getBinNodeTankElevations()
+            initiallev = ref.getBinNodeTankInitialLevel()
+            minimumlev = ref.getBinNodeTankMinimumWaterLevel()
+            maximumlev = ref.getBinNodeTankMaximumWaterLevel()
+            diameter = ref.getBinNodeTankDiameter()
+            minimumvol = ref.getBinNodeTankMinimumWaterVolume()
+            volumecurv = ref.getBinNodeTankVolumeCurveID()
+            ndTankID = ref.getBinNodeTankNameID()
 
         reservoirs_lay = None
-        if d.getBinNodeReservoirCount() > 0:
+        if ref.getBinNodeReservoirCount() > 0:
             reservoirs_lay = MemoryDS.create_reservoirs_lay(crs=params.crs)
             reservoirs_lay_dp = reservoirs_lay.dataProvider()
 
-            reservoirs_elev = d.getBinNodeReservoirElevations()
+            reservoirs_elev = ref.getBinNodeReservoirElevations()
             # posReservoirs.startEditing()
 
         vvLink = 68
@@ -203,7 +203,7 @@ class InpReader:
                 vvLink = vvLink - 1
                 bbLink = bbLink + 1
 
-            if i < d.getBinNodeJunctionCount():
+            if i < ref.getBinNodeJunctionCount():
                 featJ = QgsFeature()
                 point = QgsPoint(float(x[i]), float(y[i]))
 
@@ -227,10 +227,10 @@ class InpReader:
                 if ch == 1:
                     stat.append('OPEN')
 
-                x1.append(x[ndID.index(d.getBinLinkFromNode()[i])])
-                y1.append(y[ndID.index(d.getBinLinkFromNode()[i])])
-                x2.append(x[ndID.index(d.getBinLinkToNode()[i])])
-                y2.append(y[ndID.index(d.getBinLinkToNode()[i])])
+                x1.append(x[ndID.index(ref.getBinLinkFromNode()[i])])
+                y1.append(y[ndID.index(ref.getBinLinkFromNode()[i])])
+                x2.append(x[ndID.index(ref.getBinLinkToNode()[i])])
+                y2.append(y[ndID.index(ref.getBinLinkToNode()[i])])
 
                 if i in pump_index:
 
@@ -238,19 +238,19 @@ class InpReader:
                     point1 = QgsPoint(float(x1[i]), float(y1[i]))
                     point2 = QgsPoint(float(x2[i]), float(y2[i]))
 
-                    chPowerPump = d.getBinLinkPumpPower()
-                    cheadpump = d.getBinLinkPumpCurveNameID()
-                    pumpID = d.getBinLinkPumpNameID()
-                    patternsIDs = d.getBinLinkPumpPatterns()
-                    ppatt = d.getBinLinkPumpPatternsPumpID()
-                    linkID = d.getBinLinkNameID()
+                    chPowerPump = ref.getBinLinkPumpPower()
+                    cheadpump = ref.getBinLinkPumpCurveNameID()
+                    pumpID = ref.getBinLinkPumpNameID()
+                    patternsIDs = ref.getBinLinkPumpPatterns()
+                    ppatt = ref.getBinLinkPumpPatternsPumpID()
+                    linkID = ref.getBinLinkNameID()
 
                     Head = []
                     Flow = []
                     curve = []
                     power = []
                     pattern = []
-                    pumpNameIDPower = d.getBinLinkPumpNameIDPower()
+                    pumpNameIDPower = ref.getBinLinkPumpNameIDPower()
 
                     param = None
                     head = None
@@ -275,22 +275,22 @@ class InpReader:
                             if ppatt[uu] == pumpID[pPos]:
                                 pattern = patternsIDs[uu]
 
-                    if d.getBinCurveCount() > 0 and len(pumpNameIDPower) == 0:
-                        curveXY = d.getBinCurvesXY()
-                        curvesID = d.getBinCurvesNameID()
+                    if ref.getBinCurveCount() > 0 and len(pumpNameIDPower) == 0:
+                        curveXY = ref.getBinCurvesXY()
+                        curvesID = ref.getBinCurvesNameID()
                         for uu in range(0, len(curveXY)):
                             if curvesID[uu] == cheadpump[pPos]:
                                 Head.append(str(curveXY[uu][0]))
                                 Flow.append(str(curveXY[uu][1]))
-                        curve = d.getBinLinkPumpCurveNameID()[pPos]
+                        curve = ref.getBinLinkPumpCurveNameID()[pPos]
 
-                    if pumpID[pPos] in d.getBinLinkPumpSpeedID():
-                        speed = d.getBinLinkPumpSpeed()[pPosSpeed]
+                    if pumpID[pPos] in ref.getBinLinkPumpSpeedID():
+                        speed = ref.getBinLinkPumpSpeed()[pPosSpeed]
                         pPosSpeed += 1
 
                     pump_pattern = None
                     if pumpID[pPos] in ppatt:
-                        pump_pattern = d.getBinLinkPumpPatterns()[pPosSpeedPattern]
+                        pump_pattern = ref.getBinLinkPumpPatterns()[pPosSpeedPattern]
                         pPosSpeedPattern += 1
 
                     pump_status = Pump.status_open
@@ -319,11 +319,11 @@ class InpReader:
                     featValve = QgsFeature()
                     featValve.setGeometry((QgsGeometry.fromPolyline([point1, point2])))
 
-                    linkID = d.getBinLinkValveNameID()
-                    linkType = d.getBinLinkValveType()
-                    linkDiameter = d.getBinLinkValveDiameters()
-                    linkInitSett = d.getBinLinkValveSetting()
-                    linkMinorloss = d.getBinLinkValveMinorLoss()
+                    linkID = ref.getBinLinkValveNameID()
+                    linkType = ref.getBinLinkValveType()
+                    linkDiameter = ref.getBinLinkValveDiameters()
+                    linkInitSett = ref.getBinLinkValveSetting()
+                    linkMinorloss = ref.getBinLinkValveMinorLoss()
 
                     valve_status = Valve.status_open
                     for statuss in status:
@@ -347,7 +347,7 @@ class InpReader:
                     # Z
                     start_node_elev = 0
                     end_node_elev = 0
-                    for j in range(d.getBinNodeJunctionCount()):
+                    for j in range(ref.getBinNodeJunctionCount()):
 
                         delta_z = 0
                         if qepanet_junctions_od and ndID[j] in qepanet_junctions_od:
@@ -407,8 +407,8 @@ class InpReader:
                          linkRough[i], linkMinorloss[i], material])
                     pipes_lay_dp.addFeatures([featPipe])
 
-            if i < d.getBinNodeTankCount():
-                p = d.getBinNodeTankIndex()[i] - 1
+            if i < ref.getBinNodeTankCount():
+                p = ref.getBinNodeTankIndex()[i] - 1
                 featTank = QgsFeature()
                 point = QgsPoint(float(x[p]), float(y[p]))
                 featTank.setGeometry(QgsGeometry.fromPoint(point))
@@ -422,8 +422,8 @@ class InpReader:
                      minimumvol[i], volumecurv[i]])
                 tanks_lay_dp.addFeatures([featTank])
 
-            if i < d.getBinNodeReservoirCount():
-                p = d.getBinNodeReservoirIndex()[i] - 1
+            if i < ref.getBinNodeReservoirCount():
+                p = ref.getBinNodeReservoirIndex()[i] - 1
 
                 feature = QgsFeature()
                 point = QgsPoint(float(x[p]), float(y[p]))
