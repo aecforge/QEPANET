@@ -1,4 +1,4 @@
-from qgis.core import QgsPoint, QgsGeometry, QgsPointV2, QgsLineStringV2, QgsWKBTypes, QgsVertexId, QgsFeature
+from qgis.core import QgsPoint, QgsGeometry, QgsPointV2, QgsLineStringV2, QgsWKBTypes, QgsVertexId, QgsFeature, NULL
 from PyQt4 import QtCore
 from PyQt4.QtGui import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QPushButton, QIcon
 from graphs import MyMplCanvas
@@ -162,8 +162,12 @@ class PipeSectionDialog(QDialog):
         pipe_geom = self.pipe_ft.geometry()
         (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(self.params, self.pipe_ft.geometry())
         start_node_z = start_node_ft.attribute(Junction.field_name_elev)
+        if start_node_z == NULL:
+            start_node_z = 0
         start_node_deltaz = start_node_ft.attribute(Junction.field_name_delta_z)
         end_node_z = end_node_ft.attribute(Junction.field_name_elev)
+        if end_node_z == NULL:
+            end_node_z = 0
         end_node_deltaz = end_node_ft.attribute(Junction.field_name_delta_z)
 
         total_dist = 0
@@ -249,6 +253,7 @@ class SectionCanvas(MyMplCanvas):
         self.iface = iface
         self.params = params
         self.parent = parent
+        self.pipe_ft = self.parent.pipe_ft
 
         self._ind = 0
         self.dem_line = None
@@ -345,63 +350,64 @@ class SectionCanvas(MyMplCanvas):
         if event.button == 2:
             return
         if event.button == 3:
-
-            if self._ind is None:
-                # Find the distance to the closest vertex
-                min_dist = 1E10
-                min_pos = -1
-                xy = np.asarray(self.pipe_patch.get_path().vertices)
-                xyt = self.pipe_patch.get_transform().transform(xy)
-                for v in range(1, len(xyt)):
-                    dist = utils.dist(xyt[v-1][0], xyt[v-1][1], xyt[v][0], xyt[v][1], event.x, event.y)
-                    if dist < min_dist:
-                        min_dist = dist
-                        min_pos = v
-
-                if min_dist <= self.epsilon:
-                    # Create new vertex
-                    xy = np.asarray((event.x, event.y))
-                    xyt = self.pipe_patch.get_transform().inverted().transform(xy)
-                    vertices = self.pipe_patch.get_path().vertices
-                    vertices = np.insert(vertices, min_pos, xyt, 0)
-
-                    codes = []
-                    for v in range(len(vertices)):
-                        codes.append(Path.LINETO)
-                    codes[0] = Path.MOVETO
-                    path = Path(vertices, codes)
-
-                    self.axes.patches.remove(self.pipe_patch)
-                    self.pipe_patch = patches.PathPatch(path, edgecolor='b', facecolor='none')
-                    self.axes.add_patch(self.pipe_patch)
-
-                    self.pipe_line.set_data(zip(*vertices))
-
-                    self.restore_region(self.background)
-                    self.axes.draw_artist(self.pipe_patch)
-                    self.axes.draw_artist(self.pipe_line)
-                    self.blit(self.axes.bbox)
-
-            else:
-                # Delete vertex
-                vertices = self.pipe_patch.get_path().vertices
-                vertices = np.delete(vertices, self._ind, axis=0)
-                codes = []
-                for v in range(len(vertices)):
-                    codes.append(Path.LINETO)
-                codes[0] = Path.MOVETO
-                path = Path(vertices, codes)
-
-                self.axes.patches.remove(self.pipe_patch)
-                self.pipe_patch = patches.PathPatch(path, edgecolor='b', facecolor='none')
-                self.axes.add_patch(self.pipe_patch)
-
-                self.pipe_line.set_data(zip(*vertices))
-
-                self.restore_region(self.background)
-                self.axes.draw_artist(self.pipe_patch)
-                self.axes.draw_artist(self.pipe_line)
-                self.blit(self.axes.bbox)
+            return
+            #
+            # if self._ind is None:
+            #     # Find the distance to the closest vertex
+            #     min_dist = 1E10
+            #     min_pos = -1
+            #     xy = np.asarray(self.pipe_patch.get_path().vertices)
+            #     xyt = self.pipe_patch.get_transform().transform(xy)
+            #     for v in range(1, len(xyt)):
+            #         dist = utils.dist(xyt[v-1][0], xyt[v-1][1], xyt[v][0], xyt[v][1], event.x, event.y)
+            #         if dist < min_dist:
+            #             min_dist = dist
+            #             min_pos = v
+            #
+            #     if min_dist <= self.epsilon:
+            #         # Create new vertex
+            #         xy = np.asarray((event.x, event.y))
+            #         xyt = self.pipe_patch.get_transform().inverted().transform(xy)
+            #         vertices = self.pipe_patch.get_path().vertices
+            #         vertices = np.insert(vertices, min_pos, xyt, 0)
+            #
+            #         codes = []
+            #         for v in range(len(vertices)):
+            #             codes.append(Path.LINETO)
+            #         codes[0] = Path.MOVETO
+            #         path = Path(vertices, codes)
+            #
+            #         self.axes.patches.remove(self.pipe_patch)
+            #         self.pipe_patch = patches.PathPatch(path, edgecolor='b', facecolor='none')
+            #         self.axes.add_patch(self.pipe_patch)
+            #
+            #         self.pipe_line.set_data(zip(*vertices))
+            #
+            #         self.restore_region(self.background)
+            #         self.axes.draw_artist(self.pipe_patch)
+            #         self.axes.draw_artist(self.pipe_line)
+            #         self.blit(self.axes.bbox)
+            #
+            # else:
+            #     # Delete vertex
+            #     vertices = self.pipe_patch.get_path().vertices
+            #     vertices = np.delete(vertices, self._ind, axis=0)
+            #     codes = []
+            #     for v in range(len(vertices)):
+            #         codes.append(Path.LINETO)
+            #     codes[0] = Path.MOVETO
+            #     path = Path(vertices, codes)
+            #
+            #     self.axes.patches.remove(self.pipe_patch)
+            #     self.pipe_patch = patches.PathPatch(path, edgecolor='b', facecolor='none')
+            #     self.axes.add_patch(self.pipe_patch)
+            #
+            #     self.pipe_line.set_data(zip(*vertices))
+            #
+            #     self.restore_region(self.background)
+            #     self.axes.draw_artist(self.pipe_patch)
+            #     self.axes.draw_artist(self.pipe_line)
+            #     self.blit(self.axes.bbox)
 
         self._ind = None
 
@@ -418,10 +424,20 @@ class SectionCanvas(MyMplCanvas):
             return
         if event.button != 1:
             return
-        x, y = event.xdata, event.ydata
 
         vertices = self.pipe_patch.get_path().vertices
+        x, y = vertices[self._ind][0], event.ydata
+        if self._ind != 0 and self._ind != len(vertices) - 1:
+            return
+
         vertices[self._ind] = x, y
+
+        # Interpolate remaining vertices
+        for v in range(1, len(vertices) - 1):
+            distance = self.find_distance(self.pipe_ft.geometry().geometry(), v)
+            z = (distance / self.pipe_ft.geometry().length() * (vertices[-1][1] - vertices[0][1])) + vertices[0][1]
+            vertices[v] = vertices[v][0], z
+
         self.pipe_line.set_data(zip(*vertices))
 
         self.restore_region(self.background)
@@ -443,3 +459,12 @@ class SectionCanvas(MyMplCanvas):
 
         path = Path(vertices, codes)
         return path, maxs
+
+    def find_distance(self, pipe_geom_v2, vertex_nr):
+        total_dist = 0
+        for p in range(1, vertex_nr + 1):
+            vertex = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p, QgsVertexId.SegmentVertex))
+            vertex_prev = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p - 1, QgsVertexId.SegmentVertex))
+            total_dist += math.sqrt((vertex.x() - vertex_prev.x()) ** 2 + (vertex.y() - vertex_prev.y()) ** 2)
+
+        return total_dist
