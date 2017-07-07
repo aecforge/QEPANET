@@ -295,7 +295,7 @@ class InpReader:
 
                     pump_status = Pump.status_open
                     for statuss in status:
-                        if statuss[0] == linkID[pPos]:
+                        if statuss[0] == pumpID[pPos]:
                             pump_status = statuss[1]
                             break
 
@@ -325,7 +325,7 @@ class InpReader:
                     linkInitSett = ref.getBinLinkValveSetting()
                     linkMinorloss = ref.getBinLinkValveMinorLoss()
 
-                    valve_status = Valve.status_open
+                    valve_status = Valve.status_none
                     for statuss in status:
                         if statuss[0] == linkID[vPos]:
                             valve_status = statuss[1]

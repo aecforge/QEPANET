@@ -257,9 +257,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         QtCore.QObject.connect(self.cbo_valve_type, QtCore.SIGNAL('activated(int)'), self.cbo_valve_type_activated)
 
         self.cbo_valve_status.clear()
+        self.cbo_valve_status.addItem('None', Valve.status_none)  # TODO: softcode
         self.cbo_valve_status.addItem('Closed', Valve.status_closed)  # TODO: softcode
         self.cbo_valve_status.addItem('Open', Valve.status_open)  # TODO: softcode
-        self.cbo_valve_status.addItem('None', Valve.status_none)  # TODO: softcode
         self.cbo_valve_status.setCurrentIndex(self.cbo_valve_status.findData(Valve.status_open))
 
         # Options ------------------------------------------------------------------------------------------------------
@@ -1100,6 +1100,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.cbo_tank_curve.clear()
         self.cbo_pump_head.clear()
         self.cbo_valve_curve.clear()
+        self.cbo_tank_curve.addItem(None, None)
+        self.cbo_pump_head.addItem(None, None)
+        self.cbo_valve_curve.addItem(None, None)
         if self.params.curves is not None:
             for curve in self.params.curves.itervalues():
 

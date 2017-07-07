@@ -183,12 +183,18 @@ class GraphDialog(QDialog):
 
         if self.lst_list.count() > 0:
             self.lst_list.setCurrentRow(0)
+            self.txt_id.setEnabled(True)
+            self.txt_desc.setEnabled(True)
             self.btn_save.setEnabled(True)
             self.btn_del.setEnabled(True)
+            self.table.setEnabled(True)
             self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
         else:
+            self.txt_id.setEnabled(False)
+            self.txt_desc.setEnabled(False)
             self.btn_save.setEnabled(False)
             self.btn_del.setEnabled(False)
+            self.table.setEnabled(False)
             self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.new_dialog = None
@@ -356,8 +362,11 @@ class GraphDialog(QDialog):
         self.clear_table()
         self.static_canvas.axes.clear()
 
+        self.txt_id.setEnabled(True)
+        self.txt_desc.setEnabled(True)
         self.btn_save.setEnabled(True)
         self.btn_del.setEnabled(True)
+        self.table.setEnabled(True)
         self.table.setEditTriggers(QAbstractItemView.AllEditTriggers)
 
     def save(self):
@@ -466,8 +475,11 @@ class GraphDialog(QDialog):
 
         self.lst_list.takeItem(selected_row)
         if self.lst_list.count() == 0:
+            self.txt_id.setEnabled(False)
+            self.txt_desc.setEnabled(False)
             self.btn_save.setEnabled(False)
             self.btn_del.setEnabled(False)
+            self.table.setEnabled(False)
             self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         if self.edit_type == GraphDialog.edit_curves:

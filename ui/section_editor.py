@@ -159,6 +159,31 @@ class PipeSectionDialog(QDialog):
         self.setVisible(False)
 
     def find_line_distz(self):
+        pipe_geom = self.pipe_ft.geometry()
+        (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(self.params, self.pipe_ft.geometry())
+        start_node_z = start_node_ft.attribute(Junction.field_name_elev)
+        start_node_deltaz = start_node_ft.attribute(Junction.field_name_delta_z)
+        end_node_z = end_node_ft.attribute(Junction.field_name_elev)
+        end_node_deltaz = end_node_ft.attribute(Junction.field_name_delta_z)
+
+        total_dist = 0
+        dist_z = OrderedDict()
+        pipe_geom_v2 = pipe_geom.geometry()
+        dist_z[0] = start_node_z + start_node_deltaz
+
+        for p in range(1, pipe_geom_v2.vertexCount(0, 0)):
+            vertex = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p, QgsVertexId.SegmentVertex))
+            vertex_prev = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p - 1, QgsVertexId.SegmentVertex))
+            total_dist += math.sqrt((vertex.x() - vertex_prev.x()) ** 2 + (vertex.y() - vertex_prev.y()) ** 2)
+
+            # Interpolate delta z for vertex using distance from nodes and delta z of nodes
+            z = (total_dist / self.pipe_ft.geometry().length() * (end_node_z - start_node_z)) + start_node_z
+            delta_z = (total_dist / self.pipe_ft.geometry().length() * (end_node_deltaz - start_node_deltaz)) + start_node_deltaz
+            dist_z[total_dist] = z  + delta_z
+
+        return dist_z
+
+    def find_line_distz3D(self):
 
         pipe_geom_v2 = self.pipe_ft.geometry().geometry()
 
