@@ -107,9 +107,11 @@ class PipeSectionDialog(QDialog):
 
     def btn_zoom_clicked(self):
         self.toolbar.zoom()
+        self.btn_pan.setChecked(False)
 
     def btn_pan_clicked(self):
         self.toolbar.pan()
+        self.btn_zoom.setChecked(False)
 
     def btn_back_clicked(self):
         self.toolbar.back()

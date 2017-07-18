@@ -52,7 +52,7 @@ class InpFile:
             if not lines[l].startswith(';'):
                 words = lines[l].strip().replace('\t', ' ').split()
                 if words[0] not in patterns_d:
-                    if lines[l-1].strip().startswith(';'):
+                    if lines[l-1].strip().startswith(';') and lines[l-3].startswith('['):
                         pattern_desc = lines[l - 1][1:]
                     else:
                         pattern_desc = ''

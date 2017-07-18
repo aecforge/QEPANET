@@ -2,7 +2,7 @@ from PyQt4 import QtGui
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.ticker import FormatStrFormatter
-import numpy, numbers
+import numpy, numbers, math
 from ..model.binary_out_reader import OutputParamCodes
 from ..model.options_report import Hour
 
@@ -51,10 +51,12 @@ class StaticMplCanvas(MyMplCanvas):
         max_val = -1
 
         multiplier_h = time_period.get_as_hours()
+        ticks_nr = 10
+        ticks_intv = math.ceil(len(values) / float(ticks_nr))
+
         for l in range(len(values)):
             lefts.append(l + 0.5)
-            print 'll', l * multiplier_h
-            if (l * multiplier_h).is_integer():
+            if (l * multiplier_h).is_integer() and (l / ticks_intv).is_integer():
                 left_ticks.append(l)
                 left_ticks_labels.append(l * multiplier_h)
             max_val = max(values[l], max_val)

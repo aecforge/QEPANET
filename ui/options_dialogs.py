@@ -717,7 +717,7 @@ class TimesDialog(QDialog):
         self.params.times.report_timestep = Hour.from_string(self.txt_report_timestep.text())
         self.params.times.report_start= Hour.from_string(self.txt_report_start.text())
         self.params.times.clocktime_start = Hour.from_string(self.txt_clock_time_start.text())
-        self.params.times.statistics = Times.stats_text[self.cbo_statistic.itemData(self.cbo_statistic.currentIndex())]
+        self.params.times.statistic = self.cbo_statistic.currentIndex()
 
         self.setVisible(False)
 

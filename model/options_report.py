@@ -147,7 +147,7 @@ class Times:
     stats_max = 2
     stats_range = 3
     stats_none = 4
-    stats_text = {0: 'Averaged', 1: 'Minimum', 2: 'Maximum', 3: 'Range', 4: 'None'}
+    stats_text = {0: 'Average', 1: 'Minimum', 2: 'Maximum', 3: 'Range', 4: 'None'}
 
     def __init__(self):
         self.units = Times.unit_hr

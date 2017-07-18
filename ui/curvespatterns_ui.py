@@ -209,8 +209,10 @@ class GraphDialog(QDialog):
         self.table.insertRow(row_pos)
         col = 0
         item = QTableWidgetItem(str(row_pos))
-        self.table.setItem(row_pos, col, item)
-        item.setFlags(QtCore.Qt.ItemIsSelectable)
+
+        if self.edit_type == self.edit_patterns:
+            self.table.setItem(row_pos, col, item)
+            item.setFlags(QtCore.Qt.ItemIsSelectable)
 
     def setVisible(self, bool):
         QDialog.setVisible(self, bool)
@@ -231,9 +233,15 @@ class GraphDialog(QDialog):
         self.need_to_update_graph = False
         if p_index >= 0:
 
+            self.table.setRowCount(0)
+
             if self.edit_type == self.edit_patterns:
                 self.current = self.params.patterns[self.lst_list.currentItem().text()]
                 for v in range(len(self.current.values)):
+
+                    row_pos = self.table.rowCount()
+                    self.table.insertRow(row_pos)
+
                     item = QTableWidgetItem(str(v))
                     item.setFlags(flags)
                     self.table.setItem(v, 0, item)
@@ -242,6 +250,10 @@ class GraphDialog(QDialog):
             elif self.edit_type == self.edit_curves:
                 self.current = self.params.curves[self.lst_list.currentItem().text()]
                 for v in range(len(self.current.xs)):
+
+                    row_pos = self.table.rowCount()
+                    self.table.insertRow(row_pos)
+
                     self.table.setItem(v, 0, QTableWidgetItem(str(self.current.xs[v])))
                     self.table.setItem(v, 1, QTableWidgetItem(str(self.current.ys[v])))
 
@@ -382,21 +394,23 @@ class GraphDialog(QDialog):
                     QMessageBox.Ok)
             return
 
-        # Check for description
-        if not self.txt_desc.text():
-            QMessageBox.warning(
-                self,
-                Parameters.plug_in_name,
-                u'Please specify the description.',  # TODO: softcode
-                QMessageBox.Ok)
-            return
+        # # Check for description
+        # if not self.txt_desc.text():
+        #     QMessageBox.warning(
+        #         self,
+        #         Parameters.plug_in_name,
+        #         u'Please specify the description.',  # TODO: softcode
+        #         QMessageBox.Ok)
+        #     return
 
         if self.edit_type == GraphDialog.edit_patterns:
             values = []
             for row in range(self.table.rowCount()):
                 item = self.table.item(row, 1)
-                if item.text() != '':
+                if item is not None and item.text() != '':
                     values.append(self.from_item_to_val(item))
+                else:
+                    values.append('0')
 
             pattern = Pattern(self.txt_id.text(), self.txt_desc.text(), values)
 
@@ -682,12 +696,12 @@ class NewIdDialog(QDialog):
                     QMessageBox.Ok)
                 return False
 
-        if self.txt_desc.text() == '':
-            QMessageBox.warning(
-                self,
-                Parameters.plug_in_name,
-                u'Please specify the description.',  # TODO: softcode
-                QMessageBox.Ok)
-            return False
+        # if self.txt_desc.text() == '':
+        #     QMessageBox.warning(
+        #         self,
+        #         Parameters.plug_in_name,
+        #         u'Please specify the description.',  # TODO: softcode
+        #         QMessageBox.Ok)
+        #     return False
 
         return True
