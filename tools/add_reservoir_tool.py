@@ -144,7 +144,7 @@ class AddReservoirTool(QgsMapTool):
                             pressure_head,
                             pattern_id)
 
-                    elif NetworkUtils.find_node_layer(self.params, start_node_ft.geometry()) == self.params.junctions_vlay:
+                    elif start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) <= 0:
 
                         # Delete junction
                         NodeHandler.delete_node(self.params, self.params.junctions_vlay, start_node_ft, False)
@@ -159,7 +159,7 @@ class AddReservoirTool(QgsMapTool):
                             pressure_head,
                             pattern_id)
 
-                    elif NetworkUtils.find_node_layer(self.params, end_node_ft.geometry()) == self.params.junctions_vlay:
+                    elif end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) <= 0:
 
                         # Delete junction
                         NodeHandler.delete_node(self.params, self.params.junctions_vlay, end_node_ft, False)
@@ -171,7 +171,8 @@ class AddReservoirTool(QgsMapTool):
                             eid,
                             self.elev,
                             deltaz,
-                            head)
+                            pressure_head,
+                            pattern_id)
 
                     else:
                         self.iface.messageBar().pushWarning(

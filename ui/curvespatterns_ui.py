@@ -264,6 +264,8 @@ class GraphDialog(QDialog):
             self.txt_id.setText(self.current.id)
             self.txt_desc.setText(self.current.desc)
 
+            self.update_table_headers()
+
             # Update graph
             self.need_to_update_graph = True
             self.update_graph()
@@ -281,8 +283,6 @@ class GraphDialog(QDialog):
 
             self.need_to_update_graph = True
             self.update_graph()
-
-        self.update_table_headers()
 
     def import_file(self):
 
@@ -393,15 +393,6 @@ class GraphDialog(QDialog):
                     u'Please specify the ID.', # TODO: softcode
                     QMessageBox.Ok)
             return
-
-        # # Check for description
-        # if not self.txt_desc.text():
-        #     QMessageBox.warning(
-        #         self,
-        #         Parameters.plug_in_name,
-        #         u'Please specify the description.',  # TODO: softcode
-        #         QMessageBox.Ok)
-        #     return
 
         if self.edit_type == GraphDialog.edit_patterns:
             values = []
@@ -572,12 +563,12 @@ class GraphDialog(QDialog):
 
             series_length = min(len(xs), len(ys))
 
+            # Need to account for different types of curves
             if cbo_data == Curve.type_efficiency or cbo_data == Curve.type_headloss or cbo_data == Curve.type_volume:
                 self.static_canvas.draw_line_graph(xs[:series_length], ys[:series_length],
                                                    self.x_label, self.y_label)
 
             elif cbo_data == Curve.type_pump:
-                # Needs to account for different types of curves
                 if series_length == 1 or series_length == 3:
                     if series_length == 1:
                         # 3 curve points

@@ -17,7 +17,7 @@ class Options:
     units_flow = {unit_sys_si:
                       ['LPS', 'LPM', 'MLD', 'CMH', 'CMD'],
                   unit_sys_us:
-                      ['CFS', 'GPM', 'MGD', 'IMGD', 'AFS']}
+                      ['CFS', 'GPM', 'MGD', 'IMGD', 'AFD']}
 
     units_flow_text = {'LPS': 'LPS - liters per second',
                        'LPM': 'LPM - liters per minute',
@@ -28,7 +28,7 @@ class Options:
                        'GPM': 'GPM - gallons per minute',
                        'MGD': 'MGD - million gallons per day',
                        'IMGD': 'IMGD - Imperial MGD',
-                       'AFS': 'AFD - acre-feet per day'}  # TODO: sofcode
+                       'AFD': 'AFD - acre-feet per day'}  # TODO: sofcode
 
     units_deltaz = {unit_sys_si: 'm',
                    unit_sys_us: 'ft'}
@@ -125,7 +125,7 @@ class Unbalanced:
     unb_continue = 1
 
     unb_text = {unb_stop: 'Stop',
-                unb_continue: 'Contunue'}
+                unb_continue: 'Continue'}
 
     def __init__(self):
         self.unbalanced = Unbalanced.unb_stop

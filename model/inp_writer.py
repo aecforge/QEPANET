@@ -364,6 +364,7 @@ class InpFile:
         out.append(InpFile.build_section_header(Junction.section_header))
 
         j_fts = params.junctions_vlay.getFeatures()
+
         for j_ft in j_fts:
             eid = j_ft.attribute(Junction.field_name_eid)
             demand = j_ft.attribute(Junction.field_name_demand)
@@ -542,7 +543,6 @@ class InpFile:
                 line += InpFile.pad(pump_param + ' ' + '{0:2f}'.format(power), InpFile.pad_19)
             elif pump_param == Pump.parameters_head:
                 head = p_ft.attribute(Pump.field_name_head)
-                print 'head', head
                 if head is not None and head != NULL:
                     line += InpFile.pad(pump_param + ' ' + head, InpFile.pad_19)
 
@@ -586,21 +586,29 @@ class InpFile:
         p_fts = params.pumps_vlay.getFeatures()
         for p_ft in p_fts:
             eid = p_ft.attribute(Pump.field_name_eid)
+
+            # Speed
+            pump_speed = p_ft.attribute(Pump.field_name_speed)
+            if pump_speed != NULL and pump_speed != '':
+                line = InpFile.pad(eid, InpFile.pad_19)
+                line += InpFile.pad(pump_speed, InpFile.pad_19)
+                out.append(line)
+
+            # Status
             pump_status = p_ft.attribute(Pump.field_name_status)
-            # if pump_status != Pump.status_closed
-            #     line = InpFile.pad(eid, InpFile.pad_19)
-            line = InpFile.pad(pump_status.upper(), InpFile.pad_19)
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad(pump_status.upper(), InpFile.pad_19)
             out.append(line)
 
         # Valves
         v_fts = params.valves_vlay.getFeatures()
         for v_ft in v_fts:
             eid = v_ft.attribute(Valve.field_name_eid)
-            pump_status = v_ft.attribute(Valve.field_name_status)
-
-            line = InpFile.pad(eid, InpFile.pad_19)
-            line += InpFile.pad(pump_status.upper(), InpFile.pad_19)
-            out.append(line)
+            valve_status = v_ft.attribute(Valve.field_name_status)
+            if valve_status != Valve.status_none:
+                line = InpFile.pad(eid, InpFile.pad_19)
+                line += InpFile.pad(valve_status.upper(), InpFile.pad_19)
+                out.append(line)
 
     @staticmethod
     def _append_reservoirs(params, out):

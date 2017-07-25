@@ -271,7 +271,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_options_report.clicked.connect(self.btn_report_clicked)
 
         # Tools
-        self.btn_create_layers.clicked.connect(self.create_layers)
+        self.btn_create_layers.clicked.connect(self.create_layers_clicked)
 
         self.txt_snap_tolerance.setText(str(params.snap_tolerance))
         self.txt_snap_tolerance.setValidator(RegExValidators.get_pos_decimals())
@@ -368,6 +368,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
         except:
             pass
+
+    def create_layers_clicked(self):
+        self.create_layers(None, self.params.crs)
 
     def create_layers(self, new_layers_d, crs):
 
@@ -1106,11 +1109,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         if self.params.curves is not None:
             for curve in self.params.curves.itervalues():
 
-                if curve.type == Curve.type_efficiency or curve.type == Curve.type_pump:
+                # if curve.type == Curve.type_efficiency or curve.type == Curve.type_pump:
                     self.cbo_pump_head.addItem(curve.id, curve)
-                elif curve.type == Curve.type_headloss:
+                # elif curve.type == Curve.type_headloss:
                     self.cbo_valve_curve.addItem(curve.id, curve)
-                elif curve.type == Curve.type_volume:
+                # elif curve.type == Curve.type_volume:
                     self.cbo_tank_curve.addItem(curve.id, curve)
 
     def get_combo_current_data(self, combo):

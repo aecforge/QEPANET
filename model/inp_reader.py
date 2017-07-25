@@ -296,8 +296,9 @@ class InpReader:
                     pump_status = Pump.status_open
                     for statuss in status:
                         if statuss[0] == pumpID[pPos]:
-                            pump_status = statuss[1]
-                            break
+                            if statuss[1].strip().upper() == Pump.status_closed or statuss[1].strip().upper() == Pump.status_open:
+                                pump_status = statuss[1].strip().upper()
+                                break
 
                     featPump = QgsFeature()
                     featPump.setGeometry(QgsGeometry.fromPolyline([point1, point2]))
@@ -579,7 +580,8 @@ class InpReader:
                 elif o[1].upper() in Options.units_flow[Options.unit_sys_us]:
                     self.params.options.units = Options.unit_sys_us
 
-                self.params.options.units_flow = o[1].upper() # TODO: Check
+                self.params.options.flow_units = o[1].upper()
+
             elif o[0].upper() == 'HEADLOSS':
                 self.params.options.headloss = o[1].upper()
             elif o[0].upper() == 'SPECIFIC' and o[1].upper() == 'GRAVITY':
@@ -610,8 +612,8 @@ class InpReader:
                     self.params.options.pattern = None
             elif o[0].upper() == 'DEMAND' and o[1].upper() == 'MULTIPLIER':
                 self.params.options.demand_mult = float(o[2])
-            elif o[0].upper() == 'EMITTER' and o[2].upper() == 'EXPONENT':
-                self.params.options.units = float(o[2])
+            elif o[0].upper() == 'EMITTER' and o[1].upper() == 'EXPONENT':
+                self.params.options.emitter_exp = float(o[2])
             elif o[0].upper() == 'QUALITY':
                 quality = Quality()
                 if o[1].upper() == 'NONE':

@@ -157,7 +157,8 @@ class AddTankTool(QgsMapTool):
                             level_max,
                             vol_min)
 
-                    elif NetworkUtils.find_node_layer(self.params, start_node_ft.geometry()) == self.params.junctions_vlay:
+                    # Replace pipe start node with new tank
+                    elif start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) <= 0:
 
                         # Delete junction
                         NodeHandler.delete_node(self.params, self.params.junctions_vlay, start_node_ft, False)
@@ -176,7 +177,8 @@ class AddTankTool(QgsMapTool):
                             level_max,
                             vol_min)
 
-                    elif NetworkUtils.find_node_layer(self.params, end_node_ft.geometry()) == self.params.junctions_vlay:
+                    # Replace pipe end node with new tank
+                    elif end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) <= 0:
 
                         # Delete junction
                         NodeHandler.delete_node(self.params, self.params.junctions_vlay, end_node_ft, False)
