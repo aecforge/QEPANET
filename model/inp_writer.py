@@ -591,6 +591,7 @@ class InpFile:
             pump_speed = p_ft.attribute(Pump.field_name_speed)
             if pump_speed != NULL and pump_speed != '':
                 line = InpFile.pad(eid, InpFile.pad_19)
+                print 'tt', type(pump_speed)
                 line += InpFile.pad('{0:.2f}'.format(pump_speed), InpFile.pad_19)
                 out.append(line)
 
@@ -613,18 +614,17 @@ class InpFile:
             valve_setting = v_ft.attribute(Valve.field_name_setting)
             if valve_setting != NULL and valve_setting != '':
                 line = InpFile.pad(eid, InpFile.pad_19)
-                line += InpFile.pad('{0:.2f}'.format(valve_setting), InpFile.pad_19)
+                line += InpFile.pad(valve_setting, InpFile.pad_19)
                 out.append(line)
 
         # Pipes
         p_fts = params.pipes_vlay.getFeatures()
         for p_ft in p_fts:
             eid = p_ft.attribute(Pipe.field_name_eid)
-            pipe_status = p_ft.attribute(Pipe.status)
-            if pipe_status != Pipe.status_none:
-                line = InpFile.pad(eid, InpFile.pad_19)
-                line += InpFile.pad(pipe_status.upper(), InpFile.pad_19)
-                out.append(line)
+            pipe_status = p_ft.attribute(Pipe.field_name_status)
+            line = InpFile.pad(eid, InpFile.pad_19)
+            line += InpFile.pad(pipe_status.upper(), InpFile.pad_19)
+            out.append(line)
 
     @staticmethod
     def _append_reservoirs(params, out):
