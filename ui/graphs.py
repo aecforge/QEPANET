@@ -56,7 +56,7 @@ class StaticMplCanvas(MyMplCanvas):
 
         for l in range(len(values)):
             lefts.append(l + 0.5)
-            if (l * multiplier_h).is_integer() and (l / ticks_intv).is_integer():
+            if isinstance((l * multiplier_h), int) and isinstance((l / ticks_intv), int):
                 left_ticks.append(l)
                 left_ticks_labels.append(l * multiplier_h)
             max_val = max(values[l], max_val)
