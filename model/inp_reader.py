@@ -255,11 +255,11 @@ class InpReader:
                     param = None
                     head = None
                     power = None
-                    speed = 0
+                    speed = None
 
                     if pumpID[pPos] in pumpNameIDPower:
                         param = 'POWER'
-                        power = chPowerPump[pPosPower]
+                        power = float(chPowerPump[pPosPower])
                         pPosPower += 1
                     else:
                         param = 'HEAD'
@@ -269,7 +269,7 @@ class InpReader:
                     if len(pumpNameIDPower) > 0:
                         for uu in range(0, len(pumpNameIDPower)):
                             if pumpNameIDPower[uu] == pumpID[pPos]:
-                                power = chPowerPump[uu]
+                                power = float(chPowerPump[uu])
                     if len(patternsIDs) > 0:
                         for uu in range(0, len(ppatt)):
                             if ppatt[uu] == pumpID[pPos]:
@@ -285,7 +285,7 @@ class InpReader:
                         curve = ref.getBinLinkPumpCurveNameID()[pPos]
 
                     if pumpID[pPos] in ref.getBinLinkPumpSpeedID():
-                        speed = ref.getBinLinkPumpSpeed()[pPosSpeed]
+                        speed = float(ref.getBinLinkPumpSpeed()[pPosSpeed])
                         pPosSpeed += 1
 
                     pump_pattern = None
