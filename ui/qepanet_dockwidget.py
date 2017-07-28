@@ -926,6 +926,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             'INP files (*.inp)')
 
         if inp_file_path is not None and inp_file_path != '':
+
+            # Remove previous output layers
+            for out_layer in self.params.out_layers:
+                self.remove_layer(out_layer)
+
             config_file.set_last_inp_file(inp_file_path)
             runner = ModelRunner(self)
 

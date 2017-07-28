@@ -161,6 +161,8 @@ class PipeSectionDialog(QDialog):
         self.setVisible(False)
 
     def find_line_distz(self):
+
+        # Get start and end nodes zs and deltazs from table
         pipe_geom = self.pipe_ft.geometry()
         (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(self.params, self.pipe_ft.geometry())
         start_node_z = start_node_ft.attribute(Junction.field_name_elev)
@@ -177,13 +179,16 @@ class PipeSectionDialog(QDialog):
         pipe_geom_v2 = pipe_geom.geometry()
         dist_z[0] = start_node_z + start_node_deltaz
 
+        # Interpolate deltaZs for remaining vertices
         for p in range(1, pipe_geom_v2.vertexCount(0, 0)):
             vertex = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p, QgsVertexId.SegmentVertex))
             vertex_prev = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, p - 1, QgsVertexId.SegmentVertex))
             total_dist += math.sqrt((vertex.x() - vertex_prev.x()) ** 2 + (vertex.y() - vertex_prev.y()) ** 2)
 
             # Interpolate delta z for vertex using distance from nodes and delta z of nodes
-            z = (total_dist / self.pipe_ft.geometry().length() * (end_node_z - start_node_z)) + start_node_z
+            # z = (total_dist / self.pipe_ft.geometry().length() * (end_node_z - start_node_z)) + start_node_z
+
+            z = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, QgsPoint(vertex.x(), vertex.y()))
             delta_z = (total_dist / self.pipe_ft.geometry().length() * (end_node_deltaz - start_node_deltaz)) + start_node_deltaz
             dist_z[total_dist] = z  + delta_z
 
@@ -434,11 +439,26 @@ class SectionCanvas(MyMplCanvas):
 
         vertices[self._ind] = x, y
 
+        pipe_geom_v2 = self.pipe_ft.geometry().geometry()
+
         # Interpolate remaining vertices
         for v in range(1, len(vertices) - 1):
             distance = self.find_distance(self.pipe_ft.geometry().geometry(), v)
-            z = (distance / self.pipe_ft.geometry().length() * (vertices[-1][1] - vertices[0][1])) + vertices[0][1]
-            vertices[v] = vertices[v][0], z
+            vertex = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, v, QgsVertexId.SegmentVertex))
+            z = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, QgsPoint(vertex.x(), vertex.y()))
+
+            # Inteporlate deltaZs
+            (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(self.params, self.pipe_ft.geometry())
+            start_node_elev = start_node_ft.attribute(Junction.field_name_elev)
+            # end_node_deltaz = end_node_ft.attribute(Junction.field_name_delta_z)
+            end_node_elev = end_node_ft.attribute(Junction.field_name_elev)
+            start_node_deltaz = vertices[0][1] - start_node_elev
+            end_node_deltaz = vertices[-1][1] - end_node_elev
+
+            delta_z = (distance / self.pipe_ft.geometry().length() * (end_node_deltaz - start_node_deltaz)) + start_node_deltaz
+
+            # z = (distance / self.pipe_ft.geometry().length() * (vertices[-1][1] - vertices[0][1])) + vertices[0][1]
+            vertices[v] = vertices[v][0], z + delta_z
 
         self.pipe_line.set_data(zip(*vertices))
 

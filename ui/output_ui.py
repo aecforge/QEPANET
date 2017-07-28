@@ -523,6 +523,7 @@ class OutputAnalyserDialog(QDialog):
                 lay = self.create_out_link_layer(lay_name, dataset)
             lay_id = lay.id()
             QgsMapLayerRegistry.instance().addMapLayer(lay)
+            self.params.out_layers.append(lay)
         else:
             lay.setLayerName(lay_name)
 
