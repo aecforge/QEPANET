@@ -16,8 +16,8 @@ email=albertodeluca3@gmail.com
 
 about=This plugins links QGIS and EPANET: it helps creating the EPANET network and analysing the simulation results.
 
-tracker=https://github.com/albertodeluca/QEPANET/issues
-repository=https://github.com/albertodeluca/QEPANET
+tracker=https://gitlab.com/albertodeluca/qepanet/issues
+repository=https://gitlab.com/albertodeluca/qepanet
 # End of mandatory metadata
 
 # Recommended items:
