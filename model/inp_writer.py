@@ -49,7 +49,7 @@ class InpFile:
 
         patterns_d = {}
         for l in range(start_line, end_line):
-            if not lines[l].startswith(';'):
+            if not lines[l].startswith(';') and lines[l].strip(' \t') != '':
                 words = lines[l].strip().replace('\t', ' ').split()
                 if words[0] not in patterns_d:
                     if lines[l-1].strip().startswith(';') and lines[l-3].startswith('['):

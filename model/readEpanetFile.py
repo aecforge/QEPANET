@@ -678,15 +678,16 @@ def getBinInfo():
                 else:
                     nodeJunctionNameID.append(mm[0])
                     nodeJunctionElevations.append(float(mm[1]))
-                    if len(mm) > 2:
+                    if len(mm) > 2 and mm[2].strip() != ';':
                         nodeJunctionBaseDemands.append(float(mm[2]))
-                    if len(mm) > 3:
+                    if len(mm) > 3 and mm[3].strip() != ';':
                         if mm[3][0] != ';':
                             nodePatternNameID.append(mm[3])
                         else:
                             nodePatternNameID.append('')
                     else:
                         nodePatternNameID.append('')
+                        nodeJunctionBaseDemands.append(0.0)
 
         if sec[1] == 1:  # RESERVOIRS
             if "[" in s1:

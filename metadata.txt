@@ -9,8 +9,8 @@
 [general]
 name=QEPANET
 qgisMinimumVersion=2.14
-description=This plugin links QGIS and EPANET.
-version=0.91
+description=This plugin links QGIS and EPANET. It provides: a set of dedicated editing tools to build a correct EPANET network, to run the simulation and to analyse the results by means of graphs and thematic maps.
+version=0.92
 author=UNIBZ - UNITN
 email=albertodeluca3@gmail.com
 
@@ -26,9 +26,9 @@ repository=https://gitlab.com/albertodeluca/qepanet
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=
+tags=EPANET, hydraulics, hydraulic modelling
 
-homepage=
+homepage=https://gitlab.com/albertodeluca/qepanet
 category=Plugins
 icon=icon.png
 # experimental flag

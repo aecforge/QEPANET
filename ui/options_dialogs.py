@@ -746,7 +746,7 @@ class EnergyDialog(QDialog):
         self.txt_pump_efficiency = QLineEdit()
         fra_form_lay.addRow(self.lbl_pump_efficiency, self.txt_pump_efficiency)
 
-        self.lbl_energy_price = QLabel('Energi price/kwh:')  # TODO: softocode
+        self.lbl_energy_price = QLabel('Energy price/kwh:')  # TODO: softocode
         self.txt_energy_price = QLineEdit()
         fra_form_lay.addRow(self.lbl_energy_price, self.txt_energy_price)
 
