@@ -259,10 +259,10 @@ class QEpanet:
         if not self.pluginIsActive:
             self.pluginIsActive = True
 
-            if self.dockwidget is None:
-                # Create the dockwidget (after translation) and keep reference
-                self.dockwidget = QEpanetDockWidget(self.iface, self.params, inp_file_path)
-                self.params.attach(self.dockwidget)
+        if self.dockwidget is None:
+            # Create the dockwidget (after translation) and keep reference
+            self.dockwidget = QEpanetDockWidget(self.iface, self.params, inp_file_path)
+            self.params.attach(self.dockwidget)
 
             # Connect to provide cleanup on closing of dockwidget
             self.dockwidget.closingPlugin.connect(self.onClosePlugin)
