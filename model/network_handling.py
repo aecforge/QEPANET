@@ -789,6 +789,35 @@ class NetworkUtils:
         return intersecting_fts
 
     @staticmethod
+    def find_start_end_nodes_sindex(params, sindex, link_geom):
+
+        cand_fids = sindex.intersects(link_geom.boundingBox())
+
+        request = QgsFeatureRequest()
+        request.setFilterFids(cand_fids)
+
+        j_cands = params.junctions_vlay.getFeatures(request)
+        r_cands = params.reservoirs_vlay.getFeatures(request)
+        t_cands = params.tanks_vlay.getFeatures(request)
+
+        intersecting_fts = [None, None]
+        cands = []
+        for j_cand in j_cands:
+            cands.append(j_cand)
+        for r_cand in r_cands:
+            cands.append(r_cand)
+        for t_cand in t_cands:
+            cands.append(t_cand)
+
+        for node_ft in cands:
+            if node_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < params.tolerance:
+                intersecting_fts[0] = node_ft
+            if node_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[-1])) < params.tolerance:
+                intersecting_fts[1] = node_ft
+
+        return intersecting_fts
+
+    @staticmethod
     def find_node_layer(params, node_geom):
 
         for feat in params.reservoirs_vlay.getFeatures():

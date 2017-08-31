@@ -421,6 +421,14 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Apply symbologies
         self.apply_symbologies()
 
+        # Zoom to layer
+        extent = self.params.pipes_vlay.extent()
+
+        if not extent.isNull():
+            canvas = self.iface.mapCanvas()
+            canvas.setExtent(extent)
+            canvas.refresh()
+
     def add_junction(self):
 
         if type(self.iface.mapCanvas().mapTool()) is AddJunctionTool:
@@ -865,12 +873,17 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         # Read inp file
         if os.path.isfile(self.inp_file_path):
+
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+
             inp_reader = InpReader(self.inp_file_path)
             new_layers_d = inp_reader.read(self.params)
 
             self.remove_layers()
             self.create_layers(new_layers_d, self.params.crs)
             self.count_elements()
+
+            QApplication.restoreOverrideCursor()
 
             if not new_layers_d:
                 if hydraulics_dialog:

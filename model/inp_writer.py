@@ -488,11 +488,24 @@ class InpFile:
         # out.append(InpFile.build_dashline(Pipe.section_header))
 
         pipe_fts = params.pipes_vlay.getFeatures()
+
+        # Build nodes spatial index
+        sindex = QgsSpatialIndex()
+        for feat in params.junctions_vlay.getFeatures():
+            sindex.insertFeature(feat)
+        for feat in params.reservoirs_vlay.getFeatures():
+            sindex.insertFeature(feat)
+        for feat in params.tanks_vlay.getFeatures():
+            sindex.insertFeature(feat)
+
         for pipe_ft in pipe_fts:
+
             eid = pipe_ft.attribute(Pipe.field_name_eid)
 
             # Find start/end nodes
-            adj_nodes = NetworkUtils.find_start_end_nodes(params, pipe_ft.geometry())
+            # adj_nodes = NetworkUtils.find_start_end_nodes(params, pipe_ft.geometry())
+            adj_nodes = NetworkUtils.find_start_end_nodes_sindex(params, sindex, pipe_ft.geometry())
+
             start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
             end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
 

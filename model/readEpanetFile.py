@@ -671,18 +671,20 @@ def getBinInfo():
         if sec[0] == 1:  # JUNCTIONS
             if "[" in s1:
                 continue
-            mm = s1.split()
+            # mm = s1.split()
+            mm = re.split(r'\t', s1.strip())
+
             if len(mm) > 1:
                 if mm[0][0] == ';':
                     pass
                 else:
-                    nodeJunctionNameID.append(mm[0])
+                    nodeJunctionNameID.append(mm[0].strip())
                     nodeJunctionElevations.append(float(mm[1]))
-                    if len(mm) > 2 and mm[2].strip() != ';':
+                    if len(mm) > 2 and mm[2].strip() != '':
                         nodeJunctionBaseDemands.append(float(mm[2]))
-                    if len(mm) > 3 and mm[3].strip() != ';':
+                    if len(mm) > 3 and mm[3].strip() != '':
                         if mm[3][0] != ';':
-                            nodePatternNameID.append(mm[3])
+                            nodePatternNameID.append(mm[3].strip())
                         else:
                             nodePatternNameID.append('')
                     else:
@@ -692,16 +694,19 @@ def getBinInfo():
         if sec[1] == 1:  # RESERVOIRS
             if "[" in s1:
                 continue
-            mm = s1.split()
+            # mm = s1.split()
+            mm = re.split(r'\t', s1.strip())
+            if not mm[0]:
+                continue
             if len(mm) > 0:
                 if mm[0][0] == ';':
                     pass
                 else:
-                    nodeReservoirNameID.append(mm[0])
+                    nodeReservoirNameID.append(mm[0].strip())
                     nodeReservoirElevations.append(float(mm[1]))
                     if len(mm) > 2:
                         if mm[2][0] != ';':
-                            nodePatternNameID.append(mm[2])
+                            nodePatternNameID.append(mm[2].strip())
                         else:
                             nodePatternNameID.append('')
                     else:
@@ -710,12 +715,15 @@ def getBinInfo():
         if sec[2] == 1:  # TANKS
             if "[" in s1:
                 continue
-            mm = s1.split()
+            # mm = s1.split()
+            mm = re.split(r'\t', s1.strip())
+            if not mm[0]:
+                continue
             if len(mm) > 0:
                 if mm[0][0] == ';':
                     pass
                 else:
-                    BinNodeTankNameID.append(mm[0])
+                    BinNodeTankNameID.append(mm[0].strip())
                     BinNodeTankElevation.append(float(mm[1]))
                     BinNodeTankInitLevel.append(float(mm[2]))
                     BinNodeTankMinLevel.append(float(mm[3]))
@@ -724,8 +732,8 @@ def getBinInfo():
                     BinNodeTankMinVol.append(float(mm[6]))
                     nodePatternNameID.append('')
                     if len(mm) > 7:
-                        if mm[7][0] != ';':
-                            BinNodeTankVolumeCurveID.append(mm[7])
+                        if mm[7] and mm[7][0] != ';':
+                            BinNodeTankVolumeCurveID.append(mm[7].strip())
                         else:
                             BinNodeTankVolumeCurveID.append('')
                     else:
@@ -734,15 +742,18 @@ def getBinInfo():
         if sec[3] == 1:  # PIPES
             if "[" in s1:
                 continue
-            mm = s1.split()
+            # mm = s1.split()
+            mm = re.split(r'\t', s1.strip())
+            if not mm[0]:
+                continue
             if len(mm) > 0:
                 if mm[0][0] == ';':
                     pass
                 else:
-                    linkNameID.append(mm[0])
-                    BinLinkPipeNameID.append(mm[0])
-                    BinLinkFromNode.append(mm[1])
-                    BinLinkToNode.append(mm[2])
+                    linkNameID.append(mm[0].strip())
+                    BinLinkPipeNameID.append(mm[0].strip())
+                    BinLinkFromNode.append(mm[1].strip())
+                    BinLinkToNode.append(mm[2].strip())
                     BinLinkPipeLengths.append(float(mm[3]))
                     BinLinkPipeDiameters.append(float(mm[4]))
                     BinLinkPipeRoughness.append(float(mm[5]))
@@ -765,48 +776,50 @@ def getBinInfo():
                 if mm[0][0] == ';':
                     pass
                 else:
-                    linkNameID.append(mm[0])
-                    BinLinkPumpNameID.append(mm[0])
-                    BinLinkFromNode.append(mm[1])
-                    BinLinkToNode.append(mm[2])
+                    linkNameID.append(mm[0].strip())
+                    BinLinkPumpNameID.append(mm[0].strip())
+                    BinLinkFromNode.append(mm[1].strip())
+                    BinLinkToNode.append(mm[2].strip())
+
                     if len(mm) > 4:
-                        if mm[3] == 'HEAD':
-                            BinLinkPumpCurveNameID.append(mm[4])
-                        elif mm[3] == 'POWER':
+                        if mm[3].upper() == 'HEAD':
+                            BinLinkPumpCurveNameID.append(mm[4].strip())
+                        elif mm[3].upper() == 'POWER':
                             if mm[4].strip() == ';':
                                 power = 0
                             else:
                                 power = float(mm[4].replace(';', ''))
                             BinLinkPumpPower.append(power)
-                            BinLinkPumpNameIDPower.append(mm[0])
+                            BinLinkPumpNameIDPower.append(mm[0].strip())
                     if len(mm) > 6:
                         if mm[5][0] != ';':
-                            if mm[5] == 'SPEED':
-                                BinLinkPumpSpeed.append(mm[6])
-                                BinLinkPumpSpeedID.append(mm[0])
+                            if mm[5].upper() == 'SPEED':
+                                BinLinkPumpSpeed.append(mm[6].strip())
+                                BinLinkPumpSpeedID.append(mm[0].strip())
                             else:
-                                BinLinkPumpPatterns.append(mm[6])
-                                BinLinkPumpPatternsPumpID.append(mm[0])
+                                BinLinkPumpPatterns.append(mm[6].strip())
+                                BinLinkPumpPatternsPumpID.append(mm[0].strip())
 
                     if len(mm) > 8:
-                        BinLinkPumpPatterns.append(mm[8])
-                        BinLinkPumpPatternsPumpID.append(mm[0])
+                        BinLinkPumpPatterns.append(mm[8].strip())
+                        BinLinkPumpPatternsPumpID.append(mm[0].strip())
 
         if sec[5] == 1:  # VALVES
             if "[" in s1:
                 continue
-            mm = s1.split()
+            # mm = s1.split()
+            mm = re.split(r'\t', s1.strip())
             if len(mm) > 1:
                 if mm[0][0] == ';':
                     pass
                 else:
-                    linkNameID.append(mm[0])
-                    BinLinkValveNameID.append(mm[0])
-                    BinLinkFromNode.append(mm[1])
-                    BinLinkToNode.append(mm[2])
+                    linkNameID.append(mm[0].strip())
+                    BinLinkValveNameID.append(mm[0].strip())
+                    BinLinkFromNode.append(mm[1].strip())
+                    BinLinkToNode.append(mm[2].strip())
                     BinLinkValveDiameters.append(float(mm[3]))
-                    BinLinkValveType.append(mm[4])
-                    BinLinkValveSetting.append((mm[5]))
+                    BinLinkValveType.append(mm[4].strip())
+                    BinLinkValveSetting.append(mm[5].strip())
                     if len(mm) > 6:
                         if mm[6][0] != ';':
                             BinLinkValveMinorLoss.append(float(mm[6]))
@@ -814,7 +827,8 @@ def getBinInfo():
         if sec[6] == 1:  # PATTERNS
             if "[" in s1:
                 continue
-            mm = s1.split()
+            # mm = s1.split()
+            mm = re.split(r'\t', s1.strip())
             if len(mm) > 1:
                 if mm[0][0] == ';':
                     pass
@@ -824,7 +838,8 @@ def getBinInfo():
         if sec[7] == 1:  # STATUS
             if "[" in s1:
                 continue
-            mm = s1.split()
+            # mm = s1.split()
+            mm = re.split(r'\t', s1.strip())
             if len(mm) > 1:
                 if mm[0][0] == ';':
                     pass
@@ -840,7 +855,8 @@ def getBinInfo():
         if sec[8] == 1:  # DEMANDS
             if "[" in s1:
                 continue
-            mm = s1.split()
+            # mm = s1.split()
+            mm = re.split(r'\t', s1.strip())
             if len(mm) > 1:
                 if mm[0][0] == ';':
                     pass
@@ -856,7 +872,10 @@ def getBinInfo():
             # Clean excessive 'PUMP:'
             s1 = s1.strip().replace('PUMP: ', '')
 
-            mm = s1.split()
+            # mm = s1.split()
+            mm = re.split(r'\t', s1.strip())
+            if not mm[0]:
+                continue
 
             if len(mm) > 0:
                 if mm[0][0].strip() == ';':
