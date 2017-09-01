@@ -10,6 +10,7 @@ from ..model.options_report import Options, Report
 from ..model.options_report import Times
 from ..model.system_ops import Energy
 from ..model.water_quality import Reactions
+from qgis.core import QgsSpatialIndex
 
 
 class Parameters(Observable):
@@ -76,6 +77,9 @@ class Parameters(Observable):
         self.out_lay_link_velocity_id = None
         self.out_lay_link_headloss_id = None
         self.out_lay_link_quality_id = None
+
+        # Nodes spatial index
+        self.nodes_sindex = QgsSpatialIndex()
 
     # Layers
     @property

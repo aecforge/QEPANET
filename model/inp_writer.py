@@ -539,7 +539,7 @@ class InpFile:
             eid = p_ft.attribute(Pump.field_name_eid)
 
             # Find start/end nodes
-            adj_nodes = NetworkUtils.find_start_end_nodes(params, p_ft.geometry(), False, False, False)
+            adj_nodes = NetworkUtils.find_start_end_nodes(params, p_ft.geometry())
             start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
             end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
 
@@ -741,7 +741,7 @@ class InpFile:
             eid = v_ft.attribute(Valve.field_name_eid)
 
             # Find start/end nodes
-            adj_nodes = NetworkUtils.find_start_end_nodes(params, v_ft.geometry(), False, False, False)
+            adj_nodes = NetworkUtils.find_start_end_nodes(params, v_ft.geometry())
             start_node_id = adj_nodes[0].attribute(Junction.field_name_eid)
             end_node_id = adj_nodes[1].attribute(Junction.field_name_eid)
 

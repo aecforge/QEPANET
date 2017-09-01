@@ -37,6 +37,7 @@ class NodeHandler:
                 new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
 
                 params.junctions_vlay.addFeatures([new_junct_feat])
+                params.nodes_sindex.insertFeature(new_junct_feat)
 
             except Exception as e:
                 params.junctions_vlay.destroyEditCommand()
@@ -66,6 +67,7 @@ class NodeHandler:
                 new_reservoir_feat.setGeometry(QgsGeometry.fromPoint(point))
 
                 params.reservoirs_vlay.addFeatures([new_reservoir_feat])
+                params.nodes_sindex.insertFeature(new_reservoir_feat)
 
             except Exception as e:
                 params.reservoirs_vlay.destroyEditCommand()
@@ -98,6 +100,7 @@ class NodeHandler:
                 new_tank_feat.setGeometry(QgsGeometry.fromPoint(point))
 
                 params.tanks_vlay.addFeatures([new_tank_feat])
+                params.nodes_sindex.insertFeature(new_tank_feat)
 
             except Exception as e:
                 params.tanks_vlay.destroyEditCommand()
@@ -137,7 +140,7 @@ class NodeHandler:
             layer.endEditCommand()
 
     @staticmethod
-    def _delete_feature(layer, feature):
+    def _delete_feature(params, layer, feature):
         caps = layer.dataProvider().capabilities()
         if caps & QgsVectorDataProvider.DeleteFeatures:
 
@@ -145,6 +148,7 @@ class NodeHandler:
 
             try:
                 layer.deleteFeature(feature.id())
+                params.nodes_sindex.deleteFeature(feature)
 
             except Exception as e:
                 layer.destroyEditCommand()
@@ -165,7 +169,7 @@ class NodeHandler:
             # if not adj_links_fts['pumps'] and not adj_links_fts['valves']:
 
                 # Delete node
-                NodeHandler._delete_feature(layer, node_ft)
+                NodeHandler._delete_feature(params, layer, node_ft)
 
                 # Delete adjacent pipes
                 if del_ad_nodes:
@@ -178,7 +182,7 @@ class NodeHandler:
 
             adj_pipes = NetworkUtils.find_adjacent_links(params, node_ft.geometry())['pipes']
 
-            NodeHandler._delete_feature(layer, node_ft)
+            NodeHandler._delete_feature(params, layer, node_ft)
 
             if del_ad_nodes:
                 for adj_pipe in adj_pipes:
@@ -281,6 +285,7 @@ class LinkHandler:
                 sel_feats = params.pipes_vlay.selectedFeatures()
 
                 params.pipes_vlay.addFeatures([new_pipe_ft])
+                params.nodes_sindex.insertFeature(new_pipe_ft)
 
                 # Restore previously selected feature
                 sel_feats_ids = []
@@ -398,6 +403,7 @@ class LinkHandler:
                 new_ft.setGeometry(geom)
 
                 layer.addFeatures([new_ft])
+                params.nodes_sindex.insertFeature(new_ft)
 
             except Exception as e:
                 layer.destroyEditCommand()
@@ -491,6 +497,7 @@ class LinkHandler:
 
                 # Delete old pipe
                 params.pipes_vlay.deleteFeature(pipe_ft.id())
+                params.nodes_sindex.deleteFeature(pipe_ft)
 
             except Exception as e:
                 params.pipes_vlay.destroyEditCommand()
@@ -566,7 +573,7 @@ class LinkHandler:
             vlay.endEditCommand()
 
     @staticmethod
-    def _delete_feature(layer, link_ft):
+    def _delete_feature(params, layer, link_ft):
 
         caps = layer.dataProvider().capabilities()
         if caps & QgsVectorDataProvider.DeleteFeatures:
@@ -575,6 +582,7 @@ class LinkHandler:
 
             try:
                 layer.deleteFeature(link_ft.id())
+                params.nodes_sindex.deleteFeature(link_ft)
 
             except Exception as e:
                 layer.destroyEditCommand()
@@ -625,8 +633,8 @@ class LinkHandler:
 
             for adjadj_link in adjadj_links['pipes']:
                 LinkHandler._delete_feature(params.pipes_vlay, adjadj_link)
-            NodeHandler._delete_feature(params.junctions_vlay, adj_nodes[0])
-            NodeHandler._delete_feature(params.junctions_vlay, adj_nodes[1])
+            NodeHandler._delete_feature(params, params.junctions_vlay, adj_nodes[0])
+            NodeHandler._delete_feature(params, params.junctions_vlay, adj_nodes[1])
 
     @staticmethod
     def delete_vertex(params, layer, pipe_ft, vertex_index):
@@ -760,15 +768,15 @@ class NetworkUtils:
         pass
 
     @staticmethod
-    def find_start_end_nodes(parameters, link_geom, exclude_junctions=False, exclude_reservoirs=False, exclude_tanks=False):
+    def find_start_end_nodes(params, link_geom, exclude_junctions=False, exclude_reservoirs=False, exclude_tanks=False):
 
         all_feats = []
         if not exclude_junctions:
-            all_feats.extend(list(parameters.junctions_vlay.getFeatures()))
+            all_feats.extend(list(params.junctions_vlay.getFeatures()))
         if not exclude_reservoirs:
-            all_feats.extend(list(parameters.reservoirs_vlay.getFeatures()))
+            all_feats.extend(list(params.reservoirs_vlay.getFeatures()))
         if not exclude_tanks:
-            all_feats.extend(list(parameters.tanks_vlay.getFeatures()))
+            all_feats.extend(list(params.tanks_vlay.getFeatures()))
 
         intersecting_fts = [None, None]
         if not all_feats:
@@ -776,14 +784,14 @@ class NetworkUtils:
 
         cands = []
         for node_ft in all_feats:
-            if link_geom.buffer(parameters.tolerance, 5).boundingBox().contains(node_ft.geometry().asPoint()):
+            if link_geom.buffer(params.tolerance, 5).boundingBox().contains(node_ft.geometry().asPoint()):
                 cands.append(node_ft)
 
         if cands:
             for node_ft in cands:
-                if node_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < parameters.tolerance:
+                if node_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < params.tolerance:
                     intersecting_fts[0] = node_ft
-                if node_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[-1])) < parameters.tolerance:
+                if node_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[-1])) < params.tolerance:
                     intersecting_fts[1] = node_ft
 
         return intersecting_fts
@@ -791,11 +799,13 @@ class NetworkUtils:
     @staticmethod
     def find_start_end_nodes_sindex(params, sindex, link_geom):
 
+        # Find node FIDs that intersect the link bounding box
         cand_fids = sindex.intersects(link_geom.boundingBox())
 
         request = QgsFeatureRequest()
         request.setFilterFids(cand_fids)
 
+        # Find features that intersect te link bb (from 3 possible layers)
         j_cands = params.junctions_vlay.getFeatures(request)
         r_cands = params.reservoirs_vlay.getFeatures(request)
         t_cands = params.tanks_vlay.getFeatures(request)
@@ -809,6 +819,7 @@ class NetworkUtils:
         for t_cand in t_cands:
             cands.append(t_cand)
 
+        # Check if any candidates are actually start or end nodes
         for node_ft in cands:
             if node_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < params.tolerance:
                 intersecting_fts[0] = node_ft

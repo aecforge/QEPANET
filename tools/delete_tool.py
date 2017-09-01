@@ -260,7 +260,7 @@ class DeleteTool(QgsMapTool):
 
                 adj_pipes = NetworkUtils.find_adjacent_links(self.params, feature.geometry())['pipes']
 
-                NodeHandler._delete_feature(layer, feature)
+                NodeHandler._delete_feature(self.params, layer, feature)
 
                 for adj_pipe in adj_pipes:
                     LinkHandler.delete_link(self.params, self.params.pipes_vlay, adj_pipe)

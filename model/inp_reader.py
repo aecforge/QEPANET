@@ -220,6 +220,7 @@ class InpReader:
 
                 featJ.setAttributes([ndID[i], ndEle[i] - delta_z, delta_z, ndPatID[i], ndBaseD[i], emitter_coeff])
                 junctions_lay_dp.addFeatures([featJ])
+                self.params.nodes_sindex.insertFeature(featJ)
 
             if i < links_count:
                 if len(stat) == i:
@@ -305,6 +306,7 @@ class InpReader:
 
                     featPump.setAttributes([linkID[i], param, head, power, speed, pump_pattern, pump_status])
                     pumps_lay_dp.addFeatures([featPump])
+                    self.params.nodes_sindex.insertFeature(featPump)
 
                     pPos += 1
 
@@ -335,6 +337,7 @@ class InpReader:
                     featValve.setAttributes(
                          [linkID[vPos], linkDiameter[vPos], linkType[vPos], linkInitSett[vPos], linkMinorloss[vPos], valve_status])
                     valves_lay_dp.addFeatures([featValve])
+                    self.params.nodes_sindex.insertFeature(featValve)
 
                     vPos += 1
 
@@ -407,6 +410,7 @@ class InpReader:
                         [linkID[i], linkLengths[i], linkDiameters[i], stat[i],
                          linkRough[i], linkMinorloss[i], material])
                     pipes_lay_dp.addFeatures([featPipe])
+                    self.params.nodes_sindex.insertFeature(featPipe)
 
             if i < ref.getBinNodeTankCount():
                 p = ref.getBinNodeTankIndex()[i] - 1
@@ -422,13 +426,14 @@ class InpReader:
                     [ndTankID[i], ndTankelevation[i] - delta_z, delta_z, initiallev[i], minimumlev[i], maximumlev[i], diameter[i],
                      minimumvol[i], volumecurv[i]])
                 tanks_lay_dp.addFeatures([featTank])
+                self.params.nodes_sindex.insertFeature(featTank)
 
             if i < ref.getBinNodeReservoirCount():
                 p = ref.getBinNodeReservoirIndex()[i] - 1
 
-                feature = QgsFeature()
+                feat_reserv = QgsFeature()
                 point = QgsPoint(float(x[p]), float(y[p]))
-                feature.setGeometry(QgsGeometry.fromPoint(point))
+                feat_reserv.setGeometry(QgsGeometry.fromPoint(point))
 
                 delta_z = 0
                 if ndID[p] in qepanet_reservoirs_deltaz_od:
@@ -438,9 +443,9 @@ class InpReader:
                 if ndID[p] in qepanet_reservoirs_press_head_od:
                     pressure_head = qepanet_reservoirs_press_head_od[ndID[p]]
 
-                feature.setAttributes(
-                    [ndID[p], reservoirs_elev[i] - delta_z - pressure_head, delta_z, pressure_head, ndPatID[p]])
-                reservoirs_lay_dp.addFeatures([feature])
+                feat_reserv.setAttributes([ndID[p], reservoirs_elev[i] - delta_z - pressure_head, delta_z, pressure_head, ndPatID[p]])
+                reservoirs_lay_dp.addFeatures([feat_reserv])
+                self.params.nodes_sindex.insertFeature(feat_reserv)
 
         return {Junction.section_name: junctions_lay,
                 Reservoir.section_name: reservoirs_lay,
