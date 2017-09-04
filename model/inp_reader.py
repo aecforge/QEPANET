@@ -119,6 +119,9 @@ class InpReader:
         # Get data of Junctions
         ndEle = ref.getBinNodeJunctionElevations()
         ndBaseD = ref.getBinNodeBaseDemands()
+
+        print 'lens', len(ndEle), len(ndBaseD)
+
         ndID = ref.getBinNodeNameID()
         ndPatID = ref.getBinNodeDemandPatternID()
 

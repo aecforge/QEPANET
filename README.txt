@@ -15,3 +15,7 @@ junctions before drawing the links;
 - a tool to edit the curves used to define pumps behaviour;
 - a tool to edit the patterns used to define junctions behaviour;
 - a series of tools to analyse the simulation results, that include thematic mapping of the network and graphs of the modelled entities along time.
+
+Find tutorials and documentation in this Google Drive folder: https://goo.gl/cq3XNH
+
+The project activities are made possible by the Autonomous Province of Bozen funding "AI_ALPEN Project, drinking water supply in alpine region, (CUP: B26J16000300003)" and by the Province of Trento funding "PAT AI APRIE public water resources management"

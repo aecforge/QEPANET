@@ -689,7 +689,7 @@ def getBinInfo():
                             nodePatternNameID.append('')
                     else:
                         nodePatternNameID.append('')
-                        nodeJunctionBaseDemands.append(0.0)
+                        # nodeJunctionBaseDemands.append(0.0)
 
         if sec[1] == 1:  # RESERVOIRS
             if "[" in s1:
