@@ -2,7 +2,6 @@ import sys
 from collections import OrderedDict
 from qgis.core import *
 from PyQt4.QtGui import *
-from sipconfig import _Macro
 
 
 class RampRenderer:

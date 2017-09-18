@@ -28,7 +28,7 @@ from PyQt4.QtCore import Qt, pyqtSignal
 from PyQt4.QtGui import QFileDialog, QMessageBox, QApplication
 from qgis.gui import QgsGenericProjectionSelector, QgsMessageBar
 
-from ..geo_utils import utils
+from ..geo_utils.utils import LayerUtils as lay_utils
 from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog, ReportDialog
 from output_ui import OutputAnalyserDialog, LogDialog
 from ..model.options_report import Options
@@ -340,34 +340,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         msg_box.setIcon(QMessageBox.Information)
         msg_box.setText(text)
         msg_box.exec_()
-
-    def remove_layers(self):
-
-        if self.params.junctions_vlay:
-            self.remove_layer(self.params.junctions_vlay)
-            self.params.junctions_vlay = None
-        if self.params.reservoirs_vlay:
-            self.remove_layer(self.params.reservoirs_vlay)
-            self.params.reservoirs_vlay
-        if self.params.tanks_vlay:
-            self.remove_layer(self.params.tanks_vlay)
-            self.params.tanks_vlay
-        if self.params.pipes_vlay:
-            self.remove_layer(self.params.pipes_vlay)
-            self.params.pipes_vlay
-        if self.params.pumps_vlay:
-            self.remove_layer(self.params.pumps_vlay)
-            self.params.pumps_vlay
-        if self.params.valves_vlay:
-            self.remove_layer(self.params.valves_vlay)
-            self.params.valves_vlay
-
-    def remove_layer(self, layer):
-
-        try:
-            QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
-        except:
-            pass
 
     def create_layers_clicked(self):
         self.create_layers(None, self.params.crs)
@@ -840,7 +812,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.inp_file_path = inp_file_path
             self.params.last_project_dir = os.path.dirname(inp_file_path)
 
-            self.remove_layers()
+            lay_utils.remove_layers(self.params)
 
             # Request CRS for layers
             self.crs_selector()
@@ -879,7 +851,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             inp_reader = InpReader(self.inp_file_path)
             new_layers_d = inp_reader.read(self.params)
 
-            self.remove_layers()
+            lay_utils.remove_layers(self.params)
             self.create_layers(new_layers_d, self.params.crs)
             self.count_elements()
 

@@ -22,8 +22,10 @@
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
 from PyQt4.QtGui import QAction, QIcon, QMessageBox, QFileDialog, QApplication
+from qgis.core import QgsProject
 
 from tools.parameters import Parameters, ConfigFile
+from geo_utils.utils import LayerUtils
 
 # Initialize Qt resources from file resources.py
 
@@ -31,6 +33,7 @@ from tools.parameters import Parameters, ConfigFile
 from ui.qepanet_dockwidget import QEpanetDockWidget, MyQFileDialog
 import os.path
 import resources
+
 
 class QEpanet:
     """QGIS Plugin Implementation."""
@@ -271,4 +274,3 @@ class QEpanet:
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
 
         self.dockwidget.show()
-

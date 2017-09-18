@@ -595,7 +595,7 @@ class LinkHandler:
 
         # The link is a pipe
         if layer == params.pipes_vlay:
-            LinkHandler._delete_feature(layer, link_ft)
+            LinkHandler._delete_feature(params, layer, link_ft)
 
         # The link is a pump or valve
         elif layer == params.pumps_vlay or layer == params.valves_vlay:
@@ -629,10 +629,10 @@ class LinkHandler:
                     midpoint)
 
             # Delete old links and pipes
-            LinkHandler._delete_feature(layer, adj_links_ft)
+            LinkHandler._delete_feature(params, layer, adj_links_ft)
 
             for adjadj_link in adjadj_links['pipes']:
-                LinkHandler._delete_feature(params.pipes_vlay, adjadj_link)
+                LinkHandler._delete_feature(params, params.pipes_vlay, adjadj_link)
             NodeHandler._delete_feature(params, params.junctions_vlay, adj_nodes[0])
             NodeHandler._delete_feature(params, params.junctions_vlay, adj_nodes[1])
 

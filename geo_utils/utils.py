@@ -46,7 +46,8 @@ class LayerUtils:
         return QgsMapLayerRegistry.instance().mapLayer(lay_id)
 
     @staticmethod
-    def remove_layer(layer_name):
+    def remove_layer_by_name(layer_name):
+
         layers = QgsMapLayerRegistry.instance().mapLayers()
         for name, layer in layers.iteritems():
             if layer_name in name:
@@ -54,3 +55,33 @@ class LayerUtils:
                     QgsMapLayerRegistry.instance().removeMapLayers([name])
                 except Exception:
                     raise NameError('Cannot remove ' + layer_name + ' layer.')
+
+    @staticmethod
+    def remove_layer(layer):
+
+        try:
+            QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
+        except:
+            pass
+
+    @staticmethod
+    def remove_layers(params):
+
+        if params.junctions_vlay:
+            LayerUtils.remove_layer(params.junctions_vlay)
+            params.junctions_vlay = None
+        if params.reservoirs_vlay:
+            LayerUtils.remove_layer(params.reservoirs_vlay)
+            params.reservoirs_vlay
+        if params.tanks_vlay:
+            LayerUtils.remove_layer(params.tanks_vlay)
+            params.tanks_vlay
+        if params.pipes_vlay:
+            LayerUtils.remove_layer(params.pipes_vlay)
+            params.pipes_vlay
+        if params.pumps_vlay:
+            LayerUtils.remove_layer(params.pumps_vlay)
+            params.pumps_vlay
+        if params.valves_vlay:
+            LayerUtils.remove_layer(params.valves_vlay)
+            params.valves_vlay

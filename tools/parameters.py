@@ -15,7 +15,7 @@ from qgis.core import QgsSpatialIndex
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.92'
+    plug_in_name = 'QEPANET 0.93'
     config_file_name = 'config.ini'
 
     path = os.path.dirname(os.path.realpath(__file__))
