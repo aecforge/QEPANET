@@ -327,10 +327,10 @@ class OutputAnalyserDialog(QDialog):
                     message,
                     QMessageBox.Ok)
 
-        except:
-            self.iface.messageBar().pushWarning(
-                Parameters.plug_in_name,
-                'Error while reading output file.')  # TODO: softcode
+        finally:
+            # self.iface.messageBar().pushWarning(
+            #     Parameters.plug_in_name,
+            #     'Error while reading output file.')  # TODO: softcode
             self.output_reader = None
             self.txt_out_file.setText('')
             QApplication.restoreOverrideCursor()
@@ -511,31 +511,35 @@ class OutputAnalyserDialog(QDialog):
 
     def draw_map(self, lay_type, lay_id, lay_name, dataset, report_time):
 
-        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            QApplication.setOverrideCursor(Qt.WaitCursor)
 
-        lay_name += ' ' + report_time
+            lay_name += ' ' + report_time
 
-        lay = LayerUtils.get_lay_from_id(lay_id)
-        if lay is None:
-            if lay_type == LayerType.NODE:
-                lay = self.create_out_node_layer(lay_name, dataset)
-            elif lay_type == LayerType.LINK:
-                lay = self.create_out_link_layer(lay_name, dataset)
-            lay_id = lay.id()
-            QgsMapLayerRegistry.instance().addMapLayer(lay)
-            self.params.out_layers.append(lay)
-        else:
-            lay.setLayerName(lay_name)
+            lay = LayerUtils.get_lay_from_id(lay_id)
+            if lay is None:
+                if lay_type == LayerType.NODE:
+                    lay = self.create_out_node_layer(lay_name, dataset)
+                elif lay_type == LayerType.LINK:
+                    lay = self.create_out_link_layer(lay_name, dataset)
+                lay_id = lay.id()
+                QgsMapLayerRegistry.instance().addMapLayer(lay)
+                self.params.out_layers.append(lay)
+            else:
+                lay.setLayerName(lay_name)
 
-        # text = self.seconds_to_string(
-        #     report_time,
-        #     self.output_reader.sim_duration_secs,
-        #     self.output_reader.report_time_step_secs)
+            # text = self.seconds_to_string(
+            #     report_time,
+            #     self.output_reader.sim_duration_secs,
+            #     self.output_reader.report_time_step_secs)
 
-        lay.setRendererV2(RampRenderer.get_renderer(lay, report_time))
-        lay.triggerRepaint()
+            lay.setRendererV2(RampRenderer.get_renderer(lay, report_time))
+            lay.triggerRepaint()
 
-        QApplication.restoreOverrideCursor()
+            QApplication.restoreOverrideCursor()
+
+        finally:
+            QApplication.restoreOverrideCursor()
 
         return lay_id
 

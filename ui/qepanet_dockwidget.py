@@ -846,39 +846,47 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Read inp file
         if os.path.isfile(self.inp_file_path):
 
-            QApplication.setOverrideCursor(Qt.WaitCursor)
+            try:
 
-            inp_reader = InpReader(self.inp_file_path)
-            new_layers_d = inp_reader.read(self.params)
+                QApplication.setOverrideCursor(Qt.WaitCursor)
 
-            lay_utils.remove_layers(self.params)
-            self.create_layers(new_layers_d, self.params.crs)
-            self.count_elements()
+                inp_reader = InpReader(self.inp_file_path)
+                new_layers_d = inp_reader.read(self.params)
 
-            QApplication.restoreOverrideCursor()
+                lay_utils.remove_layers(self.params)
+                self.create_layers(new_layers_d, self.params.crs)
+                self.count_elements()
 
-            if not new_layers_d:
-                if hydraulics_dialog:
-                    # Prompt for hydaulic options
-                    if self.hydraulics_dialog is None:
-                        self.hydraulics_dialog = HydraulicsDialog(self, self.params, True)
-                    self.hydraulics_dialog.show()
+                if not new_layers_d:
+                    if hydraulics_dialog:
+                        # Prompt for hydaulic options
+                        if self.hydraulics_dialog is None:
+                            self.hydraulics_dialog = HydraulicsDialog(self, self.params, True)
+                        self.hydraulics_dialog.show()
+
+            finally:
+
+                QApplication.restoreOverrideCursor()
 
     def project_save_clicked(self):
 
         self.btn_project_save.setChecked(False)
 
-        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            QApplication.setOverrideCursor(Qt.WaitCursor)
 
-        InpFile.write_inp_file(self.params, self.inp_file_path, '')
-        QApplication.restoreOverrideCursor()
+            InpFile.write_inp_file(self.params, self.inp_file_path, '')
+            QApplication.restoreOverrideCursor()
 
 
-        self.iface.messageBar().pushMessage(
-            Parameters.plug_in_name,
-            'Project saved.',
-            QgsMessageBar.INFO,
-            5)  # TODO: softcode
+            self.iface.messageBar().pushMessage(
+                Parameters.plug_in_name,
+                'Project saved.',
+                QgsMessageBar.INFO,
+                5)  # TODO: softcode
+
+        finally:
+            QApplication.restoreOverrideCursor()
 
     def project_saveas_clicked(self):
 
@@ -891,15 +899,19 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.inp_file_path = inp_file_path
             self.txt_prj_file.setText(self.inp_file_path)
 
-            QApplication.setOverrideCursor(Qt.WaitCursor)
-            InpFile.write_inp_file(self.params, self.inp_file_path, '')
-            QApplication.restoreOverrideCursor()
+            try:
+                QApplication.setOverrideCursor(Qt.WaitCursor)
+                InpFile.write_inp_file(self.params, self.inp_file_path, '')
+                QApplication.restoreOverrideCursor()
 
-            self.iface.messageBar().pushMessage(
-                Parameters.plug_in_name,
-                'Project saved.',
-                QgsMessageBar.INFO,
-                5)  # TODO: softcode
+                self.iface.messageBar().pushMessage(
+                    Parameters.plug_in_name,
+                    'Project saved.',
+                    QgsMessageBar.INFO,
+                    5)  # TODO: softcode
+
+            finally:
+                QApplication.restoreOverrideCursor()
 
     def btn_epanet_run_clicked(self):
 
