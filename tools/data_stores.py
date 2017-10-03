@@ -3,9 +3,9 @@ import os
 from PyQt4.QtCore import QVariant
 from qgis.core import *
 
-from exceptions import ShpExistsExcpetion
 from ..model.network import *
 from ..model.network import Tables
+from ..tools.parameters import Parameters
 
 
 class MemoryDS:
@@ -20,7 +20,7 @@ class MemoryDS:
         if crs is not None:
             url += '?crs=' + crs.authid()
 
-        junctions_lay = QgsVectorLayer(url, 'Junctions', 'memory')
+        junctions_lay = QgsVectorLayer(url, Parameters.junctions_vlay_name, 'memory')
         junctions_lay_dp = junctions_lay.dataProvider()
         junctions_lay_dp.addAttributes(Junction.fields)
         junctions_lay.updateFields()
@@ -53,7 +53,7 @@ class MemoryDS:
         if crs is not None:
             url += '?crs=' + crs.authid()
 
-        reservoirs_lay = QgsVectorLayer(url, 'Reservoirs', 'memory')
+        reservoirs_lay = QgsVectorLayer(url, Parameters.reservoirs_vlay_name, 'memory')
         reservoirs_lay_dp = reservoirs_lay.dataProvider()
         reservoirs_lay_dp.addAttributes(Reservoir.fields)
         reservoirs_lay.updateFields()
@@ -82,7 +82,7 @@ class MemoryDS:
         if crs is not None:
             url += '?crs=' + crs.authid()
 
-        tanks_lay = QgsVectorLayer(url, 'Tanks', 'memory')
+        tanks_lay = QgsVectorLayer(url, Parameters.tanks_vlay_name, 'memory')
         tanks_lay_dp = tanks_lay.dataProvider()
         tanks_lay_dp.addAttributes(Tank.fields)
         tanks_lay.updateFields()
@@ -123,7 +123,7 @@ class MemoryDS:
         if crs is not None:
             url += '?crs=' + crs.authid()
 
-        pipes_lay = QgsVectorLayer(url, 'Pipes', 'memory')
+        pipes_lay = QgsVectorLayer(url, Parameters.pipes_vlay_name, 'memory')
         pipes_lay_dp = pipes_lay.dataProvider()
         pipes_lay_dp.addAttributes(Pipe.fields)
         pipes_lay.updateFields()
@@ -158,7 +158,7 @@ class MemoryDS:
         if crs is not None:
             url += '?crs=' + crs.authid()
 
-        pumps_lay = QgsVectorLayer(url, 'Pumps', 'memory')
+        pumps_lay = QgsVectorLayer(url, Parameters.pumps_vlay_name, 'memory')
         pumps_lay_dp = pumps_lay.dataProvider()
         pumps_lay_dp.addAttributes(Pump.fields)
         pumps_lay.updateFields()
@@ -189,7 +189,7 @@ class MemoryDS:
         url = 'LineString'
         if crs is not None:
             url += '?crs=' + crs.authid()
-        valves_lay = QgsVectorLayer(url, 'Valves', 'memory')
+        valves_lay = QgsVectorLayer(url, Parameters.valves_vlay_name, 'memory')
         valves_lay_dp = valves_lay.dataProvider()
         valves_lay_dp.addAttributes(Valve.fields)
         valves_lay.updateFields()

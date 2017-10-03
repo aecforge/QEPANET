@@ -1,6 +1,6 @@
 from PyQt4.QtGui import *
 from PyQt4.QtCore import Qt
-# from qgis.gui import QgsMapTool
+from qgis.gui import QgsMessageBar
 from graphs import StaticMplCanvas
 from ..geo_utils.renderer import *
 from ..geo_utils.utils import *
@@ -331,16 +331,18 @@ class OutputAnalyserDialog(QDialog):
             # self.iface.messageBar().pushWarning(
             #     Parameters.plug_in_name,
             #     'Error while reading output file.')  # TODO: softcode
-            self.output_reader = None
-            self.txt_out_file.setText('')
+            # self.output_reader = None
+            # self.txt_out_file.setText('')
             QApplication.restoreOverrideCursor()
 
     def btn_sel_element_clicked(self):
 
         if self.output_reader is None:
-            self.iface.messageBar().pushWarning(
+            self.iface.messageBar().pushMessage(
                 Parameters.plug_in_name,
-                'Please select the simulation out file.')  # TODO: softcode
+                'Please select the simulation out file.',
+                QgsMessageBar.WARNING,
+                5)  # TODO: softcode
             return
 
         self.tool = SelectTool(self, self.params)

@@ -18,6 +18,13 @@ class Parameters(Observable):
     plug_in_name = 'QEPANET 0.93'
     config_file_name = 'config.ini'
 
+    junctions_vlay_name = 'Junctions'
+    reservoirs_vlay_name = 'Reservoirs'
+    tanks_vlay_name = 'Tanks'
+    pipes_vlay_name = 'Pipes'
+    pumps_vlay_name = 'Pumps'
+    valves_vlay_name = 'Valves'
+
     path = os.path.dirname(os.path.realpath(__file__))
     path = os.path.dirname(path)
     config_file_path = os.path.join(path, config_file_name)
@@ -232,11 +239,16 @@ class ConfigFile:
         """
         Create a config file
         """
-        self.config.add_section('EPANET')
-        self.config.set("patterns_file", '')
+        epanet_sec_name = 'EPANET'
+        self.config.add_section(epanet_sec_name)
+        self.config.set(epanet_sec_name, 'patterns_file', '')
+        self.config.set(epanet_sec_name, 'curves_file', '')
+        self.config.set(epanet_sec_name, 'inp_file_folder', '')
+        self.config.set(epanet_sec_name, 'inp_file_path', '')
+        self.config.set(epanet_sec_name, 'out_file_path', '')
 
-        with codecs.open(self.config_file_path, "wb",  'utf-8') as config_file:
-            self.config.write(self.config_file_path)
+        with codecs.open(self.config_file_path, "wb", 'utf-8') as config_file:
+            self.config.write(config_file)
 
     def get_config(self):
         """

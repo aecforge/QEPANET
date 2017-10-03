@@ -262,15 +262,15 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>6</number>
+              <number>9</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
-                <height>231</height>
+                <width>322</width>
+                <height>155</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -299,80 +299,13 @@
                    <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
                   </property>
                   <item row="0" column="0">
-                   <widget class="QLabel" name="lbl_junctions">
-                    <property name="text">
-                     <string>Junctions:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QComboBox" name="cbo_junctions">
-                    <property name="sizePolicy">
-                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                     </sizepolicy>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="lbl_pipes">
-                    <property name="text">
-                     <string>Pipes:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QComboBox" name="cbo_pipes"/>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="lbl_pumps">
-                    <property name="text">
-                     <string>Pumps:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="1">
-                   <widget class="QComboBox" name="cbo_pumps"/>
-                  </item>
-                  <item row="3" column="0">
-                   <widget class="QLabel" name="lbl_reservoirs">
-                    <property name="text">
-                     <string>Reservoirs:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="1">
-                   <widget class="QComboBox" name="cbo_reservoirs"/>
-                  </item>
-                  <item row="4" column="0">
-                   <widget class="QLabel" name="lbl_tanks">
-                    <property name="text">
-                     <string>Tanks:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="4" column="1">
-                   <widget class="QComboBox" name="cbo_tanks"/>
-                  </item>
-                  <item row="5" column="0">
-                   <widget class="QLabel" name="lbl_valves">
-                    <property name="text">
-                     <string>Valves:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="1">
-                   <widget class="QComboBox" name="cbo_valves"/>
-                  </item>
-                  <item row="6" column="0">
                    <widget class="QLabel" name="lbl_dem">
                     <property name="text">
                      <string>DEM:</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="6" column="1">
+                  <item row="0" column="1">
                    <widget class="QComboBox" name="cbo_dem"/>
                   </item>
                  </layout>
@@ -381,7 +314,7 @@
                <item>
                 <widget class="QPushButton" name="btn_symbology">
                  <property name="text">
-                  <string>Apply symbologies</string>
+                  <string>Reset layer symbologies</string>
                  </property>
                 </widget>
                </item>
@@ -1173,13 +1106,6 @@
                <string>Tools</string>
               </attribute>
               <layout class="QVBoxLayout" name="verticalLayout_6">
-               <item>
-                <widget class="QPushButton" name="btn_create_layers">
-                 <property name="text">
-                  <string>Create layers</string>
-                 </property>
-                </widget>
-               </item>
                <item>
                 <widget class="QFrame" name="frame_2">
                  <property name="frameShape">

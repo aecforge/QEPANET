@@ -2,6 +2,7 @@ import os.path
 import subprocess
 
 from qgis.core import QgsMapLayerRegistry
+from ..tools.parameters import Parameters
 
 __author__ = 'deluca'
 
@@ -67,6 +68,14 @@ class LayerUtils:
     @staticmethod
     def remove_layers(params):
 
+        # Delete referenced layers
+        deleted = {Parameters.junctions_vlay_name: False,
+                   Parameters.reservoirs_vlay_name: False,
+                   Parameters.tanks_vlay_name: False,
+                   Parameters.pipes_vlay_name: False,
+                   Parameters.pumps_vlay_name: False,
+                   Parameters.valves_vlay_name: False}
+
         if params.junctions_vlay:
             LayerUtils.remove_layer(params.junctions_vlay)
             params.junctions_vlay = None
@@ -85,3 +94,17 @@ class LayerUtils:
         if params.valves_vlay:
             LayerUtils.remove_layer(params.valves_vlay)
             params.valves_vlay
+
+        # Now delete unreferenced layers
+        if not deleted[Parameters.junctions_vlay_name]:
+            LayerUtils.remove_layer_by_name(params.junctions_vlay_name)
+        if not deleted[Parameters.reservoirs_vlay_name]:
+            LayerUtils.remove_layer_by_name(params.reservoirs_vlay_name)
+        if not deleted[Parameters.tanks_vlay_name]:
+            LayerUtils.remove_layer_by_name(params.tanks_vlay_name)
+        if not deleted[Parameters.pipes_vlay_name]:
+            LayerUtils.remove_layer_by_name(params.pipes_vlay_name)
+        if not deleted[Parameters.pumps_vlay_name]:
+            LayerUtils.remove_layer_by_name(params.pumps_vlay_name)
+        if not deleted[Parameters.valves_vlay_name]:
+            LayerUtils.remove_layer_by_name(params.valves_vlay_name)

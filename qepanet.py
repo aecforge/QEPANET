@@ -22,7 +22,7 @@
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
 from PyQt4.QtGui import QAction, QIcon, QMessageBox, QFileDialog, QApplication
-from qgis.core import QgsProject
+from qgis.gui import QgsVertexMarker
 
 from tools.parameters import Parameters, ConfigFile
 from geo_utils.utils import LayerUtils
@@ -195,7 +195,6 @@ class QEpanet:
 
         self.pluginIsActive = False
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
 
@@ -217,18 +216,21 @@ class QEpanet:
         # Restore cursor
         QApplication.setOverrideCursor(Qt.ArrowCursor)
 
-        # Check for config file existance
+        # # Check for config file existance
         if not os.path.exists(Parameters.config_file_path):
-            QMessageBox.critical(
-                self.iface.mainWindow(),
-                Parameters.plug_in_name,
-                u'The config.ini file was not found. It should be located inside the plugin directory. Please refer to'
-                u'the plugin documentation to solve the problem.',
-                QMessageBox.Ok)
+            config_file = ConfigFile(Parameters.config_file_path)
+            config_file.create_config()
 
-            return
+        #     QMessageBox.critical(
+        #         self.iface.mainWindow(),
+        #         Parameters.plug_in_name,
+        #         u'The config.ini file was not found. It should be located inside the plugin directory. Please refer to'
+        #         u'the plugin documentation to solve the problem.',
+        #         QMessageBox.Ok)
+        #
+        #     return
 
-        config_file = ConfigFile(Parameters.config_file_path)
+        # config_file = ConfigFile(Parameters.config_file_path)
 
         # # Read patterns
         # patterns_file_path = config_file.get_patterns_file_path()
@@ -241,6 +243,12 @@ class QEpanet:
         # self.params.curves_file = curves_file_path
         # if curves_file_path is not None and os.path.isfile(curves_file_path):
         #     InpFile.read_curves(self.params)
+
+        # Clear vertex markers (there should be none, just in case)
+        vertex_items = [i for i in self.iface.mapCanvas().scene().items() if issubclass(type(i), QgsVertexMarker)]
+        for ver in vertex_items:
+            if ver in self.iface.mapCanvas().scene().items():
+                self.iface.mapCanvas().scene().removeItem(ver)
 
         file_dialog = MyQFileDialog()
         file_dialog.setWindowTitle('Select an INP file or create a new one')  # TODO: Softcode

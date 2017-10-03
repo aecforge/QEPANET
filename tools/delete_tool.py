@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QCursor, QColor
+from PyQt4.QtGui import QCursor, QColor, QApplication
 from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper,\
     QgsVector, QGis
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
@@ -69,15 +69,20 @@ class DeleteTool(QgsMapTool):
         # Mouse not clicked
         if not self.mouse_clicked:
 
-            (retval, results) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
+            match = self.snapper.snapToMap(self.mouse_pt)
+            if match.isValid():
 
-            if results:
+            # (retval, results) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
+            # if results:
 
-                self.snap_results = results
+                self.snap_results = match
+                # snapped_pt = self.snap_results[0].snappedVertex
 
-                snapped_pt = self.snap_results[0].snappedVertex
+                self.snapped_pipe_id = match.featureId()
+                snapped_vertex = match.point()
+                self.snapped_vertex_nr = match.vertexIndex()
 
-                self.vertex_marker.setCenter(QgsPoint(snapped_pt.x(), snapped_pt.y()))
+                self.vertex_marker.setCenter(QgsPoint(snapped_vertex.x(), snapped_vertex.y()))
                 self.vertex_marker.setColor(QColor(255, 0, 0))
                 self.vertex_marker.setIconSize(10)
                 self.vertex_marker.setIconType(QgsVertexMarker.ICON_CIRCLE)  # or ICON_CROSS, ICON_X
@@ -98,16 +103,17 @@ class DeleteTool(QgsMapTool):
 
         if not self.mouse_clicked:
             return
-
         if event.button() == Qt.LeftButton:
             self.mouse_clicked = False
 
             # Snapped: one element selected
             if self.snap_results is not None:
 
-                snapped_ft = vector_utils.get_feats_by_id(self.snap_results[0].layer, self.snap_results[0].snappedAtGeometry)[0]
-                snapped_layer = self.snap_results[0].layer
-                self.delete_element(snapped_layer, snapped_ft)
+                # snapped_ft = vector_utils.get_feats_by_id(self.snap_results[0].layer, self.snap_results[0].snappedAtGeometry)[0]
+                # snapped_layer = self.snap_results[0].layer
+                snapped_ft = vector_utils.get_feats_by_id(self.snap_results.layer(), self.snap_results.featureId())
+                snapped_layer = self.snap_results.layer()
+                self.delete_element(snapped_layer, snapped_ft[0])
 
             # Not snapped: rectangle
             else:
@@ -137,42 +143,41 @@ class DeleteTool(QgsMapTool):
         self.iface.mapCanvas().setCursor(cursor)
 
         # Snapping
-        QgsProject.instance().setSnapSettingsForLayer(self.params.junctions_vlay.id(),
-                                                      False,
-                                                      QgsSnapper.SnapToVertex,
-                                                      QgsTolerance.MapUnits,
-                                                      self.params.snap_tolerance,
-                                                      True)
+        # QgsProject.instance().setSnapSettingsForLayer(self.params.junctions_vlay.id(),
+        #                                               False,
+        #                                               QgsSnapper.SnapToVertex,
+        #                                               QgsTolerance.MapUnits,
+        #                                               self.params.snap_tolerance,
+        #                                               True)
+        #
+        # QgsProject.instance().setSnapSettingsForLayer(self.params.reservoirs_vlay.id(),
+        #                                               False,
+        #                                               QgsSnapper.SnapToVertex,
+        #                                               QgsTolerance.MapUnits,
+        #                                               self.params.snap_tolerance,
+        #                                               True)
+        #
+        # QgsProject.instance().setSnapSettingsForLayer(self.params.tanks_vlay.id(),
+        #                                               False,
+        #                                               QgsSnapper.SnapToVertex,
+        #                                               QgsTolerance.MapUnits,
+        #                                               self.params.snap_tolerance,
+        #                                               True)
+        #
+        # QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
+        #                                               True,
+        #                                               QgsSnapper.SnapToSegment,
+        #                                               QgsTolerance.MapUnits,
+        #                                               self.params.snap_tolerance,
+        #                                               True)
 
-        QgsProject.instance().setSnapSettingsForLayer(self.params.reservoirs_vlay.id(),
-                                                      False,
-                                                      QgsSnapper.SnapToVertex,
-                                                      QgsTolerance.MapUnits,
-                                                      self.params.snap_tolerance,
-                                                      True)
+        # snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.params.junctions_vlay)
+        # snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(self.params.reservoirs_vlay)
+        # snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.params.tanks_vlay)
+        # snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, snapping_type=QgsSnapper.SnapToSegment)
 
-        QgsProject.instance().setSnapSettingsForLayer(self.params.tanks_vlay.id(),
-                                                      False,
-                                                      QgsSnapper.SnapToVertex,
-                                                      QgsTolerance.MapUnits,
-                                                      self.params.snap_tolerance,
-                                                      True)
-
-        QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
-                                                      True,
-                                                      QgsSnapper.SnapToSegment,
-                                                      QgsTolerance.MapUnits,
-                                                      self.params.snap_tolerance,
-                                                      True)
-
-        snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.params.junctions_vlay)
-        snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(self.params.reservoirs_vlay)
-        snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.params.tanks_vlay)
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, snapping_type=QgsSnapper.SnapToSegment)
-
-        self.snapper = NetworkUtils.set_up_snapper(
-            [snap_layer_junctions, snap_layer_reservoirs, snap_layer_tanks, snap_layer_pipes],
-            self.iface.mapCanvas())
+        layers = [self.params.junctions_vlay, self.params.reservoirs_vlay, self.params.tanks_vlay, self.params.pipes_vlay]
+        self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
 
         # Editing
         if not self.params.junctions_vlay.isEditable():
@@ -190,6 +195,7 @@ class DeleteTool(QgsMapTool):
 
     def deactivate(self):
         self.data_dock.btn_delete_element.setChecked(False)
+        self.canvas().scene().removeItem(self.vertex_marker)
 
     def isZoomTool(self):
         return False
@@ -218,10 +224,16 @@ class DeleteTool(QgsMapTool):
         self.rubber_band.show()
 
     def delete_elements(self, layer, rectangle):
-        feats = layer.getFeatures()
-        for feat in feats:
-            if rectangle.contains(feat.geometry().boundingBox()):
-                self.delete_element(layer, feat)
+
+        try:
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+            feats = layer.getFeatures()
+            for feat in feats:
+                if rectangle.contains(feat.geometry().boundingBox()):
+                    self.delete_element(layer, feat)
+
+        finally:
+            QApplication.restoreOverrideCursor()
 
     def delete_element(self, layer, feature):
         # If reservoir or tank: delete and stitch pipes
@@ -269,7 +281,7 @@ class DeleteTool(QgsMapTool):
         elif layer == self.params.pipes_vlay:
 
             if self.snap_results is not None:
-                vertex = feature.geometry().closestVertexWithContext(self.snap_results[0].snappedVertex)
+                vertex = feature.geometry().closestVertexWithContext(self.snap_results.point())
                 vertex_dist = vertex[0]
                 if vertex_dist < self.params.min_dist:
                     # Delete vertex

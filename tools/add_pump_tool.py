@@ -3,10 +3,10 @@
 from PyQt4.QtCore import Qt, QPoint
 from PyQt4.QtGui import QColor, QMenu
 from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance, QGis
-from qgis.gui import QgsMapTool, QgsVertexMarker
+from qgis.gui import QgsMapTool, QgsVertexMarker, QgsMessageBar
 
 from ..model.network import Pump
-from ..model.network_handling import LinkHandler, NetworkUtils
+from ..model.network_handling import LinkHandler, NetworkUtils, PumpValveCreationException
 from parameters import Parameters
 from ..geo_utils import raster_utils
 
@@ -52,16 +52,23 @@ class AddPumpTool(QgsMapTool):
         if not self.mouse_clicked:
 
             # Mouse not clicked: snapping to closest vertex
-            (retval, result) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
-            if len(result) > 0:
+            # (retval, result) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
+            # if len(result) > 0:
+
+            match = self.snapper.snapToMap(self.mouse_pt)
+            if match.isValid():
+
                 # It's a vertex on an existing pipe
 
-                self.snapped_pipe_id = result[0].snappedAtGeometry
+                # self.snapped_pipe_id = result[0].snappedAtGeometry
+                # snapped_vertex = result[0].snappedVertex
+                # self.snapped_vertex_nr = result[0].snappedVertexNr
+                # self.snapped_vertex = QgsPoint(snapped_vertex.x(), snapped_vertex.y())
 
-                snapped_vertex = result[0].snappedVertex
-                self.snapped_vertex_nr = result[0].snappedVertexNr
+                self.snapped_pipe_id = match.featureId()
+                self.snapped_vertex = match.point()
+                self.snapped_vertex_nr = match.vertexIndex()
 
-                self.snapped_vertex = QgsPoint(snapped_vertex.x(), snapped_vertex.y())
                 self.vertex_marker.setCenter(self.snapped_vertex)
                 self.vertex_marker.setColor(QColor(255, 0, 0))
                 self.vertex_marker.setIconSize(10)
@@ -87,7 +94,7 @@ class AddPumpTool(QgsMapTool):
             # No pipe snapped: notify user
             if self.snapped_pipe_id is None:
 
-                self.iface.messageBar().pushInfo(Parameters.plug_in_name, 'You need to snap the cursor to a pipe to add a pump.')
+                self.iface.messageBar().pushMessage(Parameters.plug_in_name, 'You need to snap the cursor to a pipe to add a pump.', QgsMessageBar.INFO, 5)
 
             # A pipe has been snapped
             else:
@@ -101,7 +108,7 @@ class AddPumpTool(QgsMapTool):
                     (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.params, features[0].geometry())
 
                     if not start_node or not end_node:
-                        self.iface.messageBar().pushWarning(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.') # TODO: softcode
+                        self.iface.messageBar().pushMessage(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.', QgsMessageBar.WARNING, 5) # TODO: softcode
                         return
 
                     # Find endnode closest to pump position
@@ -151,18 +158,28 @@ class AddPumpTool(QgsMapTool):
                     pump_status = self.data_dock.cbo_pump_status.itemData(
                         self.data_dock.cbo_pump_status.currentIndex())
 
-                    LinkHandler.create_new_pumpvalve(
-                        self.params,
-                        self.data_dock,
-                        features[0],
-                        closest_junction_ft,
-                        self.snapped_vertex,
-                        self.params.pumps_vlay,
-                        [pump_param, pump_head, pump_power, pump_speed, pump_speed_pattern, pump_status])
+                    try:
+                        LinkHandler.create_new_pumpvalve(
+                            self.params,
+                            self.data_dock,
+                            features[0],
+                            closest_junction_ft,
+                            self.snapped_vertex,
+                            self.params.pumps_vlay,
+                            [pump_param, pump_head, pump_power, pump_speed, pump_speed_pattern, pump_status])
 
-                    if pump_param == Pump.parameters_head and pump_head is None:
-                        self.iface.messageBar().pushInfo(Parameters.plug_in_name,
-                                                         'The pump was added, but with a NULL value.')
+                        if pump_param == Pump.parameters_head and pump_head is None:
+                            self.iface.messageBar().pushMessage(Parameters.plug_in_name,
+                                                             'The pump was added, but with a NULL value.',
+                                                                QgsMessageBar.INFO,
+                                                                5)
+
+                    except PumpValveCreationException as ex:
+                        self.iface.messageBar().pushMessage(
+                            Parameters.plug_in_name,
+                            ex.message,
+                            QgsMessageBar.INFO,
+                            5)
 
         elif event.button() == Qt.RightButton:
 
@@ -210,15 +227,15 @@ class AddPumpTool(QgsMapTool):
 
     def activate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
-                                                      True,
-                                                      QgsSnapper.SnapToSegment,
-                                                      QgsTolerance.MapUnits,
-                                                      self.params.snap_tolerance,
-                                                      True)
+        # QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
+        #                                               True,
+        #                                               QgsSnapper.SnapToSegment,
+        #                                               QgsTolerance.MapUnits,
+        #                                               self.params.snap_tolerance,
+        #                                               True)
 
         snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
-        self.snapper = NetworkUtils.set_up_snapper([snap_layer_pipes], self.iface.mapCanvas())
+        self.snapper = NetworkUtils.set_up_snapper([self.params.pipes_vlay], self.iface.mapCanvas(), self.params.snap_tolerance)
 
         # Editing
         if not self.params.junctions_vlay.isEditable():
@@ -238,6 +255,8 @@ class AddPumpTool(QgsMapTool):
                                                       True)
 
         self.data_dock.btn_add_pump.setChecked(False)
+
+        self.canvas().scene().removeItem(self.vertex_marker)
 
     def isZoomTool(self):
         return False

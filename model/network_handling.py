@@ -3,7 +3,8 @@ from collections import OrderedDict
 
 from PyQt4.QtCore import QPyNullVariant
 from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper, QgsProject, QgsTolerance, QgsPoint,\
-    QgsVectorLayerEditUtils, QgsFeatureRequest, QgsLineStringV2, QgsPointV2, QgsWKBTypes, QgsVertexId
+    QgsVectorLayerEditUtils, QgsFeatureRequest, QgsLineStringV2, QgsPointV2, QgsWKBTypes, QgsVertexId, QgsSnappingUtils,\
+    QgsPointLocator
 
 from network import Junction, Reservoir, Tank, Pipe, Pump, Valve
 from ..tools.parameters import Parameters
@@ -317,7 +318,7 @@ class LinkHandler:
             dist_after = pipe_ft.geometry().length() - 1
 
         if dist_before >= dist_after:
-            raise Exception('The pipe is too short for a pump or valve to be placed on it.')
+            raise PumpValveCreationException('Cannot place a pump or valve here.')
 
         node_before = pipe_ft.geometry().interpolate(dist_before).asPoint()
         node_after = pipe_ft.geometry().interpolate(dist_after).asPoint()
@@ -932,10 +933,20 @@ class NetworkUtils:
         return snap_layer
 
     @staticmethod
-    def set_up_snapper(snap_layers, map_canvas):
-        snapper = QgsSnapper(map_canvas.mapSettings())
-        snapper.setSnapLayers(snap_layers)
-        snapper.setSnapMode(QgsSnapper.SnapWithResultsForSamePosition)
+    def set_up_snapper(snap_layers, map_canvas, snap_tolerance=10):
+
+        layer_configs = []
+        for layer in snap_layers:
+            point_locator = QgsPointLocator(layer)
+            layer_configs.append(QgsSnappingUtils.LayerConfig(layer, point_locator.All, snap_tolerance, QgsTolerance.MapUnits))
+        snapper = QgsSnappingUtils()
+        snapper.setMapSettings(map_canvas.mapSettings())
+        snapper.setLayers(layer_configs)
+        snapper.setSnapToMapMode(QgsSnappingUtils.SnapAdvanced)
+
+        # snapper = QgsSnapper(map_canvas.mapSettings())
+        # snapper.setSnapLayers(snap_layers)
+        # snapper.setSnapMode(QgsSnapper.SnapWithResultsForSamePosition)
         return snapper
 
     @staticmethod
@@ -1047,3 +1058,6 @@ class NetworkUtils:
         mid_y = (point1.y() + point2.y()) / 2
 
         return QgsPoint(mid_x, mid_y)
+
+class PumpValveCreationException(Exception):
+    pass

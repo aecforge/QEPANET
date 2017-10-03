@@ -6,7 +6,7 @@ import traceback
 from PyQt4.QtCore import Qt, QPoint
 from PyQt4.QtGui import QColor, QMenu
 from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsProject, QgsTolerance
-from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
+from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand, QgsMessageBar
 
 from ..model.network import Pipe, Junction
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
@@ -68,24 +68,31 @@ class AddPipeTool(QgsMapTool):
             self.data_dock.lbl_elev_val.setText('-')
 
         # Mouse not clicked: snapping to closest vertex
-        (retval, result) = self.snapper.snapMapPoint(self.mouse_pt)
+        match = self.snapper.snapToMap(self.mouse_pt)
 
-        if len(result) > 0:
-
+        if match.isValid():
             # Pipe starts from an existing vertex
-            self.snapped_feat_id = result[0].snappedAtGeometry
+            self.snapped_feat_id = match.featureId()
+            self.snapped_vertex = match.point()
+            self.snapped_vertex_nr = match.vertexIndex()
 
-            snapped_vertex = result[0].snappedVertex
-            self.snapped_vertex_nr = result[0].snappedVertexNr
-
-            self.snapped_vertex = QgsPoint(snapped_vertex.x(), snapped_vertex.y())
+        # (retval, result) = self.snapper.snapMapPoint(self.mouse_pt)
+        # if len(result) > 0:
+        #
+        #     # Pipe starts from an existing vertex
+        #     self.snapped_feat_id = result[0].snappedAtGeometry
+        #
+        #     snapped_vertex = result[0].snappedVertex
+        #     self.snapped_vertex_nr = result[0].snappedVertexNr
+        #
+        #     self.snapped_vertex = QgsPoint(snapped_vertex.x(), snapped_vertex.y())
             self.vertex_marker.setCenter(self.snapped_vertex)
             self.vertex_marker.setColor(QColor(255, 0, 0))
             self.vertex_marker.setIconSize(10)
             self.vertex_marker.setIconType(QgsVertexMarker.ICON_CIRCLE)
             self.vertex_marker.setPenWidth(3)
             self.vertex_marker.show()
-
+        #
         else:
 
             # It's a new, isolated pipe
@@ -122,9 +129,11 @@ class AddPipeTool(QgsMapTool):
                     pipe_ft = vector_utils.get_feats_by_id(self.params.pipes_vlay, self.snapped_feat_id)[0]
                     if action == section_action:
                         if self.params.dem_rlay is None:
-                            self.iface.messageBar().pushWarning(
+                            self.iface.messageBar().pushMessage(
                                 Parameters.plug_in_name,
-                                'No DEM selected. Cannot edit section!')  # TODO: softcode
+                                'No DEM selected. Cannot edit section!',
+                                QgsMessageBar.WARNING,
+                                5)  # TODO: softcode
                         else:
                             pipe_dialog = PipeSectionDialog(
                                 self.iface.mainWindow(),
@@ -150,9 +159,11 @@ class AddPipeTool(QgsMapTool):
                             self.params, self.params.pipes_vlay, pipe_ft, True, True, False)
 
                         if adj_valves['valves']:
-                            self.iface.messageBar().pushWarning(
+                            self.iface.messageBar().pushMessage(
                                 Parameters.plug_in_name,
-                                'Valves detected on the pipe: need to update their diameters too!')  # TODO: softcode
+                                'Valves detected on the pipe: need to update their diameters too!',
+                                QgsMessageBar.WARNING,
+                                5)  # TODO: softcode
 
                     return
 
@@ -270,37 +281,40 @@ class AddPipeTool(QgsMapTool):
 
     def activate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(self.params.junctions_vlay.id(),
-                                                      True,
-                                                      QgsSnapper.SnapToVertex,
-                                                      QgsTolerance.MapUnits,
-                                                      self.params.snap_tolerance,
-                                                      True)
-        QgsProject.instance().setSnapSettingsForLayer(self.params.reservoirs_vlay.id(),
-                                                      True,
-                                                      QgsSnapper.SnapToVertex,
-                                                      QgsTolerance.MapUnits,
-                                                      self.params.snap_tolerance,
-                                                      True)
-        QgsProject.instance().setSnapSettingsForLayer(self.params.tanks_vlay.id(),
-                                                      True,
-                                                      QgsSnapper.SnapToVertex,
-                                                      QgsTolerance.MapUnits,
-                                                      self.params.snap_tolerance,
-                                                      True)
-        QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
-                                                      True,
-                                                      QgsSnapper.SnapToSegment,
-                                                      QgsTolerance.MapUnits,
-                                                      self.params.snap_tolerance,
-                                                      True)
+        # QgsProject.instance().setSnapSettingsForLayer(self.params.junctions_vlay.id(),
+        #                                               True,
+        #                                               QgsSnapper.SnapToVertex,
+        #                                               QgsTolerance.MapUnits,
+        #                                               self.params.snap_tolerance,
+        #                                               True)
+        # QgsProject.instance().setSnapSettingsForLayer(self.params.reservoirs_vlay.id(),
+        #                                               True,
+        #                                               QgsSnapper.SnapToVertex,
+        #                                               QgsTolerance.MapUnits,
+        #                                               self.params.snap_tolerance,
+        #                                               True)
+        # QgsProject.instance().setSnapSettingsForLayer(self.params.tanks_vlay.id(),
+        #                                               True,
+        #                                               QgsSnapper.SnapToVertex,
+        #                                               QgsTolerance.MapUnits,
+        #                                               self.params.snap_tolerance,
+        #                                               True)
+        # QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
+        #                                               True,
+        #                                               QgsSnapper.SnapToSegment,
+        #                                               QgsTolerance.MapUnits,
+        #                                               self.params.snap_tolerance,
+        #                                               True)
+        #
+        # snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.params.junctions_vlay)
+        # snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(self.params.reservoirs_vlay)
+        # snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.params.tanks_vlay)
+        # snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToSegment)
 
-        snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.params.junctions_vlay)
-        snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(self.params.reservoirs_vlay)
-        snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.params.tanks_vlay)
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToSegment)
+        layers = [self.params.junctions_vlay, self.params.reservoirs_vlay, self.params.tanks_vlay, self.params.pipes_vlay]
+        # snap_layers = [snap_layer_junctions, snap_layer_reservoirs, snap_layer_tanks, snap_layer_pipes]
 
-        self.snapper = NetworkUtils.set_up_snapper([snap_layer_junctions, snap_layer_reservoirs, snap_layer_tanks, snap_layer_pipes], self.iface.mapCanvas())
+        self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
 
         # Editing
         if not self.params.junctions_vlay.isEditable():
@@ -336,8 +350,10 @@ class AddPipeTool(QgsMapTool):
                                                       0,
                                                       True)
 
-        self.rubber_band.reset()
+        # self.rubber_band.reset()
         self.data_dock.btn_add_pipe.setChecked(False)
+
+        self.canvas().scene().removeItem(self.vertex_marker)
 
     def isZoomTool(self):
         return False

@@ -11,7 +11,6 @@ from ..tools.data_stores import MemoryDS
 from .options_report import Options, Unbalanced, Quality, Report, Hour, Times
 import codecs
 
-
 class InpReader:
 
     def __init__(self, inp_path):
