@@ -236,7 +236,8 @@ class DeleteTool(QgsMapTool):
             QApplication.restoreOverrideCursor()
 
     def delete_element(self, layer, feature):
-        # If reservoir or tank: delete and stitch pipes
+
+        # If node
         if layer == self.params.junctions_vlay or \
                         layer == self.params.reservoirs_vlay or \
                         layer == self.params.tanks_vlay:
@@ -277,7 +278,7 @@ class DeleteTool(QgsMapTool):
                 for adj_pipe in adj_pipes:
                     LinkHandler.delete_link(self.params, self.params.pipes_vlay, adj_pipe)
 
-        # If pipe: delete
+        # If pipe
         elif layer == self.params.pipes_vlay:
 
             if self.snap_results is not None:

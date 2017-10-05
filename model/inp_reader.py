@@ -264,8 +264,11 @@ class InpReader:
                         pPosPower += 1
                     else:
                         param = 'HEAD'
-                        head = cheadpump[pPosHead]
-                        pPosHead += 1
+                        if len(cheadpump) > pPosHead:
+                            head = cheadpump[pPosHead]
+                            pPosHead += 1
+                        else:
+                            head = NULL
 
                     if len(pumpNameIDPower) > 0:
                         for uu in range(0, len(pumpNameIDPower)):

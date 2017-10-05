@@ -160,34 +160,36 @@ class NodeHandler:
     @staticmethod
     def delete_node(params, layer, node_ft, del_ad_nodes=True):
 
-        # The node is a junction
-        if layer == params.junctions_vlay:
+        # Delete the node
+        NodeHandler._delete_feature(params, layer, node_ft)
 
-            # # The node is a simple node (not part of a pump or valve)
-            # adj_links_fts = NetworkUtils.find_adjacent_links(parameters, node_ft.geometry())
-            #
-            # # Only pipes adjacent to node: it's a simple junction
-            # if not adj_links_fts['pumps'] and not adj_links_fts['valves']:
+        # Delete adjacent links
+        adj_links = NetworkUtils.find_adjacent_links(params, node_ft.geometry())
+        for adj_pipe in adj_links['pipes']:
+            LinkHandler.delete_link(params, params.pipes_vlay, adj_pipe)
 
-                # Delete node
-                NodeHandler._delete_feature(params, layer, node_ft)
 
-                # Delete adjacent pipes
-                if del_ad_nodes:
-                    adj_pipes = NetworkUtils.find_adjacent_links(params, node_ft.geometry())
-                    for adj_pipe in adj_pipes['pipes']:
-                        LinkHandler.delete_link(params, params.pipes_vlay, adj_pipe)
-
-        # The node is a reservoir or a tank
-        elif layer == params.reservoirs_vlay or layer == params.tanks_vlay:
-
-            adj_pipes = NetworkUtils.find_adjacent_links(params, node_ft.geometry())['pipes']
-
-            NodeHandler._delete_feature(params, layer, node_ft)
-
-            if del_ad_nodes:
-                for adj_pipe in adj_pipes:
-                    LinkHandler.delete_link(params.pipes_vlay, adj_pipe)
+        # # The node is a junction
+        # if layer == params.junctions_vlay:
+        #
+        #     # Delete node
+        #     NodeHandler._delete_feature(params, layer, node_ft)
+        #
+        #     # Delete adjacent pipes
+        #     if del_ad_nodes:
+        #         adj_pipes = NetworkUtils.find_adjacent_links(params, node_ft.geometry())
+        #         for adj_pipe in adj_pipes['pipes']:
+        #             LinkHandler.delete_link(params, params.pipes_vlay, adj_pipe)
+        #
+        # # The node is a reservoir or a tank
+        # elif layer == params.reservoirs_vlay or layer == params.tanks_vlay:
+        #
+        #     NodeHandler._delete_feature(params, layer, node_ft)
+        #
+        #     if del_ad_nodes:
+        #         adj_pipes = NetworkUtils.find_adjacent_links(params, node_ft.geometry())
+        #         for adj_pipe in adj_pipes['pipes']:
+        #             LinkHandler.delete_link(params.pipes_vlay, adj_pipe)
 
 
 class LinkHandler:
