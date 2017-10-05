@@ -223,6 +223,7 @@ class LinkHandler:
 
             dists_and_points = OrderedDict(sorted(dists_and_points.items()))
             pipe_geom_2 = QgsGeometry.fromPolyline(dists_and_points.values())
+            pipe_geom_2_length = pipe_geom_2.length()
 
             line_coords = []
             total_dist = 0
@@ -254,7 +255,7 @@ class LinkHandler:
                     delta_z = start_node_deltaz
                 else:
                     total_dist += math.sqrt((vertex.x() - vertex_prev.x()) ** 2 + (vertex.y() - vertex_prev.y()) ** 2)
-                    delta_z = (total_dist / pipe_geom_2.length() * (end_node_deltaz - start_node_deltaz)) + start_node_deltaz
+                    delta_z = (total_dist / pipe_geom_2_length * (end_node_deltaz - start_node_deltaz)) + start_node_deltaz
 
                 line_coords.append(QgsPointV2(QgsWKBTypes.PointZ, vertex.x(), vertex.y(), z + delta_z))
 
@@ -577,7 +578,7 @@ class LinkHandler:
 
     @staticmethod
     def _delete_feature(params, layer, link_ft):
-
+        
         caps = layer.dataProvider().capabilities()
         if caps & QgsVectorDataProvider.DeleteFeatures:
 
