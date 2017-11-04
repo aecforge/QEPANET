@@ -512,44 +512,45 @@ class LinkHandler:
             return [pipe_ft_1, pipe_ft_2]
 
     @staticmethod
-    def move_pipe_vertex(params, pipe_ft, new_pos_pt_v2, vertex_index):
-        caps = params.pipes_vlay.dataProvider().capabilities()
+    def move_link_vertex(params, link_lay, link_ft, new_pos_pt_v2, vertex_index):
+        caps = link_lay.dataProvider().capabilities()
 
         if caps & QgsVectorDataProvider.ChangeGeometries:
-            params.pipes_vlay.beginEditCommand("Update pipes geometry")
+            link_lay.beginEditCommand("Update pipes geometry")
 
             try:
-                edit_utils = QgsVectorLayerEditUtils(params.pipes_vlay)
-                edit_utils.moveVertexV2(new_pos_pt_v2, pipe_ft.id(), vertex_index)
+                edit_utils = QgsVectorLayerEditUtils(link_lay)
+                edit_utils.moveVertexV2(new_pos_pt_v2, link_ft.id(), vertex_index)
 
                 # Retrieve the feature again, and update attributes
-                request = QgsFeatureRequest().setFilterFid(pipe_ft.id())
-                feats = list(params.pipes_vlay.getFeatures(request))
+                if link_lay == params.pipes_vlay:
+                    request = QgsFeatureRequest().setFilterFid(link_ft.id())
+                    feats = list(link_lay.getFeatures(request))
 
-                field_index = params.pipes_vlay.dataProvider().fieldNameIndex(Pipe.field_name_length)
-                new_3d_length = LinkHandler.calc_3d_length(params, feats[0].geometry())
-                params.pipes_vlay.changeAttributeValue(pipe_ft.id(), field_index, new_3d_length)
+                    field_index = link_lay.dataProvider().fieldNameIndex(Pipe.field_name_length)
+                    new_3d_length = LinkHandler.calc_3d_length(params, feats[0].geometry())
+                    link_lay.changeAttributeValue(link_ft.id(), field_index, new_3d_length)
 
             except Exception as e:
-                params.pipes_vlay.destroyEditCommand()
+                link_lay.destroyEditCommand()
                 raise e
 
-            params.pipes_vlay.endEditCommand()
+            link_lay.endEditCommand()
 
     @staticmethod
-    def move_pump_valve(vlay, ft, delta_vector):
+    def move_pump_valve(vlay, feature, delta_vector):
         caps = vlay.dataProvider().capabilities()
         if caps and QgsVectorDataProvider.ChangeGeometries:
             vlay.beginEditCommand('Update pump/valve')
             try:
 
-                old_ft_pts = ft.geometry().asPolyline()
+                old_ft_pts = feature.geometry().asPolyline()
                 edit_utils = QgsVectorLayerEditUtils(vlay)
 
                 edit_utils.moveVertex(
                     (QgsPoint(old_ft_pts[0].x() + delta_vector.x(), old_ft_pts[0].y() + delta_vector.y())).x(),
                     (QgsPoint(old_ft_pts[0].x() + delta_vector.x(), old_ft_pts[0].y() + delta_vector.y())).y(),
-                    ft.id(),
+                    feature.id(),
                     0)
                 # In 2.16
                 # edit_utils.moveVertex(
@@ -561,7 +562,7 @@ class LinkHandler:
                 edit_utils.moveVertex(
                     (QgsPoint(old_ft_pts[1].x() + delta_vector.x(), old_ft_pts[1].y() + delta_vector.y())).x(),
                     (QgsPoint(old_ft_pts[1].x() + delta_vector.x(), old_ft_pts[1].y() + delta_vector.y())).y(),
-                    ft.id(),
+                    feature.id(),
                     1)
                 # In 2.16
                 # edit_utils.moveVertex(
@@ -801,6 +802,57 @@ class NetworkUtils:
         return intersecting_fts
 
     @staticmethod
+    def find_start_end_nodes_w_layer(params, link_geom, exclude_junctions=False, exclude_reservoirs=False, exclude_tanks=False):
+        """
+        This method should replace find_start_end_nodes (refactoring needed though)
+        :param params: 
+        :param link_geom: 
+        :param exclude_junctions: 
+        :param exclude_reservoirs: 
+        :param exclude_tanks: 
+        :return: 
+        """
+
+        intersecting_fts = [None, None]
+
+        if not exclude_junctions:
+            found = NetworkUtils._find_features(params, params.junctions_vlay, link_geom)
+            if found[0] is not None:
+                intersecting_fts[0] = found[0]
+            if found[1] is not None:
+                intersecting_fts[1] = found[1]
+        if not exclude_reservoirs:
+            found = NetworkUtils._find_features(params, params.reservoirs_vlay, link_geom)
+            if found[0] is not None:
+                intersecting_fts[0] = found[0]
+            if found[1] is not None:
+                intersecting_fts[1] = found[1]
+        if not exclude_tanks:
+            found = NetworkUtils._find_features(params, params.tanks_vlay, link_geom)
+            if found[0] is not None:
+                intersecting_fts[0] = found[0]
+            if found[1] is not None:
+                intersecting_fts[1] = found[1]
+
+        return intersecting_fts
+
+    @staticmethod
+    def _find_features(params, vlay, link_geom):
+        cands = []
+        intersecting_fts = [None, None]
+        for node_ft in vlay.getFeatures():
+            if link_geom.buffer(params.tolerance, 5).boundingBox().contains(node_ft.geometry().asPoint()):
+                cands.append(node_ft)
+        if cands:
+            for node_ft in cands:
+                if node_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[0])) < params.tolerance:
+                    intersecting_fts[0] = (node_ft, vlay)
+                if node_ft.geometry().distance(QgsGeometry.fromPoint(link_geom.asPolyline()[-1])) < params.tolerance:
+                    intersecting_fts[1] = (node_ft, vlay)
+
+        return intersecting_fts
+
+    @staticmethod
     def find_start_end_nodes_sindex(params, sindex, link_geom):
 
         # Find node FIDs that intersect the link bounding box
@@ -941,15 +993,12 @@ class NetworkUtils:
         layer_configs = []
         for layer in snap_layers:
             point_locator = QgsPointLocator(layer)
-            layer_configs.append(QgsSnappingUtils.LayerConfig(layer, point_locator.All, snap_tolerance, QgsTolerance.MapUnits))
+            layer_configs.append(QgsSnappingUtils.LayerConfig(layer, point_locator.Vertex, snap_tolerance, QgsTolerance.MapUnits))
         snapper = QgsSnappingUtils()
         snapper.setMapSettings(map_canvas.mapSettings())
         snapper.setLayers(layer_configs)
         snapper.setSnapToMapMode(QgsSnappingUtils.SnapAdvanced)
 
-        # snapper = QgsSnapper(map_canvas.mapSettings())
-        # snapper.setSnapLayers(snap_layers)
-        # snapper.setSnapMode(QgsSnapper.SnapWithResultsForSamePosition)
         return snapper
 
     @staticmethod

@@ -25,7 +25,7 @@ import os
 
 from PyQt4 import QtCore, uic, QtGui
 from PyQt4.QtCore import Qt, pyqtSignal
-from PyQt4.QtGui import QFileDialog, QMessageBox, QApplication
+from PyQt4.QtGui import QFileDialog, QMessageBox, QApplication, QPixmap, QLabel, QColor, QToolTip
 from qgis.gui import QgsGenericProjectionSelector, QgsMessageBar
 
 from ..geo_utils.utils import LayerUtils as lay_utils
@@ -136,13 +136,15 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btn_move_element.clicked.connect(self.move_element)
         self.btn_delete_element.clicked.connect(self.delete_element)
 
+        self.chk_block_logic.setChecked(True)
+        self.chk_block_logic.clicked.connect(self.chk_block_logic_clicked)
+
+        self.lbl_block_logic = HelpLabel()
+        image = QPixmap(os.path.join(curr_dir, 'i_question_mark.png'))
+        self.lbl_block_logic.setPixmap(image)
+        self.lay_block_logic.addWidget(self.lbl_block_logic)
+
         # Layers
-        # self.cbo_junctions.activated.connect(self.cbo_junctions_activated)
-        # self.cbo_reservoirs.activated.connect(self.cbo_reservoirs_activated)
-        # self.cbo_tanks.activated.connect(self.cbo_tanks_activated)
-        # self.cbo_pipes.activated.connect(self.cbo_pipes_activated)
-        # self.cbo_pumps.activated.connect(self.cbo_pumps_activated)
-        # self.cbo_valves.activated.connect(self.cbo_valves_activated)
         self.cbo_dem.activated.connect(self.cbo_dem_activated)
 
         QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.update_layers_combos)
@@ -301,23 +303,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.closingPlugin.emit()
         event.accept()
 
-    # def select_inp_file(self):
-    #
-    #     file_dialog = MyQFileDialog()
-    #     file_dialog.setWindowTitle('Select an INP file or create a new one') # TODO: Softcode
-    #     file_dialog.setLabelText(QFileDialog.Accept, 'Select') # TODO: sofcode
-    #     file_dialog.setFileMode(QFileDialog.AnyFile)
-    #     file_dialog.setFilter("INP files (*.inp)")
-    #
-    #     if file_dialog.exec_():
-    #         inp_file_path = file_dialog.selectedFiles()[0]
-    #         if not inp_file_path.lower().endswith('.inp'):
-    #             inp_file_path += '.inp'
-    #
-    #         self.inp_file_path = inp_file_path
-    #         self.params.last_project_dir = os.path.dirname(inp_file_path)
-    #         self.update_components()
-
     def count_elements(self):
 
         jun_count = self.params.junctions_vlay.featureCount()
@@ -383,13 +368,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                                                     self.params.pumps_vlay,
                                                     self.params.valves_vlay])
 
-        # self.set_layercombo_index(self.cbo_junctions, self.params.junctions_vlay.id())
-        # self.set_layercombo_index(self.cbo_reservoirs, self.params.reservoirs_vlay.id())
-        # self.set_layercombo_index(self.cbo_tanks, self.params.tanks_vlay.id())
-        # self.set_layercombo_index(self.cbo_pipes, self.params.pipes_vlay.id())
-        # self.set_layercombo_index(self.cbo_pumps, self.params.pumps_vlay.id())
-        # self.set_layercombo_index(self.cbo_valves, self.params.valves_vlay.id())
-
         # Apply symbologies
         self.apply_symbologies()
 
@@ -408,18 +386,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             # self.btn_add_junction.setChecked(True)
 
         else:
-            # # Check all layers not set
-            # if not self.check_all_layers_selected():
-            #     return
-
-            # # Check for junctions and pipes layers selected
-            # if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0:
-            #     self.iface.messageBar().pushWarning(
-            #         Parameters.plug_in_name,
-            #         'Please selecte the junctions and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-            #     # self.btn_add_junction.setChecked(True)
-            #     return
-
             self.tool = AddJunctionTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
             self.set_cursor(QtCore.Qt.CrossCursor)
@@ -431,18 +397,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             # self.btn_add_reservoir.setChecked(True)
 
         else:
-            # # Check all layers not set
-            # if not self.check_all_layers_selected():
-            #     return
-
-            # # Check for reservoirs and pipes layers selected
-            # if self.cbo_reservoirs.count() == 0 or self.cbo_pipes.count() == 0:
-            #     self.iface.messageBar().pushWarning(
-            #         Parameters.plug_in_name,
-            #         'Please selecte the reservoirs and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-            #     # self.btn_add_reservoir.setChecked(True)
-            #     return
-
             self.tool = AddReservoirTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
             self.set_cursor(QtCore.Qt.CrossCursor)
@@ -454,18 +408,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             # self.btn_add_tank.setChecked(False)
 
         else:
-            # # Check all layers not set
-            # if not self.check_all_layers_selected():
-            #     return
-
-            # # Check for tanks and pipes layers selected
-            # if self.cbo_tanks.count() == 0 or self.cbo_pipes.count() == 0:
-            #     self.iface.messageBar().pushWarning(
-            #         Parameters.plug_in_name,
-            #         'Please selecte the tanks and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-            #     # self.btn_add_tank.setChecked(True)
-            #     return
-
             tool = AddTankTool(self, self.params)
             self.iface.mapCanvas().setMapTool(tool)
             self.set_cursor(QtCore.Qt.CrossCursor)
@@ -477,18 +419,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             # self.btn_add_pipe.setChecked(True)
 
         else:
-            # # Check all layers not set
-            # if not self.check_all_layers_selected():
-            #     return
-
-            # # Check for junctions and pipes layers selected
-            # if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0:
-            #     self.iface.messageBar().pushWarning(
-            #         Parameters.plug_in_name,
-            #         'Please selecte the junctions and pipes layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-            #     # self.btn_add_pipe.setChecked(True)
-            #     return
-
             self.tool = AddPipeTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
             self.set_cursor(QtCore.Qt.CrossCursor)
@@ -500,18 +430,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             # self.btn_add_pump.setChecked(True)
 
         else:
-            # # Check all layers not set
-            # if not self.check_all_layers_selected():
-            #     return
-
-            # # Check for junctions, pipes and pumps layers selected
-            # if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0 or self.cbo_pumps.count() == 0:
-            #     self.iface.messageBar().pushWarning(
-            #         Parameters.plug_in_name,
-            #         'Please selecte the junctions, pipes and pumps layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-            #     # self.btn_add_pump.setChecked(True)
-            #     return
-
             self.tool = AddPumpTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
             self.set_cursor(QtCore.Qt.CrossCursor)
@@ -523,18 +441,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             # self.btn_add_valve.setChecked(True)
 
         else:
-            # # Check all layers not set
-            # if not self.check_all_layers_selected():
-            #     return
-
-            # # Check for junctions, pipes and valves layers selected
-            # if self.cbo_junctions.count() == 0 or self.cbo_pipes.count() == 0 or self.cbo_valves.count() == 0:
-            #     self.iface.messageBar().pushWarning(
-            #         Parameters.plug_in_name,
-            #         'Please selecte the junctions, pipes and valves layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-            #     # self.btn_add_valve.setChecked(True)
-            #     return
-
             self.tool = AddValveTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
             self.set_cursor(QtCore.Qt.CrossCursor)
@@ -546,19 +452,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             # self.btn_move_element.setChecked(True)
 
         else:
-            # # Check all layers not set
-            # if not self.check_all_layers_selected():
-            #     return
-
-            # # Check for all layers selected
-            # if self.cbo_junctions.count() == 0 or self.cbo_reservoirs.count() == 0 or self.cbo_tanks.count() == 0 or\
-            #         self.cbo_pipes.count() == 0 or self.cbo_pumps.count() == 0 or self.cbo_valves.count() == 0:
-            #     self.iface.messageBar().pushWarning(
-            #         Parameters.plug_in_name,
-            #         'Please selecte all the vector layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-            #     # self.btn_move_element.setChecked(True)
-            #     return
-
             self.tool = MoveTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
             self.set_cursor(QtCore.Qt.CrossCursor)
@@ -570,46 +463,12 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             # self.btn_delete_element.setChecked(True)
 
         else:
-            # # Check all layers not set
-            # if not self.check_all_layers_selected():
-            #     return
-
-            # # Check for all layers selected
-            # if self.cbo_junctions.count() == 0 or self.cbo_reservoirs.count() == 0 or self.cbo_tanks.count() == 0 or\
-            #         self.cbo_pipes.count() == 0 or self.cbo_pumps.count() == 0 or self.cbo_valves.count() == 0:
-            #     self.iface.messageBar().pushWarning(
-            #         Parameters.plug_in_name,
-            #         'Please selecte all the vector layers inside the Layers section of the plugin\'s dock panel.')  # TODO: softcode)
-            #     # self.btn_delete_element.setChecked(True)
-            #     return
-
             self.tool = DeleteTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
             self.set_cursor(QtCore.Qt.CrossCursor)
 
-    # def check_all_layers_selected(self):
-    #
-    #     if self.cbo_junctions.count() <= 1 or self.cbo_reservoirs.count() <= 1 or self.cbo_tanks.count() <= 1 or \
-    #                     self.cbo_pipes.count() <= 1 or self.cbo_pumps.count() <= 1 or self.cbo_valves.count() <= 1:
-    #
-    #         ret = QtGui.QMessageBox.question(
-    #             self.iface.mainWindow(),
-    #             Parameters.plug_in_name,
-    #             u'It appears that some of the six layers needed by QEPANET are not present. Do you want to create the layers?',
-    #             # TODO: softcode
-    #             QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-    #
-    #         if ret == QtGui.QMessageBox.Yes:
-    #
-    #             # Request CRS for layers
-    #             self.crs_selector()
-    #             self.create_layers(None, self.params.crs)
-    #             return True
-    #         else:
-    #             return False
-    #
-    #     else:
-    #         return True
+    def chk_block_logic_clicked(self):
+        self.params.block_logic = self.chk_block_logic.isChecked()
 
     def cbo_pump_param_activated(self):
         selected_param = self.cbo_pump_param.itemText(self.cbo_pump_param.currentIndex())
@@ -674,30 +533,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.lbl_pipe_roughness_val_val.setText(str(self.sli_pipe_roughness.value() / float(10**self.decimals)))
 
     # TODO: update snappers in all the tools that use snapping
-    # def cbo_junctions_activated(self, index):
-    #     layer_id = self.cbo_junctions.itemData(index)
-    #     self.params.junctions_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
-    #
-    # def cbo_reservoirs_activated(self, index):
-    #     layer_id = self.cbo_reservoirs.itemData(index)
-    #     self.params.reservoirs_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
-    #
-    # def cbo_tanks_activated(self, index):
-    #     layer_id = self.cbo_tanks.itemData(index)
-    #     self.params.tanks_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
-    #
-    # def cbo_pipes_activated(self, index):
-    #     layer_id = self.cbo_pipes.itemData(index)
-    #     self.params.pipes_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
-    #
-    # def cbo_pumps_activated(self, index):
-    #     layer_id = self.cbo_pumps.itemData(index)
-    #     self.params.pumps_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
-    #
-    # def cbo_valves_activated(self, index):
-    #     layer_id = self.cbo_valves.itemData(index)
-    #     self.params.valves_vlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
-
     def cbo_dem_activated(self, index):
         layer_id = self.cbo_dem.itemData(index)
         self.params.dem_rlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
@@ -708,89 +543,12 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
     def snap_tolerance_changed(self):
         self.params.snap_tolerance = (float(self.txt_snap_tolerance.text()))
 
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.junctions_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToVertex,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-        #
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.reservoirs_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToVertex,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-        #
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.tanks_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToVertex,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-        #
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToSegment,
-        #                                               0,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-
     def pattern_editor(self):
-
-        # # Read patterns path
-        # config_file = ConfigFile(Parameters.config_file_path)
-        # patterns_file_path = config_file.get_patterns_file_path()
-        #
-        # if patterns_file_path is None or patterns_file_path == '':
-        #     QMessageBox.information(
-        #         self.iface.mainWindow(),
-        #         Parameters.plug_in_name,
-        #         u'Please select the file where the patterns will be saved it in the next dialog.',
-        #         QMessageBox.Ok)
-        #
-        #     patterns_file_path = QFileDialog.getOpenFileName(
-        #         self.iface.mainWindow(),
-        #         'Select patterns file',
-        #         None,
-        #         'Patterns files (*.txt *.inp)')
-        #
-        #     if patterns_file_path is None or patterns_file_path == '':
-        #         return
-        #     else:
-        #         # Save patterns file path in configuration file
-        #         config_file.set_patterns_file_path(patterns_file_path)
-        #
-        # self.params.patterns_file = patterns_file_path
 
         pattern_dialog = GraphDialog(self, self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_patterns)
         pattern_dialog.exec_()
 
     def curve_editor(self):
-
-        # # Read curves path
-        # config_file = ConfigFile(Parameters.config_file_path)
-        # curves_file_path = config_file.get_curves_file_path()
-        # if curves_file_path is None or curves_file_path == '':
-        #     QMessageBox.information(
-        #         self.iface.mainWindow(),
-        #         Parameters.plug_in_name,
-        #         u'Please select the file where the curves will be saved it in the next dialog.',
-        #         QMessageBox.Ok)
-        #
-        #     curves_file_path = QFileDialog.getOpenFileName(
-        #         self.iface.mainWindow(),
-        #         'Select curves file',
-        #         None,
-        #         'Curves files (*.txt *.inp)')
-        #
-        #     if curves_file_path is None or curves_file_path == '':
-        #         return
-        #     else:
-        #         # Save patterns file path in configuration file
-        #         config_file.set_curves_file_path(curves_file_path)
-        #
-        # self.params.curves_file = curves_file_path
 
         curve_dialog = GraphDialog(self, self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_curves)
         curve_dialog.exec_()
@@ -1215,6 +973,25 @@ class NewFileDialog(QFileDialog):
         except Exception as e:
             print e
             return
+
+
+class HelpLabel(QLabel):
+    def __init__(self, parent=None):
+        super(HelpLabel, self).__init__(parent)
+        self.setAutoFillBackground(True)
+        self.setMouseTracking(True)
+
+    def mouseMoveEvent(self, event):
+        QToolTip.showText(event.globalPos(),
+                          'Block logic expects that pumps and valves to always\n'
+                          'have two junctions at their endpoints.\n'
+                          'The pump or valve, together with the two junctions,\n'
+                          'are considered as a block, and they are moved jointly\n'
+                          'when using the "Move element tool"',
+                          self, self.rect())
+
+    def mousePressEvent(self, event):
+        print event
 
 
 class MyQFileDialog(QFileDialog):

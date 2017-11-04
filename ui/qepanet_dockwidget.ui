@@ -242,6 +242,9 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout">
+              <property name="margin">
+               <number>0</number>
+              </property>
               <item row="0" column="1">
                <widget class="QLabel" name="lbl_elev_val">
                 <property name="text">
@@ -260,6 +263,31 @@
             </widget>
            </item>
            <item>
+            <widget class="QFrame" name="fra_block_logic">
+             <property name="frameShape">
+              <enum>QFrame::StyledPanel</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Raised</enum>
+             </property>
+             <layout class="QHBoxLayout" name="lay_block_logic">
+              <item>
+               <widget class="QCheckBox" name="chk_block_logic">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>Use block logic</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
               <number>9</number>
@@ -270,7 +298,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>322</width>
-                <height>155</height>
+                <height>130</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -339,7 +367,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>322</width>
-                <height>155</height>
+                <height>130</height>
                </rect>
               </property>
               <attribute name="label">
@@ -419,7 +447,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>322</width>
-                <height>155</height>
+                <height>130</height>
                </rect>
               </property>
               <attribute name="label">
@@ -942,8 +970,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>322</width>
-                <height>155</height>
+                <width>305</width>
+                <height>142</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1099,7 +1127,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>322</width>
-                <height>155</height>
+                <height>130</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1169,8 +1197,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>322</width>
-                <height>155</height>
+                <width>305</width>
+                <height>147</height>
                </rect>
               </property>
               <attribute name="label">

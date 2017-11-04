@@ -781,28 +781,56 @@ def getBinInfo():
                     BinLinkFromNode.append(mm[1].strip())
                     BinLinkToNode.append(mm[2].strip())
 
-                    if len(mm) > 4:
-                        if mm[3].upper() == 'HEAD':
-                            BinLinkPumpCurveNameID.append(mm[4].strip())
-                        elif mm[3].upper() == 'POWER':
-                            if mm[4].strip() == ';':
-                                power = 0
-                            else:
-                                power = float(mm[4].replace(';', ''))
-                            BinLinkPumpPower.append(power)
-                            BinLinkPumpNameIDPower.append(mm[0].strip())
-                    if len(mm) > 6:
-                        if mm[5][0] != ';':
-                            if mm[5].upper() == 'SPEED':
-                                BinLinkPumpSpeed.append(mm[6].strip())
-                                BinLinkPumpSpeedID.append(mm[0].strip())
-                            else:
-                                BinLinkPumpPatterns.append(mm[6].strip())
-                                BinLinkPumpPatternsPumpID.append(mm[0].strip())
+                    keywords = ['POWER', 'HEAD', 'SPEED', 'PATTERN']
 
-                    if len(mm) > 8:
-                        BinLinkPumpPatterns.append(mm[8].strip())
-                        BinLinkPumpPatternsPumpID.append(mm[0].strip())
+                    if len(mm) > 3:
+                        for m in range(3, len(mm)-1):
+                            if mm[m].upper() in keywords:
+                                value = None
+                                if m+1 < len(mm) and mm[m+1] not in keywords and mm[m+1].strip() != ';':
+                                    value = mm[m+1]
+
+                                if mm[m].upper() == 'HEAD':
+                                    BinLinkPumpCurveNameID.append(value)
+                                elif mm[m].upper() == 'POWER':
+                                    power = 0
+                                    if value is not None:
+                                        power = float(value)
+                                    BinLinkPumpPower.append(power)
+                                    BinLinkPumpNameIDPower.append(mm[0].strip())
+                                elif mm[m].upper() == 'SPEED':
+                                    speed = 0
+                                    if value is not None:
+                                        speed = float(value)
+                                    BinLinkPumpSpeed.append(speed)
+                                    BinLinkPumpSpeedID.append(mm[0].strip())
+                                elif mm[m].upper() == 'PATTERN':
+                                    if value is not None:
+                                        BinLinkPumpPatterns.append(value)
+                                    BinLinkPumpPatternsPumpID.append(mm[0].strip())
+
+                    # if len(mm) > 4:
+                    #     if mm[3].upper() == 'HEAD':
+                    #         BinLinkPumpCurveNameID.append(mm[4].strip())
+                    #     elif mm[3].upper() == 'POWER':
+                    #         if mm[4].strip() == ';':
+                    #             power = 0
+                    #         else:
+                    #             power = float(mm[4].replace(';', ''))
+                    #         BinLinkPumpPower.append(power)
+                    #         BinLinkPumpNameIDPower.append(mm[0].strip())
+                    # if len(mm) > 6:
+                    #     if mm[5][0] != ';':
+                    #         if mm[5].upper() == 'SPEED':
+                    #             BinLinkPumpSpeed.append(mm[6].strip())
+                    #             BinLinkPumpSpeedID.append(mm[0].strip())
+                    #         else:
+                    #             BinLinkPumpPatterns.append(mm[6].strip())
+                    #             BinLinkPumpPatternsPumpID.append(mm[0].strip())
+                    #
+                    # if len(mm) > 8:
+                    #     BinLinkPumpPatterns.append(mm[8].strip())
+                    #     BinLinkPumpPatternsPumpID.append(mm[0].strip())
 
         if sec[5] == 1:  # VALVES
             if "[" in s1:

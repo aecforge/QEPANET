@@ -59,6 +59,8 @@ class Parameters(Observable):
 
         self._vertex_dist = 0
 
+        self._block_logic = True
+
         self.crs = None
 
         self.options = Options()
@@ -226,6 +228,14 @@ class Parameters(Observable):
         self._vertex_dist = value
         self.notify()
 
+    @property
+    def block_logic(self):
+        return self._block_logic
+
+    @block_logic.setter
+    def block_logic(self, value):
+        self._block_logic = value
+        self.notify()
 
 class ConfigFile:
 
