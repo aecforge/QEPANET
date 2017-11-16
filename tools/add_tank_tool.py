@@ -2,7 +2,7 @@
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance, QgsGeometry
+from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance, QgsGeometry, QgsPointLocator
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsMessageBar
 
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
@@ -225,7 +225,8 @@ class AddTankTool(QgsMapTool):
         # snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
         snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToSegment)
 
-        self.snapper = NetworkUtils.set_up_snapper([self.params.pipes_vlay], self.iface.mapCanvas(), self.params.snap_tolerance)
+        layers = {self.params.pipes_vlay: QgsPointLocator.All}
+        self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
 
         # Editing
         if not self.params.tanks_vlay.isEditable():

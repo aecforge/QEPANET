@@ -991,9 +991,9 @@ class NetworkUtils:
     def set_up_snapper(snap_layers, map_canvas, snap_tolerance=10):
 
         layer_configs = []
-        for layer in snap_layers:
-            point_locator = QgsPointLocator(layer)
-            layer_configs.append(QgsSnappingUtils.LayerConfig(layer, point_locator.Vertex, snap_tolerance, QgsTolerance.MapUnits))
+        for layer, snap_type in snap_layers.iteritems():
+            # point_locator = QgsPointLocator(snap_layers[l])
+            layer_configs.append(QgsSnappingUtils.LayerConfig(layer, snap_type, snap_tolerance, QgsTolerance.MapUnits))
         snapper = QgsSnappingUtils()
         snapper.setMapSettings(map_canvas.mapSettings())
         snapper.setLayers(layer_configs)

@@ -139,9 +139,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.chk_block_logic.setChecked(True)
         self.chk_block_logic.clicked.connect(self.chk_block_logic_clicked)
 
-        self.lbl_block_logic = HelpLabel()
-        image = QPixmap(os.path.join(curr_dir, 'i_question_mark.png'))
-        self.lbl_block_logic.setPixmap(image)
+        self.lbl_block_logic = HelpLabel('(What is this?)')
+        # image = QPixmap(os.path.join(curr_dir, 'i_question_mark.png'))
+        # self.lbl_block_logic.setPixmap(image)
         self.lay_block_logic.addWidget(self.lbl_block_logic)
 
         # Layers
@@ -983,11 +983,11 @@ class HelpLabel(QLabel):
 
     def mouseMoveEvent(self, event):
         QToolTip.showText(event.globalPos(),
-                          'Block logic expects that pumps and valves to always\n'
+                          'Block logic expects pumps and valves to always\n'
                           'have two junctions at their endpoints.\n'
                           'The pump or valve, together with the two junctions,\n'
-                          'are considered as a block, and they are moved jointly\n'
-                          'when using the "Move element tool"',
+                          'are then considered as a single block, and they are\n'
+                          'moved jointly when using the "Move element tool".',
                           self, self.rect())
 
     def mousePressEvent(self, event):

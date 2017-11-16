@@ -5,7 +5,7 @@ import traceback
 
 from PyQt4.QtCore import Qt, QPoint
 from PyQt4.QtGui import QColor, QMenu
-from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsProject, QgsTolerance
+from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsProject, QgsTolerance, QgsPointLocator
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand, QgsMessageBar
 
 from ..model.network import Pipe, Junction
@@ -311,7 +311,11 @@ class AddPipeTool(QgsMapTool):
         # snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.params.tanks_vlay)
         # snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToSegment)
 
-        layers = [self.params.junctions_vlay, self.params.reservoirs_vlay, self.params.tanks_vlay, self.params.pipes_vlay]
+        layers = {
+            self.params.junctions_vlay: QgsPointLocator.Vertex,
+            self.params.reservoirs_vlay: QgsPointLocator.Vertex,
+            self.params.tanks_vlay: QgsPointLocator.Vertex,
+            self.params.pipes_vlay: QgsPointLocator.All}
         # snap_layers = [snap_layer_junctions, snap_layer_reservoirs, snap_layer_tanks, snap_layer_pipes]
 
         self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)

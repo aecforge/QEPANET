@@ -2,7 +2,7 @@
 
 from PyQt4.QtCore import Qt, QPoint
 from PyQt4.QtGui import QColor, QMenu
-from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance, QGis
+from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance, QGis, QgsPointLocator
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsMessageBar
 
 from ..model.network import Pump
@@ -234,8 +234,12 @@ class AddPumpTool(QgsMapTool):
         #                                               self.params.snap_tolerance,
         #                                               True)
 
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
-        self.snapper = NetworkUtils.set_up_snapper([self.params.pipes_vlay], self.iface.mapCanvas(), self.params.snap_tolerance)
+        # snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
+        layers = {self.params.pipes_vlay: QgsPointLocator.All}
+        self.snapper = NetworkUtils.set_up_snapper(
+            layers,
+            self.iface.mapCanvas(),
+            self.params.snap_tolerance)
 
         # Editing
         if not self.params.junctions_vlay.isEditable():

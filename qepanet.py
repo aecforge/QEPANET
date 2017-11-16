@@ -198,7 +198,7 @@ class QEpanet:
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
 
-        #print "** UNLOAD QEpanet"
+        print "** UNLOAD QEpanet"
 
         for action in self.actions:
             self.iface.removePluginMenu(
@@ -207,6 +207,10 @@ class QEpanet:
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
         del self.toolbar
+
+        print 'a', self.dockwidget
+        if self.dockwidget is not None:
+            self.iface.removeDockWidget(self.dockwidget)
 
     # --------------------------------------------------------------------------
 
@@ -220,29 +224,6 @@ class QEpanet:
         if not os.path.exists(Parameters.config_file_path):
             config_file = ConfigFile(Parameters.config_file_path)
             config_file.create_config()
-
-        #     QMessageBox.critical(
-        #         self.iface.mainWindow(),
-        #         Parameters.plug_in_name,
-        #         u'The config.ini file was not found. It should be located inside the plugin directory. Please refer to'
-        #         u'the plugin documentation to solve the problem.',
-        #         QMessageBox.Ok)
-        #
-        #     return
-
-        # config_file = ConfigFile(Parameters.config_file_path)
-
-        # # Read patterns
-        # patterns_file_path = config_file.get_patterns_file_path()
-        # self.params.patterns_file = patterns_file_path
-        # if patterns_file_path is not None and os.path.isfile(patterns_file_path):
-        #     InpFile.read_patterns(self.params)
-        #
-        # # Read curves
-        # curves_file_path = config_file.get_curves_file_path()
-        # self.params.curves_file = curves_file_path
-        # if curves_file_path is not None and os.path.isfile(curves_file_path):
-        #     InpFile.read_curves(self.params)
 
         # Clear vertex markers (there should be none, just in case)
         vertex_items = [i for i in self.iface.mapCanvas().scene().items() if issubclass(type(i), QgsVertexMarker)]

@@ -2,7 +2,7 @@
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QCursor, QColor, QApplication
 from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper,\
-    QgsVector, QGis
+    QgsVector, QGis, QgsPointLocator
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
 from ..model.network_handling import NetworkUtils, NodeHandler, LinkHandler
@@ -176,7 +176,12 @@ class DeleteTool(QgsMapTool):
         # snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.params.tanks_vlay)
         # snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, snapping_type=QgsSnapper.SnapToSegment)
 
-        layers = [self.params.junctions_vlay, self.params.reservoirs_vlay, self.params.tanks_vlay, self.params.pipes_vlay]
+        layers = {
+            self.params.junctions_vlay: QgsPointLocator.Vertex,
+            self.params.reservoirs_vlay: QgsPointLocator.Vertex,
+            self.params.tanks_vlay: QgsPointLocator.Vertex,
+            self.params.pipes_vlay: QgsPointLocator.All}
+
         self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
 
         # Editing
