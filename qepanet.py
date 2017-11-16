@@ -217,8 +217,8 @@ class QEpanet:
     def run(self):
         """Run method that loads and starts the plugin"""
 
-        # Restore cursor
-        QApplication.setOverrideCursor(Qt.ArrowCursor)
+        # # Restore cursor
+        # QApplication.setOverrideCursor(Qt.ArrowCursor)
 
         # # Check for config file existance
         if not os.path.exists(Parameters.config_file_path):
