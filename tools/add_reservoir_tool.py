@@ -204,7 +204,7 @@ class AddReservoirTool(QgsMapTool):
         # # snap_layer_junctions = NetworkUtils.set_up_snap_layer(Parameters.junctions_vlay)
         # snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToSegment)
 
-        layers = {self.params.pipes_vlay, QgsPointLocator.All}
+        layers = {self.params.pipes_vlay: QgsPointLocator.All}
         self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
 
         # Editing
