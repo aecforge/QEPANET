@@ -198,7 +198,7 @@ class QEpanet:
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
 
-        print "** UNLOAD QEpanet"
+        #print "** UNLOAD QEpanet"
 
         for action in self.actions:
             self.iface.removePluginMenu(
@@ -208,7 +208,6 @@ class QEpanet:
         # remove the toolbar
         del self.toolbar
 
-        print 'a', self.dockwidget
         if self.dockwidget is not None:
             self.iface.removeDockWidget(self.dockwidget)
 

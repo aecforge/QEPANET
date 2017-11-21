@@ -330,8 +330,6 @@ class MoveTool(QgsMapTool):
                     # Pump or valve
                     else:
 
-                        print 'a', self.adj_junctions[0][1].name(), self.adj_junctions[1][1].name()
-
                         # Update junctions geometry
                         NodeHandler.move_element(self.adj_junctions[0][1],
                                                  self.params.dem_rlay,

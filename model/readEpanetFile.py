@@ -436,7 +436,7 @@ def getLabelsSection():
 # Get all info
 def getBinInfo():
     global inpname
-    file = open(inpname, 'r')
+    # file = open(inpname, 'r')
 
     nodeJunctionNameID = []
     nodeJunctionElevations = []
@@ -494,7 +494,7 @@ def getBinInfo():
     curvesSection = []
     curvesSectionType = []
     qualitySection = []
-    rulesSection = [];
+    rulesSection = []
     rules = []
     sourcesSection = []
     energySection = []
@@ -506,273 +506,274 @@ def getBinInfo():
     reportSection = []
     labelsSection = []
 
-    s1 = file.readline()
-    num = 13;
+    # s1 = file.readline()
+    num = 13
     sec = [0] * num
     x = []
     y = []
     # Create a list.
-    vertx = [];
+    vertx = []
     verty = []
     # Append empty lists in first two indexes.
-    sec2 = [0] * num;
-    ch1 = 0;
+    sec2 = [0] * num
+    ch1 = 0
     ch = 1
 
-    while True:
-        if "[" in s1:
-            pass
-        else:
-            s1 = file.readline()
-        ok = 0
-        if "[END]" in s1:
+    with open(inpname) as openfileobject:
+        for s1 in openfileobject:
 
-            file.close()
-            return [nodeJunctionNameID, nodeJunctionElevations, nodeJunctionBaseDemands, nodePatternNameID,
-                    len(nodeJunctionNameID),  # 01234
-                    nodeReservoirNameID, nodeReservoirElevations, len(nodeReservoirNameID),  # 567
-                    BinNodeTankNameID, BinNodeTankElevation, BinNodeTankInitLevel, BinNodeTankMinLevel,
-                    BinNodeTankMaxLevel, BinNodeTankDiameter, BinNodeTankMinVol,  # 8#9#10#11#12#13#14
-                    BinLinkPipeNameID, BinLinkFromNode, BinLinkToNode, BinLinkPipeLengths, BinLinkPipeDiameters,
-                    BinLinkPipeRoughness, BinLinkPipeMinorLoss,  # 15#16#17#18#19#20#21
-                    BinLinkPumpNameID, BinLinkPumpPatterns, BinLinkPumpCurveNameID, BinLinkPumpPower,
-                    BinLinkPumpNameIDPower,  # 22#23#24#25#26
-                    BinLinkValveNameID, BinLinkValveDiameters, BinLinkValveType, BinLinkValveSetting,
-                    BinLinkValveMinorLoss,  # 27#28#29#30#31
-                    BinLinkInitialStatus, BinLinkInitialStatusNameID, BincountStatuslines, BinNodeTankVolumeCurveID,
-                    # 32#33#34#35
-                    BinCurvesNameID, BinCurvesXY, BinLinkPumpSpeed, BinLinkPumpPatternsPumpID,  # 36#37#38#39
-                    x, y, vertx, verty,  # 40#41#42#43
-                    demandsSection, statusSection, emittersSection, controlsSection, patternsSection, curvesSection,
-                    curvesSectionType,  # 44#45#46#47#48#49#50
-                    qualitySection, rulesSection, sourcesSection, energySection, reactionsSection,
-                    reactionsOptionSection, mixingSection,  # 51#52#53#54#55#56#57
-                    timesSection, optionsSection, reportSection, labelsSection,  # 58#59#60#61
-                    BinLinkPumpSpeedID] # 62
+            ok = 0
+            if "[END]" in s1:
 
-        elif "[JUNCTIONS]" in s1:
-            sec[0] = 1;
-            s1 = file.readline();
-            pass
-        elif "[RESERVOIRS]" in s1:
-            sec = [0] * num;
-            sec[1] = 1;
-            s1 = file.readline()
-        elif "[TANKS]" in s1:
-            sec = [0] * num;
-            sec[2] = 1;
-            s1 = file.readline()
-        elif "[PIPES]" in s1:
-            sec = [0] * num;
-            sec[3] = 1;
-            s1 = file.readline()
-        elif "[PUMPS]" in s1:
-            sec = [0] * num;
-            sec[4] = 1;
-            s1 = file.readline()
-        elif "[VALVES]" in s1:
-            sec = [0] * num;
-            sec[5] = 1;
-            s1 = file.readline()
-        if "[STATUS]" in s1:
-            sec = [0] * num;
-            sec2 = [0] * num;
-            sec[7] = 1;
-            s1 = file.readline()
-            for i in range(0, len(BinLinkPipeNameID) + len(BinLinkPumpNameID) + len(BinLinkValveNameID)):
-                vertx.append([])
-                verty.append([])
-            linknameid = BinLinkPipeNameID + BinLinkPumpNameID + BinLinkValveNameID
-        elif "[DEMANDS]" in s1:
-            sec = [0] * num;
-            sec[8] = 1;
-            s1 = file.readline()
-        elif (
-                                "[JUNCTIONS]" in s1 or "[RESERVOIRS]" in s1 or "[TANKS]" in s1 or "[PIPES]" in s1 or "[PUMPS]" in s1 or "[VALVES]" in s1):
-            ok = 1
-        elif "[TAGS]" in s1 and ok == 0:
-            sec = [0] * num;
-            s1 = file.readline()
-        elif "[PATTERNS]" in s1:
-            sec = [0] * num;
-            sec[6] = 1;
-            s1 = file.readline()
-        elif "[CURVES]" in s1:
-            sec = [0] * num;
-            sec[9] = 1;
-            s1 = file.readline()
-        elif "[CONTROLS]" in s1:
-            sec = [0] * num;
-            sec[10] = 1;
-            s1 = file.readline()
-        elif "[COORDINATES]" in s1:
-            sec2 = [0] * num;
-            sec2[0] = 1;
-            s1 = file.readline()
+                # file.close()
+                return [nodeJunctionNameID, nodeJunctionElevations, nodeJunctionBaseDemands, nodePatternNameID,
+                        len(nodeJunctionNameID),  # 01234
+                        nodeReservoirNameID, nodeReservoirElevations, len(nodeReservoirNameID),  # 567
+                        BinNodeTankNameID, BinNodeTankElevation, BinNodeTankInitLevel, BinNodeTankMinLevel,
+                        BinNodeTankMaxLevel, BinNodeTankDiameter, BinNodeTankMinVol,  # 8#9#10#11#12#13#14
+                        BinLinkPipeNameID, BinLinkFromNode, BinLinkToNode, BinLinkPipeLengths, BinLinkPipeDiameters,
+                        BinLinkPipeRoughness, BinLinkPipeMinorLoss,  # 15#16#17#18#19#20#21
+                        BinLinkPumpNameID, BinLinkPumpPatterns, BinLinkPumpCurveNameID, BinLinkPumpPower,
+                        BinLinkPumpNameIDPower,  # 22#23#24#25#26
+                        BinLinkValveNameID, BinLinkValveDiameters, BinLinkValveType, BinLinkValveSetting,
+                        BinLinkValveMinorLoss,  # 27#28#29#30#31
+                        BinLinkInitialStatus, BinLinkInitialStatusNameID, BincountStatuslines, BinNodeTankVolumeCurveID,
+                        # 32#33#34#35
+                        BinCurvesNameID, BinCurvesXY, BinLinkPumpSpeed, BinLinkPumpPatternsPumpID,  # 36#37#38#39
+                        x, y, vertx, verty,  # 40#41#42#43
+                        demandsSection, statusSection, emittersSection, controlsSection, patternsSection, curvesSection,
+                        curvesSectionType,  # 44
+                        qualitySection, # 45
+                        rulesSection, # 46
+                        sourcesSection, # 47
+                        energySection, # 48
+                        reactionsSection, #50
+                        reactionsOptionSection,
+                        mixingSection,  # 57
+                        timesSection,  # 58
+                        optionsSection,  # 59
+                        reportSection,  # 60
+                        labelsSection,  # 61
+                        BinLinkPumpSpeedID]  # 62
 
-        elif "[VERTICES]" in s1:
-            sec2 = [0] * num;
-            sec2[1] = 1;
-            s1 = file.readline()
-        elif "[LABELS]" in s1:
-            sec2 = [0] * num;
-            sec2[12] = 1;
-            s1 = file.readline()
-        elif "[EMITTERS]" in s1:
-            sec2 = [0] * num;
-            sec2[2] = 1;
-            s1 = file.readline()
-        elif "[RULES]" in s1:
-            sec = [0] * num;
-            sec2 = [0] * num;
-            sec2[3] = 1;
-            s1 = file.readline()
-        elif "[ENERGY]" in s1:
-            sec2 = [0] * num;
-            sec2[6] = 1
-            if rules != []:
-                rulesSection.append(rules)
-            s1 = file.readline()
-        elif "[QUALITY]" in s1:
-            sec2 = [0] * num;
-            sec = [0] * num;
-            sec2[4] = 1;
-            s1 = file.readline()
-        elif "[SOURCES]" in s1:
-            sec2 = [0] * num;
-            sec2[5] = 1;
-            s1 = file.readline()
-        elif "[REACTIONS]" in s1:
-            sec2 = [0] * num;
-            sec2[7] = 1;
-            s1 = file.readline()
-        elif "[MIXING]" in s1:
-            sec2 = [0] * num;
-            sec2[8] = 1;
-            s1 = file.readline()
-        elif "[TIMES]" in s1:
-            sec2 = [0] * num;
-            sec2[9] = 1;
-            s1 = file.readline()
-        elif "[REPORT]" in s1:
-            sec2 = [0] * num;
-            sec2[10] = 1;
-            s1 = file.readline()
-        elif "[OPTIONS]" in s1:
-            sec2 = [0] * num;
-            sec2[11] = 1;
-            s1 = file.readline()
-        elif "[BACKDROP]" in s1:
-            sec2 = [0] * num;
-            s1 = file.readline()
-        elif "[" in s1:
-            s1 = file.readline()
-
-        if sec[0] == 1:  # JUNCTIONS
-            if "[" in s1:
+            elif "[JUNCTIONS]" in s1:
+                sec[0] = 1
                 continue
-            # mm = s1.split()
-            mm = re.split(r'\t', s1.strip())
-
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    nodeJunctionNameID.append(mm[0].strip())
-                    nodeJunctionElevations.append(float(mm[1]))
-                    if len(mm) > 2 and mm[2].strip() != '':
-                        nodeJunctionBaseDemands.append(float(mm[2]))
-                    if len(mm) > 3 and mm[3].strip() != '':
-                        if mm[3][0] != ';':
-                            nodePatternNameID.append(mm[3].strip())
-                        else:
-                            nodePatternNameID.append('')
-                    else:
-                        nodePatternNameID.append('')
-                        # nodeJunctionBaseDemands.append(0.0)
-
-        if sec[1] == 1:  # RESERVOIRS
-            if "[" in s1:
+            elif "[RESERVOIRS]" in s1:
+                sec = [0] * num
+                sec[1] = 1
                 continue
-            # mm = s1.split()
-            mm = re.split(r'\t', s1.strip())
+            elif "[TANKS]" in s1:
+                sec = [0] * num
+                sec[2] = 1
+                continue
+            elif "[PIPES]" in s1:
+                sec = [0] * num
+                sec[3] = 1
+                continue
+            elif "[PUMPS]" in s1:
+                sec = [0] * num
+                sec[4] = 1
+                continue
+            elif "[VALVES]" in s1:
+                sec = [0] * num
+                sec[5] = 1
+                continue
+            if "[STATUS]" in s1:
+                sec = [0] * num
+                sec2 = [0] * num
+                sec[7] = 1
+                # s1 = file.readline()
+                for i in range(0, len(BinLinkPipeNameID) + len(BinLinkPumpNameID) + len(BinLinkValveNameID)):
+                    vertx.append([])
+                    verty.append([])
+                linknameid = BinLinkPipeNameID + BinLinkPumpNameID + BinLinkValveNameID
+                continue
+            elif "[DEMANDS]" in s1:
+                sec = [0] * num
+                sec[8] = 1
+                continue
+            elif (
+                "[JUNCTIONS]" in s1 or "[RESERVOIRS]" in s1 or "[TANKS]" in s1 or "[PIPES]" in s1 or "[PUMPS]" in s1 or "[VALVES]" in s1):
+                ok = 1
+            elif "[TAGS]" in s1 and ok == 0:
+                sec = [0] * num
+                continue
+            elif "[PATTERNS]" in s1:
+                sec = [0] * num
+                sec[6] = 1
+                continue
+            elif "[CURVES]" in s1:
+                sec = [0] * num
+                sec[9] = 1
+                continue
+            elif "[CONTROLS]" in s1:
+                sec = [0] * num
+                sec[10] = 1
+                continue
+            elif "[COORDINATES]" in s1:
+                sec2 = [0] * num
+                sec2[0] = 1
+                continue
+
+            elif "[VERTICES]" in s1:
+                sec2 = [0] * num
+                sec2[1] = 1
+                continue
+            elif "[LABELS]" in s1:
+                sec2 = [0] * num
+                sec2[12] = 1
+                continue
+            elif "[EMITTERS]" in s1:
+                sec2 = [0] * num
+                sec2[2] = 1
+                continue
+            elif "[RULES]" in s1:
+                sec = [0] * num
+                sec2 = [0] * num
+                sec2[3] = 1
+                continue
+            elif "[ENERGY]" in s1:
+                sec2 = [0] * num
+                sec2[6] = 1
+                if rules != []:
+                    rulesSection.append(rules)
+                continue
+            elif "[QUALITY]" in s1:
+                sec2 = [0] * num
+                sec = [0] * num
+                sec2[4] = 1
+                continue
+            elif "[SOURCES]" in s1:
+                sec2 = [0] * num
+                sec2[5] = 1
+                continue
+            elif "[REACTIONS]" in s1:
+                sec2 = [0] * num
+                sec2[7] = 1
+                continue
+            elif "[MIXING]" in s1:
+                sec2 = [0] * num
+                sec2[8] = 1
+                continue
+            elif "[TIMES]" in s1:
+                sec2 = [0] * num
+                sec2[9] = 1
+                continue
+            elif "[REPORT]" in s1:
+                sec2 = [0] * num
+                sec2[10] = 1
+                continue
+            elif "[OPTIONS]" in s1:
+                sec2 = [0] * num
+                sec2[11] = 1
+                continue
+            elif "[BACKDROP]" in s1:
+                sec2 = [0] * num
+                continue
+            elif "[" in s1:
+                continue
+
+            if s1.strip('\t ').startswith(';'):
+                continue
+            mm = read_mm(s1)
+
             if not mm[0]:
                 continue
-            if len(mm) > 0:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    nodeReservoirNameID.append(mm[0].strip())
-                    nodeReservoirElevations.append(float(mm[1]))
-                    if len(mm) > 2:
-                        if mm[2][0] != ';':
-                            nodePatternNameID.append(mm[2].strip())
+
+            if sec[0] == 1:  # JUNCTIONS
+
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+
+                        nodeJunctionNameID.append(mm[0].strip())
+                        nodeJunctionElevations.append(float(mm[1]))
+                        if len(mm) > 2 and mm[2].strip() != '':
+                            nodeJunctionBaseDemands.append(float(mm[2]))
+                        if len(mm) > 3 and mm[3].strip() != '':
+                            if mm[3][0] != ';':
+                                nodePatternNameID.append(mm[3].strip())
+                            else:
+                                nodePatternNameID.append('')
                         else:
                             nodePatternNameID.append('')
-                    else:
-                        nodePatternNameID.append('')
+                            nodeJunctionBaseDemands.append(None)
 
-        if sec[2] == 1:  # TANKS
-            if "[" in s1:
-                continue
-            # mm = s1.split()
-            mm = re.split(r'\t', s1.strip())
-            if not mm[0]:
-                continue
-            if len(mm) > 0:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    BinNodeTankNameID.append(mm[0].strip())
-                    BinNodeTankElevation.append(float(mm[1]))
-                    BinNodeTankInitLevel.append(float(mm[2]))
-                    BinNodeTankMinLevel.append(float(mm[3]))
-                    BinNodeTankMaxLevel.append(float(mm[4]))
-                    BinNodeTankDiameter.append(float(mm[5]))
-                    BinNodeTankMinVol.append(float(mm[6]))
-                    nodePatternNameID.append('')
-                    if len(mm) > 7:
-                        if mm[7] and mm[7][0] != ';':
-                            BinNodeTankVolumeCurveID.append(mm[7].strip())
+            if sec[1] == 1:  # RESERVOIRS
+
+                if not mm[0]:
+                    continue
+                if len(mm) > 0:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        nodeReservoirNameID.append(mm[0].strip())
+                        nodeReservoirElevations.append(float(mm[1]))
+                        if len(mm) > 2:
+                            if mm[2][0] != ';':
+                                nodePatternNameID.append(mm[2].strip())
+                            else:
+                                nodePatternNameID.append('')
+                        else:
+                            nodePatternNameID.append('')
+
+            if sec[2] == 1:  # TANKS
+
+                if not mm[0]:
+                    continue
+                if len(mm) > 0:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        BinNodeTankNameID.append(mm[0].strip())
+                        BinNodeTankElevation.append(float(mm[1]))
+                        BinNodeTankInitLevel.append(float(mm[2]))
+                        BinNodeTankMinLevel.append(float(mm[3]))
+                        BinNodeTankMaxLevel.append(float(mm[4]))
+                        BinNodeTankDiameter.append(float(mm[5]))
+                        BinNodeTankMinVol.append(float(mm[6]))
+                        nodePatternNameID.append('')
+                        if len(mm) > 7:
+                            if mm[7] and mm[7][0] != ';':
+                                BinNodeTankVolumeCurveID.append(mm[7].strip())
+                            else:
+                                BinNodeTankVolumeCurveID.append('')
                         else:
                             BinNodeTankVolumeCurveID.append('')
-                    else:
-                        BinNodeTankVolumeCurveID.append('')
 
-        if sec[3] == 1:  # PIPES
-            if "[" in s1:
-                continue
-            # mm = s1.split()
-            mm = re.split(r'\t', s1.strip())
-            if not mm[0]:
-                continue
-            if len(mm) > 0:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    linkNameID.append(mm[0].strip())
-                    BinLinkPipeNameID.append(mm[0].strip())
-                    BinLinkFromNode.append(mm[1].strip())
-                    BinLinkToNode.append(mm[2].strip())
-                    BinLinkPipeLengths.append(float(mm[3]))
-                    BinLinkPipeDiameters.append(float(mm[4]))
-                    BinLinkPipeRoughness.append(float(mm[5]))
-                    if len(mm) > 6:
-                        BinLinkPipeMinorLoss.append(float(mm[6]))
-                    else:
-                        BinLinkPipeMinorLoss.append('')
-                    if len(mm) > 7:
-                        if mm[7][0] != ';':
-                            if mm[7] == 'Open':
-                                BinLinkInitialStatus.append('OPEN')
-                            else:
-                                BinLinkInitialStatus.append(mm[7])
+            if sec[3] == 1:  # PIPES
 
-        if sec[4] == 1:  # PUMPS
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 0:
+                if not mm[0]:
+                    continue
+                if len(mm) > 0:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        linkNameID.append(mm[0].strip())
+                        BinLinkPipeNameID.append(mm[0].strip())
+                        BinLinkFromNode.append(mm[1].strip())
+                        BinLinkToNode.append(mm[2].strip())
+                        BinLinkPipeLengths.append(float(mm[3]))
+                        BinLinkPipeDiameters.append(float(mm[4]))
+                        BinLinkPipeRoughness.append(float(mm[5]))
+                        if len(mm) > 6:
+                            BinLinkPipeMinorLoss.append(float(mm[6]))
+                        else:
+                            BinLinkPipeMinorLoss.append('')
+                        if len(mm) > 7:
+                            if mm[7][0] != ';':
+                                if mm[7] == 'Open':
+                                    BinLinkInitialStatus.append('OPEN')
+                                else:
+                                    BinLinkInitialStatus.append(mm[7])
+
+            if sec[4] == 1:  # PUMPS
+
+                if not mm[0]:
+                    continue
+
                 if mm[0][0] == ';':
                     pass
                 else:
@@ -809,35 +810,11 @@ def getBinInfo():
                                         BinLinkPumpPatterns.append(value)
                                     BinLinkPumpPatternsPumpID.append(mm[0].strip())
 
-                    # if len(mm) > 4:
-                    #     if mm[3].upper() == 'HEAD':
-                    #         BinLinkPumpCurveNameID.append(mm[4].strip())
-                    #     elif mm[3].upper() == 'POWER':
-                    #         if mm[4].strip() == ';':
-                    #             power = 0
-                    #         else:
-                    #             power = float(mm[4].replace(';', ''))
-                    #         BinLinkPumpPower.append(power)
-                    #         BinLinkPumpNameIDPower.append(mm[0].strip())
-                    # if len(mm) > 6:
-                    #     if mm[5][0] != ';':
-                    #         if mm[5].upper() == 'SPEED':
-                    #             BinLinkPumpSpeed.append(mm[6].strip())
-                    #             BinLinkPumpSpeedID.append(mm[0].strip())
-                    #         else:
-                    #             BinLinkPumpPatterns.append(mm[6].strip())
-                    #             BinLinkPumpPatternsPumpID.append(mm[0].strip())
-                    #
-                    # if len(mm) > 8:
-                    #     BinLinkPumpPatterns.append(mm[8].strip())
-                    #     BinLinkPumpPatternsPumpID.append(mm[0].strip())
+            if sec[5] == 1:  # VALVES
 
-        if sec[5] == 1:  # VALVES
-            if "[" in s1:
-                continue
-            # mm = s1.split()
-            mm = re.split(r'\t', s1.strip())
-            if len(mm) > 1:
+                if not mm[0]:
+                    continue
+
                 if mm[0][0] == ';':
                     pass
                 else:
@@ -852,231 +829,241 @@ def getBinInfo():
                         if mm[6][0] != ';':
                             BinLinkValveMinorLoss.append(float(mm[6]))
 
-        if sec[6] == 1:  # PATTERNS
-            if "[" in s1:
-                continue
-            # mm = s1.split()
-            mm = re.split(r'\t', s1.strip())
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    patternsSection.append([mm[0], ' '.join(mm[1:])])
+            if sec[6] == 1:  # PATTERNS
 
-        if sec[7] == 1:  # STATUS
-            if "[" in s1:
-                continue
-            # mm = s1.split()
-            mm = re.split(r'\t', s1.strip())
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    statusSection.append(mm)
-                    BinLinkInitialStatusNameID.append(mm[0])
-                    if mm[1] == 'Open':
-                        BinLinkInitialStatus.append('OPEN')
+                if not mm[0]:
+                    continue
+
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
                     else:
-                        BinLinkInitialStatus.append(mm[1])
-                    BincountStatuslines.append(mm)
+                        patternsSection.append([mm[0], ' '.join(mm[1:])])
 
-        if sec[8] == 1:  # DEMANDS
-            if "[" in s1:
-                continue
-            # mm = s1.split()
-            mm = re.split(r'\t', s1.strip())
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    nodeJunctionBaseDemands.append(float(mm[1]))
-                    demandsSection.append(mm)
+            if sec[7] == 1:  # STATUS
 
-        if sec[9] == 1:  # CURVES
+                if not mm[0]:
+                    continue
 
-            if "[" in s1:
-                continue
-
-            # Clean excessive 'PUMP:'
-            s1 = s1.strip().replace('PUMP: ', '')
-
-            # mm = s1.split()
-            mm = re.split(r'\t', s1.strip())
-            if not mm[0]:
-                continue
-
-            if len(mm) > 0:
-                if mm[0][0].strip() == ';':
-                    if mm[0] == ';ID':
-                        continue
-                    elif ";PUMP:" in mm[0].upper():
-                        curvesSectionType.append('PUMP')
-                    elif ";EFFICIENCY:" in mm[0].upper():
-                        curvesSectionType.append('EFFICIENCY')
-                    elif ";VOLUME:" in mm[0].upper():
-                        curvesSectionType.append('VOLUME')
-                    elif ";HEADLOSS:" in mm[0].upper():
-                        curvesSectionType.append('HEADLOSS')
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
                     else:
-                        curvesSectionType.append('PUMP')
+                        statusSection.append(mm)
+                        BinLinkInitialStatusNameID.append(mm[0])
+                        if mm[1] == 'Open':
+                            BinLinkInitialStatus.append('OPEN')
+                        else:
+                            BinLinkInitialStatus.append(mm[1])
+                        BincountStatuslines.append(mm)
 
-                if mm[0][0].strip() != ';':
-                    curvesSection.append(mm)
-                    BinCurvesNameID.append(mm[0])
-                    BinCurvesXY.append([float(mm[1]), float(mm[2])])
+            if sec[8] == 1:  # DEMANDS
 
-        if sec[10] == 1:  # CONTROLS
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    controlsSection.append(' '.join(mm))
+                if not mm[0]:
+                    continue
 
-        if sec2[0] == 1:  # COORDINATES
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 2:
-                if mm[0][0] != ';':
-                    x.append(float(mm[1]))
-                    y.append(float(mm[2]))
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        nodeJunctionBaseDemands.append(float(mm[1]))
+                        demandsSection.append(mm)
 
-        if sec2[1] == 1:  # VERTICES
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 2:
-                if mm[0][0] != ';':
-                    linkIndex = linknameid.index(mm[0])
-                    vertx[linkIndex].append(float(mm[1]))
-                    verty[linkIndex].append(float(mm[2]))
+            if sec[9] == 1:  # CURVES
 
-        if sec2[2] == 1:  # EMITTERS
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    emittersSection.append(mm)
+                if not mm[0]:
+                    continue
 
-        if sec2[3] == 1:  # RULES
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    if "RULE" in mm[0].upper():
-                        if rules != [] or ch == 0:
-                            rulesSection.append(rules)
-                            ch = 0
-                            rules = []
-                            rules.append([s1, mm])
+                if len(mm) > 0:
+                    if mm[0][0].strip() == ';':
+                        if mm[0] == ';ID':
+                            continue
+                        elif ";PUMP:" in mm[0].upper():
+                            curvesSectionType.append('PUMP')
+                        elif ";EFFICIENCY:" in mm[0].upper():
+                            curvesSectionType.append('EFFICIENCY')
+                        elif ";VOLUME:" in mm[0].upper():
+                            curvesSectionType.append('VOLUME')
+                        elif ";HEADLOSS:" in mm[0].upper():
+                            curvesSectionType.append('HEADLOSS')
+                        else:
+                            curvesSectionType.append('PUMP')
+
+                    if mm[0][0].strip() != ';':
+                        curvesSection.append(mm)
+                        BinCurvesNameID.append(mm[0])
+                        BinCurvesXY.append([float(mm[1]), float(mm[2])])
+
+            if sec[10] == 1:  # CONTROLS
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        controlsSection.append(' '.join(mm))
+
+            if sec2[0] == 1:  # COORDINATES
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+
+                if len(mm) > 2:
+                    if mm[0][0] != ';':
+                        x.append(float(mm[1]))
+                        y.append(float(mm[2]))
+
+            if sec2[1] == 1:  # VERTICES
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+
+                if len(mm) > 2:
+                    if mm[0][0] != ';':
+                        linkIndex = linknameid.index(mm[0])
+                        vertx[linkIndex].append(float(mm[1]))
+                        verty[linkIndex].append(float(mm[2]))
+
+            if sec2[2] == 1:  # EMITTERS
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        emittersSection.append(mm)
+
+            if sec2[3] == 1:  # RULES
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        if "RULE" in mm[0].upper():
+                            if rules != [] or ch == 0:
+                                rulesSection.append(rules)
+                                ch = 0
+                                rules = []
+                                rules.append([s1, mm])
+                            else:
+                                rules.append([s1, mm])
                         else:
                             rules.append([s1, mm])
+
+            if sec2[4] == 1:  # QUALITY
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
                     else:
-                        rules.append([s1, mm])
+                        qualitySection.append(mm)
 
-        if sec2[4] == 1:  # QUALITY
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    qualitySection.append(mm)
-
-        if sec2[5] == 1:  # SOURCES
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    sourcesSection.append(mm)
-
-        if sec2[6] == 1:  # ENERGY
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    energySection.append(mm)
-
-        if sec2[7] == 1:  # REACTIONS
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    if ("ORDER" in mm[0].upper() and ch1 == 0) or ch1 == 1:
-                        reactionsOptionSection.append(mm);
-                        ch1 = 1
+            if sec2[5] == 1:  # SOURCES
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
                     else:
-                        reactionsSection.append(mm)
+                        sourcesSection.append(mm)
 
-        if sec2[8] == 1:  # MIXING
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    mixingSection.append(mm)
+            if sec2[6] == 1:  # ENERGY
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
 
-        if sec2[9] == 1:  # TIMES
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    timesSection.append(mm)
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        energySection.append(mm)
 
-        if sec2[10] == 1:  # REPORT
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    reportSection.append(mm)
+            if sec2[7] == 1:  # REACTIONS
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        if ("ORDER" in mm[0].upper() and ch1 == 0) or ch1 == 1:
+                            reactionsOptionSection.append(mm);
+                            ch1 = 1
+                        else:
+                            reactionsSection.append(mm)
 
-        if sec2[11] == 1:  # OPTIONS
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    optionsSection.append(mm)
+            if sec2[8] == 1:  # MIXING
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        mixingSection.append(mm)
 
-        if sec2[12] == 1:  # LABELS
-            if "[" in s1:
-                continue
-            mm = s1.split()
-            if len(mm) > 1:
-                if mm[0][0] == ';':
-                    pass
-                else:
-                    labelsSection.append(mm)
+            if sec2[9] == 1:  # TIMES
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        timesSection.append(mm)
 
+            if sec2[10] == 1:  # REPORT
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        reportSection.append(mm)
+
+            if sec2[11] == 1:  # OPTIONS
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        optionsSection.append(mm)
+
+            if sec2[12] == 1:  # LABELS
+                if "[" in s1:
+                    continue
+                # mm = s1.split()
+                if len(mm) > 1:
+                    if mm[0][0] == ';':
+                        pass
+                    else:
+                        labelsSection.append(mm)
+
+
+def read_mm(s1):
+    # Strip new line
+    s1 = s1.strip('\r\n')
+
+    # Strip stuff beyond ;
+    pos = s1.rfind(';')
+    if pos > 0:
+        s1 = s1[:pos]
+
+    mm = re.split('[\t\s]+', s1.strip('\t ;'))
+    return mm
 
 ## Node Coordinates
 def getBinNodeCoordinates():
