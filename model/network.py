@@ -44,6 +44,7 @@ class Junction:
     field_name_delta_z = 'delta_z'
     field_name_pattern = 'pattern'
     field_name_emitter_coeff = 'emit_coeff'
+    field_name_description = 'description'
 
     prefix = 'J'
 
@@ -52,7 +53,8 @@ class Junction:
               QgsField(field_name_delta_z, QVariant.Double),
               QgsField(field_name_pattern, QVariant.String),
               QgsField(field_name_demand, QVariant.Double),
-              QgsField(field_name_emitter_coeff, QVariant.Double)]
+              QgsField(field_name_emitter_coeff, QVariant.Double),
+              QgsField(field_name_description, QVariant.String)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -61,6 +63,7 @@ class Junction:
         self.deltaz = 0
         self.pattern = None
         self.emitter_coeff = 0
+        self.description = ''
 
 
 class QJunction:
@@ -81,6 +84,7 @@ class Reservoir:
     field_name_delta_z = 'delta_z'
     field_name_pressure_head = 'press_head'
     field_name_pattern = 'pattern'
+    field_name_description = 'description'
 
     prefix = 'R'
 
@@ -88,7 +92,8 @@ class Reservoir:
               QgsField(field_name_elev, QVariant.Double),
               QgsField(field_name_delta_z, QVariant.Double),
               QgsField(field_name_pressure_head, QVariant.Double),
-              QgsField(field_name_pattern, QVariant.String)]
+              QgsField(field_name_pattern, QVariant.String),
+              QgsField(field_name_description, QVariant.String)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -96,6 +101,7 @@ class Reservoir:
         self.elevation_corr = 0
         self.field_name_pressure_head = 0
         self.pattern = None
+        self.description = ''
 
 
 class Tank:
@@ -110,6 +116,7 @@ class Tank:
     field_name_level_max = 'max_level'
     field_name_level_min = 'min_level'
     field_name_vol_min = 'min_vol'
+    field_name_description = 'description'
 
     prefix = 'T'
 
@@ -121,7 +128,8 @@ class Tank:
               QgsField(field_name_level_max, QVariant.Double),
               QgsField(field_name_diameter, QVariant.Double),
               QgsField(field_name_vol_min, QVariant.Double),
-              QgsField(field_name_curve, QVariant.String)]
+              QgsField(field_name_curve, QVariant.String),
+              QgsField(field_name_description, QVariant.String)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -133,6 +141,7 @@ class Tank:
         self.level_max = 0
         self.level_min = 0
         self.vol_min = 0
+        self.description = ''
 
 
 class Link:
@@ -156,6 +165,7 @@ class Pipe:
     field_name_roughness = 'roughness'
     field_name_status = 'status'
     field_name_material = 'material'
+    field_name_description = 'description'
 
     prefix = 'L'  # L to distinguish it from Pumps
 
@@ -165,7 +175,8 @@ class Pipe:
               QgsField(field_name_status, QVariant.String),
               QgsField(field_name_roughness, QVariant.Double),
               QgsField(field_name_minor_loss, QVariant.Double),
-              QgsField(field_name_material, QVariant.String)]
+              QgsField(field_name_material, QVariant.String),
+              QgsField(field_name_description, QVariant.String)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -179,6 +190,7 @@ class Pipe:
         self.start_node = -1
         self.status = 'on'
         self.material = 'none'
+        self.description = ''
 
 
 class Pump:
@@ -191,6 +203,7 @@ class Pump:
     field_name_speed = 'speed'
     field_name_speed_pattern = 'speed_patt'
     field_name_status = 'status'
+    field_name_description = 'description'
 
     prefix = 'P'
 
@@ -200,7 +213,8 @@ class Pump:
               QgsField(field_name_power, QVariant.Double),
               QgsField(field_name_speed, QVariant.Double),
               QgsField(field_name_speed_pattern, QVariant.String),
-              QgsField(field_name_status, QVariant.String)]
+              QgsField(field_name_status, QVariant.String),
+              QgsField(field_name_description, QVariant.String)]
 
     parameters_power = 'POWER'
     parameters_head = 'HEAD'
@@ -212,6 +226,7 @@ class Pump:
         self.eid = eid
         self.params = Pump.parameters_power
         self.value = 0
+        self.description = ''
 
 
 class Valve:
@@ -223,6 +238,7 @@ class Valve:
     field_name_setting = 'setting'
     field_name_type = 'type'
     field_name_status = 'status'
+    field_name_description = 'description'
 
     prefix = 'V'
 
@@ -231,7 +247,8 @@ class Valve:
               QgsField(field_name_type, QVariant.String),
               QgsField(field_name_setting, QVariant.String),
               QgsField(field_name_minor_loss, QVariant.Double),
-              QgsField(field_name_status, QVariant.String)]
+              QgsField(field_name_status, QVariant.String),
+              QgsField(field_name_description, QVariant.String)]
 
     type_prv = 'PRV'
     type_psv = 'PSV'
@@ -254,6 +271,7 @@ class Valve:
 
     def __init__(self, eid):
         self.eid = eid
+        self.description = ''
 
 
 class QReservoir:

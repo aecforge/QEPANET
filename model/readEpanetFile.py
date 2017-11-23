@@ -433,6 +433,47 @@ def getLabelsSection():
     return mm[61]
 
 
+# Descriptions
+def get_junctions_desc():
+    global mm
+    return mm[63]
+
+
+def get_reservoirs_desc():
+    global mm
+    return mm[64]
+
+
+def get_tanks_desc():
+    global mm
+    return mm[65]
+
+
+def get_nodes_desc():
+    global mm
+    return mm[63] + mm[64] + mm[65]
+
+
+def get_pipes_desc():
+    global mm
+    return mm[66]
+
+
+def get_pumps_desc():
+    global mm
+    return mm[67]
+
+
+def get_valves_desc():
+    global mm
+    return mm[68]
+
+
+def get_links_desc():
+    global mm
+    return mm[66] + mm[67] + mm[68]
+
+
 # Get all info
 def getBinInfo():
     global inpname
@@ -470,6 +511,13 @@ def getBinInfo():
     BinLinkPumpSpeedID = []
     BinLinkPumpSpeed = []
     BinLinkPumpPatternsPumpID = []
+
+    junctions_desc = []
+    reservoirs_desc = []
+    tanks_desc = []
+    pipes_desc = []
+    pumps_desc = []
+    valves_desc = []
 
     BinLinkValveNameID = []
     BinLinkValveDiameters = []
@@ -526,11 +574,21 @@ def getBinInfo():
             if "[END]" in s1:
 
                 # file.close()
-                return [nodeJunctionNameID, nodeJunctionElevations, nodeJunctionBaseDemands, nodePatternNameID,
-                        len(nodeJunctionNameID),  # 01234
-                        nodeReservoirNameID, nodeReservoirElevations, len(nodeReservoirNameID),  # 567
-                        BinNodeTankNameID, BinNodeTankElevation, BinNodeTankInitLevel, BinNodeTankMinLevel,
-                        BinNodeTankMaxLevel, BinNodeTankDiameter, BinNodeTankMinVol,  # 8#9#10#11#12#13#14
+                return [nodeJunctionNameID,  # 0
+                        nodeJunctionElevations,  # 1
+                        nodeJunctionBaseDemands,  # 2
+                        nodePatternNameID,  # 3
+                        len(nodeJunctionNameID),  # 4
+                        nodeReservoirNameID,  # 5
+                        nodeReservoirElevations,  # 6
+                        len(nodeReservoirNameID),  # 7
+                        BinNodeTankNameID,  # 8
+                        BinNodeTankElevation,  # 9
+                        BinNodeTankInitLevel,  # 10
+                        BinNodeTankMinLevel,  # 11
+                        BinNodeTankMaxLevel,  # 12
+                        BinNodeTankDiameter,  # 13
+                        BinNodeTankMinVol,  # 14
                         BinLinkPipeNameID, BinLinkFromNode, BinLinkToNode, BinLinkPipeLengths, BinLinkPipeDiameters,
                         BinLinkPipeRoughness, BinLinkPipeMinorLoss,  # 15#16#17#18#19#20#21
                         BinLinkPumpNameID, BinLinkPumpPatterns, BinLinkPumpCurveNameID, BinLinkPumpPower,
@@ -543,18 +601,25 @@ def getBinInfo():
                         x, y, vertx, verty,  # 40#41#42#43
                         demandsSection, statusSection, emittersSection, controlsSection, patternsSection, curvesSection,
                         curvesSectionType,  # 44
-                        qualitySection, # 45
-                        rulesSection, # 46
-                        sourcesSection, # 47
-                        energySection, # 48
-                        reactionsSection, #50
+                        qualitySection,  # 45
+                        rulesSection,  # 46
+                        sourcesSection,  # 47
+                        energySection,   # 48
+                        reactionsSection,  #50
                         reactionsOptionSection,
                         mixingSection,  # 57
                         timesSection,  # 58
                         optionsSection,  # 59
                         reportSection,  # 60
                         labelsSection,  # 61
-                        BinLinkPumpSpeedID]  # 62
+                        BinLinkPumpSpeedID,  # 62
+                        junctions_desc,   # 63
+                        reservoirs_desc,   # 64
+                        tanks_desc,   # 65
+                        pipes_desc,  # 66
+                        pumps_desc,  # 67
+                        valves_desc  # 68
+                        ]
 
             elif "[JUNCTIONS]" in s1:
                 sec[0] = 1
@@ -676,7 +741,7 @@ def getBinInfo():
 
             if s1.strip('\t ').startswith(';'):
                 continue
-            mm = read_mm(s1)
+            mm, desc = read_mm(s1)
 
             if not mm[0]:
                 continue
@@ -689,15 +754,19 @@ def getBinInfo():
                     else:
 
                         nodeJunctionNameID.append(mm[0].strip())
+                        junctions_desc.append(desc)
                         nodeJunctionElevations.append(float(mm[1]))
 
+                        node_jun_base_demand = 0
                         pattern = None
                         if len(mm) > 2 and mm[2].strip() != '':
-                            nodeJunctionBaseDemands.append(float(mm[2]))
+                            node_jun_base_demand = float(mm[2])
+                            # nodeJunctionBaseDemands.append(float(mm[2]))
                         if len(mm) > 3 and mm[3].strip() != '':
                             if mm[3][0] != ';':
                                 pattern = mm[3].strip()
 
+                        nodeJunctionBaseDemands.append(node_jun_base_demand)
                         nodePatternNameID.append(pattern)
 
             if sec[1] == 1:  # RESERVOIRS
@@ -709,6 +778,7 @@ def getBinInfo():
                         pass
                     else:
                         nodeReservoirNameID.append(mm[0].strip())
+                        reservoirs_desc.append(desc)
                         nodeReservoirElevations.append(float(mm[1]))
                         if len(mm) > 2:
                             if mm[2][0] != ';':
@@ -727,6 +797,7 @@ def getBinInfo():
                         pass
                     else:
                         BinNodeTankNameID.append(mm[0].strip())
+                        tanks_desc.append(desc)
                         BinNodeTankElevation.append(float(mm[1]))
                         BinNodeTankInitLevel.append(float(mm[2]))
                         BinNodeTankMinLevel.append(float(mm[3]))
@@ -752,6 +823,7 @@ def getBinInfo():
                     else:
                         linkNameID.append(mm[0].strip())
                         BinLinkPipeNameID.append(mm[0].strip())
+                        pipes_desc.append(desc)
                         BinLinkFromNode.append(mm[1].strip())
                         BinLinkToNode.append(mm[2].strip())
                         BinLinkPipeLengths.append(float(mm[3]))
@@ -778,6 +850,7 @@ def getBinInfo():
                 else:
                     linkNameID.append(mm[0].strip())
                     BinLinkPumpNameID.append(mm[0].strip())
+                    pumps_desc.append(desc)
                     BinLinkFromNode.append(mm[1].strip())
                     BinLinkToNode.append(mm[2].strip())
 
@@ -818,6 +891,7 @@ def getBinInfo():
                     pass
                 else:
                     linkNameID.append(mm[0].strip())
+                    valves_desc.append(desc)
                     BinLinkValveNameID.append(mm[0].strip())
                     BinLinkFromNode.append(mm[1].strip())
                     BinLinkToNode.append(mm[2].strip())
@@ -1058,11 +1132,17 @@ def read_mm(s1):
 
     # Strip stuff beyond ;
     pos = s1.rfind(';')
+    description = ''
     if pos > 0:
+        # Get description
+        description = s1[pos + 1:-1]
+
+        # Strip description
         s1 = s1[:pos]
 
     mm = re.split('[\t\s]+', s1.strip('\t ;'))
-    return mm
+
+    return mm, description
 
 ## Node Coordinates
 def getBinNodeCoordinates():

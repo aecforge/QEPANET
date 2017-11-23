@@ -11,6 +11,7 @@ from ..tools.data_stores import MemoryDS
 from .options_report import Options, Unbalanced, Quality, Report, Hour, Times
 import codecs
 
+
 class InpReader:
 
     def __init__(self, inp_path):
@@ -120,6 +121,8 @@ class InpReader:
         ndBaseD = ref.getBinNodeBaseDemands()
 
         ndID = ref.getBinNodeNameID()
+        nodes_desc = ref.get_nodes_desc()
+
         ndPatID = ref.getBinNodeDemandPatternID()
 
         junctions_lay = None
@@ -160,6 +163,7 @@ class InpReader:
             kk = 0
             ch = 0
             linkID = ref.getBinLinkNameID()
+            link_descs = ref.get_links_desc()
             linkLengths = ref.getBinLinkLength()
             linkDiameters = ref.getBinLinkDiameter()
             linkRough = ref.getBinLinkRoughnessCoeff()
@@ -218,7 +222,7 @@ class InpReader:
                 if ndID[i] in emitters_d:
                     emitter_coeff = float(emitters_d[ndID[i]])
 
-                featJ.setAttributes([ndID[i], ndEle[i] - delta_z, delta_z, ndPatID[i], ndBaseD[i], emitter_coeff])
+                featJ.setAttributes([ndID[i], ndEle[i] - delta_z, delta_z, ndPatID[i], ndBaseD[i], emitter_coeff, nodes_desc[i]])
                 junctions_lay_dp.addFeatures([featJ])
                 self.params.nodes_sindex.insertFeature(featJ)
 
@@ -307,7 +311,7 @@ class InpReader:
                     featPump = QgsFeature()
                     featPump.setGeometry(QgsGeometry.fromPolyline([point1, point2]))
 
-                    featPump.setAttributes([linkID[i], param, head, power, speed, pump_pattern, pump_status])
+                    featPump.setAttributes([linkID[i], param, head, power, speed, pump_pattern, pump_status, link_descs[i]])
                     pumps_lay_dp.addFeatures([featPump])
                     self.params.nodes_sindex.insertFeature(featPump)
 
@@ -326,6 +330,7 @@ class InpReader:
                     featValve.setGeometry((QgsGeometry.fromPolyline([point1, point2])))
 
                     linkID = ref.getBinLinkValveNameID()
+                    descs = ref.get_valves_desc()
                     linkType = ref.getBinLinkValveType()
                     linkDiameter = ref.getBinLinkValveDiameters()
                     linkInitSett = ref.getBinLinkValveSetting()
@@ -338,7 +343,7 @@ class InpReader:
                             break
 
                     featValve.setAttributes(
-                         [linkID[vPos], linkDiameter[vPos], linkType[vPos], linkInitSett[vPos], linkMinorloss[vPos], valve_status])
+                         [linkID[vPos], linkDiameter[vPos], linkType[vPos], linkInitSett[vPos], linkMinorloss[vPos], valve_status, descs[vPos]])
                     valves_lay_dp.addFeatures([featValve])
                     self.params.nodes_sindex.insertFeature(featValve)
 
@@ -411,7 +416,7 @@ class InpReader:
 
                     featPipe.setAttributes(
                         [linkID[i], linkLengths[i], linkDiameters[i], stat[i],
-                         linkRough[i], linkMinorloss[i], material])
+                         linkRough[i], linkMinorloss[i], material, link_descs[i]])
                     pipes_lay_dp.addFeatures([featPipe])
                     self.params.nodes_sindex.insertFeature(featPipe)
 
@@ -427,7 +432,7 @@ class InpReader:
 
                 featTank.setAttributes(
                     [ndTankID[i], ndTankelevation[i] - delta_z, delta_z, initiallev[i], minimumlev[i], maximumlev[i], diameter[i],
-                     minimumvol[i], volumecurv[i]])
+                     minimumvol[i], volumecurv[i], nodes_desc[i]])
                 tanks_lay_dp.addFeatures([featTank])
                 self.params.nodes_sindex.insertFeature(featTank)
 
@@ -446,7 +451,7 @@ class InpReader:
                 if ndID[p] in qepanet_reservoirs_press_head_od:
                     pressure_head = qepanet_reservoirs_press_head_od[ndID[p]]
 
-                feat_reserv.setAttributes([ndID[p], reservoirs_elev[i] - delta_z - pressure_head, delta_z, pressure_head, ndPatID[p]])
+                feat_reserv.setAttributes([ndID[p], reservoirs_elev[i] - delta_z - pressure_head, delta_z, pressure_head, ndPatID[p], nodes_desc[i]])
                 reservoirs_lay_dp.addFeatures([feat_reserv])
                 self.params.nodes_sindex.insertFeature(feat_reserv)
 
