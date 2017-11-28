@@ -116,6 +116,8 @@ class AddJunctionTool(QgsMapTool):
             else:
                 emitter_coeff = float(self.data_dock.txt_junction_emit_coeff.text())
 
+            junction_desc = self.data_dock.txt_junction_desc.text()
+
             # No links snapped: create a new stand-alone node
             if self.snapped_feat_id is None:
 
@@ -127,7 +129,8 @@ class AddJunctionTool(QgsMapTool):
                     j_demand,
                     deltaz,
                     pattern_id,
-                    emitter_coeff)
+                    emitter_coeff,
+                    junction_desc)
 
             # A link has been snapped
             else:
@@ -152,7 +155,8 @@ class AddJunctionTool(QgsMapTool):
                             j_demand,
                             deltaz,
                             pattern_id,
-                            emitter_coeff)
+                            emitter_coeff,
+                            junction_desc)
 
                     else:
 
@@ -179,7 +183,8 @@ class AddJunctionTool(QgsMapTool):
                                 j_demand,
                                 deltaz,
                                 pattern_id,
-                                emitter_coeff)
+                                emitter_coeff,
+                                junction_desc)
 
                             LinkHandler.split_pipe(
                                 self.params,

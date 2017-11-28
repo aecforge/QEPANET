@@ -192,13 +192,14 @@ class AddPipeTool(QgsMapTool):
 
                     for np in range(new_pipes_nr):
 
+                        pipe_eid = NetworkUtils.find_next_id(self.params.pipes_vlay, Pipe.prefix)  # TODO: softcode
                         demand = float(self.data_dock.txt_pipe_demand.text())
                         diameter = float(self.data_dock.txt_pipe_diameter.text())
                         loss = float(self.data_dock.txt_pipe_loss.text())
                         roughness = float(self.data_dock.lbl_pipe_roughness_val_val.text())
                         status = self.data_dock.cbo_pipe_status.currentText()
                         material = self.data_dock.cbo_pipe_roughness.currentText()
-                        pipe_eid = NetworkUtils.find_next_id(self.params.pipes_vlay, Pipe.prefix)  # TODO: softcode
+                        pipe_desc = self.data_dock.txt_pipe_desc.text()
 
                         pipe_ft = LinkHandler.create_new_pipe(
                             self.params,
@@ -209,7 +210,8 @@ class AddPipeTool(QgsMapTool):
                             status,
                             material,
                             rubberband_pts[junct_nrs[np]:junct_nrs[np+1]+1],
-                            True)
+                            True,
+                            pipe_desc)
                         self.rubber_band.reset()
 
                         new_pipes_fts.append(pipe_ft)
@@ -220,6 +222,9 @@ class AddPipeTool(QgsMapTool):
                         emitter_coeff = float(0)
                     else:
                         emitter_coeff = float(self.data_dock.txt_junction_emit_coeff.text())
+
+                    # Description
+                    junction_desc = self.data_dock.txt_junction_desc.text()
 
                     # Create start and end node, if they don't exist
                     (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[0].geometry())
@@ -238,7 +243,7 @@ class AddPipeTool(QgsMapTool):
                         else:
                             pattern_id = None
                         NodeHandler.create_new_junction(
-                            self.params, new_start_junction, junction_eid, elev, j_demand, deltaz, pattern_id, emitter_coeff)
+                            self.params, new_start_junction, junction_eid, elev, j_demand, deltaz, pattern_id, emitter_coeff, junction_desc)
 
                     (start_junction, end_junction) = NetworkUtils.find_start_end_nodes(self.params, new_pipes_fts[len(new_pipes_fts) - 1].geometry())
                     new_end_junction = None
@@ -255,7 +260,7 @@ class AddPipeTool(QgsMapTool):
                         else:
                             pattern_id = None
                         NodeHandler.create_new_junction(
-                            self.params, new_end_junction, junction_eid, elev, demand, deltaz, pattern_id, emitter_coeff)
+                            self.params, new_end_junction, junction_eid, elev, demand, deltaz, pattern_id, emitter_coeff, junction_desc)
 
                     # If end or start node intersects a pipe, split it
                     if new_start_junction:

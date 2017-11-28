@@ -371,6 +371,8 @@ class InpFile:
             elev = j_ft.attribute(Junction.field_name_elev)
             delta_z = j_ft.attribute(Junction.field_name_delta_z)
             pattern = j_ft.attribute(Junction.field_name_pattern)
+            description = j_ft.attribute(Junction.field_name_description)
+
             if pattern == NULL:
                 pattern = ''
 
@@ -394,6 +396,9 @@ class InpFile:
                 line += InpFile.pad(str(pattern))
             else:
                 line += InpFile.pad('')
+
+            if description is not None and description != '':
+                line += ';' + description
 
             out.append(line)
 
@@ -514,6 +519,7 @@ class InpFile:
             roughness = pipe_ft.attribute(Pipe.field_name_roughness)
             minor_loss = pipe_ft.attribute(Pipe.field_name_minor_loss)
             status = pipe_ft.attribute(Pipe.field_name_status)
+            description = pipe_ft.attribute(Pipe.field_name_description)
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
@@ -524,6 +530,9 @@ class InpFile:
             line += InpFile.pad('{0:.4f}'.format(roughness), InpFile.pad_19)
             line += InpFile.pad('{0:.2f}'.format(minor_loss), InpFile.pad_19)
             line += InpFile.pad(status)
+
+            if description is not None and description != '':
+                line += ';' + description
 
             out.append(line)
 
@@ -545,6 +554,9 @@ class InpFile:
 
             # Parameters
             pump_param = p_ft.attribute(Pump.field_name_param)
+            speed = p_ft.attribute(Pump.field_name_speed)
+            speed_pattern = p_ft.attribute(Pump.field_name_speed_pattern)
+            description = p_ft.attribute(Pump.field_name_description)
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
@@ -559,13 +571,14 @@ class InpFile:
                 if head is not None and head != NULL:
                     line += InpFile.pad(pump_param + ' ' + head, InpFile.pad_19)
 
-            speed = p_ft.attribute(Pump.field_name_speed)
             if speed is not None and speed != NULL:
                 line += ' SPEED ' + str(speed)
 
-            speed_pattern = p_ft.attribute(Pump.field_name_speed_pattern)
             if speed_pattern is not None and speed_pattern != NULL and speed_pattern != '':
                 line += ' PATTERN ' + speed_pattern
+
+            if description is not None and description != '':
+                line += ';' + description
 
             out.append(line)
 
@@ -653,6 +666,7 @@ class InpFile:
             deltaz = r_ft.attribute(Reservoir.field_name_delta_z)
             pressure_head = r_ft.attribute(Reservoir.field_name_pressure_head)
             pattern = r_ft.attribute(Reservoir.field_name_pattern)
+            description = r_ft.attribute(Reservoir.field_name_description)
 
             if elev is None or elev == NULL:
                 elev = 0
@@ -669,6 +683,9 @@ class InpFile:
 
             if pattern != NULL:
                 line += InpFile.pad(pattern)
+
+            if description is not None and description != '':
+                line += ';' + description
 
             out.append(line)
 
@@ -690,6 +707,7 @@ class InpFile:
             level_max = t_ft.attribute(Tank.field_name_level_max)
             level_min = t_ft.attribute(Tank.field_name_level_min)
             vol_min = t_ft.attribute(Tank.field_name_vol_min)
+            description = t_ft.attribute(Tank.field_name_description)
 
             if elev is None or elev == NULL:
                 elev = 0
@@ -710,6 +728,9 @@ class InpFile:
 
             if curve is not None and curve != NULL:
                 line += InpFile.pad(curve)
+
+            if description is not None and description != '':
+                line += ';' + description
 
             out.append(line)
 
@@ -749,6 +770,7 @@ class InpFile:
             valve_type = v_ft.attribute(Valve.field_name_type)
             setting = str(v_ft.attribute(Valve.field_name_setting))
             minor_loss = str(v_ft.attribute(Valve.field_name_minor_loss))
+            description = v_ft.attribute(Valve.field_name_description)
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
@@ -758,6 +780,9 @@ class InpFile:
             line += InpFile.pad(valve_type)
             line += InpFile.pad(setting)
             line += InpFile.pad(minor_loss)
+
+            if description is not None and description != '':
+                line += ';' + description
 
             out.append(line)
 

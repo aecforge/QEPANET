@@ -18,7 +18,7 @@ class NodeHandler:
         pass
 
     @staticmethod
-    def create_new_junction(params, point, eid, elev, demand, deltaz, pattern_id, emitter_coeff):
+    def create_new_junction(params, point, eid, elev, demand, deltaz, pattern_id, emitter_coeff, description):
 
         junctions_caps = params.junctions_vlay.dataProvider().capabilities()
         if junctions_caps and QgsVectorDataProvider.AddFeatures:
@@ -34,6 +34,7 @@ class NodeHandler:
                 new_junct_feat.setAttribute(Junction.field_name_delta_z, deltaz)
                 new_junct_feat.setAttribute(Junction.field_name_pattern, pattern_id)
                 new_junct_feat.setAttribute(Junction.field_name_emitter_coeff, emitter_coeff)
+                new_junct_feat.setAttribute(Junction.field_name_description, description)
 
                 new_junct_feat.setGeometry(QgsGeometry.fromPoint(point))
 
@@ -49,7 +50,7 @@ class NodeHandler:
             return new_junct_feat
 
     @staticmethod
-    def create_new_reservoir(params, point, eid, elev, deltaz, pressure_head, pattern_id):
+    def create_new_reservoir(params, point, eid, elev, deltaz, pressure_head, pattern_id, description):
 
         reservoirs_caps = params.reservoirs_vlay.dataProvider().capabilities()
         if reservoirs_caps and QgsVectorDataProvider.AddFeatures:
@@ -64,6 +65,7 @@ class NodeHandler:
                 new_reservoir_feat.setAttribute(Reservoir.field_name_delta_z, deltaz)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_pressure_head, pressure_head)
                 new_reservoir_feat.setAttribute(Reservoir.field_name_pattern, pattern_id)
+                new_reservoir_feat.setAttribute(Reservoir.field_name_description, description)
 
                 new_reservoir_feat.setGeometry(QgsGeometry.fromPoint(point))
 
@@ -79,7 +81,7 @@ class NodeHandler:
             return new_reservoir_feat
 
     @staticmethod
-    def create_new_tank(params, point, eid, tank_curve_id, diameter, elev, deltaz, level_init, level_min, level_max, vol_min):
+    def create_new_tank(params, point, eid, tank_curve_id, diameter, elev, deltaz, level_init, level_min, level_max, vol_min, description):
         tanks_caps = params.tanks_vlay.dataProvider().capabilities()
         if tanks_caps and QgsVectorDataProvider.AddFeatures:
 
@@ -97,6 +99,7 @@ class NodeHandler:
                 new_tank_feat.setAttribute(Tank.field_name_level_min, level_min)
                 new_tank_feat.setAttribute(Tank.field_name_level_max, level_max)
                 new_tank_feat.setAttribute(Tank.field_name_vol_min, vol_min)
+                new_tank_feat.setAttribute(Tank.field_name_description, description)
 
                 new_tank_feat.setGeometry(QgsGeometry.fromPoint(point))
 
@@ -197,7 +200,7 @@ class LinkHandler:
         pass
 
     @staticmethod
-    def create_new_pipe(params, eid, diameter, loss, roughness, status, material, nodes, densify_vertices):
+    def create_new_pipe(params, eid, diameter, loss, roughness, status, material, nodes, densify_vertices, description):
 
         pipes_caps = params.pipes_vlay.dataProvider().capabilities()
         if pipes_caps and QgsVectorDataProvider.AddFeatures:
@@ -282,6 +285,7 @@ class LinkHandler:
                 new_pipe_ft.setAttribute(Pipe.field_name_roughness, roughness)
                 new_pipe_ft.setAttribute(Pipe.field_name_status, status)
                 new_pipe_ft.setAttribute(Pipe.field_name_material, material)
+                new_pipe_ft.setAttribute(Pipe.field_name_description, description)
 
                 new_pipe_ft.setGeometry(geom_3d)
 
@@ -350,13 +354,16 @@ class LinkHandler:
             else:
                 emitter_coeff = float(data_dock.txt_junction_emit_coeff.text())
 
+            # Description
+            description = data_dock.txt_junction_desc.text()
+
             junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, Junction.prefix)
             elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_before, 1)
-            NodeHandler.create_new_junction(params, node_before, junction_eid, elev, 0, deltaz, pattern_id, emitter_coeff)
+            NodeHandler.create_new_junction(params, node_before, junction_eid, elev, 0, deltaz, pattern_id, emitter_coeff, description)
 
             junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, Junction.prefix)
             elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_after, 1)
-            NodeHandler.create_new_junction(params, node_after, junction_eid, elev, 0, deltaz, pattern_id, emitter_coeff)
+            NodeHandler.create_new_junction(params, node_after, junction_eid, elev, 0, deltaz, pattern_id, emitter_coeff, description)
 
         # Split the pipe and create gap
         if pipes_caps:
@@ -395,6 +402,8 @@ class LinkHandler:
                     new_ft.setAttribute(Pump.field_name_speed_pattern, speed_pattern)
                     pump_status = attributes[5]
                     new_ft.setAttribute(Pump.field_name_status, pump_status)
+                    description = attributes[6]
+                    new_ft.setAttribute(Pump.field_name_description, description)
 
                 elif layer == params.valves_vlay:
                     new_ft.setAttribute(Valve.field_name_eid, eid)
@@ -403,6 +412,7 @@ class LinkHandler:
                     new_ft.setAttribute(Valve.field_name_setting, attributes[2])
                     new_ft.setAttribute(Valve.field_name_type, attributes[3])
                     new_ft.setAttribute(Valve.field_name_status, attributes[4])
+                    new_ft.setAttribute(Valve.field_name_description, attributes[5])
 
                 new_ft.setGeometry(geom)
 
@@ -436,6 +446,7 @@ class LinkHandler:
         roughness = pipe_ft.attribute(Pipe.field_name_roughness)
         status = pipe_ft.attribute(Pipe.field_name_status)
         material = pipe_ft.attribute(Pipe.field_name_material)
+        pipe_desc = pipe_ft.attribute(Pipe.field_name_description)
 
         # Create two new linestrings
         pipes_caps = params.pipes_vlay.dataProvider().capabilities()
@@ -479,7 +490,8 @@ class LinkHandler:
                     status,
                     material,
                     pl1_pts,
-                    False)
+                    False,
+                    pipe_desc)
 
                 # Second new polyline
                 pl2_pts = []
@@ -497,7 +509,8 @@ class LinkHandler:
                     status,
                     material,
                     pl2_pts,
-                    False)
+                    False,
+                    pipe_desc)
 
                 # Delete old pipe
                 params.pipes_vlay.deleteFeature(pipe_ft.id())
@@ -698,8 +711,9 @@ class LinkHandler:
         roughness = pipe1_ft.attribute(Pipe.field_name_roughness)
         status = pipe1_ft.attribute(Pipe.field_name_status)
         material = pipe1_ft.attribute(Pipe.field_name_material)
+        pipe_desc = pipe1_ft.attribute(Pipe.field_name_description)
 
-        LinkHandler.create_new_pipe(parameters, eid, diameter, loss, roughness, status, material, new_geom_pts, False)
+        LinkHandler.create_new_pipe(parameters, eid, diameter, loss, roughness, status, material, new_geom_pts, False, pipe_desc)
 
     @staticmethod
     def calc_3d_length(parameters, pipe_geom):

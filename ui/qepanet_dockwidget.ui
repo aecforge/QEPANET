@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>336</width>
-    <height>684</height>
+    <height>689</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
          <x>0</x>
          <y>0</y>
          <width>342</width>
-         <height>643</height>
+         <height>648</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -290,7 +290,7 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>9</number>
+              <number>0</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -298,7 +298,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>322</width>
-                <height>130</height>
+                <height>135</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -316,6 +316,12 @@
                </property>
                <item>
                 <widget class="QFrame" name="frame_3">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::StyledPanel</enum>
                  </property>
@@ -366,24 +372,14 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>322</width>
-                <height>130</height>
+                <width>305</width>
+                <height>148</height>
                </rect>
               </property>
               <attribute name="label">
                <string>Junction properties</string>
               </attribute>
               <layout class="QGridLayout" name="gridLayout_4">
-               <item row="2" column="2">
-                <widget class="QComboBox" name="cbo_junction_pattern"/>
-               </item>
-               <item row="3" column="0">
-                <widget class="QLabel" name="lbl_junction_emit_coeff">
-                 <property name="text">
-                  <string>Emitter coeff.:</string>
-                 </property>
-                </widget>
-               </item>
                <item row="0" column="2">
                 <widget class="QLineEdit" name="txt_junction_demand">
                  <property name="text">
@@ -405,17 +401,13 @@
                  </property>
                 </widget>
                </item>
-               <item row="1" column="2">
-                <widget class="QLineEdit" name="txt_junction_deltaz">
-                 <property name="text">
-                  <string>0</string>
-                 </property>
-                </widget>
+               <item row="2" column="2">
+                <widget class="QComboBox" name="cbo_junction_pattern"/>
                </item>
-               <item row="2" column="0">
-                <widget class="QLabel" name="lbl_junction_pattern">
+               <item row="3" column="0">
+                <widget class="QLabel" name="lbl_junction_emit_coeff">
                  <property name="text">
-                  <string>Pattern:</string>
+                  <string>Emitter coeff.:</string>
                  </property>
                 </widget>
                </item>
@@ -426,7 +418,21 @@
                  </property>
                 </widget>
                </item>
-               <item row="4" column="2">
+               <item row="2" column="0">
+                <widget class="QLabel" name="lbl_junction_pattern">
+                 <property name="text">
+                  <string>Pattern:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="2">
+                <widget class="QLineEdit" name="txt_junction_deltaz">
+                 <property name="text">
+                  <string>0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="2">
                 <spacer name="verticalSpacer">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -439,6 +445,16 @@
                  </property>
                 </spacer>
                </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="lbl_junction_desc">
+                 <property name="text">
+                  <string>Description:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="2">
+                <widget class="QLineEdit" name="txt_junction_desc"/>
+               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="wgt_ele_reservoir">
@@ -447,7 +463,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>322</width>
-                <height>130</height>
+                <height>135</height>
                </rect>
               </property>
               <attribute name="label">
@@ -495,15 +511,25 @@
                <item row="3" column="1">
                 <widget class="QComboBox" name="cbo_reservoir_pattern"/>
                </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="lbl_reservoir_desc">
+                 <property name="text">
+                  <string>Description:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QLineEdit" name="txt_reservoir_desc"/>
+               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="wgt_ele_tank">
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
+                <y>-83</y>
                 <width>305</width>
-                <height>194</height>
+                <height>220</height>
                </rect>
               </property>
               <attribute name="label">
@@ -524,6 +550,13 @@
                 <widget class="QLineEdit" name="txt_tank_deltaz">
                  <property name="text">
                   <string>0</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="lbl_tank_level_init">
+                 <property name="text">
+                  <string>Level init. [m]</string>
                  </property>
                 </widget>
                </item>
@@ -600,12 +633,15 @@
                <item row="6" column="1">
                 <widget class="QComboBox" name="cbo_tank_curve"/>
                </item>
-               <item row="1" column="0">
-                <widget class="QLabel" name="lbl_tank_level_init">
+               <item row="7" column="0">
+                <widget class="QLabel" name="lbl_tank_desc">
                  <property name="text">
-                  <string>Level init. [m]</string>
+                  <string>Description:</string>
                  </property>
                 </widget>
+               </item>
+               <item row="7" column="1">
+                <widget class="QLineEdit" name="txt_tank_desc"/>
                </item>
               </layout>
              </widget>
@@ -613,9 +649,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
+                <y>-141</y>
                 <width>305</width>
-                <height>252</height>
+                <height>278</height>
                </rect>
               </property>
               <attribute name="label">
@@ -855,6 +891,16 @@
                   <item row="1" column="1">
                    <widget class="QLineEdit" name="txt_pipe_vertex_dist"/>
                   </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="lbl_pipe_desc">
+                    <property name="text">
+                     <string>Description:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QLineEdit" name="txt_pipe_desc"/>
+                  </item>
                  </layout>
                 </widget>
                </item>
@@ -877,9 +923,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
+                <y>-57</y>
                 <width>305</width>
-                <height>168</height>
+                <height>194</height>
                </rect>
               </property>
               <attribute name="label">
@@ -963,15 +1009,25 @@
                <item row="5" column="1">
                 <widget class="QComboBox" name="cbo_pump_status"/>
                </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="lbl_pump_desc">
+                 <property name="text">
+                  <string>Description:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="QLineEdit" name="txt_pump_desc"/>
+               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="wgt_ele_valve">
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
+                <y>-31</y>
                 <width>305</width>
-                <height>142</height>
+                <height>168</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1046,6 +1102,16 @@
                <item row="4" column="1">
                 <widget class="QComboBox" name="cbo_valve_status"/>
                </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="lbl_valve_desc">
+                 <property name="text">
+                  <string>Description:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QLineEdit" name="txt_valve_desc"/>
+               </item>
               </layout>
               <zorder>lbl_valve_type</zorder>
               <zorder>cbo_valve_type</zorder>
@@ -1057,6 +1123,8 @@
               <zorder>cbo_valve_curve</zorder>
               <zorder>lbl_valve_status</zorder>
               <zorder>cbo_valve_status</zorder>
+              <zorder>lbl_valve_desc</zorder>
+              <zorder>txt_valve_desc</zorder>
              </widget>
              <widget class="QWidget" name="wgt_options">
               <property name="geometry">
@@ -1127,7 +1195,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>322</width>
-                <height>130</height>
+                <height>135</height>
                </rect>
               </property>
               <attribute name="label">

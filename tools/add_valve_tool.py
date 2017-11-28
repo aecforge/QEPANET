@@ -142,6 +142,9 @@ class AddValveTool(QgsMapTool):
                     valve_status = self.data_dock.cbo_valve_status.itemData(
                         self.data_dock.cbo_valve_status.currentIndex())
 
+                    # Valve description
+                    valve_desc = self.data_dock.txt_valve_desc.text()
+
                     try:
                         LinkHandler.create_new_pumpvalve(
                             self.params,
@@ -150,7 +153,7 @@ class AddValveTool(QgsMapTool):
                             closest_junction_ft,
                             self.snapped_vertex,
                             self.params.valves_vlay,
-                            [diameter, minor_loss, setting, selected_type, valve_status])
+                            [diameter, minor_loss, setting, selected_type, valve_status, valve_desc])
 
                     except PumpValveCreationException as ex:
                         self.iface.messageBar().pushMessage(
