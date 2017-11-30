@@ -96,6 +96,8 @@ class Hydraulics:
 
 class Quality:
 
+    section_name = 'QUALITY'
+
     quality_none = 0
     quality_chemical = 1
     quality_age = 2

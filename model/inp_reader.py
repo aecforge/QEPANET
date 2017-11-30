@@ -4,7 +4,8 @@
 
 from network import *
 
-import readEpanetFile as ref
+# import readEpanetFile as ref
+import read_epanet_file
 import os
 from inp_writer import InpFile
 from ..tools.data_stores import MemoryDS
@@ -31,8 +32,10 @@ class InpReader:
         if file_size == 0:
             return None
 
-        ref.LoadFile(self.inp_path)
-        ref.BinUpdateClass()
+        ref = read_epanet_file.InpReader(self.inp_path)
+
+        # ref.LoadFile(self.inp_path)
+        # ref.BinUpdateClass()
         links_count = ref.getBinLinkCount()
 
         # Get all Sections
@@ -56,6 +59,8 @@ class InpReader:
         times = ref.getTimesSection()
         report = ref.getReportSection()
         options = ref.getOptionsSection()
+        tags = ref.get_tags()
+        tags_d = {}
 
         # Check for QEPANET section in inp file. If it's there, update layer attributes
         qepanet_junctions_od = self.read_qepanet_junctions()
@@ -102,6 +107,11 @@ class InpReader:
                         len(options), ref.getBinNodeCount(), ref.getBinLinkCount()]
         ss = max(all_sections)
 
+        if tags:
+            for tag in tags:
+                tags_d[tag.element_id] = tag.tag
+            self.params.tag_names = tags_d.values()
+
         xy = ref.getBinNodeCoordinates()
 
         x = xy[0]
@@ -132,7 +142,6 @@ class InpReader:
             junctions_lay_dp = junctions_lay.dataProvider()
 
         # Get data of Pipes
-        # Write shapefile pipe
         pipes_lay = None
         pumps_lay = None
         valves_lay = None
@@ -222,7 +231,13 @@ class InpReader:
                 if ndID[i] in emitters_d:
                     emitter_coeff = float(emitters_d[ndID[i]])
 
-                featJ.setAttributes([ndID[i], ndEle[i] - delta_z, delta_z, ndPatID[i], ndBaseD[i], emitter_coeff, nodes_desc[i]])
+                # Tag
+                tag = ''
+                if ndID[i] in tags_d:
+                    tag = tags_d[ndID[i]]
+
+                featJ.setAttributes([ndID[i], ndEle[i] - delta_z, delta_z, ndPatID[i], ndBaseD[i], emitter_coeff,
+                                     nodes_desc[i], tag])
                 junctions_lay_dp.addFeatures([featJ])
                 self.params.nodes_sindex.insertFeature(featJ)
 
@@ -311,7 +326,12 @@ class InpReader:
                     featPump = QgsFeature()
                     featPump.setGeometry(QgsGeometry.fromPolyline([point1, point2]))
 
-                    featPump.setAttributes([linkID[i], param, head, power, speed, pump_pattern, pump_status, link_descs[i]])
+                    tag = ''
+                    if linkID[i] in tags_d:
+                        tag = tags_d[linkID[i]]
+
+                    featPump.setAttributes([linkID[i], param, head, power, speed, pump_pattern, pump_status,
+                                            link_descs[i], tag])
                     pumps_lay_dp.addFeatures([featPump])
                     self.params.nodes_sindex.insertFeature(featPump)
 
@@ -342,8 +362,14 @@ class InpReader:
                             valve_status = statuss[1]
                             break
 
+                    # Tag
+                    tag = ''
+                    if linkID[vPos] in tags_d:
+                        tag = tags_d[linkID[vPos]]
+
                     featValve.setAttributes(
-                         [linkID[vPos], linkDiameter[vPos], linkType[vPos], linkInitSett[vPos], linkMinorloss[vPos], valve_status, descs[vPos]])
+                         [linkID[vPos], linkDiameter[vPos], linkType[vPos], linkInitSett[vPos], linkMinorloss[vPos],
+                          valve_status, descs[vPos], tag])
                     valves_lay_dp.addFeatures([featValve])
                     self.params.nodes_sindex.insertFeature(featValve)
 
@@ -414,9 +440,13 @@ class InpReader:
                     if linkID[i] in qepanet_pipes_od:
                         material = qepanet_pipes_od[linkID[i]]
 
+                    tag = ''
+                    if linkID[i] in tags_d:
+                        tag = tags_d[linkID[i]]
+
                     featPipe.setAttributes(
                         [linkID[i], linkLengths[i], linkDiameters[i], stat[i],
-                         linkRough[i], linkMinorloss[i], material, link_descs[i]])
+                         linkRough[i], linkMinorloss[i], material, link_descs[i], tag])
                     pipes_lay_dp.addFeatures([featPipe])
                     self.params.nodes_sindex.insertFeature(featPipe)
 
@@ -430,9 +460,14 @@ class InpReader:
                 if ndTankID[i] in qepanet_tanks_od:
                     delta_z = qepanet_tanks_od[ndTankID[i]]
 
+                # Tag
+                tag = ''
+                if ndTankID[i] in tags_d:
+                    tag = tags_d[ndTankID[i]]
+
                 featTank.setAttributes(
                     [ndTankID[i], ndTankelevation[i] - delta_z, delta_z, initiallev[i], minimumlev[i], maximumlev[i], diameter[i],
-                     minimumvol[i], volumecurv[i], nodes_desc[i]])
+                     minimumvol[i], volumecurv[i], nodes_desc[i], tag])
                 tanks_lay_dp.addFeatures([featTank])
                 self.params.nodes_sindex.insertFeature(featTank)
 
@@ -451,7 +486,13 @@ class InpReader:
                 if ndID[p] in qepanet_reservoirs_press_head_od:
                     pressure_head = qepanet_reservoirs_press_head_od[ndID[p]]
 
-                feat_reserv.setAttributes([ndID[p], reservoirs_elev[i] - delta_z - pressure_head, delta_z, pressure_head, ndPatID[p], nodes_desc[i]])
+                # Tag
+                tag = ''
+                if ndID[p] in tags_d:
+                    tag = tags_d[ndID[p]]
+
+                feat_reserv.setAttributes([ndID[p], reservoirs_elev[i] - delta_z - pressure_head, delta_z,
+                                           pressure_head, ndPatID[p], nodes_desc[i], tag])
                 reservoirs_lay_dp.addFeatures([feat_reserv])
                 self.params.nodes_sindex.insertFeature(feat_reserv)
 

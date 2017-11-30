@@ -17,7 +17,7 @@ class InpFile:
     pad_22 = 22
 
     def __init__(self):
-        pass
+        self.tags = []
 
     @staticmethod
     def read_patterns(params, patterns_file):
@@ -66,8 +66,7 @@ class InpFile:
 
         params.patterns = patterns_d
 
-    @staticmethod
-    def write_patterns(params, inp_file_path):
+    def write_patterns(self, params, inp_file_path):
 
         # Rewrite whole file
         with codecs.open(inp_file_path, 'w', encoding='UTF-8') as p_file:
@@ -78,8 +77,7 @@ class InpFile:
             for line in out:
                 p_file.write(line + '\n')
 
-    @staticmethod
-    def write_lines(inp_file, lines):
+    def write_lines(self, inp_file, lines):
 
         if type(lines) is str:
             inp_file.write(lines + '\n')
@@ -150,8 +148,7 @@ class InpFile:
 
         params.curves = curves_d
 
-    @staticmethod
-    def write_curves(params, inp_file_curve):
+    def write_curves(self, params, inp_file_curve):
 
         # Rewrite whole file
         with codecs.open(inp_file_curve, 'w', encoding='UTF-8') as c_file:
@@ -161,8 +158,7 @@ class InpFile:
             for line in out:
                 c_file.write(line + '\n')
 
-    @staticmethod
-    def write_inp_file(params, inp_file_path, title):
+    def write_inp_file(self, params, inp_file_path, title):
 
         out = []
 
@@ -175,50 +171,50 @@ class InpFile:
                 out.extend(InpFile.split_line(title))
 
             # Junctions
-            InpFile._append_junctions(params, out)
+            self._append_junctions(params, out)
 
             # Reservoirs
-            InpFile._append_reservoirs(params, out)
+            self._append_reservoirs(params, out)
 
             # Tanks
-            InpFile._append_tanks(params, out)
+            self._append_tanks(params, out)
 
             # Pipes
-            InpFile._append_pipes(params, out)
+            self._append_pipes(params, out)
 
             # Pumps
-            InpFile._append_pumps(params, out)
+            self._append_pumps(params, out)
 
             # Valves
-            InpFile._append_valves(params, out)
+            self._append_valves(params, out)
 
             # Tags
-            # NO
+            self._append_tags(params, out)
 
             # Demands
-            InpFile._append_demands(params, out)
+            self._append_demands(params, out)
 
             # Status
-            InpFile._append_status(params, out)
+            self._append_status(params, out)
 
             # SYSTEM OPERATIONS
             # Patterns
-            InpFile._append_patterns(params, out)
+            self._append_patterns(params, out)
 
             # Curves
-            InpFile._append_curves(params, out)
+            self._append_curves(params, out)
 
             # Controls
-            InpFile._append_controls(params, out)
+            self._append_controls(params, out)
 
             # Rules
-            InpFile._append_rules(params, out)
+            self._append_rules(params, out)
 
             # Energy
-            InpFile._append_energy(params, out)
+            self._append_energy(params, out)
 
             # Emitters
-            InpFile._append_emitters(params, out)
+            self._append_emitters(params, out)
 
             # WATER QUALITY
             # Quality
@@ -228,24 +224,24 @@ class InpFile:
             # TODO
 
             # Reactions
-            InpFile._append_opt_reactions(params, out)
+            self._append_opt_reactions(params, out)
 
             # Mixing
             # TODO
 
             # OPTIONS AND REPORTING
             # Options / reporting
-            InpFile._append_options(params, out)
+            self._append_options(params, out)
 
             # Times
-            InpFile._append_times(params, out)
+            self._append_times(params, out)
 
             # NETWORK MAP/TAG
             # Coordinates
-            InpFile._append_coordinates(params, out)
+            self._append_coordinates(params, out)
 
             # Vertices
-            InpFile._append_vertices(params, out)
+            self._append_vertices(params, out)
 
             # Labels
             # NO
@@ -257,19 +253,17 @@ class InpFile:
             out.append('[END]')
 
             # Write QEPANET proprietary stuff
-            InpFile._append_qepanet(params, out)
+            self._append_qepanet(params, out)
 
             # Write
             for line in out:
                 inp_f.write(line + '\n')
 
-    @staticmethod
-    def _append_controls(params, out):
+    def _append_controls(self, params, out):
         out.extend(InpFile.build_section_keyword(Controls.section_name))
         # TODO
 
-    @staticmethod
-    def _append_coordinates(params, out):
+    def _append_coordinates(self, params, out):
         out.extend(InpFile.build_section_keyword(Coordinate.section_name))
         out.append(InpFile.build_section_header(Coordinate.section_header))
 
@@ -303,8 +297,7 @@ class InpFile:
 
             out.append(line)
 
-    @staticmethod
-    def _append_curves(params, out):
+    def _append_curves(self, params, out):
         out.extend(InpFile.build_section_keyword(Curve.section_name))
         out.append(InpFile.build_section_header(Curve.section_header))
 
@@ -329,22 +322,19 @@ class InpFile:
                     InpFile.pad(str(curve.xs[v])) +
                     InpFile.pad(str(curve.ys[v])))
 
-    @staticmethod
-    def _append_demands(params, out):
+    def _append_demands(self, params, out):
         out.extend(InpFile.build_section_keyword(Demand.section_name))
         out.append(InpFile.build_section_header(Demand.section_header))
         # TODO
 
-    @staticmethod
-    def _append_energy(params, out):
+    def _append_energy(self, params, out):
         out.extend(InpFile.build_section_keyword(Energy.section_name))
 
         out.append(InpFile.pad('GLOBAL EFFICIENCY', InpFile.pad_19) + str(params.energy.pump_efficiency))
         out.append(InpFile.pad('GLOBAL PRICE', InpFile.pad_19) + str(params.energy.energy_price))
         out.append(InpFile.pad('DEMAND CHARGE', InpFile.pad_19) + str(params.energy.demand_charge))
 
-    @staticmethod
-    def _append_emitters(params, out):
+    def _append_emitters(self, params, out):
         out.extend(InpFile.build_section_keyword(Emitter.section_name))
         out.append(InpFile.build_section_header(Emitter.section_header))
 
@@ -357,8 +347,7 @@ class InpFile:
                 line += InpFile.pad('{0:.2f}'.format(emitter_coeff))
                 out.append(line)
 
-    @staticmethod
-    def _append_junctions(params, out):
+    def _append_junctions(self, params, out):
 
         out.extend(InpFile.build_section_keyword(Junction.section_name))
         out.append(InpFile.build_section_header(Junction.section_header))
@@ -372,6 +361,7 @@ class InpFile:
             delta_z = j_ft.attribute(Junction.field_name_delta_z)
             pattern = j_ft.attribute(Junction.field_name_pattern)
             description = j_ft.attribute(Junction.field_name_description)
+            tag_name = j_ft.attribute(Junction.field_name_tag)
 
             if pattern == NULL:
                 pattern = ''
@@ -381,6 +371,9 @@ class InpFile:
 
             if delta_z is None or delta_z == NULL:
                 delta_z = 0
+
+            if tag_name is not None and tag_name != NULL and tag_name != '':
+                self.tags.append(Tag(Tag.element_type_node, eid, tag_name))
 
             elev += delta_z
 
@@ -402,8 +395,7 @@ class InpFile:
 
             out.append(line)
 
-    @staticmethod
-    def _append_options(params, out):
+    def _append_options(self, params, out):
 
         # Options
         out.extend(InpFile.build_section_keyword(Options.section_name))
@@ -472,8 +464,7 @@ class InpFile:
 
         out.append(links_line)
 
-    @staticmethod
-    def _append_patterns(params, out):
+    def _append_patterns(self, params, out):
         out.extend(InpFile.build_section_keyword(Pattern.section_name))
         out.append(InpFile.build_section_header(Pattern.section_header))
 
@@ -485,8 +476,7 @@ class InpFile:
             for line in lines:
                 out.append(line)
 
-    @staticmethod
-    def _append_pipes(params, out):
+    def _append_pipes(self, params, out):
 
         out.extend(InpFile.build_section_keyword(Pipe.section_name))
         out.append(InpFile.build_section_header(Pipe.section_header))
@@ -520,6 +510,7 @@ class InpFile:
             minor_loss = pipe_ft.attribute(Pipe.field_name_minor_loss)
             status = pipe_ft.attribute(Pipe.field_name_status)
             description = pipe_ft.attribute(Pipe.field_name_description)
+            tag_name = pipe_ft.attribute(Pipe.field_name_tag)
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
@@ -534,10 +525,12 @@ class InpFile:
             if description is not None and description != '':
                 line += ';' + description
 
+            if tag_name is not None and tag_name != NULL and tag_name != '':
+                self.tags.append(Tag(Tag.element_type_link, eid, tag_name))
+
             out.append(line)
 
-    @staticmethod
-    def _append_pumps(params, out):
+    def _append_pumps(self, params, out):
 
         out.extend(InpFile.build_section_keyword(Pump.section_name))
         out.append(InpFile.build_section_header(Pump.section_header))
@@ -557,6 +550,7 @@ class InpFile:
             speed = p_ft.attribute(Pump.field_name_speed)
             speed_pattern = p_ft.attribute(Pump.field_name_speed_pattern)
             description = p_ft.attribute(Pump.field_name_description)
+            tag_name = p_ft.attribute(Pump.field_name_tag)
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
@@ -580,10 +574,12 @@ class InpFile:
             if description is not None and description != '':
                 line += ';' + description
 
+            if tag_name is not None and tag_name != NULL and tag_name != '':
+                self.tags.append(Tag(Tag.element_type_link, eid, tag_name))
+
             out.append(line)
 
-    @staticmethod
-    def _append_opt_reactions(params, out):
+    def _append_opt_reactions(self, params, out):
 
         out.extend(InpFile.build_section_keyword(Reactions.section_name))
 
@@ -597,14 +593,12 @@ class InpFile:
         out.append(InpFile.pad('LIMITING POTENTIAL', InpFile.pad_22) + str(params.reactions.limiting_potential))
         out.append(InpFile.pad('ROUGHNESS CORRELATION', InpFile.pad_22) + str(params.reactions.roughness_corr))
 
-    @staticmethod
-    def _append_rules(params, out):
+    def _append_rules(self, params, out):
         # out.extend(InpFile.build_section_keyword(Rule.section_name))
         # TODO
         pass
 
-    @staticmethod
-    def _append_status(params, out):
+    def _append_status(self, params, out):
         out.extend(InpFile.build_section_keyword(Status.section_name))
         out.append(InpFile.build_section_header(Status.section_header))
 
@@ -652,8 +646,7 @@ class InpFile:
         #     line += InpFile.pad(pipe_status.upper(), InpFile.pad_19)
         #     out.append(line)
 
-    @staticmethod
-    def _append_reservoirs(params, out):
+    def _append_reservoirs(self, params, out):
 
         out.extend(InpFile.build_section_keyword(Reservoir.section_name))
         out.append(InpFile.build_section_header(Reservoir.section_header))
@@ -667,6 +660,7 @@ class InpFile:
             pressure_head = r_ft.attribute(Reservoir.field_name_pressure_head)
             pattern = r_ft.attribute(Reservoir.field_name_pattern)
             description = r_ft.attribute(Reservoir.field_name_description)
+            tag_name = r_ft.attribute(Reservoir.field_name_tag)
 
             if elev is None or elev == NULL:
                 elev = 0
@@ -687,10 +681,12 @@ class InpFile:
             if description is not None and description != '':
                 line += ';' + description
 
+            if tag_name is not None and tag_name != NULL and tag_name != '':
+                self.tags.append(Tag(Tag.element_type_node, eid, tag_name))
+
             out.append(line)
 
-    @staticmethod
-    def _append_tanks(params, out):
+    def _append_tanks(self, params, out):
 
         out.extend(InpFile.build_section_keyword(Tank.section_name))
         out.append(InpFile.build_section_header(Tank.section_header))
@@ -708,6 +704,7 @@ class InpFile:
             level_min = t_ft.attribute(Tank.field_name_level_min)
             vol_min = t_ft.attribute(Tank.field_name_vol_min)
             description = t_ft.attribute(Tank.field_name_description)
+            tag_name = t_ft.attribute(Tank.field_name_tag)
 
             if elev is None or elev == NULL:
                 elev = 0
@@ -732,10 +729,12 @@ class InpFile:
             if description is not None and description != '':
                 line += ';' + description
 
+            if tag_name is not None and tag_name != NULL and tag_name != '':
+                self.tags.append(Tag(Tag.element_type_node, eid, tag_name))
+
             out.append(line)
 
-    @staticmethod
-    def _append_times(params, out):
+    def _append_times(self, params, out):
 
         out.extend(InpFile.build_section_keyword(Times.section_name))
         out.append(InpFile.pad('DURATION', InpFile.pad_22) + params.times.duration.get_as_text(4))
@@ -750,8 +749,7 @@ class InpFile:
         out.append(InpFile.pad('START CLOCKTIME', InpFile.pad_22) + params.times.clocktime_start.get_as_text())
         out.append(InpFile.pad('STATISTIC', InpFile.pad_22) + Times.stats_text[params.times.statistic])
 
-    @staticmethod
-    def _append_valves(params, out):
+    def _append_valves(self, params, out):
 
         out.extend(InpFile.build_section_keyword(Valve.section_name))
         out.append(InpFile.build_section_header(Valve.section_header))
@@ -771,6 +769,7 @@ class InpFile:
             setting = str(v_ft.attribute(Valve.field_name_setting))
             minor_loss = str(v_ft.attribute(Valve.field_name_minor_loss))
             description = v_ft.attribute(Valve.field_name_description)
+            tag_name = v_ft.attribute(Valve.field_name_tag)
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
@@ -783,6 +782,18 @@ class InpFile:
 
             if description is not None and description != '':
                 line += ';' + description
+
+            if tag_name is not None and tag_name != NULL and tag_name != '':
+                self.tags.append(Tag(Tag.element_type_link, eid, tag_name))
+
+            out.append(line)
+
+    def _append_tags(self, params, out):
+        out.extend(InpFile.build_section_keyword(Tag.section_name))
+        for tag in self.tags:
+            line = InpFile.pad(tag.element_type, InpFile.pad_19)
+            line += InpFile.pad(tag.element_id, InpFile.pad_19)
+            line += InpFile.pad(tag.tag, InpFile.pad_19)
 
             out.append(line)
 

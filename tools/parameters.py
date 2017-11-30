@@ -36,6 +36,7 @@ class Parameters(Observable):
     regex_number_pos_int_no_zero = '^[1-9]\d*$'
     regex_time_hh_mm = '^([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$'
     regex_time_hs_ms = '^([0-9]+):[0-5][0-9]$'
+    regex_no_blanks = '^\S*$'
 
     def __init__(self):
         super(Parameters, self).__init__()
@@ -52,6 +53,8 @@ class Parameters(Observable):
         self._patterns_file = None
         self._curves = OrderedDict()
         self._curves_file = None
+
+        self._tag_names = []
 
         self._snap_tolerance = 10
         self._tolerance = 0.01
@@ -191,6 +194,16 @@ class Parameters(Observable):
         self._patterns_file = value
         self.notify()
 
+    # Tags
+    @property
+    def tag_names(self):
+        return self._tag_names
+
+    @tag_names.setter
+    def tag_names(self, value):
+        self._tag_names = value
+        self.notify()
+
     # Tolerances
     @property
     def tolerance(self):
@@ -236,6 +249,7 @@ class Parameters(Observable):
     def block_logic(self, value):
         self._block_logic = value
         self.notify()
+
 
 class ConfigFile:
 
@@ -390,3 +404,9 @@ class RegExValidators:
 
         reg_ex = QRegExp(Parameters.regex_time_hs_ms)
         return QRegExpValidator(reg_ex)
+
+    @staticmethod
+    def get_no_blanks():
+
+        reg_exp = QRegExp(Parameters.regex_no_blanks)
+        return QRegExpValidator(reg_exp)

@@ -290,7 +290,7 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>0</number>
+              <number>6</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
@@ -371,15 +371,25 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>0</y>
+                <y>-39</y>
                 <width>305</width>
-                <height>148</height>
+                <height>174</height>
                </rect>
               </property>
               <attribute name="label">
                <string>Junction properties</string>
               </attribute>
               <layout class="QGridLayout" name="gridLayout_4">
+               <item row="4" column="0">
+                <widget class="QLabel" name="lbl_junction_desc">
+                 <property name="text">
+                  <string>Description:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="2">
+                <widget class="QLineEdit" name="txt_junction_desc"/>
+               </item>
                <item row="0" column="2">
                 <widget class="QLineEdit" name="txt_junction_demand">
                  <property name="text">
@@ -432,7 +442,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="2">
+               <item row="6" column="2">
                 <spacer name="verticalSpacer">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -445,15 +455,15 @@
                  </property>
                 </spacer>
                </item>
-               <item row="4" column="0">
-                <widget class="QLabel" name="lbl_junction_desc">
+               <item row="5" column="2">
+                <widget class="QComboBox" name="cbo_junction_tag"/>
+               </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="lbl_junction_tag">
                  <property name="text">
-                  <string>Description:</string>
+                  <string>Tag:</string>
                  </property>
                 </widget>
-               </item>
-               <item row="4" column="2">
-                <widget class="QLineEdit" name="txt_junction_desc"/>
                </item>
               </layout>
              </widget>
@@ -462,8 +472,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>322</width>
-                <height>135</height>
+                <width>305</width>
+                <height>148</height>
                </rect>
               </property>
               <attribute name="label">
@@ -521,15 +531,25 @@
                <item row="4" column="1">
                 <widget class="QLineEdit" name="txt_reservoir_desc"/>
                </item>
+               <item row="5" column="0">
+                <widget class="QLabel" name="lbl_reservoir_tag">
+                 <property name="text">
+                  <string>Tag:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="5" column="1">
+                <widget class="QComboBox" name="cbo_reservoir_tag"/>
+               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="wgt_ele_tank">
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-83</y>
+                <y>-111</y>
                 <width>305</width>
-                <height>220</height>
+                <height>246</height>
                </rect>
               </property>
               <attribute name="label">
@@ -643,15 +663,25 @@
                <item row="7" column="1">
                 <widget class="QLineEdit" name="txt_tank_desc"/>
                </item>
+               <item row="8" column="0">
+                <widget class="QLabel" name="lbl_tank_tag">
+                 <property name="text">
+                  <string>Tag:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="1">
+                <widget class="QComboBox" name="cbo_tank_tag"/>
+               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="wgt_ele_pipe">
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-141</y>
+                <y>-162</y>
                 <width>305</width>
-                <height>278</height>
+                <height>304</height>
                </rect>
               </property>
               <attribute name="label">
@@ -901,6 +931,16 @@
                   <item row="2" column="1">
                    <widget class="QLineEdit" name="txt_pipe_desc"/>
                   </item>
+                  <item row="3" column="1">
+                   <widget class="QComboBox" name="cbo_pipe_tag"/>
+                  </item>
+                  <item row="3" column="0">
+                   <widget class="QLabel" name="lbl_pipe_tag">
+                    <property name="text">
+                     <string>Tag:</string>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
                 </widget>
                </item>
@@ -923,9 +963,9 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-57</y>
+                <y>-78</y>
                 <width>305</width>
-                <height>194</height>
+                <height>220</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1019,15 +1059,25 @@
                <item row="6" column="1">
                 <widget class="QLineEdit" name="txt_pump_desc"/>
                </item>
+               <item row="7" column="0">
+                <widget class="QLabel" name="lbl_pump_tag">
+                 <property name="text">
+                  <string>Tag:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="1">
+                <widget class="QComboBox" name="cbo_pump_tag"/>
+               </item>
               </layout>
              </widget>
              <widget class="QWidget" name="wgt_ele_valve">
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-31</y>
+                <y>-52</y>
                 <width>305</width>
-                <height>168</height>
+                <height>194</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1112,6 +1162,16 @@
                <item row="5" column="1">
                 <widget class="QLineEdit" name="txt_valve_desc"/>
                </item>
+               <item row="6" column="0">
+                <widget class="QLabel" name="lbl_valve_tag">
+                 <property name="text">
+                  <string>Tag:</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="1">
+                <widget class="QComboBox" name="cbo_valve_tag"/>
+               </item>
               </layout>
               <zorder>lbl_valve_type</zorder>
               <zorder>cbo_valve_type</zorder>
@@ -1125,6 +1185,8 @@
               <zorder>cbo_valve_status</zorder>
               <zorder>lbl_valve_desc</zorder>
               <zorder>txt_valve_desc</zorder>
+              <zorder>lbl_valve_tag</zorder>
+              <zorder>cbo_valve_tag</zorder>
              </widget>
              <widget class="QWidget" name="wgt_options">
               <property name="geometry">
@@ -1194,8 +1256,8 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>322</width>
-                <height>135</height>
+                <width>305</width>
+                <height>151</height>
                </rect>
               </property>
               <attribute name="label">
@@ -1242,6 +1304,13 @@
                 <widget class="QPushButton" name="btn_curve_editor">
                  <property name="text">
                   <string>Curve editor</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btn_tags_editor">
+                 <property name="text">
+                  <string>Tags editor</string>
                  </property>
                 </widget>
                </item>

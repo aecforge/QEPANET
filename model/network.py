@@ -45,6 +45,7 @@ class Junction:
     field_name_pattern = 'pattern'
     field_name_emitter_coeff = 'emit_coeff'
     field_name_description = 'description'
+    field_name_tag = 'tag'
 
     prefix = 'J'
 
@@ -54,7 +55,8 @@ class Junction:
               QgsField(field_name_pattern, QVariant.String),
               QgsField(field_name_demand, QVariant.Double),
               QgsField(field_name_emitter_coeff, QVariant.Double),
-              QgsField(field_name_description, QVariant.String)]
+              QgsField(field_name_description, QVariant.String),
+              QgsField(field_name_tag, QVariant.String)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -64,7 +66,7 @@ class Junction:
         self.pattern = None
         self.emitter_coeff = 0
         self.description = ''
-
+        self.tag = ''
 
 class QJunction:
     section_name = 'QEPANET-JUNCTIONS'
@@ -85,6 +87,7 @@ class Reservoir:
     field_name_pressure_head = 'press_head'
     field_name_pattern = 'pattern'
     field_name_description = 'description'
+    field_name_tag = 'tag'
 
     prefix = 'R'
 
@@ -93,7 +96,8 @@ class Reservoir:
               QgsField(field_name_delta_z, QVariant.Double),
               QgsField(field_name_pressure_head, QVariant.Double),
               QgsField(field_name_pattern, QVariant.String),
-              QgsField(field_name_description, QVariant.String)]
+              QgsField(field_name_description, QVariant.String),
+              QgsField(field_name_tag, QVariant.String)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -102,6 +106,14 @@ class Reservoir:
         self.field_name_pressure_head = 0
         self.pattern = None
         self.description = ''
+        self.tag = ''
+
+
+class Status:
+    section_name = 'STATUS'
+
+    def __init__(self):
+        pass
 
 
 class Tank:
@@ -117,6 +129,7 @@ class Tank:
     field_name_level_min = 'min_level'
     field_name_vol_min = 'min_vol'
     field_name_description = 'description'
+    field_name_tag = 'tag'
 
     prefix = 'T'
 
@@ -129,7 +142,8 @@ class Tank:
               QgsField(field_name_diameter, QVariant.Double),
               QgsField(field_name_vol_min, QVariant.Double),
               QgsField(field_name_curve, QVariant.String),
-              QgsField(field_name_description, QVariant.String)]
+              QgsField(field_name_description, QVariant.String),
+              QgsField(field_name_tag, QVariant.String)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -142,6 +156,7 @@ class Tank:
         self.level_min = 0
         self.vol_min = 0
         self.description = ''
+        self.tag = ''
 
 
 class Link:
@@ -166,6 +181,7 @@ class Pipe:
     field_name_status = 'status'
     field_name_material = 'material'
     field_name_description = 'description'
+    field_name_tag = 'tag'
 
     prefix = 'L'  # L to distinguish it from Pumps
 
@@ -176,7 +192,8 @@ class Pipe:
               QgsField(field_name_roughness, QVariant.Double),
               QgsField(field_name_minor_loss, QVariant.Double),
               QgsField(field_name_material, QVariant.String),
-              QgsField(field_name_description, QVariant.String)]
+              QgsField(field_name_description, QVariant.String),
+              QgsField(field_name_tag, QVariant.String)]
 
     def __init__(self, eid):
         self.eid = eid
@@ -191,6 +208,7 @@ class Pipe:
         self.status = 'on'
         self.material = 'none'
         self.description = ''
+        self.tag = ''
 
 
 class Pump:
@@ -204,6 +222,7 @@ class Pump:
     field_name_speed_pattern = 'speed_patt'
     field_name_status = 'status'
     field_name_description = 'description'
+    field_name_tag = 'tag'
 
     prefix = 'P'
 
@@ -214,7 +233,8 @@ class Pump:
               QgsField(field_name_speed, QVariant.Double),
               QgsField(field_name_speed_pattern, QVariant.String),
               QgsField(field_name_status, QVariant.String),
-              QgsField(field_name_description, QVariant.String)]
+              QgsField(field_name_description, QVariant.String),
+              QgsField(field_name_tag, QVariant.String)]
 
     parameters_power = 'POWER'
     parameters_head = 'HEAD'
@@ -227,7 +247,7 @@ class Pump:
         self.params = Pump.parameters_power
         self.value = 0
         self.description = ''
-
+        self.tag = ''
 
 class Valve:
     section_name = 'VALVES'
@@ -239,6 +259,7 @@ class Valve:
     field_name_type = 'type'
     field_name_status = 'status'
     field_name_description = 'description'
+    field_name_tag = 'tag'
 
     prefix = 'V'
 
@@ -248,7 +269,8 @@ class Valve:
               QgsField(field_name_setting, QVariant.String),
               QgsField(field_name_minor_loss, QVariant.Double),
               QgsField(field_name_status, QVariant.String),
-              QgsField(field_name_description, QVariant.String)]
+              QgsField(field_name_description, QVariant.String),
+              QgsField(field_name_tag, QVariant.String)]
 
     type_prv = 'PRV'
     type_psv = 'PSV'
@@ -272,7 +294,7 @@ class Valve:
     def __init__(self, eid):
         self.eid = eid
         self.description = ''
-
+        self.tag = ''
 
 class QReservoir:
     section_name = 'QEPANET-RESERVOIRS'
@@ -334,6 +356,63 @@ class Vertex:
 class Emitter:
     section_name = 'EMITTERS'
     section_header = 'Junction        	Coefficient'
+
+    def __init__(self):
+        pass
+
+
+class Tag:
+    section_name = 'TAGS'
+    element_type_node = 'NODE'
+    element_type_link = 'LINK'
+
+    def __init__(self, element_type, element_id, tag):
+        self.element_type = element_type
+        self.element_id = element_id
+        self.tag = tag
+
+class Demand:
+    section_name = 'DEMANDS'
+
+    def __init__(self):
+        pass
+
+class Control:
+    section_name = 'CONTROLS'
+
+    def __init__(self):
+        pass
+
+class Label:
+    section_name = 'LABELS'
+
+    def __init__(self):
+        pass
+
+
+class Source:
+    section_name = 'SOURCE'
+
+    def __init__(self):
+        pass
+
+
+class Reaction:
+    section_name = 'REACTION'
+
+    def __init__(self):
+        pass
+
+
+class Mixing:
+    section_name = 'MIXING'
+
+    def __init__(self):
+        pass
+
+
+class Backdrop:
+    section_name = 'BACKDROP'
 
     def __init__(self):
         pass

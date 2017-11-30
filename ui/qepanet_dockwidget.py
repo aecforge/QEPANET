@@ -50,6 +50,7 @@ from ..tools.data_stores import MemoryDS
 from ..tools.exceptions import ShpExistsExcpetion
 from ..tools.delete_tool import DeleteTool
 from ..tools.parameters import Parameters, RegExValidators, ConfigFile
+from tags_dialog import TagsDialog
 from utils import prepare_label as pre_l, set_up_button
 import misc
 
@@ -281,6 +282,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.btn_pattern_editor.clicked.connect(self.pattern_editor)
         self.btn_curve_editor.clicked.connect(self.curve_editor)
+        self.btn_tags_editor.clicked.connect(self.tags_editor)
+
+        self.update_tags_combos()
 
         # EPANET
         self.btn_epanet_run.clicked.connect(self.btn_epanet_run_clicked)
@@ -298,6 +302,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Update components
         self.update_patterns_combo()
         self.update_curves_combo()
+        self.update_tags_combos()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -553,6 +558,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         curve_dialog = GraphDialog(self, self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_curves)
         curve_dialog.exec_()
 
+    def tags_editor(self):
+
+        tags_dialog = TagsDialog(self, self.iface.mainWindow(), self.params)
+        tags_dialog.exec_()
+
     def project_new_clicked(self):
 
         self.btn_project_new.setChecked(False)
@@ -660,7 +670,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
             try:
                 QApplication.setOverrideCursor(Qt.WaitCursor)
-                InpFile.write_inp_file(self.params, self.inp_file_path, '')
+                inp_file = InpFile()
+                inp_file.write_inp_file(self.params, self.inp_file_path, '')
                 QApplication.restoreOverrideCursor()
 
                 self.iface.messageBar().pushMessage(
@@ -876,6 +887,29 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                     self.cbo_valve_curve.addItem(curve.id, curve)
                 # elif curve.type == Curve.type_volume:
                     self.cbo_tank_curve.addItem(curve.id, curve)
+
+    def update_tags_combos(self):
+        self.cbo_junction_tag.clear()
+        self.cbo_reservoir_tag.clear()
+        self.cbo_tank_tag.clear()
+        self.cbo_pipe_tag.clear()
+        self.cbo_pump_tag.clear()
+        self.cbo_valve_tag.clear()
+        self.cbo_junction_tag.addItem(None, None)
+        self.cbo_reservoir_tag.addItem(None, None)
+        self.cbo_tank_tag.addItem(None, None)
+        self.cbo_pipe_tag.addItem(None, None)
+        self.cbo_pump_tag.addItem(None, None)
+        self.cbo_valve_tag.addItem(None, None)
+
+        if self.params.tag_names is not None:
+            for tag_name in self.params.tag_names:
+                self.cbo_junction_tag.addItem(tag_name, tag_name)
+                self.cbo_reservoir_tag.addItem(tag_name, tag_name)
+                self.cbo_tank_tag.addItem(tag_name, tag_name)
+                self.cbo_pipe_tag.addItem(tag_name, tag_name)
+                self.cbo_pump_tag.addItem(tag_name, tag_name)
+                self.cbo_valve_tag.addItem(tag_name, tag_name)
 
     def get_combo_current_data(self, combo):
         index = self.cbo_pipe_roughness.currentIndex()
