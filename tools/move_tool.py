@@ -96,7 +96,7 @@ class MoveTool(QgsMapTool):
                 points.append(vertex_before)
                 points.append(vertex_at)
                 points.append(vertex_after)
-                
+
                 self.rubber_bands_d[0] = (self.build_rubber_band(points), [1], [vertex_at])
 
             # It's a node

@@ -659,23 +659,23 @@ class TimesDialog(QDialog):
         self.txt_duration.setInputMask('0009:99')
         self.txt_duration.setValidator(RegExValidators.get_time_hs_mm())
 
-        self.txt_hydraulic_timestep.setInputMask('09:99')
-        self.txt_hydraulic_timestep.setValidator(RegExValidators.get_time_hh_mm())
+        self.txt_hydraulic_timestep.setInputMask('009:99')
+        self.txt_hydraulic_timestep.setValidator(RegExValidators.get_time_hs_mm())
 
-        self.txt_quality_timestep.setInputMask('09:99')
-        self.txt_quality_timestep.setValidator(RegExValidators.get_time_hh_mm())
+        self.txt_quality_timestep.setInputMask('009:99')
+        self.txt_quality_timestep.setValidator(RegExValidators.get_time_hs_mm())
 
-        self.txt_rule_timestep.setInputMask('09:99')
-        self.txt_rule_timestep.setValidator(RegExValidators.get_time_hh_mm())
+        self.txt_rule_timestep.setInputMask('009:99')
+        self.txt_rule_timestep.setValidator(RegExValidators.get_time_hs_mm())
 
-        self.txt_pattern_timestep.setInputMask('09:99')
-        self.txt_pattern_timestep.setValidator(RegExValidators.get_time_hh_mm())
+        self.txt_pattern_timestep.setInputMask('009:99')
+        self.txt_pattern_timestep.setValidator(RegExValidators.get_time_hs_mm())
 
         self.txt_pattern_start.setInputMask('09:99')
         self.txt_pattern_start.setValidator(RegExValidators.get_time_hh_mm())
 
-        self.txt_report_timestep.setInputMask('09:99')
-        self.txt_report_timestep.setValidator(RegExValidators.get_time_hh_mm())
+        self.txt_report_timestep.setInputMask('009:99')
+        self.txt_report_timestep.setValidator(RegExValidators.get_time_hs_mm())
 
         self.txt_report_start.setInputMask('09:99')
         self.txt_report_start.setValidator(RegExValidators.get_time_hh_mm())
@@ -691,12 +691,12 @@ class TimesDialog(QDialog):
 
         self.cbo_units.setCurrentIndex(self.cbo_units.findData(self.params.times.units))
         self.txt_duration.setText(self.params.times.duration.get_as_text(4))
-        self.txt_hydraulic_timestep.setText(self.params.times.hydraulic_timestep.get_as_text())
-        self.txt_quality_timestep.setText(self.params.times.quality_timestep.get_as_text())
-        self.txt_rule_timestep.setText(self.params.times.rule_timestep.get_as_text())
-        self.txt_pattern_timestep.setText(self.params.times.pattern_timestep.get_as_text())
+        self.txt_hydraulic_timestep.setText(self.params.times.hydraulic_timestep.get_as_text(3))
+        self.txt_quality_timestep.setText(self.params.times.quality_timestep.get_as_text(3))
+        self.txt_rule_timestep.setText(self.params.times.rule_timestep.get_as_text(3))
+        self.txt_pattern_timestep.setText(self.params.times.pattern_timestep.get_as_text(3))
         self.txt_pattern_start.setText(self.params.times.pattern_start.get_as_text())
-        self.txt_report_timestep.setText(self.params.times.report_timestep.get_as_text())
+        self.txt_report_timestep.setText(self.params.times.report_timestep.get_as_text(3))
         self.txt_report_start.setText(self.params.times.report_start.get_as_text())
         self.txt_clock_time_start.setText(self.params.times.clocktime_start.get_as_text())
         self.cbo_statistic.setCurrentIndex(self.cbo_statistic.findData(self.params.times.statistic))
