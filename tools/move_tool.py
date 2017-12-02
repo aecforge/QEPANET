@@ -3,7 +3,7 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QCursor, QColor
 from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper,\
     QgsVector, QgsVertexId, QgsPointV2, QgsPointLocator
-from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
+from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand, QgsMessageBar
 
 from ..model.network_handling import NetworkUtils, NodeHandler, LinkHandler
 from parameters import Parameters
@@ -22,7 +22,7 @@ class MoveTool(QgsMapTool):
         """:type : DataDock"""
         self.params = params
 
-        self.elev = -1
+        self.elev = None
         self.vertex_marker = QgsVertexMarker(self.canvas())
         self.mouse_clicked = False
         self.snapper = None
@@ -81,21 +81,19 @@ class MoveTool(QgsMapTool):
                 snapped_ft = vector_utils.get_feats_by_id(self.snap_results.layer(), self.snap_results.featureId())[0]
                 snapped_ft_geom = snapped_ft.geometry()
 
-
-                print self.snap_results.vertexIndex() - 1
-
-                if self.snap_results.vertexIndex() - 1 >= 0 and self.snap_results.vertexIndex() < len( snapped_ft_geom.asPolyline()):
-                    vertex_before = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex() - 1)
-
-                vertex_at = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex())
-
-                if self.snap_results.vertexIndex() + 1 >= 0 and self.snap_results.vertexIndex() < len(snapped_ft_geom.asPolyline()):
-                    vertex_after = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex() + 1)
+                # print self.snap_results.vertexIndex() - 1, self.snap_results.vertexIndex() + 1, len(snapped_ft_geom.asPolyline())
 
                 points = []
-                points.append(vertex_before)
+                if self.snap_results.vertexIndex() - 1 >= 0 and self.snap_results.vertexIndex() - 1 < len(snapped_ft_geom.asPolyline()):
+                    vertex_before = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex() - 1)
+                    points.append(vertex_before)
+
+                vertex_at = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex())
                 points.append(vertex_at)
-                points.append(vertex_after)
+
+                if self.snap_results.vertexIndex() + 1 >= 0 and self.snap_results.vertexIndex() + 1 < len(snapped_ft_geom.asPolyline()):
+                    vertex_after = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex() + 1)
+                    points.append(vertex_after)
 
                 self.rubber_bands_d[0] = (self.build_rubber_band(points), [1], [vertex_at])
 
@@ -212,6 +210,9 @@ class MoveTool(QgsMapTool):
         if elev is not None:
             self.elev = elev
             self.dock_widget.lbl_elev_val.setText("{0:.2f}".format(self.elev))
+        else:
+            self.elev = None
+            self.dock_widget.lbl_elev_val.setText('-')
 
         # Mouse not clicked
         if not self.mouse_clicked:
@@ -300,6 +301,17 @@ class MoveTool(QgsMapTool):
                 del self.rubber_bands_d[key]
 
             if self.snap_results is not None:
+
+                # Check elev
+
+                if self.elev is None and self.params.dem_rlay is not None:
+                    self.iface.messageBar().pushMessage(
+                        Parameters.plug_in_name,
+                        'Elevation value not available: element eleveation set to 0.',
+                        QgsMessageBar.WARNING,
+                        5)  # TODO: softcode
+
+                print '2'
 
                 # No adjacent links: it's just a pipe vertex
                 if self.adj_links_fts is None:

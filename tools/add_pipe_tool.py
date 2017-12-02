@@ -41,7 +41,7 @@ class AddPipeTool(QgsMapTool):
         self.snapped_vertex = None
         self.snapped_vertex_nr = None
         self.vertex_marker = QgsVertexMarker(self.canvas())
-        self.elev = None
+        self.elev = 0
 
         self.diameter_dialog = None
 

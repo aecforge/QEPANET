@@ -100,8 +100,14 @@ class AddTankTool(QgsMapTool):
             else:
                 tank_curve_id = None
 
-            elev = None
-            if self.elev is not None:
+            elev = 0
+            if self.elev is None and self.params.dem_rlay is not None:
+                self.iface.messageBar().pushMessage(
+                    Parameters.plug_in_name,
+                    'Elevation value not available: element eleveation set to 0.',
+                    QgsMessageBar.WARNING,
+                    5)  # TODO: softcode
+            else:
                 elev = self.elev
 
             diameter = float(self.data_dock.txt_tank_diameter.text())
