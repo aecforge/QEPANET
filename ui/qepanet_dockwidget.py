@@ -644,7 +644,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         try:
             QApplication.setOverrideCursor(Qt.WaitCursor)
 
-            InpFile.write_inp_file(self.params, self.inp_file_path, '')
+            inp_file = InpFile()
+            inp_file.write_inp_file(self.params, self.inp_file_path, '')
+
             QApplication.restoreOverrideCursor()
 
 

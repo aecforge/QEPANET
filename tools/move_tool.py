@@ -80,14 +80,23 @@ class MoveTool(QgsMapTool):
 
                 snapped_ft = vector_utils.get_feats_by_id(self.snap_results.layer(), self.snap_results.featureId())[0]
                 snapped_ft_geom = snapped_ft.geometry()
-                vertex_before = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex() - 1)
+
+
+                print self.snap_results.vertexIndex() - 1
+
+                if self.snap_results.vertexIndex() - 1 >= 0 and self.snap_results.vertexIndex() < len( snapped_ft_geom.asPolyline()):
+                    vertex_before = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex() - 1)
+
                 vertex_at = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex())
-                vertex_after = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex() + 1)
+
+                if self.snap_results.vertexIndex() + 1 >= 0 and self.snap_results.vertexIndex() < len(snapped_ft_geom.asPolyline()):
+                    vertex_after = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex() + 1)
 
                 points = []
                 points.append(vertex_before)
                 points.append(vertex_at)
                 points.append(vertex_after)
+                
                 self.rubber_bands_d[0] = (self.build_rubber_band(points), [1], [vertex_at])
 
             # It's a node
