@@ -311,8 +311,6 @@ class MoveTool(QgsMapTool):
                         QgsMessageBar.WARNING,
                         5)  # TODO: softcode
 
-                print '2'
-
                 # No adjacent links: it's just a pipe vertex
                 if self.adj_links_fts is None:
                     feat = vector_utils.get_feats_by_id(self.snap_results.layer(), self.snap_results.featureId())

@@ -290,15 +290,15 @@
            <item>
             <widget class="QToolBox" name="tbx_main">
              <property name="currentIndex">
-              <number>6</number>
+              <number>8</number>
              </property>
              <widget class="QWidget" name="wgt_layers">
               <property name="geometry">
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>322</width>
-                <height>135</height>
+                <width>124</width>
+                <height>75</height>
                </rect>
               </property>
               <property name="sizePolicy">
@@ -371,8 +371,8 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-39</y>
-                <width>305</width>
+                <y>0</y>
+                <width>162</width>
                 <height>174</height>
                </rect>
               </property>
@@ -472,7 +472,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>185</width>
                 <height>148</height>
                </rect>
               </property>
@@ -547,8 +547,8 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-111</y>
-                <width>305</width>
+                <y>0</y>
+                <width>174</width>
                 <height>246</height>
                </rect>
               </property>
@@ -679,8 +679,8 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-162</y>
-                <width>305</width>
+                <y>0</y>
+                <width>154</width>
                 <height>304</height>
                </rect>
               </property>
@@ -963,8 +963,8 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-78</y>
-                <width>305</width>
+                <y>0</y>
+                <width>166</width>
                 <height>220</height>
                </rect>
               </property>
@@ -1075,7 +1075,7 @@
               <property name="geometry">
                <rect>
                 <x>0</x>
-                <y>-52</y>
+                <y>0</y>
                 <width>305</width>
                 <height>194</height>
                </rect>
@@ -1193,7 +1193,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>99</width>
                 <height>186</height>
                </rect>
               </property>
@@ -1310,7 +1310,7 @@
                <item>
                 <widget class="QPushButton" name="btn_tags_editor">
                  <property name="text">
-                  <string>Tags editor</string>
+                  <string>Tag editor</string>
                  </property>
                 </widget>
                </item>
@@ -1334,7 +1334,7 @@
                <rect>
                 <x>0</x>
                 <y>0</y>
-                <width>305</width>
+                <width>104</width>
                 <height>147</height>
                </rect>
               </property>

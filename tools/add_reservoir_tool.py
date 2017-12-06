@@ -116,6 +116,8 @@ class AddReservoirTool(QgsMapTool):
 
             reservoir_desc = self.data_dock.txt_reservoir_desc.text()
 
+            reservoir_tag = self.data_dock.cbo_reservoir_tag.currentText()
+
             # No links snapped: create a new stand-alone node
             if self.snapped_feat_id is None:
 
@@ -127,7 +129,8 @@ class AddReservoirTool(QgsMapTool):
                     deltaz,
                     pressure_head,
                     pattern_id,
-                    reservoir_desc)
+                    reservoir_desc,
+                    reservoir_tag)
 
             # A link has been snapped
             else:
@@ -163,7 +166,8 @@ class AddReservoirTool(QgsMapTool):
                             deltaz,
                             pressure_head,
                             pattern_id,
-                            reservoir_desc)
+                            reservoir_desc,
+                            reservoir_tag)
 
                     elif start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) <= 0:
 
@@ -179,7 +183,8 @@ class AddReservoirTool(QgsMapTool):
                             deltaz,
                             pressure_head,
                             pattern_id,
-                            reservoir_desc)
+                            reservoir_desc,
+                            reservoir_tag)
 
                     elif end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) <= 0:
 
@@ -195,7 +200,8 @@ class AddReservoirTool(QgsMapTool):
                             deltaz,
                             pressure_head,
                             pattern_id,
-                            reservoir_desc)
+                            reservoir_desc,
+                            reservoir_tag)
 
                     else:
                         self.iface.messageBar().pushMessage(

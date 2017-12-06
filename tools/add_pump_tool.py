@@ -161,6 +161,9 @@ class AddPumpTool(QgsMapTool):
                     # Pump description
                     pump_desc = self.data_dock.txt_pump_desc.text()
 
+                    # Pump tag
+                    pump_tag = self.data_dock.cbo_pump_tag.currentText()
+
                     try:
                         LinkHandler.create_new_pumpvalve(
                             self.params,
@@ -169,7 +172,14 @@ class AddPumpTool(QgsMapTool):
                             closest_junction_ft,
                             self.snapped_vertex,
                             self.params.pumps_vlay,
-                            [pump_param, pump_head, pump_power, pump_speed, pump_speed_pattern, pump_status, pump_desc])
+                            {Pump.field_name_param: pump_param,
+                             Pump.field_name_head: pump_head,
+                             Pump.field_name_power: pump_power,
+                             Pump.field_name_speed: pump_speed,
+                             Pump.field_name_speed_pattern: pump_speed_pattern,
+                             Pump.field_name_status: pump_status,
+                             Pump.field_name_description: pump_desc,
+                             Pump.field_name_tag: pump_tag})
 
                         if pump_param == Pump.parameters_head and pump_head is None:
                             self.iface.messageBar().pushMessage(Parameters.plug_in_name,

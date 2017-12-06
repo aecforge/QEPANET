@@ -91,7 +91,7 @@ class TagNameDialog(QDialog):
         self.fra_top = QFrame()
         fra_top_lay = QVBoxLayout(self.fra_top)
 
-        self.lbl_explanation = QLabel('Insert a name (no blanks allowed')
+        self.lbl_explanation = QLabel('Insert a name (no blanks allowed)')
         fra_top_lay.addWidget(self.lbl_explanation)
 
         self.txt_name = QLineEdit()

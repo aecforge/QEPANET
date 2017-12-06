@@ -117,6 +117,7 @@ class AddTankTool(QgsMapTool):
             level_max = float(self.data_dock.txt_tank_level_max.text())
             vol_min = float(self.data_dock.txt_tank_vol_min.text())
             tank_desc = self.data_dock.txt_tank_desc.text()
+            tank_tag = self.data_dock.cbo_tank_tag.currentText()
 
             # No links snapped: create a new stand-alone tank
             if self.snapped_feat_id is None:
@@ -133,7 +134,8 @@ class AddTankTool(QgsMapTool):
                     level_min,
                     level_max,
                     vol_min,
-                    tank_desc)
+                    tank_desc,
+                    tank_tag)
 
             # A link has been snapped
             else:
@@ -173,7 +175,8 @@ class AddTankTool(QgsMapTool):
                             level_min,
                             level_max,
                             vol_min,
-                            tank_desc)
+                            tank_desc,
+                            tank_tag)
 
                     # Replace pipe start node with new tank
                     elif start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) <= 0:
@@ -194,7 +197,8 @@ class AddTankTool(QgsMapTool):
                             level_min,
                             level_max,
                             vol_min,
-                            tank_desc)
+                            tank_desc,
+                            tank_tag)
 
                     # Replace pipe end node with new tank
                     elif end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) <= 0:
@@ -215,7 +219,8 @@ class AddTankTool(QgsMapTool):
                             level_min,
                             level_max,
                             vol_min,
-                            tank_desc)
+                            tank_desc,
+                            tank_tag)
 
                     else:
                         self.iface.messageBar().pushMessage(
