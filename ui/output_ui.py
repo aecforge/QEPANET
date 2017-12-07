@@ -558,6 +558,9 @@ class OutputAnalyserDialog(QDialog):
         return self.create_out_layer(lay_name, values_d, LayerType.LINK)
 
     def create_out_layer(self, lay_name, values_d, lay_type):
+
+        import datetime
+
         field_name_vars = []
         periods = self.output_reader.period_results.keys()
         for period_s in periods:
@@ -572,21 +575,14 @@ class OutputAnalyserDialog(QDialog):
         elif lay_type == LayerType.LINK:
             new_lay = MemoryDS.create_links_lay(self.params, field_name_vars, lay_name, self.params.crs)
 
-        # Add attributes
-        for feat in new_lay.getFeatures():
-            new_lay.startEditing()
-            eid = feat.attribute(Node.field_name_eid)
-            values = values_d[eid]
-
-            for p in range(len(periods)):
-                text = self.seconds_to_string(
-                    periods[p],
-                    self.output_reader.sim_duration_secs,
-                    self.output_reader.report_time_step_secs)
-                feat.setAttribute(text, values[p])
-                new_lay.updateFeature(feat)
-
-            new_lay.commitChanges()
+        with edit(new_lay):
+            # Update attributes
+            for feat in new_lay.getFeatures():
+                fid = feat.id()
+                eid = feat.attribute(Node.field_name_eid)
+                values = values_d[eid]
+                for p in range(len(periods)):
+                    new_lay.changeAttributeValue(fid, p+1, values[p])
 
         return new_lay
 
