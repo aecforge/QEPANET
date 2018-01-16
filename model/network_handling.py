@@ -120,12 +120,15 @@ class NodeHandler:
     @staticmethod
     def move_element(layer, dem_rlay, node_ft, new_pos_pt):
         caps = layer.dataProvider().capabilities()
+
         if caps & QgsVectorDataProvider.ChangeGeometries:
 
             layer.beginEditCommand('Move node')
 
             try:
+
                 edit_utils = QgsVectorLayerEditUtils(layer)
+
                 edit_utils.moveVertex(
                     new_pos_pt.x(),
                     new_pos_pt.y(),
@@ -141,6 +144,7 @@ class NodeHandler:
                 layer.changeAttributeValue(node_ft.id(), field_index, new_elev)
 
             except Exception as e:
+
                 layer.destroyEditCommand()
                 raise e
 
@@ -539,9 +543,10 @@ class LinkHandler:
             try:
                 edit_utils = QgsVectorLayerEditUtils(link_lay)
                 edit_utils.moveVertexV2(new_pos_pt_v2, link_ft.id(), vertex_index)
-
                 # Retrieve the feature again, and update attributes
+
                 if link_lay == params.pipes_vlay:
+
                     request = QgsFeatureRequest().setFilterFid(link_ft.id())
                     feats = list(link_lay.getFeatures(request))
 
@@ -666,21 +671,21 @@ class LinkHandler:
         if caps & QgsVectorDataProvider.ChangeGeometries:
             layer.beginEditCommand("Update pipe geometry")
 
-            try:
-                edit_utils = QgsVectorLayerEditUtils(params.pipes_vlay)
-                edit_utils.deleteVertexV2(pipe_ft.id(), vertex_index)
+            # try:
+            edit_utils = QgsVectorLayerEditUtils(params.pipes_vlay)
+            edit_utils.deleteVertexV2(pipe_ft.id(), vertex_index)
 
-                # Retrieve the feature again, and update attributes
-                request = QgsFeatureRequest().setFilterFid(pipe_ft.id())
-                feats = list(params.pipes_vlay.getFeatures(request))
+            # Retrieve the feature again, and update attributes
+            request = QgsFeatureRequest().setFilterFid(pipe_ft.id())
+            feats = list(params.pipes_vlay.getFeatures(request))
 
-                field_index = params.pipes_vlay.dataProvider().fieldNameIndex(Pipe.field_name_length)
-                new_3d_length = LinkHandler.calc_3d_length(params, feats[0].geometry())
-                params.pipes_vlay.changeAttributeValue(pipe_ft.id(), field_index, new_3d_length)
+            field_index = params.pipes_vlay.dataProvider().fieldNameIndex(Pipe.field_name_length)
+            new_3d_length = LinkHandler.calc_3d_length(params, feats[0].geometry())
+            params.pipes_vlay.changeAttributeValue(pipe_ft.id(), field_index, new_3d_length)
 
-            except Exception as e:
-                params.pipes_vlay.destroyEditCommand()
-                raise e
+            # except Exception as e:
+            #     params.pipes_vlay.destroyEditCommand()
+            #     raise e
 
             params.pipes_vlay.endEditCommand()
 
@@ -809,7 +814,7 @@ class NetworkUtils:
 
         cands = []
         for node_ft in all_feats:
-            if link_geom.buffer(params.tolerance, 5).boundingBox().contains(node_ft.geometry().asPoint()):
+            if not link_geom.isEmpty() and link_geom.buffer(params.tolerance, 5).boundingBox().contains(node_ft.geometry().asPoint()):
                 cands.append(node_ft)
 
         if cands:
@@ -922,7 +927,7 @@ class NetworkUtils:
     @staticmethod
     def find_adjacent_links(params, node_geom):
 
-        adjacent_links_d = {'pumps': [], 'valves': []}
+        adjacent_links_d = {'pipes': [], 'pumps': [], 'valves': []}
 
         # Search among pipes
         adjacent_pipes_fts = []

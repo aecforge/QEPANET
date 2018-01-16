@@ -9,6 +9,7 @@ from ..model.network_handling import NetworkUtils, NodeHandler, LinkHandler
 from parameters import Parameters
 from ..geo_utils import raster_utils, vector_utils
 from ..rendering import symbology
+import logging
 
 
 class MoveTool(QgsMapTool):
@@ -42,8 +43,12 @@ class MoveTool(QgsMapTool):
         self.delta_vec = QgsVector(0, 0)
         self.adj_links_fts_d = {}
 
-        self.rubber_bands_d = {}
-        self.rubber_bands_geoms_d = {}
+        # self.rubber_bands_d = {}
+        # self.rubber_bands_geoms_d = {}
+
+        self.rubber_band = None
+
+        self.logger = logging.getLogger('Logger1')
 
     def canvasPressEvent(self, event):
 
@@ -58,21 +63,47 @@ class MoveTool(QgsMapTool):
         if event.button() == Qt.LeftButton:
 
             self.mouse_clicked = True
+            self.clicked_pt = self.snap_results.point()
 
             # Check if a node was snapped: it can be just one
             self.selected_node_ft = None
             self.adj_links_fts = None
 
-            if self.snap_results.layer().name() == self.params.junctions_vlay.name() or \
-                            self.snap_results.layer().name() == self.params.reservoirs_vlay.name() or \
-                            self.snap_results.layer().name() == self.params.tanks_vlay.name():
+            # Check if I snapped on a node
+            snapped_layer_name = self.snap_results.layer().name()
 
-                node_feat_id = self.snap_results.featureId()
-                request = QgsFeatureRequest().setFilterFid(node_feat_id)
-                node = list(self.snap_results.layer().getFeatures(request))
+            self.selected_node_ft = None
+
+            pt_locator_ju = self.snapper.locatorForLayer(self.params.junctions_vlay)
+            pt_locator_re = self.snapper.locatorForLayer(self.params.reservoirs_vlay)
+            pt_locator_ta = self.snapper.locatorForLayer(self.params.tanks_vlay)
+            match_ju = pt_locator_ju.nearestVertex(self.snap_results.point(), 1)
+            match_re = pt_locator_re.nearestVertex(self.snap_results.point(), 1)
+            match_ta = pt_locator_ta.nearestVertex(self.snap_results.point(), 1)
+
+            if match_ju.isValid() or match_re.isValid() or match_ta.isValid():
+
+                if match_ju.isValid():
+                    node_feat_id = match_ju.featureId()
+                    request = QgsFeatureRequest().setFilterFid(node_feat_id)
+                    node = list(self.params.junctions_vlay.getFeatures(request))
+                    self.selected_node_ft_lay = self.params.junctions_vlay
+
+                if match_re.isValid():
+                    node_feat_id = match_re.featureId()
+                    request = QgsFeatureRequest().setFilterFid(node_feat_id)
+                    node = list(self.params.reservoirs_vlay.getFeatures(request))
+                    self.selected_node_ft_lay = self.params.reservoirs_vlay
+
+                if match_ta.isValid():
+                    node_feat_id = match_ta.featureId()
+                    request = QgsFeatureRequest().setFilterFid(node_feat_id)
+                    node = list(self.params.tanks_vlay.getFeatures(request))
+                    self.selected_node_ft_lay = self.params.tanks_vlay
+
                 self.selected_node_ft = QgsFeature(node[0])
 
-                self.selected_node_ft_lay = self.snap_results.layer()
+                # self.selected_node_ft_lay = self.snap_results.layer()
                 self.adj_links_fts = NetworkUtils.find_adjacent_links(self.params, self.selected_node_ft.geometry())
 
             # No selected nodes: it's just a vertex
@@ -81,10 +112,9 @@ class MoveTool(QgsMapTool):
                 snapped_ft = vector_utils.get_feats_by_id(self.snap_results.layer(), self.snap_results.featureId())[0]
                 snapped_ft_geom = snapped_ft.geometry()
 
-                # print self.snap_results.vertexIndex() - 1, self.snap_results.vertexIndex() + 1, len(snapped_ft_geom.asPolyline())
-
                 points = []
                 if self.snap_results.vertexIndex() - 1 >= 0 and self.snap_results.vertexIndex() - 1 < len(snapped_ft_geom.asPolyline()):
+                    vertex_index = 1
                     vertex_before = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex() - 1)
                     points.append(vertex_before)
 
@@ -92,23 +122,33 @@ class MoveTool(QgsMapTool):
                 points.append(vertex_at)
 
                 if self.snap_results.vertexIndex() + 1 >= 0 and self.snap_results.vertexIndex() + 1 < len(snapped_ft_geom.asPolyline()):
+                    vertex_index = 0
                     vertex_after = snapped_ft_geom.vertexAt(self.snap_results.vertexIndex() + 1)
                     points.append(vertex_after)
 
-                self.rubber_bands_d[0] = (self.build_rubber_band(points), [1], [vertex_at])
+                if self.snap_results.vertexIndex() > 0 and self.snap_results.vertexIndex() < len(snapped_ft_geom.asPolyline()) - 1:
+                    vertex_index = 1
+
+                # self.rubber_bands_d[0] = (self.build_rubber_band(points), [vertex_index], [vertex_at])
+                self.rubber_band = self.build_rubber_band([self.snap_results.point(), self.snap_results.point()])
 
             # It's a node
             else:
 
+                # It's an isolated node: no rubber band!
+                if self.adj_links_fts is None or (not self.adj_links_fts['pipes'] and not self.adj_links_fts['pumps'] and not self.adj_links_fts['valves']):
+                    # self.rubber_bands_d.clear()
+                    self.rubber_band = self.build_rubber_band([self.snap_results.point(), self.snap_results.point()])
+                    return
+
                 # Adjacent links are neither pumps nor valves: find the two pipes adjacent to the node
-                # Or node adjacent to pump or valve and NOT using block logic
+                # OR node adjacent to pump or valve and NOT using block logic
                 if (not self.adj_links_fts['pumps'] and not self.adj_links_fts['valves']) or not self.params.block_logic:
 
                     self.pump_valve_selected = False
 
                     rb_points = []
 
-                    rb_index = 0
                     for adjacent_pipes_ft in self.adj_links_fts['pipes']:
                         closest = adjacent_pipes_ft.geometry().closestVertex(self.selected_node_ft.geometry().asPoint())
                         self.adj_links_fts_d[adjacent_pipes_ft] = (closest[1], self.params.pipes_vlay)
@@ -137,7 +177,8 @@ class MoveTool(QgsMapTool):
                         rb_points.append(adj_valves_ft.geometry().vertexAt(next_vertext_id))
 
                     rb_points.insert(1, self.selected_node_ft.geometry().asPoint())
-                    self.rubber_bands_d[0] = (self.build_rubber_band(rb_points), [1], [self.selected_node_ft.geometry().asPoint()])
+                    # self.rubber_bands_d[0] = (self.build_rubber_band(rb_points), [1], [self.selected_node_ft.geometry().asPoint()])
+                    self.rubber_band = self.build_rubber_band([self.snap_results.point(), self.snap_results.point()])
 
                 # Node adjacent to pump or valve and using block logic
                 else:
@@ -158,7 +199,8 @@ class MoveTool(QgsMapTool):
 
                     pump_valve_pts = self.pump_valve_ft.geometry().asPolyline()
 
-                    self.rubber_bands_d[0] = (self.build_rubber_band(pump_valve_pts), range(len(pump_valve_pts)), pump_valve_pts)
+                    # self.rubber_bands_d[0] = (self.build_rubber_band(pump_valve_pts), range(len(pump_valve_pts)), pump_valve_pts)
+                    self.rubber_band = self.build_rubber_band([self.snap_results.point(), self.snap_results.point()])
 
                     rb_index = 1
                     if 'pipes' in adj_links:
@@ -178,29 +220,28 @@ class MoveTool(QgsMapTool):
                     self.adj_junctions = NetworkUtils.find_start_end_nodes_w_layer(self.params, self.pump_valve_ft.geometry())
 
     def process_adj(self, adj_link_ft, layer, rb_index):
-
         adj_link_pts = adj_link_ft.geometry().asPolyline()
         pump_valve_pts = self.pump_valve_ft.geometry().asPolyline()
 
         if NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve_pts[0]), adj_link_pts[0], self.params.tolerance):
             self.adj_links_fts_d[adj_link_ft] = (0, layer)
-            rb_pts = [pump_valve_pts[0], adj_link_pts[1]]
-            self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[0]])
+            # rb_pts = [pump_valve_pts[0], adj_link_pts[1]]
+            # self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[0]])
 
         if NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve_pts[-1]), adj_link_pts[0], self.params.tolerance):
             self.adj_links_fts_d[adj_link_ft] = (0, layer)
-            rb_pts = [pump_valve_pts[-1], adj_link_pts[1]]
-            self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[-1]])
+            # rb_pts = [pump_valve_pts[-1], adj_link_pts[1]]
+            # self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[-1]])
 
         if NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve_pts[0]), adj_link_pts[-1], self.params.tolerance):
             self.adj_links_fts_d[adj_link_ft] = (len(adj_link_pts)-1, layer)
-            rb_pts = [pump_valve_pts[0], adj_link_pts[-2]]
-            self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[0]])
+            # rb_pts = [pump_valve_pts[0], adj_link_pts[-2]]
+            # self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[0]])
 
         if NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve_pts[-1]), adj_link_pts[-1], self.params.tolerance):
             self.adj_links_fts_d[adj_link_ft] = (len(adj_link_pts)-1, layer)
-            rb_pts = [pump_valve_pts[-1], adj_link_pts[-2]]
-            self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[-1]])
+            # rb_pts = [pump_valve_pts[-1], adj_link_pts[-2]]
+            # self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[-1]])
 
     def canvasMoveEvent(self, event):
 
@@ -238,72 +279,71 @@ class MoveTool(QgsMapTool):
         # Mouse clicked
         else:
 
-            # Mouse clicked and vertex selected
             # Update rubber band
-            if self.snap_results is not None:
+            if self.snap_results is not None and self.rubber_band:
 
                 snapped_pt = self.snap_results.point()
 
+                # In 2.16+: self.delta_vec = QgsVector(self.mouse_pt - snapped_pt)
                 self.delta_vec = QgsVector(self.mouse_pt.x() - snapped_pt.x(),
                                            self.mouse_pt.y() - snapped_pt.y())
 
-                # In 2.16+: self.delta_vec = QgsVector(self.mouse_pt - snapped_pt)
+                self.move_rubber_band_pt(self.rubber_band)
 
-                if self.adj_links_fts is None:
-
-                    # snapped_pt = self.snap_results[0].snappedVertex
-                    # self.rubber_bands_d[0][0].movePoint(self.rubber_bands_d[0][1], self.mouse_pt)
-                    self.move_rubber_band_pt(self.rubber_bands_d[0])
-
-                else:
-
-                    # It's just a junction
-                    if not self.pump_valve_selected:
-                        for key, value in self.rubber_bands_d.iteritems():
-                            # self.rubber_bands_d[key][0].movePoint(self.rubber_bands_d[key][1], self.mouse_pt)
-                            self.move_rubber_band_pt(self.rubber_bands_d[key])
-
-                    # It's a pump/valve
-                    else:
-
-                        # Adjacent links are neither pumps nor valves: find the two pipes adjacent to the node
-                        # Or node adjacent to pump or valve and NOT using block logic
-                        if (not self.adj_links_fts['pumps'] and not self.adj_links_fts['valves']) or not self.params.block_logic:
-
-                            for key, value in self.rubber_bands_d.iteritems():
-                                self.move_rubber_band_pt(self.rubber_bands_d[key])
-                                # in 2.16: self.rubber_bands_d[key].movePoint(1, snapped_pt + self.delta_vec)
-                                # self.rubber_bands_d[key].movePoint(2, QgsPoint(snapped_pt.x() + self.delta_vec.x(), snapped_pt.y() + self.delta_vec.y()))
-
-                        # Node adjacent to pump or valve and using block logic
-                        else:
-                            for key, value in self.rubber_bands_d.iteritems():
-                                self.move_rubber_band_pt(self.rubber_bands_d[key])
+                # if self.adj_links_fts is None or (not self.adj_links_fts['pipes'] and not self.adj_links_fts['pumps'] and not self.adj_links_fts['valves']):
+                #     # There are no adjacent links
+                #     self.move_rubber_band_pt(self.rubber_bands_d[0])
+                # else:
+                #
+                #     # It's just a junction
+                #     if not self.pump_valve_selected:
+                #         for key, value in self.rubber_bands_d.iteritems():
+                #             self.move_rubber_band_pt(self.rubber_bands_d[key])
+                #
+                #     # It's a pump/valve
+                #     else:
+                #
+                #         # Adjacent links are neither pumps nor valves: find the two pipes adjacent to the node
+                #         # Or node adjacent to pump or valve and NOT using block logic
+                #         if (not self.adj_links_fts['pumps'] and not self.adj_links_fts['valves']) or not self.params.block_logic:
+                #
+                #             for key, value in self.rubber_bands_d.iteritems():
+                #                 self.move_rubber_band_pt(self.rubber_bands_d[key])
+                #                 # in 2.16: self.rubber_bands_d[key].movePoint(1, snapped_pt + self.delta_vec)
+                #                 # self.rubber_bands_d[key].movePoint(2, QgsPoint(snapped_pt.x() + self.delta_vec.x(), snapped_pt.y() + self.delta_vec.y()))
+                #
+                #         # Node adjacent to pump or valve and using block logic
+                #         else:
+                #             for key, value in self.rubber_bands_d.iteritems():
+                #                 self.move_rubber_band_pt(self.rubber_bands_d[key])
 
     def move_rubber_band_pt(self, rubber_band_v):
-        rubber_band = rubber_band_v[0]
-        pt_indices = rubber_band_v[1]
-        start_pts = rubber_band_v[2]
+        # rubber_band = rubber_band_v[0]
+        # pt_indices = rubber_band_v[1]
+        # start_pts = rubber_band_v[2]
 
-        for i in range(len(pt_indices)):
-            rubber_band.movePoint(pt_indices[i], QgsPoint(start_pts[i].x() + self.delta_vec.x(), start_pts[i].y() + self.delta_vec.y()))
+        # for i in range(len(pt_indices)):
+        #     rubber_band.movePoint(pt_indices[i], QgsPoint(start_pts[i].x() + self.delta_vec.x(), start_pts[i].y() + self.delta_vec.y()))
+
+        rubber_band_v.movePoint(1, QgsPoint(self.clicked_pt.x() + self.delta_vec.x(), self.clicked_pt.y() + self.delta_vec.y()))
 
     def canvasReleaseEvent(self, event):
 
+        mouse_pt = self.toMapCoordinates(event.pos())
+
         if not self.mouse_clicked:
             return
+
         if event.button() == 1:
             self.mouse_clicked = False
 
-            # Remove rubber band
-            for key in self.rubber_bands_d.keys():
-                self.iface.mapCanvas().scene().removeItem(self.rubber_bands_d[key][0])
-                del self.rubber_bands_d[key]
-
             if self.snap_results is not None:
 
-                # Check elev
+                snap_results = self.snap_results
+                selected_node_ft = self.selected_node_ft
+                selected_node_ft_lay = self.selected_node_ft_lay
 
+                # Check elev
                 if self.elev is None and self.params.dem_rlay is not None:
                     self.iface.messageBar().pushMessage(
                         Parameters.plug_in_name,
@@ -311,17 +351,15 @@ class MoveTool(QgsMapTool):
                         QgsMessageBar.WARNING,
                         5)  # TODO: softcode
 
-                # No adjacent links: it's just a pipe vertex
-                if self.adj_links_fts is None:
-                    feat = vector_utils.get_feats_by_id(self.snap_results.layer(), self.snap_results.featureId())
+                # It's just a pipe vertex
+                if selected_node_ft is None:
 
-                    vertex_id = QgsVertexId(0, 0, self.snap_results.vertexIndex(), QgsVertexId.SegmentVertex)
+                    feat = vector_utils.get_feats_by_id(snap_results.layer(), snap_results.featureId())
+                    vertex_id = QgsVertexId(0, 0, snap_results.vertexIndex(), QgsVertexId.SegmentVertex)
                     vertex_v2 = feat[0].geometry().geometry().vertexAt(vertex_id)
-
-                    new_pos_pt_v2 = QgsPointV2(self.mouse_pt.x(), self.mouse_pt.y())
+                    new_pos_pt_v2 = QgsPointV2(mouse_pt.x(), mouse_pt.y())
                     new_pos_pt_v2.addZValue(vertex_v2.z())
-
-                    LinkHandler.move_link_vertex(self.params, self.params.pipes_vlay, feat[0], new_pos_pt_v2, self.snap_results.vertexIndex())
+                    LinkHandler.move_link_vertex(self.params, self.params.pipes_vlay, feat[0], new_pos_pt_v2, snap_results.vertexIndex())
 
                 # There are adjacent links: it's a node
                 else:
@@ -331,17 +369,17 @@ class MoveTool(QgsMapTool):
 
                         # Update junction geometry
                         NodeHandler.move_element(
-                            self.selected_node_ft_lay,
+                            selected_node_ft_lay,
                             self.params.dem_rlay,
-                            self.selected_node_ft,
-                            self.mouse_pt)
+                            selected_node_ft,
+                            mouse_pt)
 
                         # Update pipes
                         for feat, (vertex_index, layer) in self.adj_links_fts_d.iteritems():
 
                             vertex_id = QgsVertexId(0, 0, vertex_index, QgsVertexId.SegmentVertex)
                             vertex_v2 = feat.geometry().geometry().vertexAt(vertex_id)
-                            new_pos_pt_v2 = QgsPointV2(self.mouse_pt.x(), self.mouse_pt.y())
+                            new_pos_pt_v2 = QgsPointV2(mouse_pt.x(), mouse_pt.y())
                             new_pos_pt_v2.addZValue(vertex_v2.z())
 
                             LinkHandler.move_link_vertex(self.params, layer, feat, new_pos_pt_v2, vertex_index)
@@ -396,6 +434,10 @@ class MoveTool(QgsMapTool):
                 symbology.refresh_layer(self.iface.mapCanvas(), self.params.pumps_vlay)
                 symbology.refresh_layer(self.iface.mapCanvas(), self.params.valves_vlay)
 
+            # Remove vertex marker and rubber band
+            self.vertex_marker.hide()
+            self.iface.mapCanvas().scene().removeItem(self.rubber_band)
+
     def activate(self):
 
         cursor = QCursor()
@@ -425,7 +467,7 @@ class MoveTool(QgsMapTool):
             self.params.valves_vlay.startEditing()
 
     def deactivate(self):
-        self.rubber_bands_d.clear()
+        # self.rubber_bands.clear()
         self.canvas().scene().removeItem(self.vertex_marker)
         self.dock_widget.btn_move_element.setChecked(False)
 

@@ -1,6 +1,6 @@
 from qgis.core import QgsVectorLayer, QgsVectorFileWriter, QGis, QgsSingleSymbolRendererV2, QgsSymbolV2, \
     QgsSimpleLineSymbolLayerV2, QgsSimpleFillSymbolLayerV2, QgsRendererCategoryV2, QgsCategorizedSymbolRendererV2, \
-    QgsLineSymbolV2, QgsRectangle, QgsFeatureRequest, QgsPoint, QgsGeometry
+    QgsLineSymbolV2, QgsRectangle, QgsFeatureRequest, QgsPoint, QgsGeometry, QgsFeature
 from PyQt4.QtGui import QColor
 
 __author__ = 'deluca'
@@ -71,3 +71,39 @@ def update_attribute(layer, feat, attribute_name, new_val, edit_command_name='Up
         new_val)
 
     layer.endEditCommand()
+
+
+def findSnappedNode(snapper, snap_results, params):
+
+    pt_locator_ju = snapper.locatorForLayer(params.junctions_vlay)
+    pt_locator_re = snapper.locatorForLayer(params.reservoirs_vlay)
+    pt_locator_ta = snapper.locatorForLayer(params.tanks_vlay)
+    match_ju = pt_locator_ju.nearestVertex(snap_results.point(), 1)
+    match_re = pt_locator_re.nearestVertex(snap_results.point(), 1)
+    match_ta = pt_locator_ta.nearestVertex(snap_results.point(), 1)
+
+    if match_ju.isValid() or match_re.isValid() or match_ta.isValid():
+
+        if match_ju.isValid():
+            node_feat_id = match_ju.featureId()
+            request = QgsFeatureRequest().setFilterFid(node_feat_id)
+            node = list(params.junctions_vlay.getFeatures(request))
+            selected_node_ft_lay = params.junctions_vlay
+
+        if match_re.isValid():
+            node_feat_id = match_re.featureId()
+            request = QgsFeatureRequest().setFilterFid(node_feat_id)
+            node = list(params.reservoirs_vlay.getFeatures(request))
+            selected_node_ft_lay = params.reservoirs_vlay
+
+        if match_ta.isValid():
+            node_feat_id = match_ta.featureId()
+            request = QgsFeatureRequest().setFilterFid(node_feat_id)
+            node = list(params.tanks_vlay.getFeatures(request))
+            selected_node_ft_lay = params.tanks_vlay
+
+        selected_node_ft = QgsFeature(node[0])
+
+        return (selected_node_ft_lay, selected_node_ft)
+
+    return (None, None)

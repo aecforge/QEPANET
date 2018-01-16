@@ -20,12 +20,13 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
+from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QFileInfo, QDateTime, QFile, QObject, SIGNAL
 from PyQt4.QtGui import QAction, QIcon, QMessageBox, QFileDialog, QApplication
 from qgis.gui import QgsVertexMarker
 
 from tools.parameters import Parameters, ConfigFile
 from geo_utils.utils import LayerUtils
+from log_handler import LogHandler
 
 # Initialize Qt resources from file resources.py
 
@@ -33,6 +34,7 @@ from geo_utils.utils import LayerUtils
 from ui.qepanet_dockwidget import QEpanetDockWidget, MyQFileDialog
 import os.path
 import resources
+import logging
 
 
 class QEpanet:
@@ -74,10 +76,12 @@ class QEpanet:
         self.toolbar = self.iface.addToolBar(u'QEpanet')
         self.toolbar.setObjectName(u'QEpanet')
 
-        #print "** INITIALIZING QEpanet"
-
         self.pluginIsActive = False
         self.dockwidget = None
+
+        self._logger = None
+        self._log_handler = None
+        # self.start_logging()
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -182,8 +186,6 @@ class QEpanet:
     def onClosePlugin(self):
         """Cleanup necessary items here when plugin dockwidget is closed"""
 
-        #print "** CLOSING QEpanet"
-
         # disconnects
         self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
 
@@ -194,11 +196,10 @@ class QEpanet:
         # self.dockwidget = None
 
         self.pluginIsActive = False
+        self.stop_logging()
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
-
-        #print "** UNLOAD QEpanet"
 
         for action in self.actions:
             self.iface.removePluginMenu(
@@ -210,6 +211,8 @@ class QEpanet:
 
         if self.dockwidget is not None:
             self.iface.removeDockWidget(self.dockwidget)
+
+        self.stop_logging()
 
     # --------------------------------------------------------------------------
 
@@ -262,3 +265,51 @@ class QEpanet:
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
 
         self.dockwidget.show()
+
+    def start_logging (self):
+        if self._logger is not None:
+            return
+        self._logger = logging.getLogger('Logger1')
+        self._logger.setLevel(logging.DEBUG)
+        log_full_path_file_name = '%s/log.log' % os.path.dirname(os.path.realpath(__file__))
+
+        log_file_info = QFileInfo(log_full_path_file_name)
+        if log_file_info.exists():
+            log_created_qdatetime = log_file_info.created()
+            current_qdatetime = QDateTime.currentDateTime()
+            max_difference_secs = 60 * 60 * 24 * 7 # 7 giorni
+            current_difference_secs = log_created_qdatetime.secsTo(current_qdatetime)
+            if current_difference_secs > max_difference_secs:
+                QFile.remove(log_full_path_file_name)
+
+        self._log_handler = LogHandler(log_full_path_file_name)
+        formatter = logging.Formatter('%(asctime)s - %(thread)d - %(name)s - %(levelname)s - %(message)s')
+        self._log_handler.setFormatter(formatter)
+        self._logger.addHandler(self._log_handler)
+
+        # Do not raise logging system exceptions
+        logging.raiseExceptions = False
+
+        # Connect log signal
+        self._log_handler.logged.connect (self.message_logged)
+
+        self.logging_enabled = True
+
+    def stop_logging (self):
+        if self._logger is not None and self._log_handler is not None:
+            self._logger.debug('---------------------------------------------------------')
+            self._logger.removeHandler(self._log_handler)
+            logging.shutdown()
+
+            # disconnessione al segnale logged emesso ad ogni log
+            QObject.disconnect(self._log_handler, SIGNAL('logged(QString)'),self.message_logged)
+
+            self.logging_enabled = False
+            self._logger = None
+            self._log_handler = None
+
+    def message_logged (self, message):
+        if not self.logging_enabled:
+            return
+        # if self.widget is not None:
+        #     self.widget.log_list_view_model.appendRow(QStandardItem(message))

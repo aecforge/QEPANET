@@ -72,9 +72,6 @@ class DeleteTool(QgsMapTool):
             match = self.snapper.snapToMap(self.mouse_pt)
             if match.isValid():
 
-            # (retval, results) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
-            # if results:
-
                 self.snap_results = match
                 # snapped_pt = self.snap_results[0].snappedVertex
 
@@ -109,11 +106,17 @@ class DeleteTool(QgsMapTool):
             # Snapped: one element selected
             if self.snap_results is not None:
 
-                # snapped_ft = vector_utils.get_feats_by_id(self.snap_results[0].layer, self.snap_results[0].snappedAtGeometry)[0]
-                # snapped_layer = self.snap_results[0].layer
-                snapped_ft = vector_utils.get_feats_by_id(self.snap_results.layer(), self.snap_results.featureId())
-                snapped_layer = self.snap_results.layer()
-                self.delete_element(snapped_layer, snapped_ft[0])
+                selected_node_ft_lay, selected_node_ft = vector_utils.findSnappedNode(self.snapper, self.snap_results, self.params)
+
+                # A node ha been snapped
+                if selected_node_ft_lay is not None:
+                    self.delete_element(selected_node_ft_lay, selected_node_ft)
+
+                # A link has been snapped
+                else:
+                    snapped_ft = vector_utils.get_feats_by_id(self.snap_results.layer(), self.snap_results.featureId())
+                    snapped_layer = self.snap_results.layer()
+                    self.delete_element(snapped_layer, snapped_ft[0])
 
             # Not snapped: rectangle
             else:
@@ -141,40 +144,6 @@ class DeleteTool(QgsMapTool):
         cursor = QCursor()
         cursor.setShape(Qt.ArrowCursor)
         self.iface.mapCanvas().setCursor(cursor)
-
-        # Snapping
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.junctions_vlay.id(),
-        #                                               False,
-        #                                               QgsSnapper.SnapToVertex,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-        #
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.reservoirs_vlay.id(),
-        #                                               False,
-        #                                               QgsSnapper.SnapToVertex,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-        #
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.tanks_vlay.id(),
-        #                                               False,
-        #                                               QgsSnapper.SnapToVertex,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-        #
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToSegment,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-
-        # snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.params.junctions_vlay)
-        # snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(self.params.reservoirs_vlay)
-        # snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.params.tanks_vlay)
-        # snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, snapping_type=QgsSnapper.SnapToSegment)
 
         layers = {
             self.params.junctions_vlay: QgsPointLocator.Vertex,
