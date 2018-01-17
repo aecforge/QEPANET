@@ -135,6 +135,18 @@ class AddPipeTool(QgsMapTool):
                                 QgsMessageBar.WARNING,
                                 5)  # TODO: softcode
                         else:
+                            # Check whether the pipe is all inside the DEM
+                            pipe_pts = pipe_ft.geometry().asPolyline()
+
+                            for pt in pipe_pts:
+                                if not self.params.dem_rlay.extent().contains(pt):
+                                    self.iface.messageBar().pushMessage(
+                                        Parameters.plug_in_name,
+                                        'Some pipe vertices fall outside of the DEM. Cannot edit section!',
+                                        QgsMessageBar.WARNING,
+                                        5)  # TODO: softcode
+                                    return
+
                             pipe_dialog = PipeSectionDialog(
                                 self.iface.mainWindow(),
                                 self.iface,
@@ -238,6 +250,13 @@ class AddPipeTool(QgsMapTool):
                         new_start_junction = rubberband_pts[0]
                         junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
                         elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_start_junction, 1)
+                        if elev is None and self.params.dem_rlay is not None:
+                            elev = 0
+                            self.iface.messageBar().pushMessage(
+                                Parameters.plug_in_name,
+                                'Elevation value not available: element eleveation set to 0.',
+                                QgsMessageBar.WARNING,
+                                5)  # TODO: softcode
                         deltaz = float(self.data_dock.txt_junction_deltaz.text())
                         j_demand = float(self.data_dock.txt_junction_demand.text())
 
@@ -256,6 +275,13 @@ class AddPipeTool(QgsMapTool):
                         new_end_junction = rubberband_pts[len(rubberband_pts) - 1]
                         junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
                         elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_end_junction, 1)
+                        if elev is None and self.params.dem_rlay is not None:
+                            elev = 0
+                            self.iface.messageBar().pushMessage(
+                                Parameters.plug_in_name,
+                                'Elevation value not available: element eleveation set to 0.',
+                                QgsMessageBar.WARNING,
+                                5)  # TODO: softcode
                         deltaz = float(self.data_dock.txt_junction_deltaz.text())
 
                         pattern = self.data_dock.cbo_junction_pattern.itemData(
@@ -290,36 +316,6 @@ class AddPipeTool(QgsMapTool):
             self.rubber_band.reset()
 
     def activate(self):
-
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.junctions_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToVertex,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.reservoirs_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToVertex,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.tanks_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToVertex,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToSegment,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-        #
-        # snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.params.junctions_vlay)
-        # snap_layer_reservoirs = NetworkUtils.set_up_snap_layer(self.params.reservoirs_vlay)
-        # snap_layer_tanks = NetworkUtils.set_up_snap_layer(self.params.tanks_vlay)
-        # snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToSegment)
 
         layers = {
             self.params.junctions_vlay: QgsPointLocator.Vertex,

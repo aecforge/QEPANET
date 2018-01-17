@@ -1032,7 +1032,7 @@ class InpReader:
         description = ''
         if pos > 0:
             # Get description
-            description = s1[pos + 1:-1]
+            description = s1[pos + 1:]
     
             # Strip description
             s1 = s1[:pos]

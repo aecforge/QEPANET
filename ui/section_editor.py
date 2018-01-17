@@ -138,7 +138,7 @@ class PipeSectionDialog(QDialog):
             new_pos_pt = QgsPointV2(vertex.x(), vertex.y())
             new_pos_pt.addZValue(new_zs[p])
 
-            LinkHandler.move_pipe_vertex(self.params, self.pipe_ft, new_pos_pt, p)
+            LinkHandler.move_link_vertex(self.params, self.params.pipes_vlay, self.pipe_ft, new_pos_pt, p)
 
         # Update delta z for nodes
         (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(self.params, self.pipe_ft.geometry())

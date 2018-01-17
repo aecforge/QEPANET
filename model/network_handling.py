@@ -370,6 +370,7 @@ class LinkHandler:
 
             junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, Junction.prefix)
             elev = raster_utils.read_layer_val_from_coord(params.dem_rlay, node_before, 1)
+
             NodeHandler.create_new_junction(params, node_before, junction_eid, elev, 0, deltaz, pattern_id, emitter_coeff, description, tag)
 
             junction_eid = NetworkUtils.find_next_id(params.junctions_vlay, Junction.prefix)

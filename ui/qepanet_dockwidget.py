@@ -25,7 +25,7 @@ import os
 
 from PyQt4 import QtCore, uic, QtGui
 from PyQt4.QtCore import Qt, pyqtSignal
-from PyQt4.QtGui import QFileDialog, QMessageBox, QApplication, QPixmap, QLabel, QColor, QToolTip
+from PyQt4.QtGui import QFileDialog, QMessageBox, QApplication, QPixmap, QLabel, QColor, QToolTip, QCursor
 from qgis.gui import QgsGenericProjectionSelector, QgsMessageBar
 
 from ..geo_utils.utils import LayerUtils as lay_utils
@@ -393,7 +393,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         else:
             self.tool = AddJunctionTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
-            self.set_cursor(QtCore.Qt.CrossCursor)
+            # self.set_cursor(QtCore.Qt.CrossCursor)
+            self.setCursor();
 
     def add_reservoir(self):
 
@@ -404,7 +405,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         else:
             self.tool = AddReservoirTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
-            self.set_cursor(QtCore.Qt.CrossCursor)
+            # self.set_cursor(QtCore.Qt.CrossCursor)
+            self.setCursor();
 
     def add_tank(self):
 
@@ -415,7 +417,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         else:
             tool = AddTankTool(self, self.params)
             self.iface.mapCanvas().setMapTool(tool)
-            self.set_cursor(QtCore.Qt.CrossCursor)
+            # self.set_cursor(QtCore.Qt.CrossCursor)
+            self.setCursor();
 
     def add_pipe(self):
 
@@ -426,7 +429,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         else:
             self.tool = AddPipeTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
-            self.set_cursor(QtCore.Qt.CrossCursor)
+            # self.set_cursor(QtCore.Qt.CrossCursor)
+            self.setCursor();
 
     def add_pump(self):
 
@@ -437,7 +441,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         else:
             self.tool = AddPumpTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
-            self.set_cursor(QtCore.Qt.CrossCursor)
+            # self.set_cursor(QtCore.Qt.CrossCursor)
+            self.setCursor();
 
     def add_valve(self):
 
@@ -448,7 +453,35 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         else:
             self.tool = AddValveTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
-            self.set_cursor(QtCore.Qt.CrossCursor)
+            # self.set_cursor(QtCore.Qt.CrossCursor)
+            self.setCursor();
+
+    def setCursor(self):
+        self.my_cursor_xpm = [
+            "16 16 3 1",
+            " »     c None",
+            ".»     c #000000",
+            "+»     c #FFFFFF",
+            "                ",
+            "       +.+      ",
+            "      ++.++     ",
+            "     +.....+    ",
+            "    +.     .+   ",
+            "   +.   .   .+  ",
+            "  +.    .    .+ ",
+            " ++.    .    .++",
+            " ... ...+... ...",
+            " ++.    .    .++",
+            "  +.    .    .+ ",
+            "   +.   .   .+  ",
+            "   ++.     .+   ",
+            "    ++.....+    ",
+            "      ++.++     ",
+            "       +.+      "]
+
+        self.my_pixmap = QPixmap(self.my_cursor_xpm)
+        self.my_cursor = QCursor(self.my_pixmap, 8, 8)
+        self.iface.mapCanvas().setCursor(self.my_cursor)
 
     def move_element(self):
 
