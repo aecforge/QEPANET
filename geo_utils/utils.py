@@ -69,12 +69,13 @@ class LayerUtils:
     def remove_layers(params):
 
         # Delete referenced layers
-        deleted = {Parameters.junctions_vlay_name: False,
-                   Parameters.reservoirs_vlay_name: False,
-                   Parameters.tanks_vlay_name: False,
-                   Parameters.pipes_vlay_name: False,
-                   Parameters.pumps_vlay_name: False,
-                   Parameters.valves_vlay_name: False}
+        deleted = {Parameters.dem_rlay: False,
+                Parameters.junctions_vlay_name: False,
+                Parameters.reservoirs_vlay_name: False,
+                Parameters.tanks_vlay_name: False,
+                Parameters.pipes_vlay_name: False,
+                Parameters.pumps_vlay_name: False,
+                Parameters.valves_vlay_name: False}
 
         if params.junctions_vlay:
             LayerUtils.remove_layer(params.junctions_vlay)

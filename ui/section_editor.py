@@ -186,11 +186,11 @@ class PipeSectionDialog(QDialog):
             total_dist += math.sqrt((vertex.x() - vertex_prev.x()) ** 2 + (vertex.y() - vertex_prev.y()) ** 2)
 
             # Interpolate delta z for vertex using distance from nodes and delta z of nodes
-            # z = (total_dist / self.pipe_ft.geometry().length() * (end_node_z - start_node_z)) + start_node_z
+            z = (total_dist / self.pipe_ft.geometry().length() * (end_node_z - start_node_z)) + start_node_z
 
-            z = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, QgsPoint(vertex.x(), vertex.y()))
+            # z = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, QgsPoint(vertex.x(), vertex.y()))
             delta_z = (total_dist / self.pipe_ft.geometry().length() * (end_node_deltaz - start_node_deltaz)) + start_node_deltaz
-            dist_z[total_dist] = z  + delta_z
+            dist_z[total_dist] = z + delta_z
 
         return dist_z
 

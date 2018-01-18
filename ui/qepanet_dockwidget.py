@@ -576,7 +576,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.params.dem_rlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
     def cbo_pipe_roughness_activated(self):
-        self.update_roughness_params(self.get_combo_current_data(self.cbo_pipe_roughness)[self.params.options.headloss])
+        self.update_roughness_params(self.get_combo_current_text(self.cbo_pipe_roughness)[self.params.options.headloss])
 
     def snap_tolerance_changed(self):
         self.params.snap_tolerance = (float(self.txt_snap_tolerance.text()))
@@ -760,27 +760,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def update_layers_combos(self):
 
-        # prev_junctions_lay_id = self.cbo_junctions.itemData(self.cbo_junctions.currentIndex())
-        # prev_reservoirs_lay_id = self.cbo_reservoirs.itemData(self.cbo_reservoirs.currentIndex())
-        # prev_tanks_lay_id = self.cbo_tanks.itemData(self.cbo_tanks.currentIndex())
-        # prev_pipes_lay_id = self.cbo_pipes.itemData(self.cbo_pipes.currentIndex())
-        # prev_pumps_lay_id = self.cbo_pumps.itemData(self.cbo_pumps.currentIndex())
-        # prev_valves_lay_id = self.cbo_valves.itemData(self.cbo_valves.currentIndex())
-
         prev_dem_lay_id = self.cbo_dem.itemData(self.cbo_dem.currentIndex())
-
-        # self.cbo_junctions.clear()
-        # self.cbo_junctions.addItem('', None)
-        # self.cbo_pipes.clear()
-        # self.cbo_pipes.addItem('', None)
-        # self.cbo_pumps.clear()
-        # self.cbo_pumps.addItem('', None)
-        # self.cbo_reservoirs.clear()
-        # self.cbo_reservoirs.addItem('', None)
-        # self.cbo_tanks.clear()
-        # self.cbo_tanks.addItem('', None)
-        # self.cbo_valves.clear()
-        # self.cbo_valves.addItem('', None)
 
         self.cbo_dem.clear()
         self.cbo_dem.addItem('', None)
@@ -793,28 +773,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                     if layer.type() == QgsMapLayer.RasterLayer:
                         raster_count += 1
                         self.cbo_dem.addItem(layer.name(), layer.id())
-                    # else:
-                    #     self.cbo_junctions.addItem(layer.name(), layer.id())
-                    #     self.cbo_pipes.addItem(layer.name(), layer.id())
-                    #     self.cbo_pumps.addItem(layer.name(), layer.id())
-                    #     self.cbo_reservoirs.addItem(layer.name(), layer.id())
-                    #     self.cbo_tanks.addItem(layer.name(), layer.id())
-                    #     self.cbo_valves.addItem(layer.name(), layer.id())
-
-        # Reset combo selections
-        # if prev_junctions_lay_id is not None:
-        #     self.set_layercombo_index(self.cbo_junctions, prev_junctions_lay_id)
-        # if prev_reservoirs_lay_id is not None:
-        #     self.set_layercombo_index(self.cbo_reservoirs, prev_reservoirs_lay_id)
-        # if prev_tanks_lay_id is not None:
-        #     self.set_layercombo_index(self.cbo_tanks, prev_tanks_lay_id)
-        # if prev_pipes_lay_id is not None:
-        #     self.set_layercombo_index(self.cbo_pipes, prev_pipes_lay_id)
-        # if prev_pumps_lay_id is not None:
-        #     self.set_layercombo_index(self.cbo_pumps, prev_pumps_lay_id)
-        # if prev_valves_lay_id is not None:
-        #     self.set_layercombo_index(self.cbo_valves, prev_valves_lay_id)
-            # self.params.valves_vlay = self.set_layercombo_index(self.cbo_valves, prev_valves_lay_id)
 
         self.set_layercombo_index(self.cbo_dem, prev_dem_lay_id)
 
@@ -823,30 +781,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         for layer_id in QgsMapLayerRegistry.instance().mapLayers():
 
             layer = QgsMapLayerRegistry.instance().mapLayer(layer_id)
-
-            # if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.junctions_table_name:
-            #     self.set_layercombo_index(self.cbo_junctions, layer_id)
-            #     self.params.junctions_vlay = layer
-            #
-            # if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.pipes_table_name:
-            #     self.set_layercombo_index(self.cbo_pipes, layer_id)
-            #     self.params.pipes_vlay = layer
-            #
-            # if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.pumps_table_name:
-            #     self.set_layercombo_index(self.cbo_pumps, layer_id)
-            #     self.params.pumps_vlay = layer
-            #
-            # if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.reservoirs_table_name:
-            #     self.set_layercombo_index(self.cbo_reservoirs, layer_id)
-            #     self.params.reservoirs_vlay = layer
-            #
-            # if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.tanks_table_name:
-            #     self.set_layercombo_index(self.cbo_tanks, layer_id)
-            #     self.params.tanks_vlay = layer
-            #
-            # if QgsMapLayerRegistry.instance().mapLayer(layer_id).name() == Tables.valves_table_name:
-            #     self.set_layercombo_index(self.cbo_valves, layer_id)
-            #     self.params.valves_vlay = layer
 
             names = ['dtm', 'dem']
             if any([x.lower() in QgsMapLayerRegistry.instance().mapLayer(layer_id).name().lower() for x in names]):
@@ -894,6 +828,10 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def update_patterns_combo(self):
 
+        ju_data = self.get_combo_current_text(self.cbo_junction_pattern)
+        re_data = self.get_combo_current_text(self.cbo_reservoir_pattern)
+        pu_data = self.get_combo_current_text(self.cbo_pump_speed_pattern)
+
         self.cbo_junction_pattern.clear()
         self.cbo_reservoir_pattern.clear()
         self.cbo_pump_speed_pattern.clear()
@@ -906,7 +844,16 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.cbo_reservoir_pattern.addItem(pattern_id, pattern)
                 self.cbo_pump_speed_pattern.addItem(pattern_id, pattern)
 
+        # Restore combo values
+        self.set_layercombo_index(self.cbo_junction_pattern, ju_data)
+        self.set_layercombo_index(self.cbo_reservoir_pattern, re_data)
+        self.set_layercombo_index(self.cbo_pump_speed_pattern, pu_data)
+
     def update_curves_combo(self):
+        ta_data = self.get_combo_current_text(self.cbo_tank_curve)
+        pu_data = self.get_combo_current_text(self.cbo_pump_head)
+        va_data = self.get_combo_current_text(self.cbo_valve_curve)
+
         self.cbo_tank_curve.clear()
         self.cbo_pump_head.clear()
         self.cbo_valve_curve.clear()
@@ -915,15 +862,23 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.cbo_valve_curve.addItem(None, None)
         if self.params.curves is not None:
             for curve in self.params.curves.itervalues():
+                self.cbo_tank_curve.addItem(curve.id, curve)
+                self.cbo_pump_head.addItem(curve.id, curve)
+                self.cbo_valve_curve.addItem(curve.id, curve)
 
-                # if curve.type == Curve.type_efficiency or curve.type == Curve.type_pump:
-                    self.cbo_pump_head.addItem(curve.id, curve)
-                # elif curve.type == Curve.type_headloss:
-                    self.cbo_valve_curve.addItem(curve.id, curve)
-                # elif curve.type == Curve.type_volume:
-                    self.cbo_tank_curve.addItem(curve.id, curve)
+        # Restore combo values
+        self.set_layercombo_index(self.cbo_tank_curve, ta_data)
+        self.set_layercombo_index(self.cbo_pump_head, pu_data)
+        self.set_layercombo_index(self.cbo_valve_curve, va_data)
 
     def update_tags_combos(self):
+        ju_data = self.get_combo_current_text(self.cbo_junction_tag)
+        re_data = self.get_combo_current_text(self.cbo_reservoir_tag)
+        ta_data = self.get_combo_current_text(self.cbo_tank_tag)
+        pi_data = self.get_combo_current_text(self.cbo_pipe_tag)
+        pu_data = self.get_combo_current_text(self.cbo_pump_tag)
+        va_data = self.get_combo_current_text(self.cbo_valve_tag)
+
         self.cbo_junction_tag.clear()
         self.cbo_reservoir_tag.clear()
         self.cbo_tank_tag.clear()
@@ -946,21 +901,26 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
                 self.cbo_pump_tag.addItem(tag_name, tag_name)
                 self.cbo_valve_tag.addItem(tag_name, tag_name)
 
-    def get_combo_current_data(self, combo):
-        index = self.cbo_pipe_roughness.currentIndex()
-        return combo.itemData(index)
+        # Restore combo values
+        self.set_layercombo_index(self.cbo_junction_tag, ju_data)
+        self.set_layercombo_index(self.cbo_reservoir_tag, re_data)
+        self.set_layercombo_index(self.cbo_tank_tag, ta_data)
+        self.set_layercombo_index(self.cbo_pipe_tag, pi_data)
+        self.set_layercombo_index(self.cbo_pump_tag, pu_data)
+        self.set_layercombo_index(self.cbo_valve_tag, va_data)
 
-    def set_layercombo_index(self, combo, prev_layer_id):
-        index = combo.findData(prev_layer_id)
+    def get_combo_current_text(self, combo):
+        # index = combo.currentIndex()
+        # return combo.itemData(index)
+        return combo.currentText()
+
+    def set_layercombo_index(self, combo, combo_data):
+        index = combo.findText(combo_data)
         if index >= 0:
             combo.setCurrentIndex(index)
-            return QgsMapLayerRegistry.instance().mapLayer(self.get_combo_current_data(combo))
         else:
             if combo.count() > 0:
                 combo.setCurrentIndex(0)
-                return QgsMapLayerRegistry.instance().mapLayer(combo.itemData(0))
-            else:
-                return None
 
     def pipe_vertex_dist_changed(self, vertex_dist):
         if vertex_dist is not None and vertex_dist:

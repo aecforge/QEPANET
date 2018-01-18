@@ -347,7 +347,7 @@ class MoveTool(QgsMapTool):
                 if self.elev is None and self.params.dem_rlay is not None:
                     self.iface.messageBar().pushMessage(
                         Parameters.plug_in_name,
-                        'Elevation value not available: element eleveation set to 0.',
+                        'Elevation value not available: element elevation set to 0.',
                         QgsMessageBar.WARNING,
                         5)  # TODO: softcode
 
@@ -359,7 +359,8 @@ class MoveTool(QgsMapTool):
                     vertex_v2 = feat[0].geometry().geometry().vertexAt(vertex_id)
                     new_pos_pt_v2 = QgsPointV2(mouse_pt.x(), mouse_pt.y())
                     new_pos_pt_v2.addZValue(vertex_v2.z())
-                    LinkHandler.move_link_vertex(self.params, self.params.pipes_vlay, feat[0], new_pos_pt_v2, snap_results.vertexIndex())
+                    LinkHandler.move_link_vertex(self.params, self.params.pipes_vlay, feat[0], new_pos_pt_v2,
+                                                 snap_results.vertexIndex())
 
                 # There are adjacent links: it's a node
                 else:

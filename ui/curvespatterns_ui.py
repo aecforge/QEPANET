@@ -411,9 +411,6 @@ class GraphDialog(QDialog):
 
             self.lst_list.currentItem().setText(pattern.id)
 
-            # Update GUI
-            self.dockwidget.update_patterns_combo()
-
         elif self.edit_type == GraphDialog.edit_curves:
 
             # Check for ID unique

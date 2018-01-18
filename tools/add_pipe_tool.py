@@ -5,7 +5,7 @@ import traceback
 
 from PyQt4.QtCore import Qt, QPoint
 from PyQt4.QtGui import QColor, QMenu
-from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsProject, QgsTolerance, QgsPointLocator
+from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsProject, QgsTolerance, QgsPointLocator, NULL
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand, QgsMessageBar
 
 from ..model.network import Pipe, Junction
@@ -41,7 +41,7 @@ class AddPipeTool(QgsMapTool):
         self.snapped_vertex = None
         self.snapped_vertex_nr = None
         self.vertex_marker = QgsVertexMarker(self.canvas())
-        self.elev = 0
+        self.elev = None
 
         self.diameter_dialog = None
 
@@ -76,16 +76,6 @@ class AddPipeTool(QgsMapTool):
             self.snapped_vertex = match.point()
             self.snapped_vertex_nr = match.vertexIndex()
 
-        # (retval, result) = self.snapper.snapMapPoint(self.mouse_pt)
-        # if len(result) > 0:
-        #
-        #     # Pipe starts from an existing vertex
-        #     self.snapped_feat_id = result[0].snappedAtGeometry
-        #
-        #     snapped_vertex = result[0].snappedVertex
-        #     self.snapped_vertex_nr = result[0].snappedVertexNr
-        #
-        #     self.snapped_vertex = QgsPoint(snapped_vertex.x(), snapped_vertex.y())
             self.vertex_marker.setCenter(self.snapped_vertex)
             self.vertex_marker.setColor(QColor(255, 0, 0))
             self.vertex_marker.setIconSize(10)
@@ -131,7 +121,7 @@ class AddPipeTool(QgsMapTool):
                         if self.params.dem_rlay is None:
                             self.iface.messageBar().pushMessage(
                                 Parameters.plug_in_name,
-                                'No DEM selected. Cannot edit section!',
+                                'No DEM selected. Cannot edit section.',
                                 QgsMessageBar.WARNING,
                                 5)  # TODO: softcode
                         else:
@@ -142,10 +132,23 @@ class AddPipeTool(QgsMapTool):
                                 if not self.params.dem_rlay.extent().contains(pt):
                                     self.iface.messageBar().pushMessage(
                                         Parameters.plug_in_name,
-                                        'Some pipe vertices fall outside of the DEM. Cannot edit section!',
+                                        'Some pipe vertices fall outside of the DEM. Cannot edit section.',
                                         QgsMessageBar.WARNING,
                                         5)  # TODO: softcode
                                     return
+
+                            # Check whether the start/end nodes have an elevation value
+                            (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(self.params,
+                                                                                             pipe_ft.geometry())
+                            start_node_elev = start_node_ft.attribute(Junction.field_name_elev)
+                            end_node_elev = end_node_ft.attribute(Junction.field_name_elev)
+                            if start_node_elev == NULL or end_node_elev == NULL:
+                                self.iface.messageBar().pushMessage(
+                                    Parameters.plug_in_name,
+                                    'Missing elevation value in start or end node attributes. Cannot edit section.',
+                                    QgsMessageBar.WARNING,
+                                    5)  # TODO: softcode
+                                return
 
                             pipe_dialog = PipeSectionDialog(
                                 self.iface.mainWindow(),
@@ -173,7 +176,7 @@ class AddPipeTool(QgsMapTool):
                         if adj_valves['valves']:
                             self.iface.messageBar().pushMessage(
                                 Parameters.plug_in_name,
-                                'Valves detected on the pipe: need to update their diameters too!',
+                                'Valves detected on the pipe: need to update their diameters too.',
                                 QgsMessageBar.WARNING,
                                 5)  # TODO: softcode
 
@@ -250,13 +253,15 @@ class AddPipeTool(QgsMapTool):
                         new_start_junction = rubberband_pts[0]
                         junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
                         elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_start_junction, 1)
-                        if elev is None and self.params.dem_rlay is not None:
+                        if elev is None:
                             elev = 0
-                            self.iface.messageBar().pushMessage(
-                                Parameters.plug_in_name,
-                                'Elevation value not available: element eleveation set to 0.',
-                                QgsMessageBar.WARNING,
-                                5)  # TODO: softcode
+                            # If elev is none, and the DEM is selected, it's better to inform the user
+                            if self.params.dem_rlay is not None:
+                                self.iface.messageBar().pushMessage(
+                                    Parameters.plug_in_name,
+                                    'Elevation value not available: element elevation set to 0.',
+                                    QgsMessageBar.WARNING,
+                                    5)  # TODO: softcode
                         deltaz = float(self.data_dock.txt_junction_deltaz.text())
                         j_demand = float(self.data_dock.txt_junction_demand.text())
 
@@ -275,13 +280,15 @@ class AddPipeTool(QgsMapTool):
                         new_end_junction = rubberband_pts[len(rubberband_pts) - 1]
                         junction_eid = NetworkUtils.find_next_id(self.params.junctions_vlay, Junction.prefix)
                         elev = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, new_end_junction, 1)
-                        if elev is None and self.params.dem_rlay is not None:
+                        if elev is None:
                             elev = 0
-                            self.iface.messageBar().pushMessage(
-                                Parameters.plug_in_name,
-                                'Elevation value not available: element eleveation set to 0.',
-                                QgsMessageBar.WARNING,
-                                5)  # TODO: softcode
+                            # If elev is none, and the DEM is selected, it's better to inform the user
+                            if self.params.dem_rlay is not None:
+                                self.iface.messageBar().pushMessage(
+                                    Parameters.plug_in_name,
+                                    'Elevation value not available: element elevation set to 0.',
+                                    QgsMessageBar.WARNING,
+                                    5)  # TODO: softcode
                         deltaz = float(self.data_dock.txt_junction_deltaz.text())
 
                         pattern = self.data_dock.cbo_junction_pattern.itemData(

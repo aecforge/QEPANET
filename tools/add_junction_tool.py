@@ -2,7 +2,8 @@
 
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance, QgsGeometry, QgsPointLocator
+from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance, QgsGeometry,\
+    QgsPointLocator, NULL
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsMessageBar
 
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
@@ -100,7 +101,7 @@ class AddJunctionTool(QgsMapTool):
             if self.elev is None and self.params.dem_rlay is not None:
                 self.iface.messageBar().pushMessage(
                     Parameters.plug_in_name,
-                    'Elevation value not available: element eleveation set to 0.',
+                    'Elevation value not available: element elevation set to 0.',
                     QgsMessageBar.WARNING,
                     5)  # TODO: softcode
             else:

@@ -762,9 +762,6 @@ class LinkHandler:
                 end_node_deltaz = 0
             end_remove = 1
 
-        # point_gen = PointsAlongLineGenerator(pipe_geom)
-        # dists_and_points = point_gen.get_points_coords(vertex_dist, False)
-
         if start_node_ft is not None:
             distance_elev_od[0] = start_node_elev - start_node_deltaz
 
