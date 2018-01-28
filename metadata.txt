@@ -9,8 +9,9 @@
 [general]
 name=QEPANET
 qgisMinimumVersion=2.14
+qgisMaximumVersion=2.18
 description=This plugin links QGIS and EPANET. It provides: a set of dedicated editing tools to build a correct EPANET network, to run the simulation and to analyse the results by means of graphs and thematic maps.
-version=0.93.15
+version=0.93.17
 author=UNIBZ - UNITN
 email=albertodeluca3@gmail.com
 

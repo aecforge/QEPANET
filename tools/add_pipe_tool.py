@@ -324,14 +324,7 @@ class AddPipeTool(QgsMapTool):
 
     def activate(self):
 
-        layers = {
-            self.params.junctions_vlay: QgsPointLocator.Vertex,
-            self.params.reservoirs_vlay: QgsPointLocator.Vertex,
-            self.params.tanks_vlay: QgsPointLocator.Vertex,
-            self.params.pipes_vlay: QgsPointLocator.All}
-        # snap_layers = [snap_layer_junctions, snap_layer_reservoirs, snap_layer_tanks, snap_layer_pipes]
-
-        self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
+        self.update_snapper()
 
         # Editing
         if not self.params.junctions_vlay.isEditable():
@@ -397,3 +390,16 @@ class AddPipeTool(QgsMapTool):
                 purged_pts.append(pts[p[0]])
 
         return purged_pts
+
+    def update_snapper(self):
+        layers = {
+            self.params.junctions_vlay: QgsPointLocator.Vertex,
+            self.params.reservoirs_vlay: QgsPointLocator.Vertex,
+            self.params.tanks_vlay: QgsPointLocator.Vertex,
+            self.params.pipes_vlay: QgsPointLocator.All}
+
+        self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
+
+    # Needed by Observable
+    def update(self, observable):
+        self.update_snapper()

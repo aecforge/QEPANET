@@ -15,7 +15,7 @@ from qgis.core import QgsSpatialIndex
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.93.15'
+    plug_in_name = 'QEPANET 0.93.17'
     config_file_name = 'config.ini'
 
     junctions_vlay_name = 'Junctions'
@@ -212,7 +212,7 @@ class Parameters(Observable):
     @tolerance.setter
     def tolerance(self, value):
         self._tolerance = value
-        self.notify()
+        # self.notify()
 
     @property
     def snap_tolerance(self):
@@ -230,7 +230,7 @@ class Parameters(Observable):
     @min_dist.setter
     def min_dist(self, value):
         self._min_dist = value
-        self.notify()
+        # self.notify()
 
     @property
     def vertex_dist(self):
@@ -239,7 +239,7 @@ class Parameters(Observable):
     @vertex_dist.setter
     def vertex_dist(self, value):
         self._vertex_dist = value
-        self.notify()
+        # self.notify()
 
     @property
     def block_logic(self):
@@ -248,7 +248,7 @@ class Parameters(Observable):
     @block_logic.setter
     def block_logic(self, value):
         self._block_logic = value
-        self.notify()
+        # self.notify()
 
 
 class ConfigFile:

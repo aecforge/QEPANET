@@ -278,7 +278,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         self.txt_snap_tolerance.setText(str(params.snap_tolerance))
         self.txt_snap_tolerance.setValidator(RegExValidators.get_pos_decimals())
-        QtCore.QObject.connect(self.txt_snap_tolerance, QtCore.SIGNAL('editingFinished()'), self.snap_tolerance_changed)
+        self.txt_snap_tolerance.textEdited.connect(self.snap_tolerance_changed)
 
         self.btn_pattern_editor.clicked.connect(self.pattern_editor)
         self.btn_curve_editor.clicked.connect(self.curve_editor)
@@ -388,73 +388,73 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
         if type(self.iface.mapCanvas().mapTool()) is AddJunctionTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            # self.btn_add_junction.setChecked(True)
+            self.params.detach(self.tool)
 
         else:
             self.tool = AddJunctionTool(self, self.params)
+            self.params.attach(self.tool)
             self.iface.mapCanvas().setMapTool(self.tool)
-            # self.set_cursor(QtCore.Qt.CrossCursor)
-            self.setCursor();
+            self.setCursor()
 
     def add_reservoir(self):
 
         if type(self.iface.mapCanvas().mapTool()) is AddReservoirTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            # self.btn_add_reservoir.setChecked(True)
+            self.params.detach(self.tool)
 
         else:
             self.tool = AddReservoirTool(self, self.params)
+            self.params.attach(self.tool)
             self.iface.mapCanvas().setMapTool(self.tool)
-            # self.set_cursor(QtCore.Qt.CrossCursor)
-            self.setCursor();
+            self.setCursor()
 
     def add_tank(self):
 
         if type(self.iface.mapCanvas().mapTool()) is AddTankTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            # self.btn_add_tank.setChecked(False)
+            self.params.detach(self.tool)
 
         else:
             tool = AddTankTool(self, self.params)
+            self.params.attach(self.tool)
             self.iface.mapCanvas().setMapTool(tool)
-            # self.set_cursor(QtCore.Qt.CrossCursor)
-            self.setCursor();
+            self.setCursor()
 
     def add_pipe(self):
 
         if type(self.iface.mapCanvas().mapTool()) is AddPipeTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            # self.btn_add_pipe.setChecked(True)
+            self.params.detach(self.tool)
 
         else:
             self.tool = AddPipeTool(self, self.params)
+            self.params.attach(self.tool)
             self.iface.mapCanvas().setMapTool(self.tool)
-            # self.set_cursor(QtCore.Qt.CrossCursor)
-            self.setCursor();
+            self.setCursor()
 
     def add_pump(self):
 
         if type(self.iface.mapCanvas().mapTool()) is AddPumpTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            # self.btn_add_pump.setChecked(True)
+            self.params.detach(self.tool)
 
         else:
             self.tool = AddPumpTool(self, self.params)
+            self.params.attach(self.tool)
             self.iface.mapCanvas().setMapTool(self.tool)
-            # self.set_cursor(QtCore.Qt.CrossCursor)
-            self.setCursor();
+            self.setCursor()
 
     def add_valve(self):
 
         if type(self.iface.mapCanvas().mapTool()) is AddValveTool:
             self.iface.mapCanvas().unsetMapTool(self.tool)
-            # self.btn_add_valve.setChecked(True)
+            self.params.detach(self.tool)
 
         else:
             self.tool = AddValveTool(self, self.params)
+            self.params.attach(self.tool)
             self.iface.mapCanvas().setMapTool(self.tool)
-            # self.set_cursor(QtCore.Qt.CrossCursor)
-            self.setCursor();
+            self.setCursor()
 
     def setCursor(self):
         self.my_cursor_xpm = [
@@ -576,13 +576,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.params.dem_rlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
     def cbo_pipe_roughness_activated(self):
-        self.update_roughness_params(self.get_combo_current_text(self.cbo_pipe_roughness)[self.params.options.headloss])
+        self.update_roughness_params(self.get_combo_current_data(self.cbo_pipe_roughness)[self.params.options.headloss])
 
     def snap_tolerance_changed(self):
-        self.params.snap_tolerance = (float(self.txt_snap_tolerance.text()))
+        if self.txt_snap_tolerance.text():
+            self.params.snap_tolerance = (float(self.txt_snap_tolerance.text()))
 
     def pattern_editor(self):
-
         pattern_dialog = GraphDialog(self, self.iface.mainWindow(), self.params, edit_type=GraphDialog.edit_patterns)
         pattern_dialog.exec_()
 
@@ -603,7 +603,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         file_dialog = QFileDialog()
         file_dialog.setWindowTitle('New project')
         file_dialog.setLabelText(QFileDialog.Accept, 'Create')
-        file_dialog.setNameFilter('Inp files (*.inp)');
+        file_dialog.setNameFilter('Inp files (*.inp)')
         if file_dialog.exec_():
 
             inp_file_path = file_dialog.selectedFiles()[0]
@@ -909,9 +909,11 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.set_layercombo_index(self.cbo_pump_tag, pu_data)
         self.set_layercombo_index(self.cbo_valve_tag, va_data)
 
+    def get_combo_current_data(self, combo):
+        index = combo.currentIndex()
+        return combo.itemData(index)
+
     def get_combo_current_text(self, combo):
-        # index = combo.currentIndex()
-        # return combo.itemData(index)
         return combo.currentText()
 
     def set_layercombo_index(self, combo, combo_data):

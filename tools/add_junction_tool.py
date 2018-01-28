@@ -211,18 +211,7 @@ class AddJunctionTool(QgsMapTool):
     def activate(self):
 
         # Snapping
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToSegment,
-        #                                               QgsTolerance.MapUnits,
-        #                                               self.params.snap_tolerance,
-        #                                               True)
-
-        snap_layer_junctions = NetworkUtils.set_up_snap_layer(self.params.junctions_vlay)
-        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToSegment)
-
-        layers = {self.params.junctions_vlay: QgsPointLocator.Vertex, self.params.pipes_vlay: QgsPointLocator.All}
-        self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
+        self.update_snapper()
 
         # Editing
         if not self.params.junctions_vlay.isEditable():
@@ -256,3 +245,11 @@ class AddJunctionTool(QgsMapTool):
     def reset_marker(self):
         self.outlet_marker.hide()
         self.canvas().scene().removeItem(self.outlet_marker)
+
+    def update_snapper(self):
+        layers = {self.params.junctions_vlay: QgsPointLocator.Vertex, self.params.pipes_vlay: QgsPointLocator.All}
+        self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
+
+    # Needed by Observable
+    def update(self, observable):
+        self.update_snapper()

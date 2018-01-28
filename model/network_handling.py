@@ -7,7 +7,7 @@ from qgis.core import QgsFeature, QgsGeometry, QgsVectorDataProvider, QgsSnapper
     QgsPointLocator
 
 from network import Junction, Reservoir, Tank, Pipe, Pump, Valve
-from ..tools.parameters import Parameters
+# from ..tools.parameters import Parameters
 from ..geo_utils import raster_utils
 from ..geo_utils.points_along_line import PointsAlongLineGenerator, PointsAlongLineUtils
 
