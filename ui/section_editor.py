@@ -3,7 +3,7 @@ from PyQt4 import QtCore
 from PyQt4.QtGui import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QPushButton, QIcon
 from graphs import MyMplCanvas
 from ..geo_utils import bresenham, raster_utils, vector_utils
-from ..model.network_handling import LinkHandler, NetworkUtils, Junction
+from ..model.network_handling import LinkHandler, NetworkUtils, Junction, Pipe
 from matplotlib.lines import Line2D
 from matplotlib.path import Path
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
@@ -152,11 +152,22 @@ class PipeSectionDialog(QDialog):
         start_node_ft.setAttribute(start_node_ft.fieldNameIndex(Junction.field_name_delta_z), start_node_new_deltaz)
         end_node_ft.setAttribute(end_node_ft.fieldNameIndex(Junction.field_name_delta_z), end_node_new_deltaz)
 
+        # Update start node elevation attribute
         start_node_lay = NetworkUtils.find_node_layer(self.params, start_node_ft.geometry())
         vector_utils.update_attribute(start_node_lay, start_node_ft, Junction.field_name_delta_z, float(start_node_new_deltaz))
 
+        # Update end node elevation attribute
         end_node_lay = NetworkUtils.find_node_layer(self.params, end_node_ft.geometry())
         vector_utils.update_attribute(end_node_lay, end_node_ft, Junction.field_name_delta_z, float(end_node_new_deltaz))
+
+        # Update pipe length
+        # Calculate 3D length
+        pipe_geom_2 = self.pipe_ft.geometry()
+        if self.params.dem_rlay is not None:
+            length_3d = LinkHandler.calc_3d_length(self.params, pipe_geom_2)
+        else:
+            length_3d = pipe_geom_2.length()
+        vector_utils.update_attribute(self.params.pipes_vlay, self.pipe_ft, Pipe.field_name_length, length_3d)
 
         self.setVisible(False)
 

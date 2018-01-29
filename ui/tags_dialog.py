@@ -3,6 +3,7 @@ from PyQt4 import QtCore
 from PyQt4.QtCore import Qt
 from ..tools.parameters import Parameters, RegExValidators
 
+
 class TagsDialog(QDialog):
 
     def __init__(self, dockwidget, parent, params):
@@ -11,6 +12,8 @@ class TagsDialog(QDialog):
         main_lay = QVBoxLayout(self)
         self.dockwidget = dockwidget
         self.params = params
+
+        self.setWindowTitle('Tags editor')
 
         # Top frame
         self.fra_top = QFrame()

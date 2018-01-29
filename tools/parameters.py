@@ -15,7 +15,7 @@ from qgis.core import QgsSpatialIndex
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.93.17'
+    plug_in_name = 'QEPANET 0.93.18'
     config_file_name = 'config.ini'
 
     junctions_vlay_name = 'Junctions'
@@ -54,7 +54,7 @@ class Parameters(Observable):
         self._curves = OrderedDict()
         self._curves_file = None
 
-        self._tag_names = []
+        self._tag_names = set()
 
         self._snap_tolerance = 10
         self._tolerance = 0.01

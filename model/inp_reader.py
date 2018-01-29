@@ -80,10 +80,6 @@ class InpReader:
             self.update_rules(rules)
         if quality:
             self.update_quality(quality)
-        if curves:
-            self.update_curves()
-        if patterns:
-            self.update_patterns()
         if controls:
             self.update_controls(controls)
         if demands:
@@ -110,7 +106,7 @@ class InpReader:
         if tags:
             for tag in tags:
                 tags_d[tag.element_id] = tag.tag
-            self.params.tag_names = tags_d.values()
+            self.params.tag_names = set(tags_d.values())
 
         xy = ref.getBinNodeCoordinates()
 
@@ -495,6 +491,11 @@ class InpReader:
                                            pressure_head, ndPatID[p], nodes_desc[i], tag])
                 reservoirs_lay_dp.addFeatures([feat_reserv])
                 self.params.nodes_sindex.insertFeature(feat_reserv)
+
+        if curves:
+            self.update_curves()
+        if patterns:
+            self.update_patterns()
 
         return {Junction.section_name: junctions_lay,
                 Reservoir.section_name: reservoirs_lay,
