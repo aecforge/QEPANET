@@ -420,17 +420,16 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             if idx == layer.fieldNameIndex(elev_field_name):
 
                 # Get feature
-                iterator = layer.getFeatures(QgsFeatureRequest().setFilterFid(fid))
-                feat = next(iterator)
+                for feat in layer.getFeatures(QgsFeatureRequest().setFilterFid(fid)):
 
-                # Get adjacent links and update length
-                adj_links = NetworkUtils.find_adjacent_links(self.params, feat.geometry())
-                for adj_link in adj_links['pipes']:
-                    self.update_link_length(adj_link, self.params.pipes_vlay, Pipe.field_name_length)
-                for adj_link in adj_links['pumps']:
-                    self.update_link_length(adj_link, self.params.pumps_vlay, Pump.field_name_length)
-                for adj_link in adj_links['valves']:
-                    self.update_link_length(adj_link, self.params.valves_vlay, Valve.field_name_length)
+                    # Get adjacent links and update length
+                    adj_links = NetworkUtils.find_adjacent_links(self.params, feat.geometry())
+                    for adj_link in adj_links['pipes']:
+                        self.update_link_length(adj_link, self.params.pipes_vlay, Pipe.field_name_length)
+                    for adj_link in adj_links['pumps']:
+                        self.update_link_length(adj_link, self.params.pumps_vlay, Pump.field_name_length)
+                    for adj_link in adj_links['valves']:
+                        self.update_link_length(adj_link, self.params.valves_vlay, Valve.field_name_length)
 
     def update_link_length(self, link, layer, length_field_name):
         new_3d_length = LinkHandler.calc_3d_length(self.params, link.geometry())
