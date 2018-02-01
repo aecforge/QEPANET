@@ -15,7 +15,7 @@ from qgis.core import QgsSpatialIndex
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.93.18'
+    plug_in_name = 'QEPANET 0.93.19'
     config_file_name = 'config.ini'
 
     junctions_vlay_name = 'Junctions'

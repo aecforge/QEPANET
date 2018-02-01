@@ -348,13 +348,13 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.params.reservoirs_vlay = new_layers_d[Reservoir.section_name]
         else:
             self.params.reservoirs_vlay = MemoryDS.create_reservoirs_lay(crs=crs)
-        self.params.reservoirs_vlay.attributeValueChanged.connect(self.ju_attrib_val_changed)
+        self.params.reservoirs_vlay.attributeValueChanged.connect(self.re_attrib_val_changed)
 
         if new_layers_d is not None and new_layers_d[Tank.section_name] is not None:
             self.params.tanks_vlay = new_layers_d[Tank.section_name]
         else:
             self.params.tanks_vlay = MemoryDS.create_tanks_lay(crs=crs)
-        self.params.tanks_vlay.attributeValueChanged.connect(self.ju_attrib_val_changed)
+        self.params.tanks_vlay.attributeValueChanged.connect(self.ta_attrib_val_changed)
 
         if new_layers_d is not None and new_layers_d[Pipe.section_name] is not None:
             self.params.pipes_vlay = new_layers_d[Pipe.section_name]
@@ -400,41 +400,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.params.attach(self.tool)
             self.iface.mapCanvas().setMapTool(self.tool)
             self.setCursor()
-
-    def ju_attrib_val_changed(self, fid, idx, new_val):
-        self.node_attrib_val_changed(fid, idx, self.params.junctions_vlay,
-                                     [Junction.field_name_elev, Junction.field_name_delta_z])
-
-    def re_attrib_val_changed(self, fid, idx, new_val):
-        self.node_attrib_val_changed(fid, idx, self.params.reservoirs_vlay,
-                                     [Reservoir.field_name_elev, Reservoir.field_name_delta_z])
-
-    def ta_attrib_val_changed(self, fid, idx, new_val):
-        self.node_attrib_val_changed(fid, idx, self.params.tanks_vlay,
-                                     [Tank.field_name_elev, Tank.field_name_delta_z])
-
-    def node_attrib_val_changed(self, fid, idx, layer, elev_field_names):
-
-        # If attibute changed is elev or deltaz, update pipe length
-        for elev_field_name in elev_field_names:
-            if idx == layer.fieldNameIndex(elev_field_name):
-
-                # Get feature
-                for feat in layer.getFeatures(QgsFeatureRequest().setFilterFid(fid)):
-
-                    # Get adjacent links and update length
-                    adj_links = NetworkUtils.find_adjacent_links(self.params, feat.geometry())
-                    for adj_link in adj_links['pipes']:
-                        self.update_link_length(adj_link, self.params.pipes_vlay, Pipe.field_name_length)
-                    for adj_link in adj_links['pumps']:
-                        self.update_link_length(adj_link, self.params.pumps_vlay, Pump.field_name_length)
-                    for adj_link in adj_links['valves']:
-                        self.update_link_length(adj_link, self.params.valves_vlay, Valve.field_name_length)
-
-    def update_link_length(self, link, layer, length_field_name):
-        new_3d_length = LinkHandler.calc_3d_length(self.params, link.geometry())
-        field_index = layer.dataProvider().fieldNameIndex(length_field_name)
-        layer.changeAttributeValue(link.id(), field_index, new_3d_length)
 
     def add_reservoir(self):
 
@@ -544,6 +509,40 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.tool = DeleteTool(self, self.params)
             self.iface.mapCanvas().setMapTool(self.tool)
             self.set_cursor(QtCore.Qt.CrossCursor)
+
+    def ju_attrib_val_changed(self, fid, idx, new_val):
+        self.node_attrib_val_changed(fid, idx, self.params.junctions_vlay,
+                                     [Junction.field_name_elev, Junction.field_name_delta_z])
+
+    def re_attrib_val_changed(self, fid, idx, new_val):
+        self.node_attrib_val_changed(fid, idx, self.params.reservoirs_vlay,
+                                     [Reservoir.field_name_elev, Reservoir.field_name_delta_z])
+
+    def ta_attrib_val_changed(self, fid, idx, new_val):
+        self.node_attrib_val_changed(fid, idx, self.params.tanks_vlay,
+                                     [Tank.field_name_elev, Tank.field_name_delta_z])
+
+    def node_attrib_val_changed(self, fid, idx, layer, elev_field_names):
+
+        # If attibute changed is elev or deltaz, update pipe length
+        for elev_field_name in elev_field_names:
+            if idx == layer.fieldNameIndex(elev_field_name):
+                # Get feature
+                for feat in layer.getFeatures(QgsFeatureRequest().setFilterFid(fid)):
+                    # Get adjacent links and update length
+                    adj_links = NetworkUtils.find_adjacent_links(self.params, feat.geometry())
+                    for adj_link in adj_links['pipes']:
+                        self.update_link_length(adj_link, self.params.pipes_vlay, Pipe.field_name_length)
+
+    def update_link_length(self, link, layer, length_field_name):
+        new_3d_length = LinkHandler.calc_3d_length(self.params, link.geometry())
+
+        field_index = layer.dataProvider().fieldNameIndex(length_field_name)
+
+        if not layer.isEditable():
+            layer.startEditing()
+
+        layer.changeAttributeValue(link.id(), field_index, new_3d_length)
 
     def chk_block_logic_clicked(self):
         self.params.block_logic = self.chk_block_logic.isChecked()
