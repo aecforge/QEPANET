@@ -59,11 +59,7 @@ class LayerUtils:
 
     @staticmethod
     def remove_layer(layer):
-
-        try:
-            QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
-        except:
-            pass
+        QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
 
     @staticmethod
     def remove_layers(params):
@@ -82,19 +78,19 @@ class LayerUtils:
             params.junctions_vlay = None
         if params.reservoirs_vlay:
             LayerUtils.remove_layer(params.reservoirs_vlay)
-            params.reservoirs_vlay
+            params.reservoirs_vlay = None
         if params.tanks_vlay:
             LayerUtils.remove_layer(params.tanks_vlay)
-            params.tanks_vlay
+            params.tanks_vlay = None
         if params.pipes_vlay:
             LayerUtils.remove_layer(params.pipes_vlay)
-            params.pipes_vlay
+            params.pipes_vlay = None
         if params.pumps_vlay:
             LayerUtils.remove_layer(params.pumps_vlay)
-            params.pumps_vlay
+            params.pumps_vlay = None
         if params.valves_vlay:
             LayerUtils.remove_layer(params.valves_vlay)
-            params.valves_vlay
+            params.valves_vlay = None
 
         # Now delete unreferenced layers
         if not deleted[Parameters.junctions_vlay_name]:

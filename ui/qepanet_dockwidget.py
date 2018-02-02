@@ -342,6 +342,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             self.params.junctions_vlay = new_layers_d[Junction.section_name]
         else:
             self.params.junctions_vlay = MemoryDS.create_junctions_lay(crs=crs)
+            self.params.junctions_vlay = MemoryDS.create_junctions_lay(crs=crs)
         self.params.junctions_vlay.attributeValueChanged.connect(self.ju_attrib_val_changed)
 
         if new_layers_d is not None and new_layers_d[Reservoir.section_name] is not None:
