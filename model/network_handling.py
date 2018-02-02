@@ -763,7 +763,7 @@ class LinkHandler:
             end_remove = 1
 
         if start_node_ft is not None:
-            distance_elev_od[0] = start_node_elev - start_node_deltaz
+            distance_elev_od[0] = start_node_elev + start_node_deltaz
 
         vertices = pipe_geom.asPolyline()
 
@@ -778,7 +778,7 @@ class LinkHandler:
             distance_elev_od[distances[p]] = elev
 
         if end_node_ft is not None:
-            distance_elev_od[pipe_geom.length()] = end_node_elev - end_node_deltaz
+            distance_elev_od[pipe_geom.length()] = end_node_elev + end_node_deltaz
 
         # Calculate 3D length
         length_3d = 0
