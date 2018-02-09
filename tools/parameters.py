@@ -8,14 +8,14 @@ from PyQt4.QtGui import QRegExpValidator
 from observable import Observable
 from ..model.options_report import Options, Report
 from ..model.options_report import Times
-from ..model.system_ops import Energy
+from ..model.system_ops import Energy, Rule
 from ..model.water_quality import Reactions
 from qgis.core import QgsSpatialIndex
 
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.94'
+    plug_in_name = 'QEPANET 0.94.1'
     config_file_name = 'config.ini'
 
     junctions_vlay_name = 'Junctions'
@@ -53,6 +53,7 @@ class Parameters(Observable):
         self._patterns_file = None
         self._curves = OrderedDict()
         self._curves_file = None
+        self._rules = []
 
         self._tag_names = set()
 
@@ -193,6 +194,14 @@ class Parameters(Observable):
     def patterns_file(self, value):
         self._patterns_file = value
         self.notify()
+
+    @property
+    def rules(self):
+        return self._rules
+
+    @rules.setter
+    def rules(self, value):
+        self._rules = value
 
     # Tags
     @property

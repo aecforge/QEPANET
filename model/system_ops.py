@@ -69,8 +69,10 @@ class Pattern:
 class Rule:
     section_name = 'RULES'
 
-    def __init__(self):
-        pass
+    def __init__(self, name, condition, action):
+        self.name = name
+        self.condition = condition
+        self.action = action
 
 
 class Status:

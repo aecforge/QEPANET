@@ -1021,8 +1021,7 @@ class InpReader:
                         else:
                             tag = Tag(mm[0], mm[1], mm[2])
                             self.tags.append(tag)
-                    
-    
+
     def read_line(self, s1):
         # Strip new line
         s1 = s1.strip('\r\n')

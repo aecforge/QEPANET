@@ -594,9 +594,12 @@ class InpFile:
         out.append(InpFile.pad('ROUGHNESS CORRELATION', InpFile.pad_22) + str(params.reactions.roughness_corr))
 
     def _append_rules(self, params, out):
-        # out.extend(InpFile.build_section_keyword(Rule.section_name))
-        # TODO
-        pass
+        out.extend(InpFile.build_section_keyword(Rule.section_name))
+        rules = params.rules
+        for rule in rules:
+            out.append(rule.name)
+            out.append(rule.condition)
+            out.append(rule.action)
 
     def _append_status(self, params, out):
         out.extend(InpFile.build_section_keyword(Status.section_name))

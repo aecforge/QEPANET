@@ -10,6 +10,7 @@ import os
 from inp_writer import InpFile
 from ..tools.data_stores import MemoryDS
 from .options_report import Options, Unbalanced, Quality, Report, Hour, Times
+from .system_ops import Rule
 import codecs
 
 
@@ -517,8 +518,10 @@ class InpReader:
         pass
 
     def update_rules(self, rules):
-        # TODO
-        pass
+        rules_out = []
+        for rule in rules:
+            rules_out.append(Rule(rule[0][0].rstrip('\r\n'), rule[1][0], rule[2][0]))
+        self.params.rules = rules_out
 
     def update_quality(self, quality):
         # TODO
