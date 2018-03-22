@@ -879,7 +879,11 @@ class NetworkUtils:
     def find_start_end_nodes_sindex(params, sindex, link_geom):
 
         # Find node FIDs that intersect the link bounding box
-        cand_fids = sindex.intersects(link_geom.boundingBox())
+        bb = link_geom.boundingBox()
+
+        # We grow slighlty the bb to prevent rounding errors: 10% of the link's length
+        bb.grow(link_geom.length() * 0.1)
+        cand_fids = sindex.intersects(bb)
 
         request = QgsFeatureRequest()
         request.setFilterFids(cand_fids)
