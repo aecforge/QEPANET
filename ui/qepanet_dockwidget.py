@@ -608,7 +608,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.report_dialog.show()
 
     def roughness_slider_changed(self):
-        self.lbl_pipe_roughness_val_val.setText(str(self.sli_pipe_roughness.value() / float(10**self.decimals)))
+        self.lbl_pipe_roughness_val_val.setText(str(self.sli_pipe_roughness.value() / 10**self.decimals))
 
     # TODO: update snappers in all the tools that use snapping
     def cbo_dem_activated(self, index):
@@ -968,7 +968,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         if vertex_dist is not None and vertex_dist:
             self.params.vertex_dist = float(vertex_dist)
 
-    def find_decimals(self, float_string):
+    def find_decimals(self, float_value):
+        float_string = str(float_value)
         float_string.replace(',', '.')
         if '.' in float_string:
             decimals = len(float_string[float_string.index('.'):])
@@ -981,6 +982,8 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         min_roughness = roughness_range[0]
         max_roughness = roughness_range[1]
 
+        self.decimals = max(self.find_decimals(min_roughness), self.find_decimals(max_roughness))
+
         min_roughness_mult = min_roughness * 10 ** self.decimals
         max_roughness_mult = max_roughness * 10 ** self.decimals
 
@@ -992,8 +995,6 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # To string
         min_roughness = str(min_roughness)
         max_roughness = str(max_roughness)
-
-        self.decimals = max(self.find_decimals(min_roughness), self.find_decimals(max_roughness))
 
         self.lbl_pipe_roughness_min.setText(min_roughness)
         self.lbl_pipe_roughness_max.setText(max_roughness)
