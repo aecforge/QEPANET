@@ -2,7 +2,6 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import Qt
 from qgis.gui import QgsMessageBar
 from graphs import StaticMplCanvas
-from ..geo_utils.renderer import *
 from ..geo_utils.utils import *
 from ..tools.parameters import Parameters, ConfigFile
 from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve
@@ -10,6 +9,7 @@ from ..model.binary_out_reader import BinaryOutputReader, OutputParamCodes
 from ..model.options_report import Options, Quality
 from ..tools.select_tool import SelectTool
 from ..tools.data_stores import *
+from ..rendering.symbology import LinkSymbology
 import codecs
 import math
 
@@ -530,12 +530,8 @@ class OutputAnalyserDialog(QDialog):
             else:
                 lay.setLayerName(lay_name)
 
-            # text = self.seconds_to_string(
-            #     report_time,
-            #     self.output_reader.sim_duration_secs,
-            #     self.output_reader.report_time_step_secs)
-
-            lay.setRendererV2(RampRenderer.get_renderer(lay, report_time))
+            ls = LinkSymbology()
+            lay.setRendererV2(ls.make_flow_sym_renderer(lay, report_time))
             lay.triggerRepaint()
 
             QApplication.restoreOverrideCursor()
@@ -558,8 +554,6 @@ class OutputAnalyserDialog(QDialog):
         return self.create_out_layer(lay_name, values_d, LayerType.LINK)
 
     def create_out_layer(self, lay_name, values_d, lay_type):
-
-        import datetime
 
         field_name_vars = []
         periods = self.output_reader.period_results.keys()

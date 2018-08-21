@@ -608,7 +608,7 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.report_dialog.show()
 
     def roughness_slider_changed(self):
-        self.lbl_pipe_roughness_val_val.setText(str(self.sli_pipe_roughness.value() / 10**self.decimals))
+        self.lbl_pipe_roughness_val_val.setText(str(float(self.sli_pipe_roughness.value()) / 10**self.decimals))
 
     # TODO: update snappers in all the tools that use snapping
     def cbo_dem_activated(self, index):
@@ -993,12 +993,9 @@ class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
             max_roughness = max_roughness / 304.8 * 1000
 
         # To string
-        min_roughness = str(min_roughness)
-        max_roughness = str(max_roughness)
-
-        self.lbl_pipe_roughness_min.setText(min_roughness)
-        self.lbl_pipe_roughness_max.setText(max_roughness)
-        self.lbl_pipe_roughness_val_val.setText(min_roughness)
+        self.lbl_pipe_roughness_min.setText(str(min_roughness))
+        self.lbl_pipe_roughness_max.setText(str(max_roughness))
+        self.lbl_pipe_roughness_val_val.setText(str(min_roughness))
 
         # Multipliers
         self.sli_pipe_roughness.setMinimum(min_roughness_mult)
