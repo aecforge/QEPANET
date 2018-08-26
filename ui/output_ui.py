@@ -464,49 +464,49 @@ class OutputAnalyserDialog(QDialog):
         report_time = self.cbo_map_times.itemText(self.cbo_map_times.currentIndex())
 
         if self.rad_maps_node_demand.isChecked():  # -------------------------------------------------------------------
-            lay_name = 'Node demand'
+            lay_name = u'Node demand'
             lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_demand_id, lay_name,
                                    self.output_reader.node_demands_d, report_time)
             self.params.out_lay_node_demand_id = lay_id
 
         elif self.rad_maps_node_head.isChecked():
-            lay_name = 'Node head'
+            lay_name = u'Node head'
             lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_head_id, lay_name,
                                    self.output_reader.node_heads_d, report_time)
             self.params.out_lay_node_head_id = lay_id
 
         elif self.rad_maps_node_pressure.isChecked():
-            lay_name = 'Node pressure'
+            lay_name = u'Node pressure'
             lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_pressure_id, lay_name,
                                    self.output_reader.node_pressures_d, report_time)
             self.params.out_lay_node_pressure_id = lay_id
 
         elif self.rad_maps_node_quality.isChecked():
-            lay_name = 'Node quality'
+            lay_name = u'Node quality'
             lay_id = self.draw_map(LayerType.NODE, self.params.out_lay_node_quality_id, lay_name,
                                    self.output_reader.node_qualities_d, report_time)
             self.params.out_lay_node_quality_id = lay_id
 
         elif self.rad_maps_link_flow.isChecked():  # -------------------------------------------------------------------
-            lay_name = 'Link flow'
+            lay_name = u'Link flow'
             lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_flow_id, lay_name,
                                    self.output_reader.link_flows_d, report_time)
             self.params.out_lay_link_flow_id = lay_id
 
         elif self.rad_maps_link_velocity.isChecked():
-            lay_name = 'Link velocity'
+            lay_name = u'Link velocity'
             lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_velocity_id, lay_name,
                                    self.output_reader.link_velocities_d, report_time)
             self.params.out_lay_link_velocity_id = lay_id
 
         elif self.rad_maps_link_headloss.isChecked():
-            lay_name = 'Link headloss'
+            lay_name = u'Link headloss'
             lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_headloss_id, lay_name,
                                    self.output_reader.link_headlosses_d, report_time)
             self.params.out_lay_link_headloss_id = lay_id
 
         elif self.rad_maps_link_quality.isChecked():
-            lay_name = 'Link quality'
+            lay_name = u'Link quality'
             lay_id = self.draw_map(LayerType.LINK, self.params.out_lay_link_quality_id, lay_name,
                                    self.output_reader.link_qualities_d, report_time)
             self.params.out_lay_link_quality_id = lay_id

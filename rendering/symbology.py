@@ -96,6 +96,7 @@ class LinkSymbology:
         min_val = sys.float_info.max
         max_val = -min_val
 
+        # Find values range
         for feat in feats:
             attr = feat.attribute(field_name)
             val = float(attr)
@@ -104,6 +105,7 @@ class LinkSymbology:
             if val > max_val:
                 max_val = val
 
+        # Define colors
         if ranges_colors is None:
             ranges_colors = []
             colors = [
@@ -139,11 +141,11 @@ class LinkSymbology:
         line_sym_lay.setWidth(0.2)
         symbol.appendSymbolLayer(line_sym_lay)
 
-        # Arrow (only for flow)
-        if u'Link flow' in layer.name():
+        # Define arrows for flow and velocities
+        if u'Link flow' in layer.name() or u'Link velocity' in layer.name():
             self.marker_sym = QgsMarkerSymbolV2.createSimple({'name': 'triangle', 'color': 'black'})
-            data_defined = QgsDataDefined()
-            exp_string =\
+            data_def_angle = QgsDataDefined()
+            data_def_angle_exp =\
                 'case ' \
                     'when  "' + field_name + '"  >= 0 ' \
                         'then degrees(azimuth( start_point( $geometry), end_point($geometry))) ' \
@@ -155,9 +157,23 @@ class LinkSymbology:
                                 'degrees(azimuth( start_point( $geometry), end_point($geometry))) - 180 ' \
                         'end ' \
                 'end'
-            data_defined.setExpressionString(exp_string)
-            data_defined.setActive(True)
-            self.marker_sym.setDataDefinedAngle(data_defined)
+            data_def_angle.setExpressionString(data_def_angle_exp)
+            data_def_angle.setActive(True)
+            self.marker_sym.setDataDefinedAngle(data_def_angle)
+
+            # Size: 0 if attribute = 0
+            data_def_size = QgsDataDefined()
+            data_def_size_exp =\
+                'case ' \
+                    'when "' + field_name + '" = 0 ' \
+                        'then 0 ' \
+                    'else ' \
+                        '2 ' \
+                'end'
+            data_def_size.setExpressionString(data_def_size_exp)
+            data_def_size.setActive(True)
+            self.marker_sym.setDataDefinedSize(data_def_size)
+
 
             marker_sym_lay = QgsMarkerLineSymbolLayerV2()
             marker_sym_lay.setColor(QColor(0, 0, 0))
@@ -166,9 +182,9 @@ class LinkSymbology:
             marker_sym_lay.setRotateMarker(False)
             marker_sym_lay.setSubSymbol(self.marker_sym)
 
-        self.marker_sym.appendSymbolLayer(marker_sym_lay)
+            self.marker_sym.appendSymbolLayer(marker_sym_lay)
 
-        symbol.appendSymbolLayer(marker_sym_lay)
+            symbol.appendSymbolLayer(marker_sym_lay)
 
         # renderer.setSourceSymbol(symbol)
         renderer.updateSymbols(symbol)
