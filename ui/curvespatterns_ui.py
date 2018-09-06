@@ -2,7 +2,8 @@ from ..model.inp_writer import InpFile
 from ..model.system_ops import Curve, Pattern
 from ..tools.parameters import Parameters, ConfigFile
 from graphs import StaticMplCanvas
-from PyQt4.QtGui import *
+from PyQt4.QtGui import QDialog, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QLineEdit, QSizePolicy, QPushButton,\
+    QListWidget, QFormLayout, QComboBox, QAbstractItemView, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox
 from PyQt4 import QtCore
 from PyQt4.QtCore import Qt
 import numpy

@@ -9,7 +9,7 @@ import PyQt4
 import subprocess
 import sys
 from osgeo import gdal
-from osgeo.gdalconst import *
+from osgeo.gdalconst import GDT_Int32
 from numpy import array
 from PyQt4.QtCore import QFileInfo
 from qgis.core import QgsMapLayerRegistry, QgsPoint, QgsRasterLayer, QgsRaster

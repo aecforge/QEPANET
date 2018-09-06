@@ -1,11 +1,11 @@
 import os
 
 from PyQt4.QtCore import QVariant
-from qgis.core import *
+from qgis.core import QgsVectorLayer, QgsFeature, QgsFields, QgsVectorFileWriter, QGis, QgsField
 
-from ..model.network import *
-from ..model.network import Tables
+from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve, Tables, Node, Link
 from ..tools.parameters import Parameters
+from ..tools.exceptions import ShpExistsExcpetion
 
 
 class MemoryDS:

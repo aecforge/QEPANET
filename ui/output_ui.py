@@ -1,14 +1,17 @@
-from PyQt4.QtGui import *
+from PyQt4.QtGui import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QLabel, QLineEdit, QToolButton, QTabWidget, QWidget,\
+    QPushButton, QCheckBox, QGroupBox, QRadioButton, QFormLayout, QSpacerItem, QSizePolicy, QComboBox, QFileDialog,\
+    QMessageBox, QApplication, QCursor, QTextCursor, QPlainTextEdit
 from PyQt4.QtCore import Qt
+from qgis.core import QgsMapLayerRegistry, edit
 from qgis.gui import QgsMessageBar
 from graphs import StaticMplCanvas
-from ..geo_utils.utils import *
+from ..geo_utils.utils import LayerUtils
 from ..tools.parameters import Parameters, ConfigFile
-from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve
+from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve, Node
 from ..model.binary_out_reader import BinaryOutputReader, OutputParamCodes
 from ..model.options_report import Options, Quality
 from ..tools.select_tool import SelectTool
-from ..tools.data_stores import *
+from ..tools.data_stores import MemoryDS
 from ..rendering.symbology import LinkSymbology
 import codecs
 import math

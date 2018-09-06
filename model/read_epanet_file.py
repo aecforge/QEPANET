@@ -1,7 +1,8 @@
 import re
-from network import *
-from system_ops import *
-from options_report import *
+from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve, Status, Demand, Tag, Control, Source, Label,\
+    Vertex, Coordinate, Emitter, Reaction, Mixing, Backdrop
+from ..model.options_report import Options, Quality, Report, Times
+from ..model.system_ops import Rule, Status, Curve, Demand, Energy, Pattern
 
 class InpReader:
     

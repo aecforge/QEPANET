@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import *
-from qgis.core import *
+from PyQt4.QtGui import QColor, QApplication, QCursor
+from qgis.core import QGis, QgsPointLocator, QgsPoint
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
 from ..model.network_handling import NetworkUtils, NodeHandler, LinkHandler

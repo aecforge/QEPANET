@@ -27,6 +27,7 @@ from PyQt4 import QtCore, uic, QtGui
 from PyQt4.QtCore import Qt, pyqtSignal
 from PyQt4.QtGui import QFileDialog, QMessageBox, QApplication, QPixmap, QLabel, QColor, QToolTip, QCursor
 from qgis.gui import QgsGenericProjectionSelector, QgsMessageBar
+from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsMapLayer, QgsCoordinateReferenceSystem
 
 from ..geo_utils.utils import LayerUtils as lay_utils
 from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog, ReportDialog
@@ -35,7 +36,7 @@ from ..model.options_report import Options
 from curvespatterns_ui import GraphDialog
 from ..model.inp_writer import InpFile
 from ..model.inp_reader import InpReader
-from ..model.network import *
+from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve
 from ..model.network_handling import NetworkUtils
 from ..model.network_handling import LinkHandler
 from ..model.runner import ModelRunner

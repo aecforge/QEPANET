@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from qgis.core import *
+from qgis.core import QgsField
 from PyQt4.QtCore import QVariant
 
 

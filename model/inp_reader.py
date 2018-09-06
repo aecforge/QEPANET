@@ -2,7 +2,9 @@
 # (C)Marios Kyriakou 2016
 # University of Cyprus, KIOS Research Center for Intelligent Systems and Networks
 
-from network import *
+from collections import OrderedDict
+from qgis.core import QgsFeature, QgsPoint, QgsGeometry, NULL, QgsPointV2, QgsWKBTypes, QgsLineStringV2
+from network import Junction, Reservoir, Tank, Pipe, Pump, Valve, QJunction, QReservoir, QTank, QPipe, QVertices
 
 # import readEpanetFile as ref
 import read_epanet_file

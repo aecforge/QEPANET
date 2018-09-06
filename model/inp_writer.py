@@ -1,8 +1,9 @@
 import codecs
 import os
 
-from network import *
-from qgis.core import NULL
+from network import Title, Junction, Reservoir, Tank, Pipe, Pump, Valve, Emitter, Coordinate, Tag, QJunction,\
+    QReservoir, QTank, QPipe, Vertex, QOptions, QVertices
+from qgis.core import NULL, QgsSpatialIndex, QgsVertexId
 from system_ops import Controls, Curve, Demand, Energy, Pattern, Rule, Status
 import math
 from ..model.options_report import Times, Report

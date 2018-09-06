@@ -1,6 +1,5 @@
 import math
 from collections import OrderedDict
-
 from qgis.core import QgsGeometry
 
 
