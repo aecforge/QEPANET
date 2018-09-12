@@ -12,7 +12,7 @@ from ..model.binary_out_reader import BinaryOutputReader, OutputParamCodes
 from ..model.options_report import Options, Quality
 from ..tools.select_tool import SelectTool
 from ..tools.data_stores import MemoryDS
-from ..rendering.symbology import LinkSymbology
+from ..rendering.symbology import LinkSymbology, NodeSymbology
 import codecs
 import math
 
@@ -525,18 +525,19 @@ class OutputAnalyserDialog(QDialog):
             if lay is None:
                 if lay_type == LayerType.NODE:
                     lay = self.create_out_node_layer(lay_name, dataset)
+                    ns = NodeSymbology()
+                    lay.setRendererV2(ns.make_graduated_sym_renderer(lay, report_time))
                 elif lay_type == LayerType.LINK:
                     lay = self.create_out_link_layer(lay_name, dataset)
+                    ls = LinkSymbology()
+                    lay.setRendererV2(ls.make_flow_sym_renderer(lay, report_time))
                 lay_id = lay.id()
                 QgsMapLayerRegistry.instance().addMapLayer(lay)
                 self.params.out_layers.append(lay)
             else:
                 lay.setLayerName(lay_name)
 
-            ls = LinkSymbology()
-            lay.setRendererV2(ls.make_flow_sym_renderer(lay, report_time))
             lay.triggerRepaint()
-
             QApplication.restoreOverrideCursor()
 
         finally:

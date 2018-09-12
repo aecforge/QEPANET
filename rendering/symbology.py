@@ -2,7 +2,7 @@ from ..tools.parameters import Parameters
 from PyQt4.QtGui import QColor
 from qgis.core import QgsSvgMarkerSymbolLayerV2, QgsSymbolV2, QgsSingleSymbolRendererV2, QGis, QgsLineSymbolV2,\
     QgsSimpleLineSymbolLayerV2, QgsMarkerSymbolV2, QgsMarkerLineSymbolLayerV2, QgsSimpleMarkerSymbolLayerV2, \
-    QgsGraduatedSymbolRendererV2, QgsRendererRangeV2, QgsFillSymbolV2, QgsDataDefined
+    QgsGraduatedSymbolRendererV2, QgsRendererRangeV2, QgsFillSymbolV2, QgsDataDefined, QgsSimpleMarkerSymbolLayerBase
 import os, sys
 
 
@@ -36,6 +36,62 @@ class NodeSymbology:
         symbol = QgsSymbolV2.defaultSymbol(vlay.geometryType())
         symbol.changeSymbolLayer(0, symbol_layer)
         renderer = QgsSingleSymbolRendererV2(symbol)
+
+        return renderer
+
+    def make_graduated_sym_renderer(self, layer, field_name, ranges_colors=None):
+
+        feats = layer.getFeatures()
+
+        min_val = sys.float_info.max
+        max_val = -min_val
+
+        # Find values range
+        for feat in feats:
+            attr = feat.attribute(field_name)
+            val = float(attr)
+            if val < min_val:
+                min_val = val
+            if val > max_val:
+                max_val = val
+
+        # Define colors
+        if ranges_colors is None:
+            ranges_colors = []
+            colors = [
+                QColor(0, 255, 0),
+                QColor(128, 255, 0),
+                QColor(255, 255, 0),
+                QColor(255, 128, 0),
+                QColor(255, 0, 0)]
+
+            intv_nr = len(colors)
+            intv = (max_val - min_val) / intv_nr
+            for c in range(intv_nr):
+                vrange = [min_val + intv * c, min_val + intv * (c + 1)]
+
+                if c == len(colors) - 1:
+                    vrange[1] = max_val
+
+                ranges_colors.append([vrange, colors[c]])
+
+        range_list = []
+        for range_col in ranges_colors:
+            r_min = range_col[0][0]
+            r_max = range_col[0][1]
+            title = str(r_min) + ' - ' + str(r_max)
+            range_list.append(symbology_from_range(layer, r_min, r_max, range_col[1], title))
+
+        renderer = QgsGraduatedSymbolRendererV2(field_name, range_list)
+
+        # Line
+        symbol = QgsMarkerSymbolV2().createSimple({})
+        symbol.deleteSymbolLayer(0)
+        mark_sym_lay = QgsSimpleMarkerSymbolLayerV2()
+        symbol.appendSymbolLayer(mark_sym_lay)
+
+        # renderer.setSourceSymbol(symbol)
+        renderer.updateSymbols(symbol)
 
         return renderer
 
@@ -130,7 +186,7 @@ class LinkSymbology:
             r_min = range_col[0][0]
             r_max = range_col[0][1]
             title = str(r_min) + ' - ' + str(r_max)
-            range_list.append(self.symbology_from_range(layer, r_min, r_max, range_col[1], title))
+            range_list.append(symbology_from_range(layer, r_min, r_max, range_col[1], title))
 
         renderer = QgsGraduatedSymbolRendererV2(field_name, range_list)
 
@@ -142,7 +198,7 @@ class LinkSymbology:
         symbol.appendSymbolLayer(line_sym_lay)
 
         # Define arrows for flow and velocities
-        if u'Link flow' in layer.name() or u'Link velocity' in layer.name():
+        if u'Link flow' in layer.name() in layer.name():
             self.marker_sym = QgsMarkerSymbolV2.createSimple({'name': 'triangle', 'color': 'black'})
             data_def_angle = QgsDataDefined()
             data_def_angle_exp =\
@@ -191,22 +247,24 @@ class LinkSymbology:
 
         return renderer
 
-    def symbology_from_range(self, layer, min_val, max_val, color, title):
-        symbol = self.get_default_symbol(layer.geometryType())
-        symbol.setColor(color)
-        srange = QgsRendererRangeV2(min_val, max_val, symbol, title)
-        return srange
 
-    def get_default_symbol(self, geom_type):
-        symbol = QgsSymbolV2.defaultSymbol(geom_type)
-        if symbol is None:
-            if geom_type == QGis.Point:
-                symbol = QgsMarkerSymbolV2()
-            elif geom_type == QGis.Line:
-                symbol = QgsLineSymbolV2()
-            elif geom_type == QGis.Polygon:
-                symbol = QgsFillSymbolV2()
-        return symbol
+def symbology_from_range(layer, min_val, max_val, color, title):
+    symbol = get_default_symbol(layer.geometryType())
+    symbol.setColor(color)
+    srange = QgsRendererRangeV2(min_val, max_val, symbol, title)
+    return srange
+
+
+def get_default_symbol( geom_type):
+    symbol = QgsSymbolV2.defaultSymbol(geom_type)
+    if symbol is None:
+        if geom_type == QGis.Point:
+            symbol = QgsMarkerSymbolV2()
+        elif geom_type == QGis.Line:
+            symbol = QgsLineSymbolV2()
+        elif geom_type == QGis.Polygon:
+            symbol = QgsFillSymbolV2()
+    return symbol
 
 
 def refresh_layer(map_canvas, layer):
