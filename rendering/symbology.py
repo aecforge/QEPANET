@@ -1,31 +1,28 @@
-from builtins import str
-from builtins import range
-from builtins import object
 from ..tools.parameters import Parameters
-from qgis.PyQt.QtGui import QColor
-from qgis.core import QgsSvgMarkerSymbolLayer, QgsSymbol, QgsSingleSymbolRenderer, Qgis, QgsLineSymbol,\
-    QgsSimpleLineSymbolLayer, QgsMarkerSymbol, QgsMarkerLineSymbolLayer, QgsSimpleMarkerSymbolLayer, \
-    QgsGraduatedSymbolRenderer, QgsRendererRange, QgsFillSymbol, QgsProperty
+from PyQt4.QtGui import QColor
+from qgis.core import QgsSvgMarkerSymbolLayerV2, QgsSymbolV2, QgsSingleSymbolRendererV2, QGis, QgsLineSymbolV2,\
+    QgsSimpleLineSymbolLayerV2, QgsMarkerSymbolV2, QgsMarkerLineSymbolLayerV2, QgsSimpleMarkerSymbolLayerV2, \
+    QgsGraduatedSymbolRendererV2, QgsRendererRangeV2, QgsFillSymbolV2, QgsDataDefined, QgsSimpleMarkerSymbolLayerBase
 import os, sys
 
 
-class NodeSymbology(object):
+class NodeSymbology:
     def __init__(self):
         pass
 
     def make_simple_node_sym_renderer(self, size=2):
 
-        symbol = QgsMarkerSymbol().createSimple({})
+        symbol = QgsMarkerSymbolV2().createSimple({})
         symbol.deleteSymbolLayer(0)
 
         # Point
-        sim_marker_sym_lay = QgsSimpleMarkerSymbolLayer()
+        sim_marker_sym_lay = QgsSimpleMarkerSymbolLayerV2()
         sim_marker_sym_lay.setColor(QColor(0, 0, 0))
         sim_marker_sym_lay.setFillColor(QColor(0, 0, 0))
         sim_marker_sym_lay.setSize(size)
         symbol.appendSymbolLayer(sim_marker_sym_lay)
 
-        renderer = QgsSingleSymbolRenderer(symbol)
+        renderer = QgsSingleSymbolRendererV2(symbol)
         return renderer
 
     def make_svg_node_sym_renderer(self, vlay, icon_name, size):
@@ -35,10 +32,10 @@ class NodeSymbology(object):
         svg_style = dict()
         svg_style['name'] = os.path.join(current_dir, icon_name)
         svg_style['size'] = str(size)
-        symbol_layer = QgsSvgMarkerSymbolLayer.create(svg_style)
-        symbol = QgsSymbol.defaultSymbol(vlay.geometryType())
+        symbol_layer = QgsSvgMarkerSymbolLayerV2.create(svg_style)
+        symbol = QgsSymbolV2.defaultSymbol(vlay.geometryType())
         symbol.changeSymbolLayer(0, symbol_layer)
-        renderer = QgsSingleSymbolRenderer(symbol)
+        renderer = QgsSingleSymbolRendererV2(symbol)
 
         return renderer
 
@@ -85,12 +82,12 @@ class NodeSymbology(object):
             title = str(r_min) + ' - ' + str(r_max)
             range_list.append(symbology_from_range(layer, r_min, r_max, range_col[1], title))
 
-        renderer = QgsGraduatedSymbolRenderer(field_name, range_list)
+        renderer = QgsGraduatedSymbolRendererV2(field_name, range_list)
 
         # Line
-        symbol = QgsMarkerSymbol().createSimple({})
+        symbol = QgsMarkerSymbolV2().createSimple({})
         symbol.deleteSymbolLayer(0)
-        mark_sym_lay = QgsSimpleMarkerSymbolLayer()
+        mark_sym_lay = QgsSimpleMarkerSymbolLayerV2()
         symbol.appendSymbolLayer(mark_sym_lay)
 
         # renderer.setSourceSymbol(symbol)
@@ -99,36 +96,36 @@ class NodeSymbology(object):
         return renderer
 
 
-class LinkSymbology(object):
+class LinkSymbology:
 
     def __init__(self):
         self.marker_sym = None
 
     def make_simple_link_sym_renderer(self, width=0.2):
 
-        symbol = QgsLineSymbol().createSimple({})
+        symbol = QgsLineSymbolV2().createSimple({})
         symbol.deleteSymbolLayer(0)
 
         # Line
-        line_sym_lay = QgsSimpleLineSymbolLayer()
+        line_sym_lay = QgsSimpleLineSymbolLayerV2()
         line_sym_lay.setWidth(width)
         symbol.appendSymbolLayer(line_sym_lay)
 
-        renderer = QgsSingleSymbolRenderer(symbol)
+        renderer = QgsSingleSymbolRendererV2(symbol)
         return renderer
 
     def make_svg_link_sym_renderer(self, icon_name, svg_size=7, line_width=0.2):
 
-        symbol = QgsLineSymbol().createSimple({})
+        symbol = QgsLineSymbolV2().createSimple({})
         symbol.deleteSymbolLayer(0)
 
         # Line
-        line_sym_lay = QgsSimpleLineSymbolLayer()
+        line_sym_lay = QgsSimpleLineSymbolLayerV2()
         line_sym_lay.setWidth(line_width)
         symbol.appendSymbolLayer(line_sym_lay)
 
         # Symbol
-        self.marker_sym = QgsMarkerSymbol.createSimple({})
+        self.marker_sym = QgsMarkerSymbolV2.createSimple({})
         self.marker_sym.deleteSymbolLayer(0)
 
         # marker_sym_lay = QgsSimpleMarkerSymbolLayerV2()
@@ -136,16 +133,16 @@ class LinkSymbology(object):
         svg_props = dict()
         svg_props['name'] = os.path.join(current_dir, icon_name)
         svg_props['size'] = str(svg_size)
-        marker_sym_lay = QgsSvgMarkerSymbolLayer.create(svg_props)
+        marker_sym_lay = QgsSvgMarkerSymbolLayerV2().create(svg_props)
         self.marker_sym.appendSymbolLayer(marker_sym_lay)
 
-        marker_line_sym_lay = QgsMarkerLineSymbolLayer()
+        marker_line_sym_lay = QgsMarkerLineSymbolLayerV2()
         marker_line_sym_lay.setSubSymbol(self.marker_sym)  # Causes crash !!!
-        marker_line_sym_lay.setPlacement(QgsMarkerLineSymbolLayer.CentralPoint)
+        marker_line_sym_lay.setPlacement(QgsMarkerLineSymbolLayerV2.CentralPoint)
 
         symbol.appendSymbolLayer(marker_line_sym_lay)
 
-        renderer = QgsSingleSymbolRenderer(symbol)
+        renderer = QgsSingleSymbolRendererV2(symbol)
         return renderer
 
     def make_flow_sym_renderer(self, layer, field_name, ranges_colors=None):
@@ -191,19 +188,19 @@ class LinkSymbology(object):
             title = str(r_min) + ' - ' + str(r_max)
             range_list.append(symbology_from_range(layer, r_min, r_max, range_col[1], title))
 
-        renderer = QgsGraduatedSymbolRenderer(field_name, range_list)
+        renderer = QgsGraduatedSymbolRendererV2(field_name, range_list)
 
         # Line
-        symbol = QgsLineSymbol().createSimple({})
+        symbol = QgsLineSymbolV2().createSimple({})
         symbol.deleteSymbolLayer(0)
-        line_sym_lay = QgsSimpleLineSymbolLayer()
+        line_sym_lay = QgsSimpleLineSymbolLayerV2()
         line_sym_lay.setWidth(0.2)
         symbol.appendSymbolLayer(line_sym_lay)
 
         # Define arrows for flow and velocities
         if u'Link flow' in layer.name() in layer.name():
-            self.marker_sym = QgsMarkerSymbol.createSimple({'name': 'triangle', 'color': 'black'})
-            data_def_angle = QgsProperty()
+            self.marker_sym = QgsMarkerSymbolV2.createSimple({'name': 'triangle', 'color': 'black'})
+            data_def_angle = QgsDataDefined()
             data_def_angle_exp =\
                 'case ' \
                     'when  "' + field_name + '"  >= 0 ' \
@@ -221,7 +218,7 @@ class LinkSymbology(object):
             self.marker_sym.setDataDefinedAngle(data_def_angle)
 
             # Size: 0 if attribute = 0
-            data_def_size = QgsProperty()
+            data_def_size = QgsDataDefined()
             data_def_size_exp =\
                 'case ' \
                     'when "' + field_name + '" = 0 ' \
@@ -234,10 +231,10 @@ class LinkSymbology(object):
             self.marker_sym.setDataDefinedSize(data_def_size)
 
 
-            marker_sym_lay = QgsMarkerLineSymbolLayer()
+            marker_sym_lay = QgsMarkerLineSymbolLayerV2()
             marker_sym_lay.setColor(QColor(0, 0, 0))
             marker_sym_lay.setFillColor(QColor(0, 0, 0))
-            marker_sym_lay.setPlacement(QgsMarkerLineSymbolLayer.CentralPoint)
+            marker_sym_lay.setPlacement(QgsMarkerLineSymbolLayerV2.CentralPoint)
             marker_sym_lay.setRotateMarker(False)
             marker_sym_lay.setSubSymbol(self.marker_sym)
 
@@ -254,19 +251,19 @@ class LinkSymbology(object):
 def symbology_from_range(layer, min_val, max_val, color, title):
     symbol = get_default_symbol(layer.geometryType())
     symbol.setColor(color)
-    srange = QgsRendererRange(min_val, max_val, symbol, title)
+    srange = QgsRendererRangeV2(min_val, max_val, symbol, title)
     return srange
 
 
 def get_default_symbol( geom_type):
-    symbol = QgsSymbol.defaultSymbol(geom_type)
+    symbol = QgsSymbolV2.defaultSymbol(geom_type)
     if symbol is None:
-        if geom_type == Qgis.Point:
-            symbol = QgsMarkerSymbol()
-        elif geom_type == Qgis.Line:
-            symbol = QgsLineSymbol()
-        elif geom_type == Qgis.Polygon:
-            symbol = QgsFillSymbol()
+        if geom_type == QGis.Point:
+            symbol = QgsMarkerSymbolV2()
+        elif geom_type == QGis.Line:
+            symbol = QgsLineSymbolV2()
+        elif geom_type == QGis.Polygon:
+            symbol = QgsFillSymbolV2()
     return symbol
 
 

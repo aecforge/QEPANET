@@ -1,12 +1,10 @@
-from builtins import range
-from builtins import object
 import re
 from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve, Status, Demand, Tag, Control, Source, Label,\
     Vertex, Coordinate, Emitter, Reaction, Mixing, Backdrop
 from ..model.options_report import Options, Quality, Report, Times
 from ..model.system_ops import Rule, Status, Curve, Demand, Energy, Pattern
 
-class InpReader(object):
+class InpReader:
     
     def __init__(self, inp_file_name):
 
@@ -25,11 +23,11 @@ class InpReader(object):
     
     ## get Info
     def getBinNodeReservoirIndex(self):
-        ind = list(range(self.getBinNodeJunctionCount() + 1, self.getBinNodeJunctionCount() + self.getBinNodeReservoirCount() + 1))
+        ind = range(self.getBinNodeJunctionCount() + 1, self.getBinNodeJunctionCount() + self.getBinNodeReservoirCount() + 1)
         return ind
     
     def getBinNodeTankIndex(self):
-        ind = list(range(self.getBinNodeJunctionCount() + self.getBinNodeReservoirCount() + 1, self.getBinNodeCount() + 1))
+        ind = range(self.getBinNodeJunctionCount() + self.getBinNodeReservoirCount() + 1, self.getBinNodeCount() + 1)
         return ind
     
     def getBinNodeDemandPatternID(self):

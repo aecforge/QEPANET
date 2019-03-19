@@ -1,10 +1,9 @@
-from builtins import object
 from collections import OrderedDict
 from qgis.core import QgsField
-from qgis.PyQt.QtCore import QVariant
+from PyQt4.QtCore import QVariant
 
 
-class Tables(object):
+class Tables:
 
     pipes_table_name = 'pipes'
     junctions_table_name = 'junctions'
@@ -17,14 +16,14 @@ class Tables(object):
         pass
 
 
-class Title(object):
+class Title:
     section_name = 'TITLE'
 
     def __init__(self, title):
         self.title = title
 
 
-class Node(object):
+class Node:
 
     field_name_eid = 'id'
     field_name_var = 'variable'
@@ -36,7 +35,7 @@ class Node(object):
         self.eid = eid
 
 
-class Junction(object):
+class Junction:
     section_name = 'JUNCTIONS'
     section_header = 'ID               	Elev      	Demand    	Pattern'
     field_name_eid = 'id'
@@ -69,7 +68,7 @@ class Junction(object):
         self.description = ''
         self.tag = ''
 
-class QJunction(object):
+class QJunction:
     section_name = 'QEPANET-JUNCTIONS'
     section_header = 'ID               	DeltaZ'
     field_name_eid = 'id'
@@ -79,7 +78,7 @@ class QJunction(object):
               QgsField(field_name_delta_z, QVariant.Double)]
 
 
-class Reservoir(object):
+class Reservoir:
     section_name = 'RESERVOIRS'
     section_header = 'ID               	Head      	Pattern'
     field_name_eid = 'id'
@@ -110,14 +109,14 @@ class Reservoir(object):
         self.tag = ''
 
 
-class Status(object):
+class Status:
     section_name = 'STATUS'
 
     def __init__(self):
         pass
 
 
-class Tank(object):
+class Tank:
     section_name = 'TANKS'
     section_header = 'ID                	Elevation 	InitLevel 	MinLevel  	MaxLevel  	Diameter  	MinVol    	VolCurve'
     field_name_eid = 'id'
@@ -160,7 +159,7 @@ class Tank(object):
         self.tag = ''
 
 
-class Link(object):
+class Link:
     field_name_eid = 'id'
     field_name_var = 'variable'
 
@@ -171,7 +170,7 @@ class Link(object):
         self.eid = eid
 
 
-class Pipe(object):
+class Pipe:
     section_name = 'PIPES'
     section_header = 'ID                	Node1              	Node2              	Length             	Diameter           	Roughness          	MinorLoss          	Status'
     field_name_eid = 'id'
@@ -212,7 +211,7 @@ class Pipe(object):
         self.tag = ''
 
 
-class Pump(object):
+class Pump:
     section_name = 'PUMPS'
     section_header = 'ID              	Node1           	Node2           	Parameters'
     field_name_eid = 'id'
@@ -250,7 +249,7 @@ class Pump(object):
         self.description = ''
         self.tag = ''
 
-class Valve(object):
+class Valve:
     section_name = 'VALVES'
     section_header = 'ID              	Node1           	Node2           	Diameter   	Type      	Setting   	MinorLoss'
     field_name_eid = 'id'
@@ -297,7 +296,7 @@ class Valve(object):
         self.description = ''
         self.tag = ''
 
-class QReservoir(object):
+class QReservoir:
     section_name = 'QEPANET-RESERVOIRS'
     section_header = 'ID               	DeltaZ             PressureHead'
     field_name_eid = 'id'
@@ -309,7 +308,7 @@ class QReservoir(object):
               QgsField(field_name_pressure_head, QVariant.Double)]
 
 
-class QTank(object):
+class QTank:
     section_name = 'QEPANET-TANKS'
     section_header = 'ID               	DeltaZ'
     field_name_eid = 'id'
@@ -319,7 +318,7 @@ class QTank(object):
               QgsField(field_name_delta_z, QVariant.Double)]
 
 
-class QPipe(object):
+class QPipe:
     section_name = 'QEPANET-PIPES'
     section_header = 'ID               	Material'
     field_name_eid = 'id'
@@ -329,16 +328,16 @@ class QPipe(object):
               QgsField(field_name_material, QVariant.String)]
 
 
-class QVertices(object):
+class QVertices:
     section_name = 'QEPANET-VERTICES'
     section_header = ';Link            	Z-Coord'
 
 
-class QOptions(object):
+class QOptions:
     section_name = 'QOPTIONS'
 
 
-class Coordinate(object):
+class Coordinate:
     section_name = 'COORDINATES'
     section_header = 'Node            	X-Coord         	Y-Coord'
 
@@ -346,7 +345,7 @@ class Coordinate(object):
         pass
 
 
-class Vertex(object):
+class Vertex:
     section_name = 'VERTICES'
     section_header = 'Link            	X-Coord         	Y-Coord'
 
@@ -354,7 +353,7 @@ class Vertex(object):
         pass
 
 
-class Emitter(object):
+class Emitter:
     section_name = 'EMITTERS'
     section_header = 'Junction        	Coefficient'
 
@@ -362,7 +361,7 @@ class Emitter(object):
         pass
 
 
-class Tag(object):
+class Tag:
     section_name = 'TAGS'
     element_type_node = 'NODE'
     element_type_link = 'LINK'
@@ -372,47 +371,47 @@ class Tag(object):
         self.element_id = element_id
         self.tag = tag
 
-class Demand(object):
+class Demand:
     section_name = 'DEMANDS'
 
     def __init__(self):
         pass
 
-class Control(object):
+class Control:
     section_name = 'CONTROLS'
 
     def __init__(self):
         pass
 
-class Label(object):
+class Label:
     section_name = 'LABELS'
 
     def __init__(self):
         pass
 
 
-class Source(object):
+class Source:
     section_name = 'SOURCE'
 
     def __init__(self):
         pass
 
 
-class Reaction(object):
+class Reaction:
     section_name = 'REACTION'
 
     def __init__(self):
         pass
 
 
-class Mixing(object):
+class Mixing:
     section_name = 'MIXING'
 
     def __init__(self):
         pass
 
 
-class Backdrop(object):
+class Backdrop:
     section_name = 'BACKDROP'
 
     def __init__(self):

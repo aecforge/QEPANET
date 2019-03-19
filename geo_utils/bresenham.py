@@ -1,6 +1,3 @@
-from builtins import range
-
-
 def get_line(start, end):
     """Bresenham's Line Algorithm
     Produces a list of tuples from start and end

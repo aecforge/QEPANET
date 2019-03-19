@@ -1,26 +1,22 @@
-from __future__ import absolute_import
 # Modified from https://plugins.qgis.org/plugins/ImportEpanetInpFiles/
 # (C)Marios Kyriakou 2016
 # University of Cyprus, KIOS Research Center for Intelligent Systems and Networks
 
-from builtins import str
-from builtins import range
-from builtins import object
 from collections import OrderedDict
-from qgis.core import QgsFeature, QgsGeometry, NULL, QgsPoint, QgsPointXY, QgsLineString
-from .network import Junction, Reservoir, Tank, Pipe, Pump, Valve, QJunction, QReservoir, QTank, QPipe, QVertices
+from qgis.core import QgsFeature, QgsPoint, QgsGeometry, NULL, QgsPointV2, QgsWKBTypes, QgsLineStringV2
+from network import Junction, Reservoir, Tank, Pipe, Pump, Valve, QJunction, QReservoir, QTank, QPipe, QVertices
 
 # import readEpanetFile as ref
-from . import read_epanet_file
+import read_epanet_file
 import os
-from .inp_writer import InpFile
+from inp_writer import InpFile
 from ..tools.data_stores import MemoryDS
 from .options_report import Options, Unbalanced, Quality, Report, Hour, Times
 from .system_ops import Rule
 import codecs
 
 
-class InpReader(object):
+class InpReader:
 
     def __init__(self, inp_path):
         self.params = None
@@ -221,13 +217,13 @@ class InpReader(object):
 
             if i < ref.getBinNodeJunctionCount():
                 featJ = QgsFeature()
-                point = QgsPointXY(float(x[i]), float(y[i]))
+                point = QgsPoint(float(x[i]), float(y[i]))
 
                 delta_z = 0
                 if qepanet_junctions_od:
                     delta_z = qepanet_junctions_od[ndID[i]]
 
-                featJ.setGeometry(QgsGeometry.fromPointXY(point))
+                featJ.setGeometry(QgsGeometry.fromPoint(point))
 
                 # Emitter
                 emitter_coeff = NULL
@@ -258,8 +254,8 @@ class InpReader(object):
                 if i in pump_index:
 
                     # Pump
-                    point1 = QgsPointXY(float(x1[i]), float(y1[i]))
-                    point2 = QgsPointXY(float(x2[i]), float(y2[i]))
+                    point1 = QgsPoint(float(x1[i]), float(y1[i]))
+                    point2 = QgsPoint(float(x2[i]), float(y2[i]))
 
                     chPowerPump = ref.getBinLinkPumpPower()
                     cheadpump = ref.getBinLinkPumpCurveNameID()
@@ -327,7 +323,7 @@ class InpReader(object):
                                 break
 
                     featPump = QgsFeature()
-                    featPump.setGeometry(QgsGeometry.fromPolylineXY([point1, point2]))
+                    featPump.setGeometry(QgsGeometry.fromPolyline([point1, point2]))
 
                     tag = ''
                     if linkID[i] in tags_d:
@@ -342,15 +338,15 @@ class InpReader(object):
 
                 elif i in valve_index:
                     # Valve
-                    point1 = QgsPointXY(float(x1[i]), float(y1[i]))
-                    point2 = QgsPointXY(float(x2[i]), float(y2[i]))
+                    point1 = QgsPoint(float(x1[i]), float(y1[i]))
+                    point2 = QgsPoint(float(x2[i]), float(y2[i]))
 
                     length = 0
                     diameter = 0
                     roughness = 0
                     minorloss = 0
                     featValve = QgsFeature()
-                    featValve.setGeometry((QgsGeometry.fromPolylineXY([point1, point2])))
+                    featValve.setGeometry((QgsGeometry.fromPolyline([point1, point2])))
 
                     linkID = ref.getBinLinkValveNameID()
                     descs = ref.get_valves_desc()
@@ -404,11 +400,12 @@ class InpReader(object):
                         if ndID[j] == end_node_id:
                             end_node_elev = ndEle[j] + delta_z
 
-                    point1 = QgsPoint(float(x1[i]), float(y1[i]), start_node_elev)
-                    point2 = QgsPoint(float(x2[i]), float(y2[i]), end_node_elev)
+                    point1 = QgsPointV2(QgsWKBTypes.PointZ, float(x1[i]), float(y1[i]), start_node_elev)
+                    point2 = QgsPointV2(QgsWKBTypes.PointZ, float(x2[i]), float(y2[i]), end_node_elev)
 
                     if vertx[i]:
-                        parts = [point1]
+                        parts = []
+                        parts.append(point1)
                         for mm in range(len(vertxyFinal[kk])):
                             a = vertxyFinal[kk][mm]
 
@@ -416,11 +413,11 @@ class InpReader(object):
                             if linkID[i] in qepanet_vertices_od:
                                 z = qepanet_vertices_od[linkID[i]]
 
-                            parts.append(QgsPoint(a[0], a[1], z))
+                            parts.append(QgsPointV2(QgsWKBTypes.PointZ, a[0], a[1], z))
 
                         parts.append(point2)
                         featPipe = QgsFeature()
-                        linestring = QgsLineString()
+                        linestring = QgsLineStringV2()
                         linestring.setPoints(parts)
                         geom_3d = QgsGeometry(linestring)
                         featPipe.setGeometry(geom_3d)
@@ -431,7 +428,7 @@ class InpReader(object):
                         # point1 = QgsPoint(float(x1[i]), float(y1[i]))
                         # point2 = QgsPoint(float(x2[i]), float(y2[i]))
 
-                        linestring = QgsLineString()
+                        linestring = QgsLineStringV2()
                         linestring.setPoints([point1, point2])
                         geom_3d = QgsGeometry(linestring)
                         featPipe.setGeometry(geom_3d)
@@ -455,8 +452,8 @@ class InpReader(object):
             if i < ref.getBinNodeTankCount():
                 p = ref.getBinNodeTankIndex()[i] - 1
                 featTank = QgsFeature()
-                point = QgsPointXY(float(x[p]), float(y[p]))
-                featTank.setGeometry(QgsGeometry.fromPointXY(point))
+                point = QgsPoint(float(x[p]), float(y[p]))
+                featTank.setGeometry(QgsGeometry.fromPoint(point))
 
                 delta_z = 0
                 if ndTankID[i] in qepanet_tanks_od:
@@ -477,8 +474,8 @@ class InpReader(object):
                 p = ref.getBinNodeReservoirIndex()[i] - 1
 
                 feat_reserv = QgsFeature()
-                point = QgsPointXY(float(x[p]), float(y[p]))
-                feat_reserv.setGeometry(QgsGeometry.fromPointXY(point))
+                point = QgsPoint(float(x[p]), float(y[p]))
+                feat_reserv.setGeometry(QgsGeometry.fromPoint(point))
 
                 delta_z = 0
                 if ndID[p] in qepanet_reservoirs_deltaz_od:
@@ -597,7 +594,7 @@ class InpReader(object):
                     time += 12
                 self.params.times.clocktime_start = time
             elif t[0].upper() == 'STATISTIC':
-                for key, text in Times.stats_text.items():
+                for key, text in Times.stats_text.iteritems():
                     if t[1].upper() == text.upper():
                         self.params.times.statistic = key
                         break

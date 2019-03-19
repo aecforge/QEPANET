@@ -1,21 +1,19 @@
-from __future__ import absolute_import
-from builtins import str
-from builtins import zip
-from builtins import range
-from qgis.core import QgsPoint, QgsVertexId, NULL
-from qgis.PyQt import QtCore
-from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QPushButton
-from .graphs import MyMplCanvas
+from qgis.core import QgsPoint, QgsGeometry, QgsPointV2, QgsLineStringV2, QgsWKBTypes, QgsVertexId, QgsFeature, NULL
+from PyQt4 import QtCore
+from PyQt4.QtGui import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QPushButton, QIcon
+from graphs import MyMplCanvas
 from ..geo_utils import bresenham, raster_utils, vector_utils
 from ..model.network_handling import LinkHandler, NetworkUtils, Junction, Pipe
+from matplotlib.lines import Line2D
 from matplotlib.path import Path
 from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 from collections import OrderedDict
+import utils
 import matplotlib.patches as patches
 import numpy as np
 import math
 import os
-from .utils import set_up_button
+from utils import set_up_button
 
 
 class PipeSectionDialog(QDialog):
@@ -133,11 +131,11 @@ class PipeSectionDialog(QDialog):
 
     def btn_ok_clicked(self):
         new_zs = self.static_canvas.pipe_line.get_ydata()
-        pipe_geom_v2 = self.pipe_ft.geometry().get()
+        pipe_geom_v2 = self.pipe_ft.geometry().geometry()
         for p in range(pipe_geom_v2.vertexCount(0, 0)):
             vertex_id = QgsVertexId(0, 0, p, QgsVertexId.SegmentVertex)
             vertex = pipe_geom_v2.vertexAt(vertex_id)
-            new_pos_pt = QgsPoint(vertex.x(), vertex.y())
+            new_pos_pt = QgsPointV2(vertex.x(), vertex.y())
             new_pos_pt.addZValue(new_zs[p])
 
             LinkHandler.move_link_vertex(self.params, self.params.pipes_vlay, self.pipe_ft, new_pos_pt, p)
@@ -189,7 +187,7 @@ class PipeSectionDialog(QDialog):
 
         total_dist = 0
         dist_z = OrderedDict()
-        pipe_geom_v2 = pipe_geom.get()
+        pipe_geom_v2 = pipe_geom.geometry()
         dist_z[0] = start_node_z + start_node_deltaz
 
         # Interpolate deltaZs for remaining vertices
@@ -209,7 +207,7 @@ class PipeSectionDialog(QDialog):
 
     def find_line_distz3D(self):
 
-        pipe_geom_v2 = self.pipe_ft.geometry().get()
+        pipe_geom_v2 = self.pipe_ft.geometry().geometry()
 
         # Find start and end nodes (needed to know delta z)
         (start_node_ft, end_node_ft) = NetworkUtils.find_start_end_nodes(self.params, self.pipe_ft.geometry())
@@ -294,15 +292,15 @@ class SectionCanvas(MyMplCanvas):
         self.axes = self.figure.add_subplot(1, 1, 1)
 
         # DEM line
-        self.dem_line, = self.axes.plot(list(dem_xy.keys()), list(dem_xy.values()), color='brown', lw=1)
+        self.dem_line, = self.axes.plot(dem_xy.keys(), dem_xy.values(), color='brown', lw=1)
 
         # Pipe patch
-        path, maxs = self.build_path(list(pipe_xy.keys()), list(pipe_xy.values()))
+        path, maxs = self.build_path(pipe_xy.keys(), pipe_xy.values())
         self.pipe_patch = patches.PathPatch(path, edgecolor='b', facecolor='none')
         # self.pipe_patch.set_animated(True)
 
         # Pipe line
-        x, y = list(zip(*self.pipe_patch.get_path().vertices))
+        x, y = zip(*self.pipe_patch.get_path().vertices)
         self.pipe_line, = self.axes.plot(x, y, color='r', lw=0.5, marker='o', markerfacecolor='r', animated=True)
 
         self.axes.add_line(self.dem_line)
@@ -452,11 +450,11 @@ class SectionCanvas(MyMplCanvas):
 
         vertices[self._ind] = x, y
 
-        pipe_geom_v2 = self.pipe_ft.geometry().get()
+        pipe_geom_v2 = self.pipe_ft.geometry().geometry()
 
         # Interpolate remaining vertices
         for v in range(1, len(vertices) - 1):
-            distance = self.find_distance(self.pipe_ft.geometry().get(), v)
+            distance = self.find_distance(self.pipe_ft.geometry().geometry(), v)
             vertex = pipe_geom_v2.vertexAt(QgsVertexId(0, 0, v, QgsVertexId.SegmentVertex))
             z = raster_utils.read_layer_val_from_coord(self.params.dem_rlay, QgsPoint(vertex.x(), vertex.y()))
 
@@ -473,7 +471,7 @@ class SectionCanvas(MyMplCanvas):
             # z = (distance / self.pipe_ft.geometry().length() * (vertices[-1][1] - vertices[0][1])) + vertices[0][1]
             vertices[v] = vertices[v][0], z + delta_z
 
-        self.pipe_line.set_data(list(zip(*vertices)))
+        self.pipe_line.set_data(zip(*vertices))
 
         self.restore_region(self.background)
         self.axes.draw_artist(self.pipe_patch)

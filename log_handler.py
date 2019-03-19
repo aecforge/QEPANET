@@ -2,7 +2,7 @@
 
 import logging
 
-from qgis.PyQt.QtCore import QObject, pyqtSignal
+from PyQt4.QtCore import QObject, pyqtSignal
 
 
 class SignalEmitter (QObject):

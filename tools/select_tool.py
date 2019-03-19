@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QColor, QCursor
-from qgis.PyQt.QtWidgets import QApplication
-from qgis.core import Qgis, QgsSnappingConfig, QgsPoint
+from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QColor, QApplication, QCursor
+from qgis.core import QGis, QgsPointLocator, QgsPoint
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
 from ..model.network_handling import NetworkUtils, NodeHandler, LinkHandler
-from .parameters import Parameters
+from parameters import Parameters
 from ..geo_utils import raster_utils, vector_utils
 from ..rendering import symbology
 
@@ -25,7 +23,7 @@ class SelectTool(QgsMapTool):
 
         self.elev = -1
         self.vertex_marker = QgsVertexMarker(self.canvas())
-        self.rubber_band = QgsRubberBand(self.data_dock.iface.mapCanvas())
+        self.rubber_band = QgsRubberBand(self.data_dock.iface.mapCanvas(), QGis.Polygon)
         self.mouse_clicked = False
         self.snapper = None
 
@@ -105,7 +103,7 @@ class SelectTool(QgsMapTool):
 
                 modifiers = QApplication.keyboardModifiers()
                 if modifiers == Qt.ShiftModifier:
-                    selected_ft_ids = snapped_layer.selectedFeatureIds()
+                    selected_ft_ids = snapped_layer.selectedFeaturesIds()
                     selected_ft_ids.append(snapped_ft.id())
                     snapped_layer.select(selected_ft_ids)
                 else:
@@ -133,13 +131,13 @@ class SelectTool(QgsMapTool):
                                 layer.id() == self.params.pumps_vlay.id() or\
                                 layer.id() == self.params.valves_vlay.id():
 
-                            layer.selectByIds([])
-                            if Qgis.QGIS_VERSION_INT < 21600:
+                            layer.setSelectedFeatures([])
+                            if QGis.QGIS_VERSION_INT < 21600:
                                 layer.select(rubber_band_rect, False)
                             else:
                                 layer.selectByRect(rubber_band_rect, False)
 
-                    self.rubber_band.reset(Qgis.Polygon)
+                    self.rubber_band.reset(QGis.Polygon)
 
                 # No rubber band: clear selection
                 else:
@@ -195,14 +193,12 @@ class SelectTool(QgsMapTool):
         # snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, snapping_type=QgsSnapper.SnapToSegment)
 
         layers = {
-            self.params.junctions_vlay: QgsSnappingConfig.Vertex,
-            self.params.reservoirs_vlay: QgsSnappingConfig.Vertex,
-            self.params.tanks_vlay: QgsSnappingConfig.Vertex,
-            self.params.pipes_vlay: QgsSnappingConfig.VertexAndSegment
-        }
+            self.params.junctions_vlay: QgsPointLocator.Vertex,
+            self.params.reservoirs_vlay: QgsPointLocator.Vertex,
+            self.params.tanks_vlay: QgsPointLocator.Vertex,
+            self.params.pipes_vlay: QgsPointLocator.All}
         self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
-        self.snapper.toggleEnabled()
-        
+
         # Editing
         if not self.params.junctions_vlay.isEditable():
             self.params.junctions_vlay.startEditing()
@@ -231,7 +227,7 @@ class SelectTool(QgsMapTool):
 
     def show_rect(self, start_point, end_point):
 
-        self.rubber_band.reset(Qgis.Polygon)
+        self.rubber_band.reset(QGis.Polygon)
         if start_point.x() == end_point.x() or start_point.y() == end_point.y():
             return
 

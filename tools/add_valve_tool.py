@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-from qgis.PyQt.QtCore import Qt, QPoint
-from qgis.PyQt.QtGui import QColor
-from qgis.PyQt.QtWidgets import QMenu
-from qgis.core import QgsGeometry, QgsFeatureRequest, QgsSnappingConfig, Qgis, QgsWkbTypes
-from qgis.gui import QgsMapTool, QgsVertexMarker
+from PyQt4.QtCore import Qt, QPoint
+from PyQt4.QtGui import QColor, QMenu
+from qgis.core import QgsPoint, QgsSnapper, QgsGeometry, QgsFeatureRequest, QgsProject, QgsTolerance, QGis, QgsPointLocator
+from qgis.gui import QgsMapTool, QgsVertexMarker, QgsMessageBar
 
 from ..model.network import Valve, Pipe
 from ..model.network_handling import LinkHandler, NetworkUtils, PumpValveCreationException
-from .parameters import Parameters
+from parameters import Parameters
 from ..geo_utils import raster_utils, vector_utils
 from ..ui.diameter_dialog import DiameterDialog
 
@@ -98,7 +96,7 @@ class AddValveTool(QgsMapTool):
             # No pipe snapped: notify user
             if self.snapped_pipe_id is None:
 
-                self.iface.messageBar().pushMessage(Parameters.plug_in_name, 'You need to snap the cursor to a pipe to add a valve.', Qgis.Info, 5)
+                self.iface.messageBar().pushMessage(Parameters.plug_in_name, 'You need to snap the cursor to a pipe to add a valve.', QgsMessageBar.INFO, 5)
 
             # A pipe has been snapped
             else:
@@ -112,12 +110,12 @@ class AddValveTool(QgsMapTool):
                     (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.params, features[0].geometry())
 
                     if not start_node or not end_node:
-                        self.iface.messageBar().pushMessage(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.', Qgis.Warning, 5)      # TODO: softcode
+                        self.iface.messageBar().pushMessage(Parameters.plug_in_name, 'The pipe is missing the start or end nodes.', QgsMessageBar.WARNING, 5)      # TODO: softcode
                         return
 
                     # Find endnode closest to valve position
-                    dist_1 = start_node.geometry().distance(QgsGeometry.fromPointXY(self.snapped_vertex))
-                    dist_2 = end_node.geometry().distance(QgsGeometry.fromPointXY(self.snapped_vertex))
+                    dist_1 = start_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
+                    dist_2 = end_node.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex))
 
                     # Get the attributes of the closest junction
                     (start_node, end_node) = NetworkUtils.find_start_end_nodes(self.params, features[0].geometry(), False, True, True)
@@ -169,8 +167,8 @@ class AddValveTool(QgsMapTool):
                     except PumpValveCreationException as ex:
                         self.iface.messageBar().pushMessage(
                             Parameters.plug_in_name,
-                            ', '.join(ex.args),
-                            Qgis.Info,
+                            ex.message,
+                            QgsMessageBar.INFO,
                             5)
 
         elif event.button() == Qt.RightButton:
@@ -178,7 +176,7 @@ class AddValveTool(QgsMapTool):
             self.mouse_clicked = False
 
             # Check whether it clicked on a valve vertex
-            if len(NetworkUtils.find_adjacent_links(self.params, self.snapped_vertex)['valves']) == 0 or self.snapped_pipe_id is None:
+            if len(NetworkUtils.find_adjacent_links(self.params, self.snapped_vertex)['valves']) == 0:
                 return
 
             menu = QMenu()
@@ -222,7 +220,7 @@ class AddValveTool(QgsMapTool):
                             self.iface.messageBar().pushMessage(
                                 Parameters.plug_in_name,
                                 'Diameters of pipes adjacent to valve updated.',
-                                Qgis.Info,
+                                QgsMessageBar.INFO,
                                 5)  # TODO: softcode
 
                     elif action == invert_action:
@@ -242,26 +240,26 @@ class AddValveTool(QgsMapTool):
 
                                         geom = adj_link.geometry()
 
-                                        if geom.wkbType() == QgsWkbTypes.MultiLineString:
+                                        if geom.wkbType() == QGis.WKBMultiLineString:
                                             nodes = geom.asMultiPolyline()
                                             for line in nodes:
                                                 line.reverse()
-                                            newgeom = QgsGeometry.fromMultiPolylineXY(nodes)
+                                            newgeom = QgsGeometry.fromMultiPolyline(nodes)
                                             self.params.valves_vlay.changeGeometry(adj_link.id(), newgeom)
 
-                                        if geom.wkbType() == QgsWkbTypes.LineString:
+                                        if geom.wkbType() == QGis.WKBLineString:
                                             nodes = geom.asPolyline()
                                             nodes.reverse()
-                                            newgeom = QgsGeometry.fromPolylineXY(nodes)
+                                            newgeom = QgsGeometry.fromPolyline(nodes)
                                             self.params.valves_vlay.changeGeometry(adj_link.id(), newgeom)
 
                                         self.iface.mapCanvas().refresh()
 
                                         break
 
-            self.iface.mapCanvas().refresh()
-
     def activate(self):
+
+        snap_layer_pipes = NetworkUtils.set_up_snap_layer(self.params.pipes_vlay, None, QgsSnapper.SnapToVertexAndSegment)
 
         self.update_snapper()
 
@@ -275,12 +273,12 @@ class AddValveTool(QgsMapTool):
 
     def deactivate(self):
 
-        # QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
-        #                                               True,
-        #                                               QgsSnapper.SnapToSegment,
-        #                                               QgsTolerance.MapUnits,
-        #                                               0,
-        #                                               True)
+        QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
+                                                      True,
+                                                      QgsSnapper.SnapToSegment,
+                                                      QgsTolerance.MapUnits,
+                                                      0,
+                                                      True)
 
         self.data_dock.btn_add_valve.setChecked(False)
 
@@ -300,11 +298,8 @@ class AddValveTool(QgsMapTool):
         self.canvas().scene().removeItem(self.outlet_marker)
 
     def update_snapper(self):
-        layers = {
-            self.params.pipes_vlay: QgsSnappingConfig.VertexAndSegment
-        }
+        layers = {self.params.pipes_vlay: QgsPointLocator.All}
         self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
-        self.snapper.toggleEnabled()
 
     # Needed by Observable
     def update(self, observable):

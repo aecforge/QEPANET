@@ -1,6 +1,4 @@
-from builtins import str
-from builtins import object
-class Options(object):
+class Options:
 
     section_name = 'OPTIONS'
 
@@ -82,7 +80,7 @@ class Options(object):
             self.tolerance = 0.01
 
 
-class Hydraulics(object):
+class Hydraulics:
 
     action_use = 0
     action_save = 1
@@ -96,7 +94,7 @@ class Hydraulics(object):
         self.file = None
 
 
-class Quality(object):
+class Quality:
 
     section_name = 'QUALITY'
 
@@ -124,7 +122,7 @@ class Quality(object):
         self.quality_tol = 0.01
 
 
-class Unbalanced(object):
+class Unbalanced:
     unb_stop = 0
     unb_continue = 1
 
@@ -136,7 +134,7 @@ class Unbalanced(object):
         self.trials = 0
 
 
-class Times(object):
+class Times:
 
     section_name = 'TIMES'
 
@@ -167,7 +165,7 @@ class Times(object):
         self.statistic = Times.stats_none
 
 
-class Hour(object):
+class Hour:
 
     def __init__(self, hours, mins):
         self.hours = hours
@@ -193,7 +191,7 @@ class Hour(object):
         self.mins = int(hhmm_string[3:5])
 
 
-class Report(object):
+class Report:
 
     section_name = 'REPORT'
     status_yes = 0

@@ -20,24 +20,20 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
-from __future__ import absolute_import
 
-from builtins import str
 import os
 
-from qgis.PyQt import QtCore, uic, QtGui
-from qgis.PyQt.QtCore import Qt, pyqtSignal
-from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox, QApplication, QLabel, QToolTip, QDockWidget
-from qgis.PyQt.QtGui import QPixmap, QCursor
-from qgis.gui import QgsProjectionSelectionDialog
-from qgis.core import QgsProject, QgsFeatureRequest, QgsMapLayer, Qgis
+from PyQt4 import QtCore, uic, QtGui
+from PyQt4.QtCore import Qt, pyqtSignal
+from PyQt4.QtGui import QFileDialog, QMessageBox, QApplication, QPixmap, QLabel, QColor, QToolTip, QCursor
+from qgis.gui import QgsGenericProjectionSelector, QgsMessageBar
+from qgis.core import QgsMapLayerRegistry, QgsFeatureRequest, QgsMapLayer, QgsCoordinateReferenceSystem
 
 from ..geo_utils.utils import LayerUtils as lay_utils
-from .options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog, ReportDialog
-from .output_ui import OutputAnalyserDialog, LogDialog
+from options_dialogs import HydraulicsDialog, QualityDialog, ReactionsDialog, TimesDialog, EnergyDialog, ReportDialog
+from output_ui import OutputAnalyserDialog, LogDialog
 from ..model.options_report import Options
-from .curvespatterns_ui import GraphDialog
+from curvespatterns_ui import GraphDialog
 from ..model.inp_writer import InpFile
 from ..model.inp_reader import InpReader
 from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve
@@ -54,17 +50,18 @@ from ..tools.add_tank_tool import AddTankTool
 from ..tools.add_valve_tool import AddValveTool
 from ..tools.move_tool import MoveTool
 from ..tools.data_stores import MemoryDS
+from ..tools.exceptions import ShpExistsExcpetion
 from ..tools.delete_tool import DeleteTool
 from ..tools.parameters import Parameters, RegExValidators, ConfigFile
-from .tags_dialog import TagsDialog
-from .utils import prepare_label as pre_l, set_up_button
-from . import misc
+from tags_dialog import TagsDialog
+from utils import prepare_label as pre_l, set_up_button
+import misc
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'qepanet_dockwidget.ui'))
 
 
-class QEpanetDockWidget(QDockWidget, FORM_CLASS):
+class QEpanetDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
 
@@ -154,8 +151,8 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
         # Layers
         self.cbo_dem.activated.connect(self.cbo_dem_activated)
 
-        QgsProject.instance().legendLayersAdded.connect(self.update_layers_combos)
-        QgsProject.instance().layerRemoved.connect(self.update_layers_combos)
+        QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.update_layers_combos)
+        QgsMapLayerRegistry.instance().layerRemoved.connect(self.update_layers_combos)
         self.update_layers_combos()
         self.preselect_layers_combos()
 
@@ -223,13 +220,13 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
 
         self.cbo_pipe_roughness.clear()
 
-        for key, value in roughnesses_od.items():
+        for key, value in roughnesses_od.iteritems():
             val_min, val_max = value[Options.headloss_cm]
             self.cbo_pipe_roughness.addItem(key, value)
 
         self.update_roughness_params(
             self.cbo_pipe_roughness.itemData(self.cbo_pipe_roughness.currentIndex())[self.params.options.headloss])
-        self.cbo_pipe_roughness.activated.connect(self.cbo_pipe_roughness_activated)
+        QtCore.QObject.connect(self.cbo_pipe_roughness, QtCore.SIGNAL('activated(int)'), self.cbo_pipe_roughness_activated)
 
         self.sli_pipe_roughness.valueChanged.connect(self.roughness_slider_changed)
 
@@ -249,7 +246,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
 
         self.txt_pump_power.setValidator(RegExValidators.get_pos_decimals())
 
-        self.cbo_pump_param.activated.connect(self.cbo_pump_param_activated)
+        QtCore.QObject.connect(self.cbo_pump_param, QtCore.SIGNAL('activated(int)'), self.cbo_pump_param_activated)
 
         self.txt_pump_speed.setValidator(RegExValidators.get_pos_decimals())
 
@@ -260,10 +257,10 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
 
         # Valves -------------------------------------------------------------------------------------------------------
         self.cbo_valve_type.clear()
-        for key, value in Valve.types.items():
+        for key, value in Valve.types.iteritems():
             self.cbo_valve_type.addItem(value, key)
 
-        self.cbo_valve_type.activated.connect(self.cbo_valve_type_activated)
+        QtCore.QObject.connect(self.cbo_valve_type, QtCore.SIGNAL('activated(int)'), self.cbo_valve_type_activated)
 
         self.cbo_valve_status.clear()
         self.cbo_valve_status.addItem('None', Valve.status_none)  # TODO: softcode
@@ -376,7 +373,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
         else:
             self.params.valves_vlay = MemoryDS.create_valves_lay(crs=crs)
 
-        QgsProject.instance().addMapLayers([self.params.junctions_vlay,
+        QgsMapLayerRegistry.instance().addMapLayers([self.params.junctions_vlay,
                                                     self.params.reservoirs_vlay,
                                                     self.params.tanks_vlay,
                                                     self.params.pipes_vlay,
@@ -469,9 +466,9 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
     def setCursor(self):
         self.my_cursor_xpm = [
             "16 16 3 1",
-            "       c None",
-            ".      c #000000",
-            "+      c #FFFFFF",
+            " »     c None",
+            ".»     c #000000",
+            "+»     c #FFFFFF",
             "                ",
             "       +.+      ",
             "      ++.++     ",
@@ -531,7 +528,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
 
         # If attibute changed is elev or deltaz, update pipe length
         for elev_field_name in elev_field_names:
-            if idx == layer.fields().lookupField(elev_field_name):
+            if idx == layer.fieldNameIndex(elev_field_name):
                 # Get feature
                 for feat in layer.getFeatures(QgsFeatureRequest().setFilterFid(fid)):
                     # Get adjacent links and update length
@@ -617,7 +614,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
     # TODO: update snappers in all the tools that use snapping
     def cbo_dem_activated(self, index):
         layer_id = self.cbo_dem.itemData(index)
-        self.params.dem_rlay = QgsProject.instance().mapLayer(layer_id)
+        self.params.dem_rlay = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
     def cbo_pipe_roughness_activated(self):
         self.update_roughness_params(self.get_combo_current_data(self.cbo_pipe_roughness)[self.params.options.headloss])
@@ -674,7 +671,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
 
         self.btn_project_load.setChecked(False)
 
-        inp_file_path, __ = QFileDialog.getOpenFileName(self, 'Open inp file', self.params.last_project_dir, 'Inp files (*.inp)')
+        inp_file_path = QFileDialog.getOpenFileName(self, 'Open inp file', self.params.last_project_dir, 'Inp files (*.inp)')
 
         if inp_file_path is not None and inp_file_path:
             self.inp_file_path = inp_file_path
@@ -730,7 +727,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
             self.iface.messageBar().pushMessage(
                 Parameters.plug_in_name,
                 'Project saved.',
-                Qgis.Info,
+                QgsMessageBar.INFO,
                 5)  # TODO: softcode
 
         finally:
@@ -740,7 +737,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
 
         self.btn_project_saveas.setChecked(False)
 
-        inp_file_path, __ = QFileDialog.getSaveFileName(
+        inp_file_path = QFileDialog.getSaveFileName(
             self, 'Save project as...', self.params.last_project_dir, 'INP files (*.inp)')
 
         if inp_file_path is not None and inp_file_path:
@@ -756,7 +753,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
                 self.iface.messageBar().pushMessage(
                     Parameters.plug_in_name,
                     'Project saved.',
-                    Qgis.Info,
+                    QgsMessageBar.INFO,
                     5)  # TODO: softcode
 
             finally:
@@ -765,7 +762,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
     def btn_epanet_run_clicked(self):
 
         config_file = ConfigFile(Parameters.config_file_path)
-        inp_file_path, __ = QFileDialog.getOpenFileName(
+        inp_file_path = QFileDialog.getOpenFileName(
             self,
             'Select INP file',
             config_file.get_last_inp_file(),
@@ -791,7 +788,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
                     self,
                     Parameters.plug_in_name,
                     rpt_file + u' not found!',  # TODO: softcode
-                    QMessageBox.Ok)
+                    QMessageBox.Warning)
                 return
 
             self.log_dialog = LogDialog(self.iface.mainWindow(), rpt_file)
@@ -804,66 +801,64 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
 
     def update_layers_combos(self):
 
-        # prev_dem_lay_id = self.cbo_dem.itemData(self.cbo_dem.currentIndex())
-        prev_dem_lay_text = self.get_combo_current_text(self.cbo_dem)
+        prev_dem_lay_id = self.cbo_dem.itemData(self.cbo_dem.currentIndex())
 
         self.cbo_dem.clear()
         self.cbo_dem.addItem('', None)
 
-        layers = QgsProject.instance().mapLayers()
+        layers = self.iface.legendInterface().layers()
         raster_count = 0
-
-        for id, layer in layers.items():
+        for layer in layers:
             if layer is not None:
                 if QgsMapLayer is not None:
                     if layer.type() == QgsMapLayer.RasterLayer:
                         raster_count += 1
                         self.cbo_dem.addItem(layer.name(), layer.id())
 
-        self.set_layercombo_index(self.cbo_dem, prev_dem_lay_text)
+        self.set_layercombo_index(self.cbo_dem, prev_dem_lay_id)
 
     def preselect_layers_combos(self):
 
-        for layer_id in QgsProject.instance().mapLayers():
+        for layer_id in QgsMapLayerRegistry.instance().mapLayers():
 
-            layer = QgsProject.instance().mapLayer(layer_id)
+            layer = QgsMapLayerRegistry.instance().mapLayer(layer_id)
 
             names = ['dtm', 'dem']
-            if any([x.lower() in QgsProject.instance().mapLayer(layer_id).name().lower() for x in names]):
+            if any([x.lower() in QgsMapLayerRegistry.instance().mapLayer(layer_id).name().lower() for x in names]):
+                self.set_layercombo_index(self.cbo_dem, layer_id)
                 self.params.dem_rlay = layer
-                self.set_layercombo_index(self.cbo_dem, layer.name())
 
     def apply_symbologies(self):
 
         if self.params.junctions_vlay is not None:
             ns = symbology.NodeSymbology()
             renderer = ns.make_simple_node_sym_renderer(2)
-            self.params.junctions_vlay.setRenderer(renderer)
+            self.params.junctions_vlay.setRendererV2(renderer)
 
         if self.params.reservoirs_vlay is not None:
             ns = symbology.NodeSymbology()
             renderer = ns.make_svg_node_sym_renderer(self.params.reservoirs_vlay, misc.reservoir_icon_svg_name, 7)
-            self.params.reservoirs_vlay.setRenderer(renderer)
+            self.params.reservoirs_vlay.setRendererV2(renderer)
 
         if self.params.tanks_vlay is not None:
             ns = symbology.NodeSymbology()
             renderer = ns.make_svg_node_sym_renderer(self.params.tanks_vlay, misc.tank_icon_svg_name, 7)
-            self.params.tanks_vlay.setRenderer(renderer)
+            self.params.tanks_vlay.setRendererV2(renderer)
 
         if self.params.pipes_vlay is not None:
             ls = symbology.LinkSymbology()
             renderer = ls.make_simple_link_sym_renderer()
-            self.params.pipes_vlay.setRenderer(renderer)
+            self.params.pipes_vlay.setRendererV2(renderer)
 
         if self.params.pumps_vlay is not None:
             ls = symbology.LinkSymbology()
             renderer = ls.make_svg_link_sym_renderer(misc.pump_icon_svg_name, 7)
-            self.params.pumps_vlay.setRenderer(renderer)
+            self.params.pumps_vlay.setRendererV2(renderer)
 
         if self.params.valves_vlay is not None:
             ls = symbology.LinkSymbology()
             renderer = ls.make_svg_link_sym_renderer(misc.valve_icon_svg_name, 7)
-            self.params.valves_vlay.setRenderer(renderer)
+            self.params.valves_vlay.setRendererV2(renderer)
 
         symbology.refresh_layer(self.iface.mapCanvas(), self.params.junctions_vlay)
         symbology.refresh_layer(self.iface.mapCanvas(), self.params.reservoirs_vlay)
@@ -885,7 +880,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
         self.cbo_reservoir_pattern.addItem(None, None)
         self.cbo_pump_speed_pattern.addItem(None, None)
         if self.params.junctions_vlay is not None:
-            for pattern_id, pattern in self.params.patterns.items():
+            for pattern_id, pattern in self.params.patterns.iteritems():
                 self.cbo_junction_pattern.addItem(pattern_id, pattern)
                 self.cbo_reservoir_pattern.addItem(pattern_id, pattern)
                 self.cbo_pump_speed_pattern.addItem(pattern_id, pattern)
@@ -907,7 +902,7 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
         self.cbo_pump_head.addItem(None, None)
         self.cbo_valve_curve.addItem(None, None)
         if self.params.curves is not None:
-            for curve in self.params.curves.values():
+            for curve in self.params.curves.itervalues():
                 self.cbo_tank_curve.addItem(curve.id, curve)
                 self.cbo_pump_head.addItem(curve.id, curve)
                 self.cbo_valve_curve.addItem(curve.id, curve)
@@ -962,8 +957,8 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
     def get_combo_current_text(self, combo):
         return combo.currentText()
 
-    def set_layercombo_index(self, combo, combo_text):
-        index = combo.findText(combo_text)
+    def set_layercombo_index(self, combo, combo_data):
+        index = combo.findText(combo_data)
         if index >= 0:
             combo.setCurrentIndex(index)
         else:
@@ -1016,10 +1011,11 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
     def crs_selector(self):
 
         # Request CRS for layers
-        proj_selector = QgsProjectionSelectionDialog()
+        proj_selector = QgsGenericProjectionSelector()
         proj_selector.exec_()
-        # crs = QgsCoordinateReferenceSystem(proj_id)
-        self.params.crs = proj_selector.crs()
+        proj_id = proj_selector.selectedAuthId()
+        crs = QgsCoordinateReferenceSystem(proj_id)
+        self.params.crs = crs
 
 class NewFileDialog(QFileDialog):
     def __init__(self):
@@ -1045,8 +1041,7 @@ class NewFileDialog(QFileDialog):
             QFileDialog.accept(self)
 
         except Exception as e:
-            # fix_print_with_import
-            print(e)
+            print e
             return
 
 
@@ -1066,8 +1061,7 @@ class HelpLabel(QLabel):
                           self, self.rect())
 
     def mousePressEvent(self, event):
-        # fix_print_with_import
-        print(event)
+        print event
 
 
 class MyQFileDialog(QFileDialog):
@@ -1085,6 +1079,5 @@ class MyQFileDialog(QFileDialog):
                 f.close()
             QFileDialog.accept(self)
         except Exception as e:
-            # fix_print_with_import
-            print(e)
+            print e
             return

@@ -1,4 +1,3 @@
-from builtins import object
 class Observable(object):
 
     def __init__(self):

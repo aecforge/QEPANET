@@ -1,6 +1,6 @@
 import math
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtCore import QSize
+from PyQt4.QtGui import QIcon
+from PyQt4.QtCore import QSize
 
 from ..geo_utils import raster_utils
 

@@ -1,14 +1,13 @@
-from builtins import object
 import os.path
 import subprocess
 
-from qgis.core import QgsProject
+from qgis.core import QgsMapLayerRegistry
 from ..tools.parameters import Parameters
 
 __author__ = 'deluca'
 
 
-class Utils(object):
+class Utils:
 
     def __init__(self):
         pass
@@ -21,7 +20,7 @@ class Utils(object):
         return subprocess.Popen([command] + args, startupinfo=startupinfo).wait()
 
 
-class FileUtils(object):
+class FileUtils:
 
     def __init__(self):
         pass
@@ -31,36 +30,36 @@ class FileUtils(object):
         return os.path.normpath(os.path.normcase(path1)) == os.path.normpath(os.path.normcase(path2))
 
 
-class LayerUtils(object):
+class LayerUtils:
 
     def __init__(self):
         pass
 
     @staticmethod
     def get_lay_id(layer_name):
-        layers = QgsProject.instance().mapLayers()
-        for name, layer in layers.items():
+        layers = QgsMapLayerRegistry.instance().mapLayers()
+        for name, layer in layers.iteritems():
             if layer_name in layer.name() and layer.name().startswith(layer_name):
                 return layer.id()
 
     @staticmethod
     def get_lay_from_id(lay_id):
-        return QgsProject.instance().mapLayer(lay_id)
+        return QgsMapLayerRegistry.instance().mapLayer(lay_id)
 
     @staticmethod
     def remove_layer_by_name(layer_name):
 
-        layers = QgsProject.instance().mapLayers()
-        for name, layer in layers.items():
+        layers = QgsMapLayerRegistry.instance().mapLayers()
+        for name, layer in layers.iteritems():
             if layer_name in name:
                 try:
-                    QgsProject.instance().removeMapLayers([name])
+                    QgsMapLayerRegistry.instance().removeMapLayers([name])
                 except Exception:
                     raise NameError('Cannot remove ' + layer_name + ' layer.')
 
     @staticmethod
     def remove_layer(layer):
-        QgsProject.instance().removeMapLayer(layer.id())
+        QgsMapLayerRegistry.instance().removeMapLayer(layer.id())
 
     @staticmethod
     def remove_layers(params):

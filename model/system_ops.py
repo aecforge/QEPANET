@@ -1,5 +1,4 @@
-from builtins import object
-class Curve(object):
+class Curve:
     section_name = 'CURVES'
     section_header = 'ID              	X-Value                 Y-Value'
 
@@ -25,14 +24,14 @@ class Curve(object):
         self.ys.append(y)
 
 
-class Controls(object):
+class Controls:
     section_name = 'CONTROLS'
 
     def __init__(self):
         pass
 
 
-class Demand(object):
+class Demand:
     section_name = 'DEMANDS'
     section_header = 'Junction        	Demand      	Pattern         	Category'
 
@@ -40,7 +39,7 @@ class Demand(object):
         pass
 
 
-class Energy(object):
+class Energy:
 
     section_name = 'ENERGY'
 
@@ -51,7 +50,7 @@ class Energy(object):
         self.demand_charge = 0
 
 
-class Pattern(object):
+class Pattern:
     section_name = 'PATTERNS'
     section_header = 'ID              	Multipliers'
 
@@ -67,7 +66,7 @@ class Pattern(object):
         self.values.append(val)
 
 
-class Rule(object):
+class Rule:
     section_name = 'RULES'
 
     def __init__(self, name, condition, action):
@@ -76,7 +75,7 @@ class Rule(object):
         self.action = action
 
 
-class Status(object):
+class Status:
     section_name = 'STATUS'
     section_header = 'ID              	Status/Setting'
 

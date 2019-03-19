@@ -1,11 +1,10 @@
-from builtins import object
-class WaterQuality(object):
+class WaterQuality:
 
     def __init__(self):
         pass
 
 
-class Reactions(object):
+class Reactions:
 
     section_name = 'REACTIONS'
 
@@ -19,13 +18,13 @@ class Reactions(object):
         self.roughness_corr = 0
 
 
-class Sources(object):
+class Sources:
 
     def __init__(self):
         pass
 
 
-class Mixing(object):
+class Mixing:
 
     def __init__(self):
         pass

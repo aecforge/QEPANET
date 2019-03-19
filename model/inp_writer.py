@@ -1,22 +1,18 @@
-from __future__ import absolute_import
-from builtins import str
-from builtins import range
-from builtins import object
 import codecs
 import os
 
-from .network import Title, Junction, Reservoir, Tank, Pipe, Pump, Valve, Emitter, Coordinate, Tag, QJunction,\
+from network import Title, Junction, Reservoir, Tank, Pipe, Pump, Valve, Emitter, Coordinate, Tag, QJunction,\
     QReservoir, QTank, QPipe, Vertex, QOptions, QVertices
 from qgis.core import NULL, QgsSpatialIndex, QgsVertexId
-from .system_ops import Controls, Curve, Demand, Energy, Pattern, Rule, Status
+from system_ops import Controls, Curve, Demand, Energy, Pattern, Rule, Status
 import math
 from ..model.options_report import Times, Report
-from .options_report import Options, Quality
+from options_report import Options, Quality
 from ..model.network_handling import NetworkUtils
 from ..model.water_quality import Reactions
 
 
-class InpFile(object):
+class InpFile:
     
     pad_19 = 19
     pad_22 = 22
@@ -133,7 +129,7 @@ class InpFile(object):
 
                         curve_type = 0
                         cruve_desc = None
-                        for type_id, type_name in Curve.type_names.items():
+                        for type_id, type_name in Curve.type_names.iteritems():
                             if curve_metadata.lower()[1:].startswith(type_name.lower()):
                                 curve_type = type_id
                                 curve_metadatas = curve_metadata.split(':')
@@ -306,7 +302,7 @@ class InpFile(object):
         out.extend(InpFile.build_section_keyword(Curve.section_name))
         out.append(InpFile.build_section_header(Curve.section_header))
 
-        for curve in params.curves.values():
+        for curve in params.curves.itervalues():
 
             type_desc = None
             if curve.type is not None:
@@ -473,7 +469,7 @@ class InpFile(object):
         out.extend(InpFile.build_section_keyword(Pattern.section_name))
         out.append(InpFile.build_section_header(Pattern.section_header))
 
-        for pattern in params.patterns.values():
+        for pattern in params.patterns.itervalues():
             if pattern.desc is not None:
                 out.extend(InpFile.build_comment(pattern.desc))
 
@@ -895,7 +891,7 @@ class InpFile(object):
 
         for p_ft in params.pipes_vlay.getFeatures():
             eid = p_ft.attribute(Pipe.field_name_eid)
-            geom_v2 = p_ft.geometry().get()
+            geom_v2 = p_ft.geometry().geometry()
 
             if geom_v2.vertexCount() > 2:
 
