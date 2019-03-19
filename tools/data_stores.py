@@ -1,14 +1,16 @@
+from builtins import range
+from builtins import object
 import os
 
-from PyQt4.QtCore import QVariant
-from qgis.core import QgsVectorLayer, QgsFeature, QgsFields, QgsVectorFileWriter, QGis, QgsField
+from qgis.PyQt.QtCore import QVariant
+from qgis.core import QgsVectorLayer, QgsFeature, QgsFields, QgsVectorFileWriter, QgsWkbTypes, QgsField
 
 from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve, Tables, Node, Link
 from ..tools.parameters import Parameters
-from ..tools.exceptions import ShpExistsExcpetion
+from ..geo_utils.exceptions import ShpExistsExcpetion
 
 
-class MemoryDS:
+class MemoryDS(object):
 
     def __init__(self):
         pass
@@ -232,19 +234,19 @@ class MemoryDS:
 
         new_fts = []
         for feat in params.junctions_vlay.getFeatures():
-            new_ft = QgsFeature(nodes_lay.pendingFields())
+            new_ft = QgsFeature(nodes_lay.fields())
             new_ft.setGeometry(feat.geometry())
             new_ft.setAttribute(Node.field_name_eid, feat.attribute(Junction.field_name_eid))
             new_fts.append(new_ft)
 
         for feat in params.reservoirs_vlay.getFeatures():
-            new_ft = QgsFeature(nodes_lay.pendingFields())
+            new_ft = QgsFeature(nodes_lay.fields())
             new_ft.setGeometry(feat.geometry())
             new_ft.setAttribute(Node.field_name_eid, feat.attribute(Reservoir.field_name_eid))
             new_fts.append(new_ft)
 
         for feat in params.tanks_vlay.getFeatures():
-            new_ft = QgsFeature(nodes_lay.pendingFields())
+            new_ft = QgsFeature(nodes_lay.fields())
             new_ft.setGeometry(feat.geometry())
             new_ft.setAttribute(Node.field_name_eid, feat.attribute(Tank.field_name_eid))
             new_fts.append(new_ft)
@@ -271,19 +273,19 @@ class MemoryDS:
 
         new_fts = []
         for feat in params.pipes_vlay.getFeatures():
-            new_ft = QgsFeature(links_lay.pendingFields())
+            new_ft = QgsFeature(links_lay.fields())
             new_ft.setGeometry(feat.geometry())
             new_ft.setAttribute(Link.field_name_eid, feat.attribute(Pipe.field_name_eid))
             new_fts.append(new_ft)
 
         for feat in params.pumps_vlay.getFeatures():
-            new_ft = QgsFeature(links_lay.pendingFields())
+            new_ft = QgsFeature(links_lay.fields())
             new_ft.setGeometry(feat.geometry())
             new_ft.setAttribute(Link.field_name_eid, feat.attribute(Pump.field_name_eid))
             new_fts.append(new_ft)
 
         for feat in params.valves_vlay.getFeatures():
-            new_ft = QgsFeature(links_lay.pendingFields())
+            new_ft = QgsFeature(links_lay.fields())
             new_ft.setGeometry(feat.geometry())
             new_ft.setAttribute(Link.field_name_eid, feat.attribute(Valve.field_name_eid))
             new_fts.append(new_ft)
@@ -293,7 +295,7 @@ class MemoryDS:
         return links_lay
 
 
-class ShapefileDS:
+class ShapefileDS(object):
 
     def __init__(self):
         pass
@@ -370,7 +372,7 @@ class ShapefileDS:
         fields.append(QgsField(Junction.field_name_pattern, QVariant.String))
         fields.append(QgsField(Junction.field_name_emitter_coeff, QVariant.Double))
 
-        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBPoint, crs, "ESRI Shapefile")
+        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QgsWkbTypes.Point, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:
             raise Exception(writer.errorMessage())
 
@@ -383,7 +385,7 @@ class ShapefileDS:
         fields.append(QgsField(Reservoir.field_name_delta_z, QVariant.Double))
         # fields.append(QgsField(Reservoir.field_name_head, QVariant.Double))
 
-        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBPoint, crs, "ESRI Shapefile")
+        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QgsWkbTypes.Point, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:
             raise Exception(writer.errorMessage())
 
@@ -401,7 +403,7 @@ class ShapefileDS:
         fields.append(QgsField(Tank.field_name_level_min, QVariant.Double))
         fields.append(QgsField(Tank.field_name_vol_min, QVariant.Double))
 
-        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBPoint, crs, "ESRI Shapefile")
+        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QgsWkbTypes.Point, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:
             raise Exception(writer.errorMessage())
 
@@ -417,7 +419,7 @@ class ShapefileDS:
         fields.append(QgsField(QgsField(Pipe.field_name_status, QVariant.String)))
         fields.append(QgsField(QgsField(Pipe.field_name_minor_loss, QVariant.Double)))
 
-        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBLineString, crs, "ESRI Shapefile")
+        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QgsWkbTypes.LineString, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:
             raise Exception(writer.errorMessage())
 
@@ -431,7 +433,7 @@ class ShapefileDS:
         fields.append(QgsField(QgsField(Pump.field_name_param, QVariant.String)))
         fields.append(QgsField(QgsField(Pump.field_name_value, QVariant.String)))
 
-        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBLineString, crs, "ESRI Shapefile")
+        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QgsWkbTypes.LineString, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:
             raise Exception(writer.errorMessage())
 
@@ -445,12 +447,12 @@ class ShapefileDS:
         fields.append(QgsField(QgsField(Valve.field_name_setting, QVariant.Double)))
         fields.append(QgsField(QgsField(Valve.field_name_type, QVariant.String)))
 
-        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QGis.WKBLineString, crs, "ESRI Shapefile")
+        writer = QgsVectorFileWriter(shp_file_path, "CP1250", fields, QgsWkbTypes.LineString, crs, "ESRI Shapefile")
         if writer.hasError() != QgsVectorFileWriter.NoError:
             raise Exception(writer.errorMessage())
 
 
-class PostGISDS:
+class PostGISDS(object):
 
     def __init__(self):
         pass

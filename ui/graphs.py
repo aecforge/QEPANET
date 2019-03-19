@@ -1,5 +1,6 @@
-from PyQt4 import QtGui
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from builtins import range
+from qgis.PyQt.QtWidgets import QSizePolicy
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.ticker import FormatStrFormatter
 import numpy, numbers, math
@@ -14,14 +15,13 @@ class MyMplCanvas(FigureCanvas):
         self.figure = Figure(figsize=(width, height), dpi=dpi)
         self.figure.set_facecolor((1, 1, 1))
         self.axes = self.figure.add_subplot(1, 1, 1)
-        self.axes.set_axis_bgcolor((1, 1, 1))
-        self.axes.hold(False)
+        self.axes.set_facecolor((1, 1, 1))
         self.compute_initial_figure()
         FigureCanvas.__init__(self, self.figure)
         self.setParent(parent)
         FigureCanvas.setSizePolicy(self,
-                                   QtGui.QSizePolicy.Expanding,
-                                   QtGui.QSizePolicy.Expanding)
+                                   QSizePolicy.Expanding,
+                                   QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
         self.axes = self.figure.add_subplot(1, 1, 1)
@@ -73,6 +73,9 @@ class StaticMplCanvas(MyMplCanvas):
         if self.axes2 is None:
             self.axes2 = self.axes.twinx()
 
+        self.axes2.cla()
+        self.axes.cla()
+
         self.axes2.clear()
         self.axes2.plot([0, len(values)], [avg, avg], 'k--')
         self.axes2.set_ylim(0, max_val)
@@ -95,9 +98,7 @@ class StaticMplCanvas(MyMplCanvas):
 
     def draw_line_graph(self, xs, ys, x_label, y_label):
 
-        # self.figure.clf()
-        # self.axes = self.figure.add_subplot(1, 1, 1)
-
+        self.axes.cla()
         self.axes.plot(xs, ys)
 
         self.axes.set_xlabel(x_label)
@@ -122,7 +123,7 @@ class StaticMplCanvas(MyMplCanvas):
         node_plot_count = -1
         link_plot_count = -1
 
-        for param_id, ys_d in ys_d_d.iteritems():
+        for param_id, ys_d in ys_d_d.items():
 
             param_type = OutputParamCodes.param_types[param_id]
             if param_type == OutputParamCodes.PARAM_TYPE_NODE:
@@ -137,7 +138,7 @@ class StaticMplCanvas(MyMplCanvas):
             y_max = -1E6
             line_labels = []
 
-            for element_id, ys in ys_d.iteritems():
+            for element_id, ys in ys_d.items():
 
                 y_min = min(y_min, min(ys[0]))
                 y_max = max(y_max, max(ys[0]))

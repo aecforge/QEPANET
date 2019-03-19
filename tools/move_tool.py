@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QCursor, QColor
-from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper,\
-    QgsVector, QgsVertexId, QgsPointV2, QgsPointLocator
-from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand, QgsMessageBar
+from __future__ import absolute_import
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QCursor, QColor
+from qgis.core import QgsFeatureRequest, QgsFeature, QgsGeometry, QgsVector, QgsVertexId, QgsPointXY, QgsPoint,\
+    QgsSnappingConfig, Qgis
+from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
 from ..model.network_handling import NetworkUtils, NodeHandler, LinkHandler
-from parameters import Parameters
+from .parameters import Parameters
 from ..geo_utils import raster_utils, vector_utils
 from ..rendering import symbology
 import logging
@@ -223,22 +224,22 @@ class MoveTool(QgsMapTool):
         adj_link_pts = adj_link_ft.geometry().asPolyline()
         pump_valve_pts = self.pump_valve_ft.geometry().asPolyline()
 
-        if NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve_pts[0]), adj_link_pts[0], self.params.tolerance):
+        if NetworkUtils.points_overlap(QgsGeometry.fromPointXY(pump_valve_pts[0]), adj_link_pts[0], self.params.tolerance):
             self.adj_links_fts_d[adj_link_ft] = (0, layer)
             # rb_pts = [pump_valve_pts[0], adj_link_pts[1]]
             # self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[0]])
 
-        if NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve_pts[-1]), adj_link_pts[0], self.params.tolerance):
+        if NetworkUtils.points_overlap(QgsGeometry.fromPointXY(pump_valve_pts[-1]), adj_link_pts[0], self.params.tolerance):
             self.adj_links_fts_d[adj_link_ft] = (0, layer)
             # rb_pts = [pump_valve_pts[-1], adj_link_pts[1]]
             # self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[-1]])
 
-        if NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve_pts[0]), adj_link_pts[-1], self.params.tolerance):
+        if NetworkUtils.points_overlap(QgsGeometry.fromPointXY(pump_valve_pts[0]), adj_link_pts[-1], self.params.tolerance):
             self.adj_links_fts_d[adj_link_ft] = (len(adj_link_pts)-1, layer)
             # rb_pts = [pump_valve_pts[0], adj_link_pts[-2]]
             # self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[0]])
 
-        if NetworkUtils.points_overlap(QgsGeometry.fromPoint(pump_valve_pts[-1]), adj_link_pts[-1], self.params.tolerance):
+        if NetworkUtils.points_overlap(QgsGeometry.fromPointXY(pump_valve_pts[-1]), adj_link_pts[-1], self.params.tolerance):
             self.adj_links_fts_d[adj_link_ft] = (len(adj_link_pts)-1, layer)
             # rb_pts = [pump_valve_pts[-1], adj_link_pts[-2]]
             # self.rubber_bands_d[rb_index] = (self.build_rubber_band(rb_pts), [0], [pump_valve_pts[-1]])
@@ -265,7 +266,7 @@ class MoveTool(QgsMapTool):
                 # snapped_pt = self.snap_results[0].snappedVertex
                 snapped_vertex = match.point()
 
-                self.vertex_marker.setCenter(QgsPoint(snapped_vertex.x(), snapped_vertex.y()))
+                self.vertex_marker.setCenter(QgsPointXY(snapped_vertex.x(), snapped_vertex.y()))
                 self.vertex_marker.setColor(QColor(255, 0, 0))
                 self.vertex_marker.setIconSize(10)
                 self.vertex_marker.setIconType(QgsVertexMarker.ICON_CIRCLE)  # or ICON_CROSS, ICON_X
@@ -325,7 +326,7 @@ class MoveTool(QgsMapTool):
         # for i in range(len(pt_indices)):
         #     rubber_band.movePoint(pt_indices[i], QgsPoint(start_pts[i].x() + self.delta_vec.x(), start_pts[i].y() + self.delta_vec.y()))
 
-        rubber_band_v.movePoint(1, QgsPoint(self.clicked_pt.x() + self.delta_vec.x(), self.clicked_pt.y() + self.delta_vec.y()))
+        rubber_band_v.movePoint(1, QgsPointXY(self.clicked_pt.x() + self.delta_vec.x(), self.clicked_pt.y() + self.delta_vec.y()))
 
     def canvasReleaseEvent(self, event):
 
@@ -348,7 +349,7 @@ class MoveTool(QgsMapTool):
                     self.iface.messageBar().pushMessage(
                         Parameters.plug_in_name,
                         'Elevation value not available: element elevation set to 0.',
-                        QgsMessageBar.WARNING,
+                        Qgis.Warning,
                         5)  # TODO: softcode
 
                 # It's just a pipe vertex
@@ -356,8 +357,8 @@ class MoveTool(QgsMapTool):
 
                     feat = vector_utils.get_feats_by_id(snap_results.layer(), snap_results.featureId())
                     vertex_id = QgsVertexId(0, 0, snap_results.vertexIndex(), QgsVertexId.SegmentVertex)
-                    vertex_v2 = feat[0].geometry().geometry().vertexAt(vertex_id)
-                    new_pos_pt_v2 = QgsPointV2(mouse_pt.x(), mouse_pt.y())
+                    vertex_v2 = feat[0].geometry().get().vertexAt(vertex_id)
+                    new_pos_pt_v2 = QgsPoint(mouse_pt.x(), mouse_pt.y())
                     new_pos_pt_v2.addZValue(vertex_v2.z())
                     LinkHandler.move_link_vertex(self.params, self.params.pipes_vlay, feat[0], new_pos_pt_v2,
                                                  snap_results.vertexIndex())
@@ -376,11 +377,11 @@ class MoveTool(QgsMapTool):
                             mouse_pt)
 
                         # Update pipes
-                        for feat, (vertex_index, layer) in self.adj_links_fts_d.iteritems():
+                        for feat, (vertex_index, layer) in self.adj_links_fts_d.items():
 
                             vertex_id = QgsVertexId(0, 0, vertex_index, QgsVertexId.SegmentVertex)
-                            vertex_v2 = feat.geometry().geometry().vertexAt(vertex_id)
-                            new_pos_pt_v2 = QgsPointV2(mouse_pt.x(), mouse_pt.y())
+                            vertex_v2 = feat.geometry().get().vertexAt(vertex_id)
+                            new_pos_pt_v2 = QgsPoint(mouse_pt.x(), mouse_pt.y())
                             new_pos_pt_v2.addZValue(vertex_v2.z())
 
                             LinkHandler.move_link_vertex(self.params, layer, feat, new_pos_pt_v2, vertex_index)
@@ -392,14 +393,14 @@ class MoveTool(QgsMapTool):
                         NodeHandler.move_element(self.adj_junctions[0][1],
                                                  self.params.dem_rlay,
                                                  self.adj_junctions[0][0],
-                                                 QgsPoint(
+                                                 QgsPointXY(
                                                     self.adj_junctions[0][0].geometry().asPoint().x() + self.delta_vec.x(),
                                                     self.adj_junctions[0][0].geometry().asPoint().y() + self.delta_vec.y()))
 
                         NodeHandler.move_element(self.adj_junctions[1][1],
                                                  self.params.dem_rlay,
                                                  self.adj_junctions[1][0],
-                                                 QgsPoint(
+                                                 QgsPointXY(
                                                      self.adj_junctions[1][0].geometry().asPoint().x() + self.delta_vec.x(),
                                                      self.adj_junctions[1][0].geometry().asPoint().y() + self.delta_vec.y()))
 
@@ -414,11 +415,11 @@ class MoveTool(QgsMapTool):
                         LinkHandler.move_pump_valve(lay, self.pump_valve_ft, self.delta_vec)
 
                         # Move the adjacent pipes' vertices
-                        for feat, (vertex_index, layer) in self.adj_links_fts_d.iteritems():
+                        for feat, (vertex_index, layer) in self.adj_links_fts_d.items():
 
                             vertex_id = QgsVertexId(0, 0, vertex_index, QgsVertexId.SegmentVertex)
-                            vertex_v2 = feat.geometry().geometry().vertexAt(vertex_id)
-                            new_pos_pt_v2 = QgsPointV2(
+                            vertex_v2 = feat.geometry().get().vertexAt(vertex_id)
+                            new_pos_pt_v2 = QgsPoint(
                                 feat.geometry().vertexAt(vertex_index).x() + self.delta_vec.x(),
                                 feat.geometry().vertexAt(vertex_index).y() + self.delta_vec.y())
                             new_pos_pt_v2.addZValue(vertex_v2.z())
@@ -447,11 +448,13 @@ class MoveTool(QgsMapTool):
 
         # Snapping
         layers = {
-            self.params.junctions_vlay: QgsPointLocator.Vertex,
-            self.params.reservoirs_vlay: QgsPointLocator.Vertex,
-            self.params.tanks_vlay: QgsPointLocator.Vertex,
-            self.params.pipes_vlay: QgsPointLocator.Vertex}
+            self.params.junctions_vlay: QgsSnappingConfig.Vertex,
+            self.params.reservoirs_vlay: QgsSnappingConfig.Vertex,
+            self.params.tanks_vlay: QgsSnappingConfig.Vertex,
+            self.params.pipes_vlay: QgsSnappingConfig.Vertex
+        }
         self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
+        self.snapper.toggleEnabled()
 
         # Editing
         if not self.params.junctions_vlay.isEditable():
@@ -483,7 +486,7 @@ class MoveTool(QgsMapTool):
 
     def build_rubber_band(self, points):
         rubber_band = QgsRubberBand(self.canvas(), False)  # False = not a polygon
-        rubber_band.setToGeometry(QgsGeometry.fromPolyline(points), None)
+        rubber_band.setToGeometry(QgsGeometry.fromPolylineXY(points), None)
         # for point in points:
         #     rubber_band.addPoint(point)
         rubber_band.setColor(QColor(255, 128, 128))

@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QCursor, QColor, QApplication
-from qgis.core import QgsPoint, QgsFeatureRequest, QgsFeature, QgsGeometry, QgsProject, QgsTolerance, QgsSnapper,\
-    QgsVector, QGis, QgsPointLocator
+from __future__ import absolute_import
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QCursor, QColor
+from qgis.PyQt.QtWidgets import QApplication
+from qgis.core import QgsPointXY, QgsSnappingConfig, Qgis
 from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand
 
 from ..model.network_handling import NetworkUtils, NodeHandler, LinkHandler
-from parameters import Parameters
+from .parameters import Parameters
 from ..geo_utils import raster_utils, vector_utils
 from ..rendering import symbology
 
@@ -24,7 +25,12 @@ class DeleteTool(QgsMapTool):
 
         self.elev = -1
         self.vertex_marker = QgsVertexMarker(self.canvas())
-        self.rubber_band = QgsRubberBand(self.data_dock.iface.mapCanvas(), QGis.Polygon)
+
+        # Stroke
+        self.rubber_band = QgsRubberBand(self.data_dock.iface.mapCanvas())
+        self.rubber_band.setColor(QColor(255, 0, 0, 255))
+        self.rubber_band.setWidth(2)
+
         self.mouse_clicked = False
         self.snapper = None
 
@@ -79,7 +85,7 @@ class DeleteTool(QgsMapTool):
                 snapped_vertex = match.point()
                 self.snapped_vertex_nr = match.vertexIndex()
 
-                self.vertex_marker.setCenter(QgsPoint(snapped_vertex.x(), snapped_vertex.y()))
+                self.vertex_marker.setCenter(QgsPointXY(snapped_vertex.x(), snapped_vertex.y()))
                 self.vertex_marker.setColor(QColor(255, 0, 0))
                 self.vertex_marker.setIconSize(10)
                 self.vertex_marker.setIconType(QgsVertexMarker.ICON_CIRCLE)  # or ICON_CROSS, ICON_X
@@ -122,7 +128,7 @@ class DeleteTool(QgsMapTool):
             else:
                 rubber_band_rect = self.rubber_band.asGeometry().boundingBox()
 
-                self.rubber_band.reset(QGis.Polygon)
+                self.rubber_band.reset()
 
                 self.delete_elements(self.params.valves_vlay, rubber_band_rect)
                 self.delete_elements(self.params.pumps_vlay, rubber_band_rect)
@@ -146,12 +152,13 @@ class DeleteTool(QgsMapTool):
         self.iface.mapCanvas().setCursor(cursor)
 
         layers = {
-            self.params.junctions_vlay: QgsPointLocator.Vertex,
-            self.params.reservoirs_vlay: QgsPointLocator.Vertex,
-            self.params.tanks_vlay: QgsPointLocator.Vertex,
-            self.params.pipes_vlay: QgsPointLocator.All}
-
+            self.params.junctions_vlay: QgsSnappingConfig.Vertex,
+            self.params.reservoirs_vlay: QgsSnappingConfig.Vertex,
+            self.params.tanks_vlay: QgsSnappingConfig.Vertex,
+            self.params.pipes_vlay: QgsSnappingConfig.VertexAndSegment
+        }
         self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
+        self.snapper.toggleEnabled()
 
         # Editing
         if not self.params.junctions_vlay.isEditable():
@@ -182,19 +189,21 @@ class DeleteTool(QgsMapTool):
 
     def show_rect(self, start_point, end_point):
 
-        self.rubber_band.reset(QGis.Polygon)
+        self.rubber_band.reset()
         if start_point.x() == end_point.x() or start_point.y() == end_point.y():
             return
 
-        point1 = QgsPoint(start_point.x(), start_point.y())
-        point2 = QgsPoint(start_point.x(), end_point.y())
-        point3 = QgsPoint(end_point.x(), end_point.y())
-        point4 = QgsPoint(end_point.x(), start_point.y())
+        point1 = QgsPointXY(start_point.x(), start_point.y())
+        point2 = QgsPointXY(start_point.x(), end_point.y())
+        point3 = QgsPointXY(end_point.x(), end_point.y())
+        point4 = QgsPointXY(end_point.x(), start_point.y())
+        point5 = QgsPointXY(start_point.x(), start_point.y())
 
         self.rubber_band.addPoint(point1, False)
         self.rubber_band.addPoint(point2, False)
         self.rubber_band.addPoint(point3, False)
-        self.rubber_band.addPoint(point4, True)  # true to update canvas
+        self.rubber_band.addPoint(point4, False)
+        self.rubber_band.closePoints(True)# true to update canvas
         self.rubber_band.show()
 
     def delete_elements(self, layer, rectangle):

@@ -20,24 +20,27 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QFileInfo, QDateTime, QFile, QObject, SIGNAL
-from PyQt4.QtGui import QAction, QIcon, QMessageBox, QFileDialog, QApplication
+from __future__ import absolute_import
+from builtins import object
+from qgis.PyQt.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt, QFileInfo, QDateTime, QFile, QObject
+from qgis.PyQt.QtWidgets import QAction, QMessageBox, QFileDialog, QApplication
+from qgis.PyQt.QtGui import QIcon
 from qgis.gui import QgsVertexMarker
 
-from tools.parameters import Parameters, ConfigFile
-from geo_utils.utils import LayerUtils
-from log_handler import LogHandler
+from .tools.parameters import Parameters, ConfigFile
+from .geo_utils.utils import LayerUtils
+from .log_handler import LogHandler
 
 # Initialize Qt resources from file resources.py
 
 # Import the code for the DockWidget
-from ui.qepanet_dockwidget import QEpanetDockWidget, MyQFileDialog
+from .ui.qepanet_dockwidget import QEpanetDockWidget, MyQFileDialog
 import os.path
-import resources
+from . import resources
 import logging
 
 
-class QEpanet:
+class QEpanet(object):
     """QGIS Plugin Implementation."""
 
     def __init__(self, iface):
@@ -49,6 +52,7 @@ class QEpanet:
         :type iface: QgsInterface
         """
         # Save reference to the QGIS interface
+
         self.iface = iface
         self.params = Parameters()
 
@@ -227,17 +231,17 @@ class QEpanet:
             config_file = ConfigFile(Parameters.config_file_path)
             config_file.create_config()
 
-        # Clear vertex markers (there should be none, just in case)
-        vertex_items = [i for i in self.iface.mapCanvas().scene().items() if issubclass(type(i), QgsVertexMarker)]
-        for ver in vertex_items:
-            if ver in self.iface.mapCanvas().scene().items():
-                self.iface.mapCanvas().scene().removeItem(ver)
+        # # Clear vertex markers (there should be none, just in case)
+        # vertex_items = [i for i in list(self.iface.mapCanvas().scene().items()) if issubclass(type(i), QgsVertexMarker)]
+        # for ver in vertex_items:
+        #     if ver in list(self.iface.mapCanvas().scene().items()):
+        #         self.iface.mapCanvas().scene().removeItem(ver)
 
         file_dialog = MyQFileDialog()
         file_dialog.setWindowTitle('Select an INP file or create a new one')  # TODO: Softcode
         file_dialog.setLabelText(QFileDialog.Accept, 'Select')  # TODO: sofcode
         file_dialog.setFileMode(QFileDialog.AnyFile)
-        file_dialog.setFilter("INP files (*.inp)")
+        file_dialog.setNameFilters(["INP files (*.inp)"])
 
         inp_file_path = None
         if file_dialog.exec_():
@@ -267,6 +271,7 @@ class QEpanet:
         self.dockwidget.show()
 
     def start_logging (self):
+
         if self._logger is not None:
             return
         self._logger = logging.getLogger('Logger1')
@@ -302,7 +307,7 @@ class QEpanet:
             logging.shutdown()
 
             # disconnessione al segnale logged emesso ad ogni log
-            QObject.disconnect(self._log_handler, SIGNAL('logged(QString)'),self.message_logged)
+            self._log_handler.logged.disconnect(self.message_logged)
 
             self.logging_enabled = False
             self._logger = None

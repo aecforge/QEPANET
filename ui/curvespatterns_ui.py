@@ -1,11 +1,14 @@
+from __future__ import absolute_import
+from builtins import zip
+from builtins import str
+from builtins import range
 from ..model.inp_writer import InpFile
 from ..model.system_ops import Curve, Pattern
 from ..tools.parameters import Parameters, ConfigFile
-from graphs import StaticMplCanvas
-from PyQt4.QtGui import QDialog, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QLineEdit, QSizePolicy, QPushButton,\
-    QListWidget, QFormLayout, QComboBox, QAbstractItemView, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox
-from PyQt4 import QtCore
-from PyQt4.QtCore import Qt
+from .graphs import StaticMplCanvas
+from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QLabel, QFrame, QHBoxLayout, QLineEdit, QSizePolicy, QPushButton, QListWidget, QFormLayout, QComboBox, QAbstractItemView, QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox
+from qgis.PyQt import QtCore
+from qgis.PyQt.QtCore import Qt
 import numpy
 
 
@@ -135,7 +138,7 @@ class GraphDialog(QDialog):
             self.lbl_pump_type = QLabel('Curve type:')  # TODO: softcode
             self.cbo_pump_type = QComboBox()
 
-            for key, name in Curve.type_names.iteritems():
+            for key, name in Curve.type_names.items():
                 self.cbo_pump_type.addItem(name, key)
 
             fra_pump_type_lay.addRow(self.lbl_pump_type, self.cbo_pump_type)
@@ -175,11 +178,11 @@ class GraphDialog(QDialog):
         # Get existing patterns/curves
         self.need_to_update_graph = False
         if self.edit_type == self.edit_patterns:
-            for pattern_id, pattern in self.params.patterns.iteritems():
+            for pattern_id, pattern in self.params.patterns.items():
                 self.lst_list.addItem(pattern.id)
 
         elif self.edit_type == self.edit_curves:
-            for curve_id, curve in self.params.curves.iteritems():
+            for curve_id, curve in self.params.curves.items():
                 self.lst_list.addItem(curve.id)
 
         if self.lst_list.count() > 0:
@@ -298,7 +301,7 @@ class GraphDialog(QDialog):
         if directory is None:
             directory = self.params.last_project_dir
 
-        file_path = QFileDialog.getOpenFileName(
+        file_path, __ = QFileDialog.getOpenFileName(
             self,
             'Select file',
             directory,
@@ -324,14 +327,14 @@ class GraphDialog(QDialog):
 
         if self.edit_type == self.edit_patterns:
             InpFile.read_patterns(self.params, file_path)
-            for pattern_id, pattern in self.params.patterns.iteritems():
+            for pattern_id, pattern in self.params.patterns.items():
                 # desc = ' (' + pattern.desc + ')' if pattern.desc is not None else ''
                 self.lst_list.addItem(pattern.id)
                 self.params.patterns[pattern.id] = pattern
 
         elif self.edit_type == self.edit_curves:
             InpFile.read_curves(self.params, file_path)
-            for curve_id, curve in self.params.curves.iteritems():
+            for curve_id, curve in self.params.curves.items():
                 # desc = ' (' + curve.desc + ')' if curve.desc is not None else ''
                 self.lst_list.addItem(curve.id)
                 self.params.curves[curve.id] = curve
@@ -343,10 +346,10 @@ class GraphDialog(QDialog):
 
         old_ids = []
         if self.edit_type == self.edit_patterns:
-            for pattern in self.params.patterns.itervalues():
+            for pattern in self.params.patterns.values():
                 old_ids.append(pattern.id)
         elif self.edit_type == self.edit_curves:
-            for curve in self.params.curves.itervalues():
+            for curve in self.params.curves.values():
                 old_ids.append(curve.id)
         self.new_dialog = NewIdDialog(self, old_ids)
         self.new_dialog.exec_()
@@ -543,10 +546,10 @@ class GraphDialog(QDialog):
             self.static_canvas.clear()
             return
 
-        xys_t = zip(xs, ys)
+        xys_t = list(zip(xs, ys))
         xys_t.sort()
 
-        xys = zip(*xys_t)
+        xys = list(zip(*xys_t))
         xs = xys[0]
         ys = xys[1]
 

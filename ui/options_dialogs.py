@@ -1,10 +1,12 @@
-from PyQt4.QtGui import QDialog, QFormLayout, QLabel, QComboBox, QLineEdit, QCheckBox, QPushButton, QFrame, QHBoxLayout,\
-    QMessageBox, QFileDialog, QVBoxLayout
-from PyQt4 import QtCore
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from qgis.PyQt.QtWidgets import QDialog, QFormLayout, QLabel, QComboBox, QLineEdit, QCheckBox, QPushButton, QFrame, QHBoxLayout, QMessageBox, QFileDialog, QVBoxLayout
+from qgis.PyQt import QtCore
 from ..tools.parameters import Parameters, RegExValidators
 from ..model.network import Valve
 from ..model.options_report import Hour, Report, Times, Options
-from utils import prepare_label as pre_l
+from .utils import prepare_label as pre_l
 import os
 
 min_width = 200
@@ -128,7 +130,7 @@ class HydraulicsDialog(QDialog):
         self.cbo_units.activated.connect(self.cbo_units_activated)
         # self.cbo_flow_units.activated.connect(self.cbo_flow_units_activated)
 
-        for key, value in self.params.options.headlosses_text.iteritems():
+        for key, value in self.params.options.headlosses_text.items():
             self.cbo_headloss.addItem(value, key)
 
         self.cbo_headloss.activated.connect(self.cbo_headloss_activated)
@@ -144,7 +146,7 @@ class HydraulicsDialog(QDialog):
         self.txt_hydraulics_file.setReadOnly(True)
 
         # - Unbalanced
-        for id, text in self.params.options.unbalanced.unb_text.iteritems():
+        for id, text in self.params.options.unbalanced.unb_text.items():
             self.cbo_unbalanced.addItem(text, id)
 
         self.cbo_unbalanced.activated.connect(self.cbo_unbalanced_changed)
@@ -153,7 +155,7 @@ class HydraulicsDialog(QDialog):
 
         # - Pattern
         self.cbo_pattern.addItem('None (=1.0)', None)
-        for pattern_id, pattern in self.params.patterns.iteritems():
+        for pattern_id, pattern in self.params.patterns.items():
             self.cbo_pattern.addItem(pattern_id, pattern)
 
         # Buttons
@@ -421,10 +423,10 @@ class QualityDialog(QDialog):
         self.setup()
 
     def setup(self):
-        for key, value in self.params.options.quality.quality_text.iteritems():
+        for key, value in self.params.options.quality.quality_text.items():
             self.cbo_parameter.addItem(value, key)
 
-        for key, value in self.params.options.quality.quality_units_text.iteritems():
+        for key, value in self.params.options.quality.quality_units_text.items():
             self.cbo_mass_units.addItem(value, key)
 
         # Buttons
@@ -646,7 +648,7 @@ class TimesDialog(QDialog):
 
     def setup(self):
 
-        for key, text in self.params.times.unit_text.iteritems():
+        for key, text in self.params.times.unit_text.items():
             self.cbo_units.addItem(text, key)
 
         # Buttons
@@ -683,7 +685,7 @@ class TimesDialog(QDialog):
         self.txt_clock_time_start.setInputMask('09:99')
         self.txt_clock_time_start.setValidator(RegExValidators.get_time_hh_mm())
 
-        for key, text in self.params.times.stats_text.iteritems():
+        for key, text in self.params.times.stats_text.items():
             self.cbo_statistic.addItem(text, key)
 
     def show(self):
@@ -869,19 +871,19 @@ class ReportDialog(QDialog):
     def setup(self):
 
         # Combos
-        for key, value in Report.status_names.iteritems():
+        for key, value in Report.status_names.items():
             self.cbo_status.addItem(value, key)
 
-        for key, value in Report.summary_names.iteritems():
+        for key, value in Report.summary_names.items():
             self.cbo_summary.addItem(value, key)
 
-        for key, value in Report.energy_names.iteritems():
+        for key, value in Report.energy_names.items():
             self.cbo_energy.addItem(value, key)
 
-        for key, value in Report.nodes_names.iteritems():
+        for key, value in Report.nodes_names.items():
             self.cbo_nodes.addItem(value, key)
 
-        for key, value in Report.links_names.iteritems():
+        for key, value in Report.links_names.items():
             self.cbo_links.addItem(value, key)
 
         # Buttons

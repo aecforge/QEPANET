@@ -1,8 +1,10 @@
+from builtins import range
+from builtins import object
 from collections import OrderedDict
 import os, struct
 
 
-class BinaryOutputReader:
+class BinaryOutputReader(object):
 
     def __init__(self):
 
@@ -97,25 +99,26 @@ class BinaryOutputReader:
             self.report_start_time_secs = struct.unpack('I', f.read(4))[0]
             self.report_time_step_secs = struct.unpack('I', f.read(4))[0]
             self.sim_duration_secs = struct.unpack('I', f.read(4))[0]
-            self.title_1 = ''.join(struct.unpack('c' * 80, f.read(80)))
-            self.title_2 = ''.join(struct.unpack('c' * 80, f.read(80)))
-            self.title_3 = ''.join(struct.unpack('c' * 80, f.read(80)))
 
-            self.inp_file_name = ''.join(struct.unpack('c' * 260, f.read(260)))
-            self.rpt_file_name = ''.join(struct.unpack('c' * 260, f.read(260)))
+            self.title_1 = ''.join(f.read(80).decode())
+            self.title_2 = ''.join(f.read(80).decode())
+            self.title_3 = ''.join(f.read(80).decode())
 
-            self.chem_name = ''.join(struct.unpack('c' * 16, f.read(16)))
-            self.chem_conc_units = ''.join(struct.unpack('c' * 16, f.read(16)))
-            self.node_id_label = ''.join(struct.unpack('c' * 16, f.read(16)))
-            self.link_id_label = ''.join(struct.unpack('c' * 16, f.read(16)))
+            self.inp_file_name = ''.join(f.read(260).decode())
+            self.rpt_file_name = ''.join(f.read(260).decode())
+
+            self.chem_name = ''.join(f.read(16).decode())
+            self.chem_conc_units = ''.join(f.read(16).decode())
+            self.node_id_label = ''.join(f.read(16).decode())
+            self.link_id_label = ''.join(f.read(16).decode())
 
             nodes_ids = []
             for i in range(self.nodes_nr):
-                nodes_ids.append(f.read(32).replace('\00', ''))
+                nodes_ids.append(f.read(32).decode().replace('\00', ''))
 
             links_ids = []
             for i in range(self.links_nr):
-                links_ids.append(f.read(32).replace('\00', ''))
+                links_ids.append(f.read(32).decode().replace('\00', ''))
 
             link_start_node_idxs = []
             for i in range(self.links_nr):
@@ -363,7 +366,7 @@ class OutputParamCodes(object):
                     LINK_FRICTION: 'Link friction'}
 
 
-class OutputPump:
+class OutputPump(object):
     def __init__(self, idx, util, effic, avg_kw_mg, avg_kw, peak_kw, avg_day_cost):
         self.idx = idx
         self.util = util
@@ -374,7 +377,7 @@ class OutputPump:
         self.avg_day_cost = avg_day_cost
 
 
-class PeriodResult:
+class PeriodResult(object):
 
     def __init__(self, node_demands, node_heads, node_pressures, node_qualities, link_flows, link_velocities,
                  link_headlosses, link_qualities, link_status_codes, link_settings, link_reactions, link_frictions):

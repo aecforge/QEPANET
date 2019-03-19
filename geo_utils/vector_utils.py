@@ -1,7 +1,6 @@
-from qgis.core import QgsVectorLayer, QgsVectorFileWriter, QGis, QgsSingleSymbolRendererV2, QgsSymbolV2, \
-    QgsSimpleLineSymbolLayerV2, QgsSimpleFillSymbolLayerV2, QgsRendererCategoryV2, QgsCategorizedSymbolRendererV2, \
-    QgsLineSymbolV2, QgsRectangle, QgsFeatureRequest, QgsPoint, QgsGeometry, QgsFeature
-from PyQt4.QtGui import QColor
+from qgis.core import QgsVectorLayer, QgsVectorFileWriter, QgsRectangle, QgsFeatureRequest, QgsPoint, QgsGeometry,\
+    QgsFeature
+from qgis.PyQt.QtGui import QColor
 
 __author__ = 'deluca'
 
@@ -20,7 +19,7 @@ def save_layer2shapefile(vlayer, shp_path):
     """
     :type vlayer: QgsVectorLayer
     :type shp_path: String
-    :type wkb_type: QGis.WkbType
+    :type wkb_type: QgsWkbTypes.Type
     :return:
     """
 
