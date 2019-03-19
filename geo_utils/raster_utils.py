@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from builtins import object
 import collections
 import csv
 import math
 import numpy
 import ogr
-import PyQt4
-import subprocess
 import sys
 from osgeo import gdal
 from osgeo.gdalconst import GDT_Int32
-from numpy import array
-from PyQt4.QtCore import QFileInfo
-from qgis.core import QgsMapLayerRegistry, QgsPoint, QgsRasterLayer, QgsRaster
-from utils import Utils
-import codecs, struct
+from qgis.core import QgsProject, QgsPointXY, QgsRasterLayer, QgsRaster
+from .utils import Utils
+import codecs
 
 __author__ = 'deluca'
 
 
-class IntPoint:
+class IntPoint(object):
 
     x = 0
     y = 0
@@ -29,7 +29,7 @@ class IntPoint:
         self.y = y
 
 
-class GeoTransform:
+class GeoTransform(object):
 
     ul_coordinate = None
     x_cell_size = None
@@ -41,20 +41,20 @@ class GeoTransform:
             self.x_cell_size = gdal_geotransform[1]
             top_y = gdal_geotransform[3]
             self.y_cell_size = gdal_geotransform[5]
-            self.ul_coordinate = QgsPoint(left_x, top_y)
+            self.ul_coordinate = QgsPointXY(left_x, top_y)
         else:
             self.ul_coordinate = ur_coordinate
             self.x_cell_size = x_cell_size
             self.y_cell_size = y_cell_size
 
     def get_ll_coordinate(self, rows_count):
-        return QgsPoint(self.ul_coordinate.x(), self.ul_coordinate.y - rows_count * self.y_cell_size)
+        return QgsPointXY(self.ul_coordinate.x(), self.ul_coordinate.y - rows_count * self.y_cell_size)
 
     def gdal(self):
         return self.ul_coordinate.x, self.x_cell_size, 0, self.ul_coordinate.y, 0, -self.y_cell_size
 
 
-class SimpleRaster:
+class SimpleRaster(object):
 
     data = None
     cols_count = None
@@ -98,7 +98,7 @@ class SimpleRaster:
     def get_stats(self):
         if self.stats is None:
             self.calc_stats()
-        return self.stats;
+        return self.stats
 
     def calc_stats(self):
 
@@ -122,7 +122,7 @@ class SimpleRaster:
         self.stats = RasterStats(min_val, max_val, avg_val)
 
 
-class RasterStats:
+class RasterStats(object):
 
     min_val = None
     max_val = None
@@ -185,7 +185,7 @@ def get_coords(col, row, ul_coordinate, x_cell_size, y_cell_size):
     x = ul_coordinate.x() + col * x_cell_size + row * 0 + x_cell_size * 0.5
     y = ul_coordinate.y() + col * 0 + row * y_cell_size + y_cell_size * 0.5
 
-    return QgsPoint(x, y)
+    return QgsPointXY(x, y)
 
 
 def get_coords_geotrans(col, row, geotransform):
@@ -230,7 +230,7 @@ def get_col_row_geotrans(coord, geotransform):
     # int_point.x = int(math.floor((coord.x() - ll_corner.x()) / cell_size))
     # int_point.y = rows_count - int(math.floor((coord.y() - ll_corner.y()) / cell_size) + 1)
 
-    return get_col_row(coord, QgsPoint(geotransform.ul_coordinate.x(), geotransform.ul_coordinate.y()), geotransform.x_cell_size, geotransform.y_cell_size)
+    return get_col_row(coord, QgsPointXY(geotransform.ul_coordinate.x(), geotransform.ul_coordinate.y()), geotransform.x_cell_size, geotransform.y_cell_size)
 
 
 def load_simpleraster(raster_path):
@@ -250,7 +250,7 @@ def load_simpleraster(raster_path):
     cell_size_x = gdal_trans[1]
     cell_size_y = -gdal_trans[5]
 
-    ll_corner = QgsPoint(ll_x, ul_y - rows_count * cell_size_y)
+    ll_corner = QgsPointXY(ll_x, ul_y - rows_count * cell_size_y)
 
     geotransform = GeoTransform(gdal_trans)
     return SimpleRaster(data, no_data, geotransform)
@@ -260,7 +260,7 @@ def load_raster_to_layer(raster_path, layer_name):
     rlayer = QgsRasterLayer(raster_path, layer_name)
     if not rlayer.isValid():
         raise NameError("Layer failed to load!")
-    QgsMapLayerRegistry.instance().addMapLayer(rlayer)
+    QgsProject.instance().addMapLayer(rlayer)
     return rlayer
 
 
@@ -294,14 +294,17 @@ def read_layer_val_from_coord(ras_layer, coordinate, band=1):
     if ras_layer is None:
         return None
 
-    identify_dem = ras_layer.dataProvider().identify(coordinate, QgsRaster.IdentifyFormatValue)
-    if identify_dem is not None and identify_dem.isValid() and identify_dem.results().get(1) is not None:
-        return identify_dem.results().get(band)
-    else:
+    try:
+        identify_dem = ras_layer.dataProvider().identify(coordinate, QgsRaster.IdentifyFormatValue)
+        if identify_dem is not None and identify_dem.isValid() and identify_dem.results().get(1) is not None:
+            return identify_dem.results().get(band)
+        else:
+            return None
+    except RuntimeError as re:
+        # To overcome "wrapped C/C++ object of type QgsRasterLayer has been deleted" runtime error
         return None
 
-
-class FormattedRasterStats:
+class FormattedRasterStats(object):
 
     min_val = 0
     max_val = 0
@@ -416,7 +419,7 @@ def calc_area_stats_km2_discrete(raster, caption=None, headers=None):
     cell_area_km2 = math.fabs(raster.geotransform.x_cell_size * raster.geotransform.y_cell_size) / 1E6
     area_units = num_cells * cell_area_km2
 
-    for key, value in intervals.iteritems():
+    for key, value in intervals.items():
         intervals[key] = value * cell_area_km2
 
     return FormattedRasterStats(min_val, max_val, avg_val, collections.OrderedDict(sorted(intervals.items())), area_units, None, caption, headers)
@@ -443,7 +446,7 @@ def write_stats(txt_file_path, raster_stats, x_dec_places=3, y_dec_places=4, leg
 
         tfile.write(",".join(raster_stats.headers) + "\n")
 
-        for key, value in raster_stats.intervals.iteritems():
+        for key, value in raster_stats.intervals.items():
             legend_val = ''
             if legend is not None and str(int(key)) in legend:
                 legend_val = ',' + legend[str(int(key))]
@@ -479,7 +482,7 @@ def read_stats(txt_file_path):
     return FormattedRasterStats(min_val, max_val, avg, collections.OrderedDict(sorted(intervals.items())), area, legend, caption, headers)
 
 
-class Cn123:
+class Cn123(object):
     cnII = 0
     cnI = 0
     cnIII = 0

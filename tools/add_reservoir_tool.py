@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance, QgsGeometry,\
-    QgsPointLocator, NULL
-from qgis.gui import QgsMapTool, QgsVertexMarker, QgsMessageBar
+from __future__ import absolute_import
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QColor
+from qgis.core import Qgis, QgsFeature, QgsFeatureRequest, QgsSnappingConfig, QgsGeometry
+from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
 from ..model.network import Reservoir
-from parameters import Parameters
+from .parameters import Parameters
 from ..geo_utils import raster_utils
 
 
@@ -101,7 +101,7 @@ class AddReservoirTool(QgsMapTool):
                 self.iface.messageBar().pushMessage(
                     Parameters.plug_in_name,
                     'Elevation value not available: element elevation set to 0.',
-                    QgsMessageBar.WARNING,
+                    Qgis.Warning,
                     5)  # TODO: softcode
             else:
                 elev = self.elev
@@ -148,13 +148,13 @@ class AddReservoirTool(QgsMapTool):
                         self.iface.messageBar().pushMessage(
                             Parameters.plug_in_name,
                             'The pipe is missing the start or end nodes. Cannot add a new reservoir along the pipe.',
-                            QgsMessageBar.WARNING,
+                            Qgis.Warning,
                             5)  # TODO: softcode
                         return
 
                     # Check that the snapped point on pipe is distant enough from start/end nodes
-                    if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > self.params.min_dist and\
-                        end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > self.params.min_dist:
+                    if start_node_ft.geometry().distance(QgsGeometry.fromPointXY(self.snapped_vertex)) > self.params.min_dist and\
+                        end_node_ft.geometry().distance(QgsGeometry.fromPointXY(self.snapped_vertex)) > self.params.min_dist:
 
                         LinkHandler.split_pipe(self.params, snapped_pipe, self.snapped_vertex)
 
@@ -170,7 +170,7 @@ class AddReservoirTool(QgsMapTool):
                             reservoir_desc,
                             reservoir_tag)
 
-                    elif start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) <= 0:
+                    elif start_node_ft.geometry().distance(QgsGeometry.fromPointXY(self.snapped_vertex)) <= 0:
 
                         # Delete junction
                         NodeHandler.delete_node(self.params, self.params.junctions_vlay, start_node_ft, False)
@@ -187,7 +187,7 @@ class AddReservoirTool(QgsMapTool):
                             reservoir_desc,
                             reservoir_tag)
 
-                    elif end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) <= 0:
+                    elif end_node_ft.geometry().distance(QgsGeometry.fromPointXY(self.snapped_vertex)) <= 0:
 
                         # Delete junction
                         NodeHandler.delete_node(self.params, self.params.junctions_vlay, end_node_ft, False)
@@ -208,8 +208,10 @@ class AddReservoirTool(QgsMapTool):
                         self.iface.messageBar().pushMessage(
                             Parameters.plug_in_name,
                             'The selected position is too close to a junction: cannot create the reservoir.',
-                            QgsMessageBar.WARNING,
+                            Qgis.Warning,
                             5)  # TODO: softcode
+
+            self.iface.mapCanvas().refresh()
 
     def activate(self):
 
@@ -226,12 +228,12 @@ class AddReservoirTool(QgsMapTool):
 
     def deactivate(self):
 
-        QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
-                                                      True,
-                                                      QgsSnapper.SnapToSegment,
-                                                      QgsTolerance.MapUnits,
-                                                      0,
-                                                      True)
+        # QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
+        #                                               True,
+        #                                               QgsSnapper.SnapToSegment,
+        #                                               QgsTolerance.MapUnits,
+        #                                               0,
+        #                                               True)
 
         self.data_dock.btn_add_reservoir.setChecked(False)
 
@@ -251,8 +253,11 @@ class AddReservoirTool(QgsMapTool):
         self.canvas().scene().removeItem(self.outlet_marker)
 
     def update_snapper(self):
-        layers = {self.params.pipes_vlay: QgsPointLocator.All}
+        layers = {
+            self.params.pipes_vlay: QgsSnappingConfig.VertexAndSegment
+        }
         self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
+        self.snapper.toggleEnabled()
 
     # Needed by Observable
     def update(self, observable):

@@ -1,11 +1,15 @@
-import ConfigParser
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
+import configparser
 import codecs
 import os
 
 from collections import OrderedDict
-from PyQt4.QtCore import QRegExp
-from PyQt4.QtGui import QRegExpValidator
-from observable import Observable
+from qgis.PyQt.QtCore import QRegExp
+from PyQt5.QtGui import QRegExpValidator
+from .observable import Observable
 from ..model.options_report import Options, Report
 from ..model.options_report import Times
 from ..model.system_ops import Energy, Rule
@@ -15,7 +19,7 @@ from qgis.core import QgsSpatialIndex
 
 class Parameters(Observable):
 
-    plug_in_name = 'QEPANET 0.94.9'
+    plug_in_name = 'QEPANET 2.04'
     config_file_name = 'config.ini'
 
     junctions_vlay_name = 'Junctions'
@@ -57,7 +61,7 @@ class Parameters(Observable):
 
         self._tag_names = set()
 
-        self._snap_tolerance = 10
+        self._snap_tolerance = 12
         self._tolerance = 0.01
         self._min_dist = 1  # TODO: check: 1 m? Why?
 
@@ -260,12 +264,12 @@ class Parameters(Observable):
         # self.notify()
 
 
-class ConfigFile:
+class ConfigFile(object):
 
     # http://www.blog.pythonlibrary.org/2013/10/25/python-101-an-intro-to-configparser/
 
     def __init__(self, config_file_path):
-        self.config = ConfigParser.ConfigParser()
+        self.config = configparser.ConfigParser()
         self.config_file_path = config_file_path
 
     def create_config(self):
@@ -290,7 +294,7 @@ class ConfigFile:
         if not os.path.exists(self.config_file_path):
             self.create_config()
 
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read(self.config_file_path)
         return config
 
@@ -299,7 +303,7 @@ class ConfigFile:
         self.config.read(self.config_file_path)
         try:
             patterns_file_path = self.config.get('EPANET', 'patterns_file') # TODO: softcode
-        except ConfigParser.NoOptionError as e:
+        except configparser.NoOptionError as e:
             return None
 
         return patterns_file_path
@@ -314,7 +318,7 @@ class ConfigFile:
         self.config.read(self.config_file_path)
         try:
             curves_file_path = self.config.get('EPANET', 'curves_file')  # TODO: softcode
-        except ConfigParser.NoOptionError as e:
+        except configparser.NoOptionError as e:
             return None
         return curves_file_path
 
@@ -329,7 +333,7 @@ class ConfigFile:
         self.config.read(self.config_file_path)
         try:
             last_inp_file = self.config.get('EPANET', 'inp_file_path')  # TODO: softcode
-        except ConfigParser.NoOptionError as e:
+        except (configparser.NoSectionError, configparser.NoOptionError) as e:
             return None
         return last_inp_file
 
@@ -337,7 +341,7 @@ class ConfigFile:
         config = self.get_config()
         config.set('EPANET', 'inp_file_path', last_inp_file)  # TODO: softcode
 
-        with codecs.open(self.config_file_path, 'wb') as configfile:
+        with codecs.open(self.config_file_path, 'w') as configfile:
             config.write(configfile)
 
     # Out file
@@ -345,7 +349,7 @@ class ConfigFile:
         self.config.read(self.config_file_path)
         try:
             last_out_file = self.config.get('EPANET', 'out_file_path')  # TODO: softcode
-        except ConfigParser.NoOptionError as e:
+        except configparser.NoOptionError as e:
             return None
         return last_out_file
 
@@ -353,11 +357,11 @@ class ConfigFile:
         config = self.get_config()
         config.set('EPANET', 'out_file_path', last_out_file)  # TODO: softcode
 
-        with codecs.open(self.config_file_path, 'wb') as configfile:
+        with codecs.open(self.config_file_path, 'w') as configfile:
             config.write(configfile)
 
 
-class RegExValidators:
+class RegExValidators(object):
 
     def __init__(self):
         pass

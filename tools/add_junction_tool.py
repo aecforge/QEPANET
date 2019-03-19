@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QgsSnapper, QgsFeature, QgsFeatureRequest, QgsProject, QgsTolerance, QgsGeometry,\
-    QgsPointLocator, NULL
-from qgis.gui import QgsMapTool, QgsVertexMarker, QgsMessageBar
+from __future__ import absolute_import
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QColor
+from qgis.core import QgsFeature, QgsFeatureRequest, Qgis, QgsGeometry, QgsSnappingConfig
+from qgis.gui import QgsMapTool, QgsVertexMarker
 
 from ..model.network_handling import LinkHandler, NodeHandler, NetworkUtils
 from ..model.network import Junction
-from parameters import Parameters
+from .parameters import Parameters
 from ..geo_utils import raster_utils
 
 
@@ -53,13 +53,9 @@ class AddJunctionTool(QgsMapTool):
         if not self.mouse_clicked:
 
             # Mouse not clicked: snapping to closest vertex
-            # (retval, result) = self.snapper.snapMapPoint(self.toMapCoordinates(event.pos()))
-
             match = self.snapper.snapToMap(self.mouse_pt)
 
             if match.isValid():
-
-                # if len(result) > 0:
 
                 self.snapped_feat_id = match.featureId()
                 self.snapped_vertex = match.point()
@@ -102,7 +98,7 @@ class AddJunctionTool(QgsMapTool):
                 self.iface.messageBar().pushMessage(
                     Parameters.plug_in_name,
                     'Elevation value not available: element elevation set to 0.',
-                    QgsMessageBar.WARNING,
+                    Qgis.Warning,
                     5)  # TODO: softcode
             else:
                 elev = self.elev
@@ -153,8 +149,8 @@ class AddJunctionTool(QgsMapTool):
                     snapped_ft_pts = QgsGeometry.asPolyline(snapped_pipe.geometry())
 
                     # The new junction is on the start or end node of the pipe
-                    if NetworkUtils.points_overlap(QgsGeometry.fromPoint(self.snapped_vertex), QgsGeometry.fromPoint(snapped_ft_pts[0]), self.params.tolerance) or\
-                        NetworkUtils.points_overlap(QgsGeometry.fromPoint(self.snapped_vertex), QgsGeometry.fromPoint(snapped_ft_pts[len(snapped_ft_pts) - 1]), self.params.tolerance):
+                    if NetworkUtils.points_overlap(QgsGeometry.fromPointXY(self.snapped_vertex), QgsGeometry.fromPointXY(snapped_ft_pts[0]), self.params.tolerance) or\
+                        NetworkUtils.points_overlap(QgsGeometry.fromPointXY(self.snapped_vertex), QgsGeometry.fromPointXY(snapped_ft_pts[len(snapped_ft_pts) - 1]), self.params.tolerance):
 
                         NodeHandler.create_new_junction(
                             self.params,
@@ -177,13 +173,13 @@ class AddJunctionTool(QgsMapTool):
                             self.iface.messageBar().pushMessage(
                                 Parameters.plug_in_name,
                                 'The pipe is missing the start or end nodes. Cannot add a new junction along the pipe.',
-                                QgsMessageBar.WARNING,
+                                Qgis.Warning,
                                 5) # TODO: softcode
                             return
 
                         # Check that the snapped point on line is distant enough from start/end nodes
-                        if start_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > self.params.min_dist and\
-                            end_node_ft.geometry().distance(QgsGeometry.fromPoint(self.snapped_vertex)) > self.params.min_dist:
+                        if start_node_ft.geometry().distance(QgsGeometry.fromPointXY(self.snapped_vertex)) > self.params.min_dist and\
+                            end_node_ft.geometry().distance(QgsGeometry.fromPointXY(self.snapped_vertex)) > self.params.min_dist:
 
                             NodeHandler.create_new_junction(
                                 self.params,
@@ -205,8 +201,10 @@ class AddJunctionTool(QgsMapTool):
                             self.iface.messageBar().pushMessage(
                                 Parameters.plug_in_name,
                                 'The new junction is too close to either the pipe end or start nodes. Cannot add a new junction along the pipe.',
-                                QgsMessageBar.WARNING,
+                                Qgis.Warning,
                                 5)  # TODO: softcode
+
+            self.iface.mapCanvas().refresh()
 
     def activate(self):
 
@@ -221,13 +219,13 @@ class AddJunctionTool(QgsMapTool):
 
     def deactivate(self):
 
-        if self.params.pipes_vlay is not None:
-            QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
-                                                          True,
-                                                          QgsSnapper.SnapToSegment,
-                                                          0,
-                                                          self.params.snap_tolerance,
-                                                          True)
+        # if self.params.pipes_vlay is not None:
+        #     QgsProject.instance().setSnapSettingsForLayer(self.params.pipes_vlay.id(),
+        #                                                   True,
+        #                                                   QgsSnapper.SnapToSegment,
+        #                                                   0,
+        #                                                   self.params.snap_tolerance,
+        #                                                   True)
 
         self.data_dock.btn_add_junction.setChecked(False)
 
@@ -247,8 +245,12 @@ class AddJunctionTool(QgsMapTool):
         self.canvas().scene().removeItem(self.outlet_marker)
 
     def update_snapper(self):
-        layers = {self.params.junctions_vlay: QgsPointLocator.Vertex, self.params.pipes_vlay: QgsPointLocator.All}
+        layers = {
+            self.params.junctions_vlay: QgsSnappingConfig.Vertex,
+            self.params.pipes_vlay: QgsSnappingConfig.Segment
+        }
         self.snapper = NetworkUtils.set_up_snapper(layers, self.iface.mapCanvas(), self.params.snap_tolerance)
+        self.snapper.toggleEnabled()
 
     # Needed by Observable
     def update(self, observable):

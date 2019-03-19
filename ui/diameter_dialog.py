@@ -1,4 +1,6 @@
-from PyQt4.QtGui import QDialog, QHBoxLayout, QVBoxLayout, QFormLayout, QLabel, QLineEdit, QFrame, QPushButton
+from builtins import str
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QFormLayout, QLabel, QLineEdit, QFrame, QPushButton
 from ..tools.parameters import Parameters, RegExValidators
 
 
@@ -67,3 +69,13 @@ class DiameterDialog(QDialog):
 
     def get_diameter(self):
         return self.new_diameter
+
+    def closeEvent(self, event):
+        if not self.authenticated:
+            event.ignore()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.new_diameter = None
+        super(DiameterDialog, self).keyPressEvent(event)
+

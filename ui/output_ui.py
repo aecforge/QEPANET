@@ -1,10 +1,14 @@
-from PyQt4.QtGui import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QLabel, QLineEdit, QToolButton, QTabWidget, QWidget,\
-    QPushButton, QCheckBox, QGroupBox, QRadioButton, QFormLayout, QSpacerItem, QSizePolicy, QComboBox, QFileDialog,\
-    QMessageBox, QApplication, QCursor, QTextCursor, QPlainTextEdit
-from PyQt4.QtCore import Qt
-from qgis.core import QgsMapLayerRegistry, edit
-from qgis.gui import QgsMessageBar
-from graphs import StaticMplCanvas
+from __future__ import absolute_import
+from builtins import str
+from builtins import range
+from builtins import object
+from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QFrame, QHBoxLayout, QLabel, QLineEdit, QToolButton, QTabWidget,\
+    QWidget, QPushButton, QCheckBox, QGroupBox, QRadioButton, QFormLayout, QSpacerItem, QSizePolicy, QComboBox,\
+    QFileDialog, QMessageBox, QApplication, QPlainTextEdit
+from qgis.PyQt.QtGui import QCursor, QTextCursor
+from qgis.PyQt.QtCore import Qt
+from qgis.core import QgsProject, edit, Qgis
+from .graphs import StaticMplCanvas
 from ..geo_utils.utils import LayerUtils
 from ..tools.parameters import Parameters, ConfigFile
 from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve, Node
@@ -217,7 +221,7 @@ class OutputAnalyserDialog(QDialog):
 
     def btn_out_file_clicked(self):
         config_file = ConfigFile(Parameters.config_file_path)
-        out_file = QFileDialog.getOpenFileName(
+        out_file, __ = QFileDialog.getOpenFileName(
             self,
             'Select out file',
             config_file.get_last_out_file(),
@@ -234,7 +238,7 @@ class OutputAnalyserDialog(QDialog):
 
         # Fill times combo
         self.cbo_map_times.clear()
-        for period_s in self.output_reader.period_results.iterkeys():
+        for period_s in self.output_reader.period_results.keys():
 
             text = self.seconds_to_string(
                 period_s,
@@ -242,14 +246,24 @@ class OutputAnalyserDialog(QDialog):
                 self.output_reader.report_time_step_secs)
             self.cbo_map_times.addItem(text, period_s)
 
+        # Activate widgets
+        self.btn_sel_element.setEnabled(self.output_reader is not None)
+        self.btn_draw_graph.setEnabled(self.output_reader is not None)
+        self.grb_maps.setEnabled(self.output_reader is not None)
+        self.btn_draw_map.setEnabled(self.output_reader is not None)
+
     def initialize(self):
 
         # Graphs
         self.grb_nodes.setEnabled(False)
         self.grb_links.setEnabled(False)
+        self.btn_sel_element.setEnabled(self.output_reader is not None)
+        self.btn_draw_graph.setEnabled(self.output_reader is not None)
 
         # Maps
+        self.grb_maps.setEnabled(self.output_reader is not None)
         self.rad_maps_node_demand.setChecked(True)
+        self.btn_draw_map.setEnabled(self.output_reader is not None)
 
     def feature_sel_changed(self):
 
@@ -344,7 +358,7 @@ class OutputAnalyserDialog(QDialog):
             self.iface.messageBar().pushMessage(
                 Parameters.plug_in_name,
                 'Please select the simulation out file.',
-                QgsMessageBar.WARNING,
+                Qgis.Warning,
                 5)  # TODO: softcode
             return
 
@@ -526,13 +540,13 @@ class OutputAnalyserDialog(QDialog):
                 if lay_type == LayerType.NODE:
                     lay = self.create_out_node_layer(lay_name, dataset)
                     ns = NodeSymbology()
-                    lay.setRendererV2(ns.make_graduated_sym_renderer(lay, report_time))
+                    lay.setRenderer(ns.make_graduated_sym_renderer(lay, report_time))
                 elif lay_type == LayerType.LINK:
                     lay = self.create_out_link_layer(lay_name, dataset)
                     ls = LinkSymbology()
-                    lay.setRendererV2(ls.make_flow_sym_renderer(lay, report_time))
+                    lay.setRenderer(ls.make_flow_sym_renderer(lay, report_time))
                 lay_id = lay.id()
-                QgsMapLayerRegistry.instance().addMapLayer(lay)
+                QgsProject.instance().addMapLayer(lay)
                 self.params.out_layers.append(lay)
             else:
                 lay.setLayerName(lay_name)
@@ -560,7 +574,7 @@ class OutputAnalyserDialog(QDialog):
     def create_out_layer(self, lay_name, values_d, lay_type):
 
         field_name_vars = []
-        periods = self.output_reader.period_results.keys()
+        periods = list(self.output_reader.period_results.keys())
         for period_s in periods:
             text = self.seconds_to_string(
                 period_s,
@@ -574,6 +588,7 @@ class OutputAnalyserDialog(QDialog):
             new_lay = MemoryDS.create_links_lay(self.params, field_name_vars, lay_name, self.params.crs)
 
         with edit(new_lay):
+
             # Update attributes
             for feat in new_lay.getFeatures():
                 fid = feat.id()
@@ -608,7 +623,7 @@ class OutputAnalyserDialog(QDialog):
         return text
 
 
-class LayerType:
+class LayerType(object):
     def __init__(self):
         pass
 

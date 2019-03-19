@@ -1,11 +1,13 @@
+from builtins import object
 import os
 import platform
 import subprocess
 import tempfile
+import sys
 
 
 # Many parts taken from GHydraulics (http://epanet.de/ghydraulics/index.html.en)
-class ModelRunner:
+class ModelRunner(object):
 
     def __init__(self, dockwidget):
 
@@ -32,10 +34,11 @@ class ModelRunner:
 
         while True:
             line = p.stdout.readline()
+            print("".join(map(chr, line)))
             if not line:
                 break
 
-            self.dockwidget.txt_epanet_console.appendPlainText(line.replace('\b', ''))
+            self.dockwidget.txt_epanet_console.appendPlainText("".join(map(chr, line)))
 
         os.close(out[0])
         os.close(err[0])
