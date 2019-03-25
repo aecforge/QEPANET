@@ -254,7 +254,9 @@ class PipeSectionDialog(QDialog):
             raster_utils.get_coords(points[0][0], points[0][1], ul_coord, x_cell_size, y_cell_size))
 
         for p in range(1, len(points)):
-            total_dist += math.sqrt((points[p][0] - points[p - 1][0]) ** 2 + (points[p][1] - points[p - 1][1]) ** 2)
+
+            total_dist += math.sqrt(((points[p][0] - points[p - 1][0]) * x_cell_size) ** 2 +
+                                    ((points[p][1] - points[p - 1][1]) * y_cell_size) ** 2)
             dist_z[total_dist] = raster_utils.read_layer_val_from_coord(
                 self.params.dem_rlay,
                 raster_utils.get_coords(points[p][0], points[p][1], ul_coord, x_cell_size, y_cell_size))

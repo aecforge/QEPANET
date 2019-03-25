@@ -304,6 +304,7 @@ def read_layer_val_from_coord(ras_layer, coordinate, band=1):
         # To overcome "wrapped C/C++ object of type QgsRasterLayer has been deleted" runtime error
         return None
 
+
 class FormattedRasterStats(object):
 
     min_val = 0
