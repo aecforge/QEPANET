@@ -12,7 +12,7 @@ import ogr
 import sys
 from osgeo import gdal
 from osgeo.gdalconst import GDT_Int32
-from qgis.core import QgsProject, QgsPointXY, QgsRasterLayer, QgsRaster
+from qgis.core import QgsProject, QgsPointXY, QgsRasterLayer, QgsCoordinateTransform
 from .utils import Utils
 import codecs
 
@@ -295,11 +295,25 @@ def read_layer_val_from_coord(ras_layer, coordinate, band=1):
         return None
 
     try:
-        identify_dem = ras_layer.dataProvider().identify(coordinate, QgsRaster.IdentifyFormatValue)
-        if identify_dem is not None and identify_dem.isValid() and identify_dem.results().get(1) is not None:
-            return identify_dem.results().get(band)
+
+        dem_crs = ras_layer.crs()
+        canvas_crs = QgsProject.instance().crs()
+
+        if dem_crs != canvas_crs:
+            transform = QgsCoordinateTransform(canvas_crs, dem_crs, QgsProject.instance())
+            coordinate = transform.transform(coordinate)
+
+        dem_val = ras_layer.dataProvider().sample(coordinate, band)
+        if dem_val[1]:
+            return dem_val[0]
         else:
             return None
+
+        # identify_dem = ras_layer.dataProvider().identify(coordinate, QgsRaster.IdentifyFormatValue)
+        # if identify_dem is not None and identify_dem.isValid() and identify_dem.results().get(1) is not None:
+        #     return identify_dem.results().get(band)
+        # else:
+        #     return None
     except RuntimeError as re:
         # To overcome "wrapped C/C++ object of type QgsRasterLayer has been deleted" runtime error
         return None

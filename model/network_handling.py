@@ -43,7 +43,7 @@ class NodeHandler(object):
                 new_junct_feat.setGeometry(QgsGeometry.fromPointXY(point))
 
                 params.junctions_vlay.addFeatures([new_junct_feat])
-                params.nodes_sindex.insertFeature(new_junct_feat)
+                params.nodes_sindex.addFeature(new_junct_feat)
 
             except Exception as e:
                 params.junctions_vlay.destroyEditCommand()
@@ -75,7 +75,7 @@ class NodeHandler(object):
                 new_reservoir_feat.setGeometry(QgsGeometry.fromPointXY(point))
 
                 params.reservoirs_vlay.addFeatures([new_reservoir_feat])
-                params.nodes_sindex.insertFeature(new_reservoir_feat)
+                params.nodes_sindex.addFeature(new_reservoir_feat)
 
             except Exception as e:
                 params.reservoirs_vlay.destroyEditCommand()
@@ -110,7 +110,7 @@ class NodeHandler(object):
                 new_tank_feat.setGeometry(QgsGeometry.fromPointXY(point))
 
                 params.tanks_vlay.addFeatures([new_tank_feat])
-                params.nodes_sindex.insertFeature(new_tank_feat)
+                params.nodes_sindex.addFeature(new_tank_feat)
 
             except Exception as e:
                 params.tanks_vlay.destroyEditCommand()
@@ -304,7 +304,7 @@ class LinkHandler(object):
                 sel_feats = params.pipes_vlay.selectedFeatures()
 
                 params.pipes_vlay.addFeatures([new_pipe_ft])
-                params.nodes_sindex.insertFeature(new_pipe_ft)
+                params.nodes_sindex.addFeature(new_pipe_ft)
 
                 # Restore previously selected feature
                 sel_feats_ids = []
@@ -425,7 +425,7 @@ class LinkHandler(object):
             new_ft.setGeometry(geom)
 
             layer.addFeatures([new_ft])
-            params.nodes_sindex.insertFeature(new_ft)
+            params.nodes_sindex.addFeature(new_ft)
 
             # except Exception as e:
             #     layer.destroyEditCommand()

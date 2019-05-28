@@ -492,11 +492,11 @@ class InpFile(object):
         # Build nodes spatial index
         sindex = QgsSpatialIndex()
         for feat in params.junctions_vlay.getFeatures():
-            sindex.insertFeature(feat)
+            sindex.addFeature(feat)
         for feat in params.reservoirs_vlay.getFeatures():
-            sindex.insertFeature(feat)
+            sindex.addFeature(feat)
         for feat in params.tanks_vlay.getFeatures():
-            sindex.insertFeature(feat)
+            sindex.addFeature(feat)
 
         for pipe_ft in pipe_fts:
 

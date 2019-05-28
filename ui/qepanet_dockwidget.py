@@ -44,7 +44,6 @@ from ..model.network import Junction, Reservoir, Tank, Pipe, Pump, Valve
 from ..model.network_handling import NetworkUtils
 from ..model.network_handling import LinkHandler
 from ..model.runner import ModelRunner
-from ..model.system_ops import Curve
 from ..rendering import symbology
 from ..tools.add_junction_tool import AddJunctionTool
 from ..tools.add_pipe_tool import AddPipeTool
@@ -110,21 +109,21 @@ class QEpanetDockWidget(QDockWidget, FORM_CLASS):
 
         # Tools buttons
         set_up_button(self.btn_add_junction, os.path.join(curr_dir, 'i_junction.png'), True, 12, 12,
-                           'Create junction')  # TODO: softcode
+                      'Create junction')  # TODO: softcode
         set_up_button(self.btn_add_reservoir, os.path.join(curr_dir, 'i_reservoir.png'), True, 14, 14,
-                           'Create reservoir')  # TODO: softcode
+                      'Create reservoir')  # TODO: softcode
         set_up_button(self.btn_add_tank, os.path.join(curr_dir, 'i_tank.png'), True, 14, 12,
-                           'Create tank')  # TODO: softcode
+                      'Create tank')  # TODO: softcode
         set_up_button(self.btn_add_pipe, os.path.join(curr_dir, 'i_pipe.png'), True, 13, 5,
-                           'Create/edit pipe')  # TODO: softcode
+                      'Create/edit pipe')  # TODO: softcode
         set_up_button(self.btn_add_pump, os.path.join(curr_dir, 'i_pump.png'), True, 15, 11,
-                           'Create pump')  # TODO: softcode
+                      'Create pump')  # TODO: softcode
         set_up_button(self.btn_add_valve, os.path.join(curr_dir, 'i_valve.png'), True, 13, 14,
-                           'Create valve')  # TODO: softcode
+                      'Create valve')  # TODO: softcode
         set_up_button(self.btn_move_element, os.path.join(curr_dir, 'i_move.png'), True, 15, 15,
-                           'Move element')  # TODO: softcode
+                      'Move element')  # TODO: softcode
         set_up_button(self.btn_delete_element, os.path.join(curr_dir, 'i_delete2.png'), True, 13, 15,
-                           'Delete element(s)')  # TODO: softcode
+                      'Delete element(s)')  # TODO: softcode
 
         # EPANET button
         set_up_button(self.btn_epanet_run, os.path.join(curr_dir, 'i_run.png'), tooltip_text='Run')

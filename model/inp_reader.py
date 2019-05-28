@@ -242,7 +242,7 @@ class InpReader(object):
                 featJ.setAttributes([ndID[i], ndEle[i] - delta_z, delta_z, ndPatID[i], ndBaseD[i], emitter_coeff,
                                      nodes_desc[i], tag])
                 junctions_lay_dp.addFeatures([featJ])
-                self.params.nodes_sindex.insertFeature(featJ)
+                self.params.nodes_sindex.addFeature(featJ)
 
             if i < links_count:
                 if len(stat) == i:
@@ -268,8 +268,8 @@ class InpReader(object):
                     ppatt = ref.getBinLinkPumpPatternsPumpID()
                     linkID = ref.getBinLinkNameID()
 
-                    Head = []
-                    Flow = []
+                    head = []
+                    flow = []
                     curve = []
                     power = []
                     pattern = []
@@ -306,8 +306,8 @@ class InpReader(object):
                         curvesID = ref.getBinCurvesNameID()
                         for uu in range(0, len(curveXY)):
                             if curvesID[uu] == cheadpump[pPos]:
-                                Head.append(str(curveXY[uu][0]))
-                                Flow.append(str(curveXY[uu][1]))
+                                head.append(str(curveXY[uu][0]))
+                                flow.append(str(curveXY[uu][1]))
                         curve = ref.getBinLinkPumpCurveNameID()[pPos]
 
                     if pumpID[pPos] in ref.getBinLinkPumpSpeedID():
@@ -336,7 +336,7 @@ class InpReader(object):
                     featPump.setAttributes([linkID[i], param, head, power, speed, pump_pattern, pump_status,
                                             link_descs[i], tag])
                     pumps_lay_dp.addFeatures([featPump])
-                    self.params.nodes_sindex.insertFeature(featPump)
+                    self.params.nodes_sindex.addFeature(featPump)
 
                     pPos += 1
 
@@ -374,7 +374,7 @@ class InpReader(object):
                          [linkID[vPos], linkDiameter[vPos], linkType[vPos], linkInitSett[vPos], linkMinorloss[vPos],
                           valve_status, descs[vPos], tag])
                     valves_lay_dp.addFeatures([featValve])
-                    self.params.nodes_sindex.insertFeature(featValve)
+                    self.params.nodes_sindex.addFeature(featValve)
 
                     vPos += 1
 
@@ -450,7 +450,7 @@ class InpReader(object):
                         [linkID[i], linkLengths[i], linkDiameters[i], stat[i],
                          linkRough[i], linkMinorloss[i], material, link_descs[i], tag])
                     pipes_lay_dp.addFeatures([featPipe])
-                    self.params.nodes_sindex.insertFeature(featPipe)
+                    self.params.nodes_sindex.addFeature(featPipe)
 
             if i < ref.getBinNodeTankCount():
                 p = ref.getBinNodeTankIndex()[i] - 1
@@ -471,7 +471,7 @@ class InpReader(object):
                     [ndTankID[i], ndTankelevation[i] - delta_z, delta_z, initiallev[i], minimumlev[i], maximumlev[i], diameter[i],
                      minimumvol[i], volumecurv[i], nodes_desc[i], tag])
                 tanks_lay_dp.addFeatures([featTank])
-                self.params.nodes_sindex.insertFeature(featTank)
+                self.params.nodes_sindex.addFeature(featTank)
 
             if i < ref.getBinNodeReservoirCount():
                 p = ref.getBinNodeReservoirIndex()[i] - 1
@@ -496,7 +496,7 @@ class InpReader(object):
                 feat_reserv.setAttributes([ndID[p], reservoirs_elev[i] - delta_z - pressure_head, delta_z,
                                            pressure_head, ndPatID[p], nodes_desc[i], tag])
                 reservoirs_lay_dp.addFeatures([feat_reserv])
-                self.params.nodes_sindex.insertFeature(feat_reserv)
+                self.params.nodes_sindex.addFeature(feat_reserv)
 
         if curves:
             self.update_curves()
