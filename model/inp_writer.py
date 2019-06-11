@@ -349,7 +349,7 @@ class InpFile(object):
             emitter_coeff = j_ft.attribute(Junction.field_name_emitter_coeff)
             if emitter_coeff is not None and emitter_coeff != NULL and emitter_coeff != '':
                 line = InpFile.pad(eid, InpFile.pad_19)
-                line += InpFile.pad('{0:.2f}'.format(emitter_coeff))
+                line += InpFile.pad('{0:.2f}'.format(float(emitter_coeff)))
                 out.append(line)
 
     def _append_junctions(self, params, out):
@@ -384,9 +384,9 @@ class InpFile(object):
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
-            line += InpFile.pad('{0:.2f}'.format(elev))
+            line += InpFile.pad('{0:.2f}'.format(float(elev)))
             if demand is not None:
-                line += InpFile.pad('{0:.5f}'.format(demand))
+                line += InpFile.pad('{0:.5f}'.format(float(demand)))
             else:
                 line += InpFile.pad('')
 
@@ -521,10 +521,10 @@ class InpFile(object):
             line = InpFile.pad(eid, InpFile.pad_19)
             line += InpFile.pad(start_node_id, InpFile.pad_19)
             line += InpFile.pad(end_node_id, InpFile.pad_19)
-            line += InpFile.pad('{0:.2f}'.format(length), InpFile.pad_19)
-            line += InpFile.pad('{0:.2f}'.format(diameter), InpFile.pad_19)
-            line += InpFile.pad('{0:.4f}'.format(roughness), InpFile.pad_19)
-            line += InpFile.pad('{0:.2f}'.format(minor_loss), InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(float(length)), InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(float(diameter)), InpFile.pad_19)
+            line += InpFile.pad('{0:.4f}'.format(float(roughness)), InpFile.pad_19)
+            line += InpFile.pad('{0:.2f}'.format(float(minor_loss)), InpFile.pad_19)
             line += InpFile.pad(status)
 
             if description is not None and description != '':
@@ -564,7 +564,7 @@ class InpFile(object):
 
             if pump_param == Pump.parameters_power:
                 power = p_ft.attribute(Pump.field_name_power)
-                line += InpFile.pad(pump_param + ' ' + '{0:2f}'.format(power), InpFile.pad_19)
+                line += InpFile.pad(pump_param + ' ' + '{0:2f}'.format(float(power)), InpFile.pad_19)
             elif pump_param == Pump.parameters_head:
                 head = p_ft.attribute(Pump.field_name_head)
                 if head is not None and head != NULL:
@@ -619,7 +619,7 @@ class InpFile(object):
             pump_speed = p_ft.attribute(Pump.field_name_speed)
             if pump_speed != NULL and pump_speed != '':
                 line = InpFile.pad(eid, InpFile.pad_19)
-                line += InpFile.pad('{0:.2f}'.format(pump_speed), InpFile.pad_19)
+                line += InpFile.pad('{0:.2f}'.format(float(pump_speed)), InpFile.pad_19)
                 out.append(line)
 
             # Status
@@ -681,7 +681,7 @@ class InpFile(object):
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
-            line += InpFile.pad('{0:.2f}'.format(head))
+            line += InpFile.pad('{0:.2f}'.format(float(head)))
 
             if pattern != NULL:
                 line += InpFile.pad(pattern)
@@ -724,12 +724,12 @@ class InpFile(object):
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
-            line += InpFile.pad('{0:.2f}'.format(elev))
-            line += InpFile.pad('{0:.4f}'.format(level_init))
-            line += InpFile.pad('{0:.4f}'.format(level_min))
-            line += InpFile.pad('{0:.4f}'.format(level_max))
-            line += InpFile.pad('{0:.1f}'.format(diameter))
-            line += InpFile.pad('{0:.4f}'.format(vol_min))
+            line += InpFile.pad('{0:.2f}'.format(float(elev)))
+            line += InpFile.pad('{0:.4f}'.format(float(level_init)))
+            line += InpFile.pad('{0:.4f}'.format(float(level_min)))
+            line += InpFile.pad('{0:.4f}'.format(float(level_max)))
+            line += InpFile.pad('{0:.1f}'.format(float(diameter)))
+            line += InpFile.pad('{0:.4f}'.format(float(vol_min)))
 
             if curve is not None and curve != NULL:
                 line += InpFile.pad(curve)
@@ -836,7 +836,7 @@ class InpFile(object):
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
-            line += InpFile.pad('{0:.2f}'.format(delta_z))
+            line += InpFile.pad('{0:.2f}'.format(float(delta_z)))
 
             out.append(line)
 
@@ -852,8 +852,8 @@ class InpFile(object):
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
-            line += InpFile.pad('{0:.2f}'.format(delta_z))
-            line += InpFile.pad('{0:.2f}'.format(pressure_head))
+            line += InpFile.pad('{0:.2f}'.format(float(delta_z)))
+            line += InpFile.pad('{0:.2f}'.format(float(pressure_head)))
 
             out.append(line)
 
@@ -868,7 +868,7 @@ class InpFile(object):
 
             # Line
             line = InpFile.pad(eid, InpFile.pad_19)
-            line += InpFile.pad('{0:.2f}'.format(delta_z))
+            line += InpFile.pad('{0:.2f}'.format(float(delta_z)))
 
             out.append(line)
 

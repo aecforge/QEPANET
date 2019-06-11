@@ -277,7 +277,7 @@ class InpReader(object):
 
                     param = None
                     head = None
-                    power = None
+                    # power = None
                     speed = None
 
                     if pumpID[pPos] in pumpNameIDPower:
@@ -302,12 +302,12 @@ class InpReader(object):
                                 pattern = patternsIDs[uu]
 
                     if ref.getBinCurveCount() > 0 and len(pumpNameIDPower) == 0:
-                        curveXY = ref.getBinCurvesXY()
-                        curvesID = ref.getBinCurvesNameID()
-                        for uu in range(0, len(curveXY)):
-                            if curvesID[uu] == cheadpump[pPos]:
-                                head.append(str(curveXY[uu][0]))
-                                flow.append(str(curveXY[uu][1]))
+                        # curveXY = ref.getBinCurvesXY()
+                        # curvesID = ref.getBinCurvesNameID()
+                        # for uu in range(0, len(curveXY)):
+                        #     if curvesID[uu] == cheadpump[pPos]:
+                        #         head.append(str(curveXY[uu][0]))
+                        #         flow.append(str(curveXY[uu][1]))
                         curve = ref.getBinLinkPumpCurveNameID()[pPos]
 
                     if pumpID[pPos] in ref.getBinLinkPumpSpeedID():
